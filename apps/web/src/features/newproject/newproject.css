@@ -98,9 +98,16 @@
   max-width: 620px;
 }
 .brief__row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+  display: flex;
+  flex-wrap: wrap;
   gap: 16px;
+}
+.brief__row > .field {
+  flex: 1 1 200px;
+}
+/* A segmented control keeps its width; the field beside it takes the rest, or goes below when there is no room. */
+.brief__row > .field:has(> .seg) {
+  flex: none;
 }
 .brief__foot {
   flex: none;

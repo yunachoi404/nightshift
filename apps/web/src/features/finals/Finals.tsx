@@ -72,7 +72,7 @@ function ProjectFinals({ project }: { project: Project }) {
       }
       for (const s of chosen) await final(project.id, s.id, { draftId: s.chosenDraftId!, kind: effectiveKind, mode });
       setSelected(new Set());
-      if (mode === "now") toast({ title: `Finishing ${plural(chosen.length, "shot")}`, text: `${roughDuration(totalSec)} in all. You can keep working.`, tone: "accent" });
+      if (mode === "now") toast({ title: `Finishing ${plural(chosen.length, "shot")}`, text: `${cap(roughDuration(totalSec))} in all. You can keep working.`, tone: "accent" });
       else {
         setNightOpen(false);
         toast({ title: `${plural(chosen.length, "final")} queued for tonight`, text: `Starts at ${clock(startAt)}.`, tone: "night" });

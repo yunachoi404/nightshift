@@ -751,6 +751,20 @@
 .ob__status > .t-muted {
   margin-left: -8px;
 }
+/* What is happening, then its numbers on their own line. */
+.ob__status--stack {
+  flex-direction: column;
+  gap: 4px;
+  text-align: center;
+}
+.ob__status--stack > .t-muted {
+  margin-left: 0;
+}
+.ob__status-line {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
 .ob__status b {
   font-weight: 600;
   color: var(--text);
@@ -761,17 +775,82 @@
 }
 
 /* ---------- First shot: the picture is the page ---------- */
-.ob__shot {
+/* As specific as .frame.shimmer, so the waiting frame keeps its shadow. */
+.frame.ob__shot {
   width: 100%;
   border-radius: 12px;
   box-shadow:
     0 0 0 1px var(--line),
     0 30px 70px -30px rgba(24, 24, 27, 0.45);
 }
-:root[data-theme="dark"] .ob__shot {
+:root[data-theme="dark"] .frame.ob__shot {
   box-shadow:
     0 0 0 1px var(--line),
     0 30px 70px -30px rgba(0, 0, 0, 0.8);
+}
+/* The sample's steps in its frame until the still is there: done, under way, next. Above the frame's shimmer. */
+.ob__steps {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.ob__stp {
+  position: relative;
+  width: 112px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  font-size: var(--fs-small);
+  line-height: var(--lh-small);
+  color: var(--text-3);
+}
+/* A hairline from the step before, mark edge to mark edge with 8 px to spare. */
+.ob__stp + .ob__stp::before {
+  content: "";
+  position: absolute;
+  top: 18px;
+  left: calc(-50% + 26px);
+  width: calc(100% - 52px);
+  height: 1px;
+  background: var(--line-strong);
+}
+.ob__stp-mark {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--raised);
+  box-shadow: inset 0 0 0 1px var(--line-strong);
+  color: var(--text-4);
+}
+.ob__stp-mark svg {
+  width: 16px;
+  height: 16px;
+  stroke-width: 1.75;
+}
+.ob__stp--now {
+  color: var(--text);
+  font-weight: 600;
+}
+.ob__stp--now .ob__stp-mark {
+  box-shadow: inset 0 0 0 1.5px var(--accent);
+  color: var(--text);
+}
+.ob__stp--done {
+  color: var(--text-2);
+}
+.ob__stp--done .ob__stp-mark {
+  background: var(--ok-soft);
+  box-shadow: none;
+  color: var(--ok);
 }
 
 /* Short windows: the welcome keeps its words and lets the window go first. */

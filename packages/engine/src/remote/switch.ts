@@ -106,7 +106,7 @@ export class RuntimeSwitch implements Runtime {
     return this.current.sampleMemoryGb();
   }
 
-  setPhase(phase: "not_installed" | "installing" | "starting", tier: string | null, error?: string): void {
+  setPhase(phase: "not_installed" | "installing" | "starting" | "error", tier: string | null, error?: string): void {
     this.current.setPhase(phase, tier, error);
   }
 

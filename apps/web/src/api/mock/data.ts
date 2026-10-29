@@ -112,9 +112,26 @@ export const hardwarePresets: Record<string, { label: string; profile: HardwareP
   },
 };
 
+/** Plain names as the real recipes give them, for the placeholder ids below. */
+const names: Array<[prefix: string, name: string]> = [
+  ["video-draft", "LTX-2.5, video model"],
+  ["video-encoder", "Gemma 4 12B, video prompt reader"],
+  ["video-vae", "LTX-2.5, video decoder"],
+  ["video-final", "MiniMax H3, overnight video model"],
+  ["video-lite", "Kandinsky 6 Lite, video model"],
+  ["image-small", "MOSS-Image, image model"],
+  ["image", "Krea 2 Turbo, image model"],
+  ["voice", "Breeze TTS 2, voice model"],
+  ["music-oss", "ACE-Step 1.5 Turbo, music model"],
+  ["music", "MiniMax Music 3, music model"],
+  ["text", "Qwen3-VL 4B, writing model"],
+];
+
 function model(id: string, folder: string, sizeGb: number, license: string): ModelFile {
+  const name = names.find(([prefix]) => id.startsWith(prefix))?.[1];
   return {
     id,
+    ...(name ? { name } : {}),
     folder,
     filename: `${id}.safetensors`,
     url: `https://example.invalid/models/${id}.safetensors`,

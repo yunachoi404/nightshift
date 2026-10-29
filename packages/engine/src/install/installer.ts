@@ -15,7 +15,7 @@ import type { DataPaths } from "../paths.js";
 import type { RecipeSet } from "../recipes.js";
 import type { Runtime } from "../runtime/runtime.js";
 import type { SettingsStore } from "../settings.js";
-import { errorMessage, exists, GIB, readJson, round1, sleep, writeJsonAtomic, type Logger } from "../util.js";
+import { errorMessage, exists, readJson, round1, sleep, writeJsonAtomic, type Logger } from "../util.js";
 import { comfyRequirementsStale, installComfyUI } from "./comfyui.js";
 import { downloadFile } from "./download.js";
 import { installEditorItem, isEditorItem, planEditorTools } from "./editorTools.js";
@@ -211,7 +211,8 @@ export class Installer {
             dest: join(paths.comfy, "models", model.folder, model.filename),
             ...(model.sha256 ? { sha256: model.sha256 } : {}),
             signal,
-            onProgress: (bytes) => this.progress(model.id, doneGb + Math.min(model.sizeGb, bytes / GIB), total, message),
+            // sizeGb is decimal (bytes / 1e9), as the plan's totals are. Counting GiB here read 7% short, then jumped.
+            onProgress: (bytes) => this.progress(model.id, doneGb + Math.min(model.sizeGb, bytes / 1e9), total, message),
           });
         } else {
           // mock: about four seconds for the whole tier at speed 1
@@ -244,16 +245,15 @@ export class Installer {
       if (!signal.aborted && fallback && this.recipe(fallback)) {
         await runtime.start(fallback).catch((e) => log(`runtime did not start: ${errorMessage(e)}`));
       } else {
-        runtime.setPhase("not_installed", tier, msg);
+        // A failed install stays an error with its reason, so setup shows it and offers to try again. A stopped one
+        // (the engine is shutting down) is just not installed.
+        runtime.setPhase(signal.aborted ? "not_installed" : "error", tier, msg);
       }
     }
   }
 }
 
-/** The editor's downloads are named for what they do; models by their file. */
+/** A file by its plain name ("Kandinsky 6 Lite, video model"). A recipe written before names had them, by its file. */
 function describe(model: ModelFile): string {
-  if (!isEditorItem(model)) return model.filename;
-  if (model.id.endsWith("render-browser")) return "the export renderer (Chrome headless shell)";
-  if (model.id.endsWith("whisper-vad")) return "the voice activity model for captions";
-  return `the speech recognition model for captions (${model.filename})`;
+  return model.name ?? model.filename;
 }

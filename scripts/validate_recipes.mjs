@@ -32,6 +32,7 @@ for(const file of await readdir(resolve(root,'recipes'))){
  }
  const destinations=recipe.models.map(m=>`${m.folder}/${m.filename}`);
  if(new Set(destinations).size!==destinations.length)throw Error(`${file}: duplicate model destinations`);
+ for(const m of recipe.models)if(!m.name)throw Error(`${file}: model ${m.id} has no plain name for the download line`);
  console.log(`${recipe.tier}: ${Object.keys(recipe.steps).length} steps, ${recipe.models.length} files, ${recipe.models.reduce((a,m)=>a+m.sizeGb,0).toFixed(1)} GB`);
  recipes++;
 }

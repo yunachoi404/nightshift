@@ -3,7 +3,7 @@
  * happening and for how long, without repeating itself ("Writing the shot list, writing").
  */
 import type { Event, Job, Project } from "@nightshift/contract";
-import { render, screen } from "@testing-library/react";
+import { cleanup, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import type { NightshiftClient } from "@/api/client";
 import { App } from "@/app/App";
@@ -35,7 +35,7 @@ const project: Project = {
 
 const writing: Job = { id: "job_text", projectId: PID, step: "text", mode: "now", status: "running", progress: 0.4, message: "Node 2 of 3", outputAssetIds: [], createdAt: iso(40_000), startedAt: iso(40_000) };
 
-function client(): NightshiftClient {
+function client(p: Project = project): NightshiftClient {
   const answer = <T,>(fn: () => T): Promise<T> => Promise.resolve().then(() => structuredClone(fn()));
   const known: Partial<NightshiftClient> = {
     kind: "http",
@@ -43,9 +43,9 @@ function client(): NightshiftClient {
     settings: () => answer(() => ({ tier: "nvidia-8" as const, memoryLimitGb: null, overnight: { enabled: false, startAt: "23:00", endAt: "07:00" }, remote: null })),
     onboarding: () => answer(() => ({ done: true, sampleProjectId: null })),
     tiers: () => answer(() => []),
-    listProjects: () => answer(() => [project]),
+    listProjects: () => answer(() => [p]),
     listJobs: () => answer(() => [writing]),
-    getProject: () => answer(() => project),
+    getProject: () => answer(() => p),
     assetUrl: (pid, aid) => `/api/projects/${pid}/assets/${aid}`,
     events: (_onEvent: (e: Event) => void, onConnection) => {
       queueMicrotask(() => onConnection?.(true));
@@ -68,5 +68,19 @@ describe("the storyboard while the shot list is written", () => {
     );
     const line = await screen.findByText(/^Writing the shot list/);
     expect(line.textContent).toMatch(/^Writing the shot list, 4\d s$/);
+  });
+
+  it("holds a place for each shot the brief asks for", async () => {
+    for (const [sequence, frames] of [["one", 1], ["three", 3]] as const) {
+      window.location.hash = `#/p/${PID}/storyboard`;
+      render(
+        <EngineProvider client={client({ ...project, brief: { idea: "A boat leaving a harbor at dawn", sequence } })}>
+          <App />
+        </EngineProvider>,
+      );
+      await screen.findByText(/^Writing the shot list/);
+      expect(screen.getAllByTestId("shot-placeholder")).toHaveLength(frames);
+      cleanup();
+    }
   });
 });

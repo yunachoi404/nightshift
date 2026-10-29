@@ -160,8 +160,7 @@ beforeAll(async () => {
 afterAll(() => new Promise<void>((r) => server.close(() => r())));
 
 /** A ComfyUI folder, a stand-in uv that records its calls, and the options installNodePacks takes. */
-function setup(packs: NodePack[] = tier("nvidia-8").customNodes!) {
-  const root = mkdtempSync(join(tmpdir(), "ns-nodes-"));
+function setup(packs: NodePack[] = tier("nvidia-8").customNodes!, root = mkdtempSync(join(tmpdir(), "ns-nodes-"))) {
   const comfyDir = join(root, "comfyui");
   mkdirSync(join(comfyDir, "custom_nodes"), { recursive: true });
   const uvLog = join(root, "uv.log");
@@ -228,6 +227,28 @@ describe.skipIf(!hasPython || process.platform === "win32")("installing node pac
     expect(Object.fromEntries(readdirSync(s.custom()).map((d) => [d, readlinkSync(s.custom(d))]))).toEqual(links);
     expect(readFileSync(join(s.custom("moss-image"), "model.py")).equals(patched)).toBe(true);
     expect(readdirSync(join(s.comfyDir, "node-sources")).filter((n) => n.startsWith("."))).toEqual([]);
+  });
+
+  it("installs into a folder with a space in its path, like the Mac's Application Support", async () => {
+    // uv splits a constraints path on spaces (UV_CONSTRAINT is a space-separated list), even as one argument. Every
+    // fresh Mac install failed at the first pack's requirements: "File not found: `/Users/me/Library/Application`".
+    const s = setup(undefined, join(mkdtempSync(join(tmpdir(), "ns-nodes-")), "Application Support", "Nightshift"));
+    const uv = join(s.root, "uv");
+    writeFileSync(
+      uv,
+      `#!/bin/sh
+echo "$@" >> "${join(s.root, "uv.log")}"
+if [ "$2" = freeze ]; then printf 'torch==2.14.1+cu130\\n'; exit 0; fi
+while [ $# -gt 0 ]; do
+  if [ "$1" = -c ]; then for f in $2; do [ -f "$f" ] || { echo "error: File not found: \\\`$f\\\`" >&2; exit 2; }; done; fi
+  shift
+done
+`,
+    );
+    chmodSync(uv, 0o755);
+    await installNodePacks({ ...s.options, uv });
+    expect(s.uvCalls().filter((c) => c.startsWith("pip install"))).toHaveLength(2);
+    expect(Object.keys(s.requirements).sort()).toEqual([BREEZE, "kandinsky-6"]);
   });
 
   it("switching tiers leaves exactly the new tier's packs, offline, and switching back needs no download", async () => {
@@ -424,11 +445,15 @@ describe.skipIf(!hasPython)("Nightshift's patches", () => {
     const names = ["breeze/loader.py", "moss/comfyui/moss-image/model.py", "moss/comfyui/moss-image/loaders.py"];
     const files = names.map((f) => join(dir, f));
     expect((await patch("breeze", join(dir, "breeze"))).stdout).toMatch(/Applied Breeze static buffer device fix\nApplied Breeze discarded-model offload fix/);
-    expect((await patch("moss", join(dir, "moss/comfyui/moss-image"))).stdout).toMatch(/Applied MOSS lazy projection dtype fix\nApplied MOSS fused projection layout fix/);
+    expect((await patch("moss", join(dir, "moss/comfyui/moss-image"))).stdout).toMatch(/Applied MOSS lazy projection dtype fix\nApplied MOSS fused projection layout fix\nApplied MOSS float64 timestep fix/);
+    // MPS has no float64: on a Mac MOSS's first sampler step failed with "Cannot convert a MPS Tensor to float64".
+    const model = readFileSync(files[1]!, "utf8");
+    expect(model).toContain('where = torch.device("cpu") if times.device.type == "mps" else times.device');
+    expect(model).not.toContain("device=times.device, dtype=torch.float64");
     const once = files.map((f) => readFileSync(f));
     expect(once.map((b, i) => b.equals(readFileSync(join(FIXTURES, names[i]!))))).toEqual([false, false, false]);
     expect((await patch("breeze", join(dir, "breeze"))).stdout).toMatch(/already applied\n.*already applied/);
-    expect((await patch("moss", join(dir, "moss/comfyui/moss-image"))).stdout).toMatch(/already applied\n.*already applied/);
+    expect((await patch("moss", join(dir, "moss/comfyui/moss-image"))).stdout).toMatch(/already applied\n.*already applied\n.*already applied/);
     expect(files.map((f, i) => readFileSync(f).equals(once[i]!))).toEqual([true, true, true]);
     expect((await execCapture("python3", ["-m", "py_compile", ...files])).code).toBe(0);
   });

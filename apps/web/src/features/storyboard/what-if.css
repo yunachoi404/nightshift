@@ -1,7 +1,10 @@
-/* Four beats side by side, always: the whole story reads at a glance. A tall project keeps its keyframes at a
-   size that leaves room for the words under them; a wide one lets the pictures take the width. */
+/* Four beats side by side, always: the whole story reads at a glance, across the whole width. A wide project lets
+   the pictures take it. A tall one keeps each keyframe as big as leaves its words in the window, centered in its
+   beat: 570 px is the toolbar, the title, a status line, the beat's name and its words. At least
+   233 px wide, which fits four beats in a 1280 px window. */
 .whatif-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 20px; align-items: start; }
-.whatif-grid--tall { max-width: 980px; gap: 16px; }
+.whatif-grid--tall { gap: 16px; }
+.whatif-grid--tall .frame { width: min(100%, max(233px, calc((100vh - 570px) * 9 / 16))); margin-inline: auto; }
 .whatif-beat { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
 .whatif-beat__head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; font-weight: 600; min-height: 24px; }
 .whatif-beat__head span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

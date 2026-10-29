@@ -43,6 +43,7 @@ const NVIDIA_8: TierSummary = {
   },
   sameTake: { method: "upscale", scale: 2 },
   longestShotSec: 2.04,
+  referenceImageLimit: 0,
 };
 const SPARK: TierSummary = {
   ...NVIDIA_8,
@@ -56,6 +57,7 @@ const SPARK: TierSummary = {
   },
   sameTake: { method: "rerender", scale: 2 },
   longestShotSec: 4.04,
+  referenceImageLimit: 3,
 };
 
 const PID = "prj_rain";
@@ -100,6 +102,7 @@ function client(tier: TierSummary, projects: Project[], onboarding: Onboarding =
     getProject: (id) => answer(() => projects.find((p) => p.id === id)!),
     startSample: () => answer(() => ({ onboarding, project: projects.find((p) => p.id === onboarding.sampleProjectId) ?? null })),
     draft: (projectId, shotId) => answer((): Job => ({ id: `job_draft_${shotId}`, projectId, shotId, step: "video_draft", mode: "now", status: "queued", progress: 0, outputAssetIds: [], createdAt: iso() })),
+    final: (projectId, shotId) => answer((): Job => ({ id: `job_final_${shotId}`, projectId, shotId, step: "video_final_same_take", mode: "now", status: "queued", progress: 0, outputAssetIds: [], createdAt: iso() })),
     assetUrl: (pid, aid) => `/api/projects/${pid}/assets/${aid}`,
     events: (_onEvent: (e: Event) => void, onConnection) => {
       queueMicrotask(() => onConnection?.(true));
@@ -171,6 +174,19 @@ describe("new project copy follows the recipe's shot length and shot list time",
     expect(screen.getByText("The shot list is written in seconds. Stills follow.")).toBeTruthy();
     unmount();
   });
+
+  it("offers to start a cinematic shot from a photo only where the setup can render from photos", async () => {
+    const spark = open("#/new", client(SPARK, []));
+    expect(await screen.findByText("Start from a photo")).toBeTruthy();
+    spark.unmount();
+
+    // On the 8 GB tier the photo would become a reference no still can use.
+    const small = open("#/new", client(NVIDIA_8, []));
+    await screen.findByText(/2 to 6 seconds\./);
+    expect(screen.queryByText("Start from a photo")).toBeNull();
+    expect(screen.getByText(/this setup cannot render from photos/)).toBeTruthy();
+    small.unmount();
+  });
 });
 
 describe("the drafts toast", () => {
@@ -178,6 +194,25 @@ describe("the drafts toast", () => {
     const { unmount } = open(`#/p/${PID}/storyboard`, client(NVIDIA_8, [rainRider()]));
     fireEvent.click(await screen.findByRole("button", { name: "Make drafts" }));
     expect(await screen.findByText("About a minute each. Watch them land in Takes.")).toBeTruthy();
+    unmount();
+  });
+});
+
+describe("toasts and counts read as sentences", () => {
+  it("the finish toast starts with a capital: \"A few seconds in all.\"", async () => {
+    // A real Mac run showed "Finishing 1 shot" over "a few seconds in all. You can keep working."
+    const oneShot = withDrafts(rainRider({ shots: rainRider().shots.slice(0, 1) }));
+    const { unmount } = open(`#/p/${PID}/finals`, client(NVIDIA_8, [oneShot]));
+    fireEvent.click(await screen.findByRole("button", { name: "Finish now" }));
+    expect(await screen.findByText("A few seconds in all. You can keep working.")).toBeTruthy();
+    unmount();
+  });
+
+  it("the editor says 1 line with word timings, not 1 lines", async () => {
+    const captions = [{ start: 0.6, end: 1.5, text: "The last tram home.", words: [{ start: 0.6, end: 1.5, text: "The last tram home." }] }];
+    const cut = { clips: [{ shotId: "shot_1", assetId: "ast_still_1", start: 0, in: 0, out: 2.04 }], audio: [], captions, style: {} };
+    const { unmount } = open(`#/p/${PID}/editor`, client(NVIDIA_8, [rainRider({ timeline: cut })]));
+    expect(await screen.findByText(/^1 line with word timings\./)).toBeTruthy();
     unmount();
   });
 });

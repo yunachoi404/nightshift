@@ -760,7 +760,8 @@ export class MockEngine {
       this.setRuntime({ phase: "error", error: `The disk is full. Free about ${Math.ceil(need)} GB, then try again. What's already downloaded is kept.` });
       return;
     }
-    const message = inst.current ? describeModel(inst.current) : inst.queue.length ? "Checking files" : "Verifying";
+    const current = inst.current ? tier.models.find((x) => x.id === inst.current) : undefined;
+    const message = current ? `Downloading ${current.name ?? current.filename}` : inst.queue.length ? "Checking files" : "Verifying";
     this.emit({ type: "install", progress: { modelId: inst.current, doneGb: round1(inst.doneGb), totalGb: inst.totalGb, message } });
     if (!inst.current && inst.queue.length === 0) this.finishInstall();
   }
@@ -1157,19 +1158,6 @@ export function aspectSize(aspect: Project["aspect"]): { w: number; h: number } 
   if (aspect === "9:16") return { w: 576, h: 1024 };
   if (aspect === "1:1") return { w: 768, h: 768 };
   return { w: 1024, h: 576 };
-}
-
-function describeModel(modelId: string): string {
-  if (modelId.startsWith("video-draft")) return "Downloading the video model";
-  if (modelId.startsWith("video-encoder")) return "Downloading the video model's text encoder";
-  if (modelId.startsWith("video-vae")) return "Downloading the video decoder";
-  if (modelId.startsWith("video-final")) return "Downloading the overnight video model";
-  if (modelId.startsWith("video-lite")) return "Downloading the video model";
-  if (modelId.startsWith("image")) return "Downloading the image model";
-  if (modelId.startsWith("voice")) return "Downloading the voice model";
-  if (modelId.startsWith("music")) return "Downloading the music model";
-  if (modelId.startsWith("text")) return "Downloading the writing model";
-  return "Downloading";
 }
 
 /**

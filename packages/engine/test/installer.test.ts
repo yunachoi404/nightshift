@@ -29,17 +29,17 @@ const NONE: ToolReport = { ok: false, ffmpeg: null, ffprobe: null, whisper: null
 const ALL: ToolReport = { ...NONE, ok: true, ffmpeg: "/bin/ffmpeg", ffprobe: "/bin/ffprobe", whisper: "/bin/whisper-cli", whisperModel: "/m/ggml-large-v3-turbo.bin", whisperVad: "/bin/vad", vadModel: "/m/vad.bin", chrome: "/bin/chrome" };
 
 const big = recipe("apple-64", { vendor: "apple", minVramGb: 64, minRamGb: 64 }, {
-  models: [{ id: "ltx", folder: "diffusion_models", filename: "ltx.safetensors", url: "https://example.com/ltx", sizeGb: 20, license: { name: "x", url: "https://example.com/l" } }],
+  models: [{ id: "ltx", name: "LTX-2.5, video model", folder: "diffusion_models", filename: "ltx.safetensors", url: "https://example.com/ltx", sizeGb: 20, license: { name: "x", url: "https://example.com/l" } }],
 });
 const small = recipe("apple-16", { vendor: "apple", minVramGb: 16, maxVramGb: 48, minRamGb: 16 });
 
 describe("editor tools in the install plan", () => {
   it("lists what is missing with sizes and licenses, and says what it cannot download", () => {
     const plan = planEditorTools(lib, big, NONE, { platform: "darwin", arch: "arm64" });
-    expect(plan.downloads.map((d) => [d.id, d.folder])).toEqual([
-      ["editor-whisper-large-v3-turbo", "editor/whisper"],
-      ["editor-whisper-vad", "editor/whisper"],
-      ["editor-render-browser", "editor/chrome-headless-shell"],
+    expect(plan.downloads.map((d) => [d.id, d.folder, d.name])).toEqual([
+      ["editor-whisper-large-v3-turbo", "editor/whisper", "Whisper large-v3-turbo, captions model"],
+      ["editor-whisper-vad", "editor/whisper", "Silero VAD, voice detection for captions"],
+      ["editor-render-browser", "editor/chrome-headless-shell", "Chrome headless shell, export renderer"],
     ]);
     expect(plan.downloads.map((d) => d.sizeGb)).toEqual([expect.closeTo(1.62, 2), expect.closeTo(0.0009, 4), 0.1]);
     for (const d of plan.downloads) expect(d.license.name).toMatch(/MIT|BSD/);
@@ -127,9 +127,23 @@ describe("installer plans", () => {
     const progress = events.flatMap((e) => (e.type === "install" ? [e.progress] : []));
     expect(new Set(progress.map((p) => p.modelId).filter(Boolean))).toEqual(new Set(["ltx", "editor-whisper-large-v3-turbo", "editor-whisper-vad", "editor-render-browser"]));
     expect(progress.at(-1)).toMatchObject({ message: "Installed", doneGb: 21.7, totalGb: 21.7 });
-    expect(progress.some((p) => p.message.startsWith("Downloading the speech recognition model"))).toBe(true);
+    // Each file by its plain name, never its file name.
+    expect(new Set(progress.filter((p) => p.message.startsWith("Downloading")).map((p) => p.message))).toEqual(
+      new Set(["Downloading LTX-2.5, video model", "Downloading Whisper large-v3-turbo, captions model", "Downloading Silero VAD, voice detection for captions", "Downloading Chrome headless shell, export renderer"]),
+    );
     expect(existsSync(join(dataDir, "comfyui"))).toBe(false);
     expect(readdirSync(dataDir).sort()).toEqual(["install.json", "settings.json"]);
+  });
+
+  it("a first install that fails is an error with its reason, so setup can show it and try again", async () => {
+    // 5 GB free for a 21.7 GB tier: the install stops at its disk check, before it writes anything.
+    const { inst, runtime, settings } = installer("local", 5, NONE);
+    await settings.load();
+    inst.start("apple-64", 24);
+    for (let i = 0; i < 200 && runtime.status().phase === "installing"; i++) await sleep(10);
+    expect(runtime.status()).toMatchObject({ phase: "error", tier: "apple-64", error: expect.stringContaining("Not enough disk space") });
+    // Settings name the installed tier, and nothing is installed yet.
+    expect(settings.get()).toMatchObject({ tier: null, memoryLimitGb: null });
   });
 });
 

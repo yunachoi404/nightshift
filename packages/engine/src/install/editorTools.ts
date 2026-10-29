@@ -45,17 +45,18 @@ export function planEditorTools(lib: EditorLib, recipe: Pick<Recipe, "match">, r
   const downloads: ModelFile[] = [];
   const present: string[] = [];
   const notes: string[] = [];
-  const whisperFile = (name: keyof EditorLib["WHISPER_DOWNLOADS"], license: ModelFile["license"]): ModelFile => {
+  const whisperFile = (name: keyof EditorLib["WHISPER_DOWNLOADS"], label: string, license: ModelFile["license"]): ModelFile => {
     const item = WHISPER_DOWNLOADS[name];
-    return { id: `${EDITOR_ITEM_PREFIX}whisper-${name}`, folder: "editor/whisper", filename: item.file, url: item.url, sha256: item.sha256, sizeGb: item.bytes / 1e9, license };
+    return { id: `${EDITOR_ITEM_PREFIX}whisper-${name}`, name: label, folder: "editor/whisper", filename: item.file, url: item.url, sha256: item.sha256, sizeGb: item.bytes / 1e9, license };
   };
 
   if (!report.ffmpeg) notes.push("ffmpeg is missing. Install it (brew install ffmpeg, or apt install ffmpeg) before you export.");
 
-  const model = whisperFile(whisperModelFor(recipe), WHISPER_LICENSE);
+  const whisper = whisperModelFor(recipe);
+  const model = whisperFile(whisper, `Whisper ${whisper}, captions model`, WHISPER_LICENSE);
   if (report.whisperModel) present.push(model.id);
   else downloads.push(model);
-  const vad = whisperFile("vad", VAD_LICENSE);
+  const vad = whisperFile("vad", "Silero VAD, voice detection for captions", VAD_LICENSE);
   if (report.vadModel) present.push(vad.id);
   else downloads.push(vad);
   if (!report.whisper) {
@@ -66,6 +67,7 @@ export function planEditorTools(lib: EditorLib, recipe: Pick<Recipe, "match">, r
 
   const chrome: ModelFile = {
     id: `${EDITOR_ITEM_PREFIX}render-browser`,
+    name: "Chrome headless shell, export renderer",
     folder: "editor/chrome-headless-shell",
     filename: "chrome-headless-shell",
     url: "https://googlechromelabs.github.io/chrome-for-testing/",

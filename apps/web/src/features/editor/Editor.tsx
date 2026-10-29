@@ -9,7 +9,7 @@ import { Media } from "@/media/Media";
 import { assetById, failureText, frameClass, isActive, jobStatusLine } from "@/features/project/helpers";
 import { useNow } from "@/lib/useNow";
 import { isMock } from "@/api/config";
-import { relativeTime, roughDuration, timecode } from "@/lib/format";
+import { plural, relativeTime, roughDuration, timecode } from "@/lib/format";
 import { genres, voices, scriptLines } from "@nightshift/contract";
 import { RevealSheet } from "@/features/reveal/RevealSheet";
 import { filmExportJobs, revealable } from "@/features/reveal/reveal";
@@ -219,7 +219,7 @@ function ProjectEditor({ project }: { project: Project }) {
             </div>
             {timeline.captions.length ? (
               <>
-                <div className="insp__text">{timeline.captions.length} lines with word timings. The export result says how they were timed.</div>
+                <div className="insp__text">{plural(timeline.captions.length, "line")} with word timings. The export result says how they were timed.</div>
                 <div className="insp__row">
                   <span>Style</span>
                   <Segmented
@@ -570,8 +570,13 @@ function TimelineView({ project, clips, total, time, onSeek, current, timeline }
           <div className="tl__track" onMouseDown={seekFromEvent}>
             {timeline.captions.length ? (
               timeline.captions.map((c, i) => (
-                <div key={i} className="tl__caption" style={{ left: x(c.start), width: Math.max(6, (c.end - c.start) * pxPerSec - 2) }} title={c.text}>
-                  {c.text}
+                <div
+                  key={i}
+                  className={cx("tl__caption", x(c.start) > innerW / 2 && "tl__caption--end")}
+                  style={{ left: x(c.start), "--cap-w": `${Math.max(6, (c.end - c.start) * pxPerSec - 2)}px` } as React.CSSProperties}
+                >
+                  {/* Its own box, so a line longer than the chip ends in an ellipsis. Hovering the chip shows all of it. */}
+                  <span className="tl__caption-text">{c.text}</span>
                 </div>
               ))
             ) : (

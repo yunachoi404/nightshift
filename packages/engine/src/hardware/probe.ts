@@ -35,10 +35,32 @@ export function systemProbeEnv(): ProbeEnv {
   };
 }
 
+/**
+ * Free disk where the data lives, in GB of 10^9 bytes, the unit of the recipes' model sizes and of Finder. On macOS it
+ * counts what Finder counts: space the system frees on demand for a download the user asked for (purgeable caches,
+ * local snapshots). statfs alone put a Mac that Finder said had 87 GB available at 72, in GiB, and refused a 63 GB
+ * setup that fit.
+ */
 export async function freeDiskGb(path: string): Promise<number> {
   await mkdir(path, { recursive: true });
   const s = await statfs(path);
-  return round1((Number(s.bavail) * Number(s.bsize)) / 1024 ** 3);
+  const free = Number(s.bavail) * Number(s.bsize);
+  const available = process.platform === "darwin" ? await macAvailableBytes(path) : undefined;
+  return round1(Math.max(free, available ?? 0) / 1e9);
+}
+
+/** NSURLVolumeAvailableCapacityForImportantUsageKey, through osascript (on every Mac, no developer tools needed). */
+const MAC_AVAILABLE_JXA = `ObjC.import("Foundation");
+function run(argv) {
+  const v = Ref();
+  $.NSURL.fileURLWithPath(argv[0]).getResourceValueForKeyError(v, $.NSURLVolumeAvailableCapacityForImportantUsageKey, null);
+  return String(ObjC.unwrap(v[0]));
+}`;
+
+async function macAvailableBytes(path: string): Promise<number | undefined> {
+  const r = await execCapture("/usr/bin/osascript", ["-l", "JavaScript", "-e", MAC_AVAILABLE_JXA, path], { timeoutMs: 5_000 });
+  const bytes = Number(r.stdout.trim());
+  return r.code === 0 && Number.isFinite(bytes) && bytes > 0 ? bytes : undefined;
 }
 
 const NVIDIA_QUERY = ["--query-gpu=name,memory.total,compute_cap", "--format=csv,noheader,nounits"];

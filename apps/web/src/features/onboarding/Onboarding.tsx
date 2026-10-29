@@ -1,5 +1,5 @@
-import type { HardwareProfile, InstallPlan, Project, TierSummary } from "@nightshift/contract";
-import { ChevronDown, ChevronRight, Cpu, Film, HardDrive, Image, MemoryStick, Mic, Monitor, Music, Sparkles, Wand2 } from "lucide-react";
+import type { HardwareProfile, InstallPlan, Job, Project, TierSummary } from "@nightshift/contract";
+import { Check, ChevronDown, ChevronRight, Cpu, Film, HardDrive, Image, MemoryStick, Mic, Monitor, Music, PenLine, Sparkles, Wand2 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useNavigate } from "react-router";
 import { isMock } from "@/api/config";
@@ -14,22 +14,45 @@ import { isMac, machineName, tierFor, tierName, upscaleOnly, useInstalledTier, u
 import { RemoteSetup } from "@/features/compute/RemoteSetup";
 import { WelcomeTour } from "./WelcomeTour";
 import { bestAssetFor, failureText, frameClass, jobElapsed, jobStatusLine } from "@/features/project/helpers";
+import { draftStepFor } from "@/features/project/draftSteps";
 import { useNow } from "@/lib/useNow";
+import { SAMPLE_STEPS, sampleEstimates, sampleTimeLine, type SampleStep } from "./firstShot";
 import "./onboarding.css";
 
 type Step = "welcome" | "detect" | "tier" | "install" | "starting" | "first";
+
+/** A setup and its memory limit, as the user chose them. A null limit is the setup's default. */
+interface Choice {
+  tier: string;
+  memoryLimitGb: number | null;
+}
 
 /** The dots under each step. Welcome is before the first dot; starting shares install's. */
 const dotSteps: Step[] = ["detect", "tier", "install", "first"];
 
 export function Onboarding({ onDev }: { onDev: () => void }) {
   const { status, onboarding } = useEngineState();
+  const { install } = useEngine();
   // Someone who has been through setup before (say, after leaving a GPU computer) skips the welcome.
   const [local, setLocal] = useState<Step>(() => (onboarding?.done ? "detect" : "welcome"));
   const [hardware, setHardware] = useState<HardwareProfile | null>(null);
+  // What the user chose: the setup card shows it, Download installs it, and after an install stops, Try again installs it
+  // again and Back comes back to it. Until they choose in this window (say, after a reload), it is the setup the engine
+  // was last asked for, at its default limit.
+  const [chosen, setChosen] = useState<Choice | null>(null);
+  const choice: Choice | null = chosen ?? (status?.tier ? { tier: status.tier, memoryLimitGb: null } : null);
+  // A failed install stays an error in the engine until the next one. Going back from it shows the setup steps.
+  const [repick, setRepick] = useState(false);
 
   const phase = status?.phase ?? "not_installed";
-  const step: Step = phase === "installing" || phase === "error" ? "install" : phase === "starting" ? "starting" : phase === "ready" ? "first" : local;
+  useEffect(() => {
+    if (phase !== "error") setRepick(false);
+  }, [phase]);
+  const step: Step = phase === "installing" || (phase === "error" && !repick) ? "install" : phase === "starting" ? "starting" : phase === "ready" ? "first" : local;
+  const startInstall = async (c: Choice) => {
+    setChosen(c);
+    await install(c.tier, c.memoryLimitGb);
+  };
 
   return (
     <div className="ob">
@@ -52,8 +75,19 @@ export function Onboarding({ onDev }: { onDev: () => void }) {
             }}
           />
         )}
-        {step === "tier" && hardware && <Tier key="tier" hardware={hardware} onBack={() => setLocal("detect")} />}
-        {step === "install" && <Install key="install" />}
+        {step === "tier" && hardware && <Tier key="tier" hardware={hardware} choice={choice} onChoose={setChosen} onInstall={startInstall} onBack={() => setLocal("detect")} />}
+        {step === "install" && (
+          <Install
+            key="install"
+            choice={choice}
+            onInstall={startInstall}
+            onBack={() => {
+              setRepick(true);
+              // Back to the setup card, on what the user chose. A window opened on the failure has not read the hardware.
+              setLocal(hardware ? "tier" : "detect");
+            }}
+          />
+        )}
         {step === "starting" && <Starting key="starting" />}
         {step === "first" && <FirstShot key="first" />}
       </div>
@@ -129,7 +163,7 @@ function Welcome({ onNext }: { onNext: () => void }) {
           <Button variant="primary" size="l" className="ob__cta ob__go" onClick={onNext}>
             Get started
           </Button>
-          <span className="ob__fine">{demo ? "Sample renders. Nothing is downloaded." : "A few minutes, mostly downloading."}</span>
+          <span className="ob__fine">{demo ? "Sample renders. Nothing is downloaded." : "Setup is mostly one large download."}</span>
         </Rise>
       </div>
       <div className="ob__stagefloor">
@@ -398,13 +432,22 @@ function ManualForm({ initial, onSave, onCancel }: { initial: HardwareProfile | 
   );
 }
 
-/** Why a machine that was set up is back in setup: the engine says what is missing or out of date. */
+/**
+ * Why setup is back on screen, in the engine's words: an install that stopped (the user went Back from it, say), or a
+ * machine with a setup that now has something missing or out of date (after an update, say).
+ */
 function SetupAgain() {
-  const { status, onboarding } = useEngineState();
-  if (!onboarding?.done || status?.phase !== "not_installed" || !status.error) return null;
+  const { status, onboarding, settings } = useEngineState();
+  if ((status?.phase !== "not_installed" && status?.phase !== "error") || !status.error) return null;
   return (
     <div className="ob__notice">
-      <Notice title="Setup needs to run again">{status.error}</Notice>
+      {status.phase === "not_installed" && (onboarding?.done || settings?.tier) ? (
+        <Notice title="Setup needs to run again">{status.error}</Notice>
+      ) : (
+        <Notice tone="bad" title="Setup stopped">
+          {status.error}
+        </Notice>
+      )}
     </div>
   );
 }
@@ -419,15 +462,13 @@ function archName(arch: string, os: HardwareProfile["os"]): string {
 
 // ---------------------------------------------------------------- tier
 
-function Tier({ hardware, onBack }: { hardware: HardwareProfile; onBack: () => void }) {
+function Tier({ hardware, choice, onChoose, onInstall, onBack }: { hardware: HardwareProfile; choice: Choice | null; onChoose: (c: Choice) => void; onInstall: (c: Choice) => Promise<void>; onBack: () => void }) {
   const runtimeDemo = useDemoMode();
-  const { client, install } = useEngine();
+  const { client } = useEngine();
   const { settings } = useEngineState();
   const savedLimit = settings?.memoryLimitGb ?? null;
   const [tiers, setTiers] = useState<TierSummary[] | null>(null);
-  const [chosen, setChosen] = useState<string | null>(null);
   const [plan, setPlan] = useState<InstallPlan | null>(null);
-  const [memory, setMemory] = useState<number | null>(null);
   const [busy, setBusy] = useState(false);
   const [showAlts, setShowAlts] = useState(false);
   const [loadError, setLoadError] = useState(false);
@@ -438,24 +479,29 @@ function Tier({ hardware, onBack }: { hardware: HardwareProfile; onBack: () => v
     try {
       const t = await client.tiers();
       setTiers(t);
-      const rec = t.find((x) => x.recommended) ?? t.find((x) => fits(x, hardware));
-      setChosen(rec?.tier ?? null);
     } catch {
       setLoadError(true);
     }
-  }, [client, hardware]);
+  }, [client]);
 
   useEffect(() => {
     void loadTiers();
   }, [loadTiers]);
 
   const demo = runtimeDemo || plan?.simulated === true;
-  const tier = tiers?.find((t) => t.tier === chosen) ?? null;
+  const fitting = useMemo(() => (tiers ?? []).filter((t) => runsHere(t, hardware)), [tiers, hardware]);
+  const recommended = tiers?.find((t) => t.recommended) ?? fitting[0] ?? null;
+  // The setup the user chose, then the one installed here, then the recommended one: setting up again after an update or
+  // a failed install must not switch them to another setup.
+  const tier = [choice?.tier, settings?.tier].map((id) => fitting.find((t) => t.tier === id)).find(Boolean) ?? recommended;
   const gpu = hardware.gpus[0];
   // The pool other apps compete for: shared memory on unified machines, system memory next to a discrete card.
   const total = hardware.ramGb;
   const peakMax = Math.max(...Object.values(tier?.estimates ?? {}).map((e) => e?.peakGb ?? 0), 4);
   const minMem = Math.min(total, gpu?.unifiedMemory ? Math.ceil(peakMax) : Math.max(8, tier?.match.minRamGb ?? 8));
+  // The limit the user chose for this setup stays, then the one set up before; the setup's default is for a first setup.
+  const limit = (choice?.tier === tier?.tier ? choice?.memoryLimitGb : null) ?? savedLimit ?? tier?.defaultMemoryLimitGb ?? Math.round(total * 0.8);
+  const memory = tier ? Math.min(total, Math.max(minMem, limit)) : null;
 
   useEffect(() => {
     if (!tier) return;
@@ -469,16 +515,10 @@ function Tier({ hardware, onBack }: { hardware: HardwareProfile; onBack: () => v
       .catch((e) => {
         if (active) toast({ title: "Couldn't check setup", text: String(e), tone: "bad" });
       });
-    // A limit the user chose before stays when they set up again; the tier's default is for a first setup.
-    const def = savedLimit ?? tier.defaultMemoryLimitGb ?? Math.round(total * 0.8);
-    setMemory(Math.min(total, Math.max(minMem, def)));
     return () => {
       active = false;
     };
-  }, [tier, client, total, minMem, savedLimit]);
-
-  const fitting = useMemo(() => (tiers ?? []).filter((t) => fits(t, hardware)), [tiers, hardware]);
-  const recommended = tiers?.find((t) => t.recommended) ?? fitting[0] ?? null;
+  }, [tier, client]);
 
   if (loadError || tiers?.length === 0) {
     return (
@@ -590,7 +630,9 @@ function Tier({ hardware, onBack }: { hardware: HardwareProfile; onBack: () => v
                   {gb(memory ?? 0)} of {gb(total)}
                 </span>
               </div>
-              <Slider value={memory ?? minMem} min={minMem} max={total} step={1} onChange={setMemory} label="Memory limit" />
+              {/* As in Settings: without it, "24 GB of 30 GB" reads as the room left for other apps. */}
+              <p className="t-small t-muted">{gpu?.unifiedMemory ? "The most memory Nightshift may use. Lower is safer with other apps open, higher is faster." : "System memory Nightshift may use next to the graphics card. The card itself is used in full."}</p>
+              <Slider value={memory ?? minMem} min={minMem} max={total} step={1} onChange={(v) => tier && onChoose({ tier: tier.tier, memoryLimitGb: v })} label="Memory limit" />
               <div className="mem__scale">
                 <span>{gb(minMem)}, slower</span>
                 <span>{gb(total)}, everything</span>
@@ -608,7 +650,7 @@ function Tier({ hardware, onBack }: { hardware: HardwareProfile; onBack: () => v
                     .map((t) => {
                       const ok = fitting.some((f) => f.tier === t.tier);
                       return (
-                        <button key={t.tier} type="button" role="radio" className="alt" aria-checked={t.tier === chosen} disabled={!ok} onClick={() => setChosen(t.tier)}>
+                        <button key={t.tier} type="button" role="radio" className="alt" aria-checked={t.tier === tier?.tier} disabled={!ok} onClick={() => t.tier !== tier?.tier && onChoose({ tier: t.tier, memoryLimitGb: null })}>
                           <span>
                             <div className="alt__name">
                               {tierName(t, recommended)}
@@ -649,7 +691,7 @@ function Tier({ hardware, onBack }: { hardware: HardwareProfile; onBack: () => v
             if (!tier) return;
             setBusy(true);
             try {
-              await install(tier.tier, memory);
+              await onInstall({ tier: tier.tier, memoryLimitGb: memory });
             } catch (e) {
               toast({ title: "Couldn't start setup", text: e instanceof Error ? e.message : String(e), tone: "bad" });
               setBusy(false);
@@ -688,21 +730,28 @@ function validSeconds(seconds: number | undefined): seconds is number {
   return seconds !== undefined && Number.isFinite(seconds) && seconds > 0;
 }
 
-function fits(t: TierSummary, hw: HardwareProfile): boolean {
+/** Requirements match within 5%, as the engine matches them (MATCH_TOLERANCE in its recipes.ts). */
+const MATCH_TOLERANCE = 0.95;
+
+/**
+ * Whether a setup runs on this machine. A recipe's upper bound only steers the engine's recommendation to the strongest
+ * setup: a lighter setup still runs on a bigger machine, and is the way out when the recommended one is too big for the
+ * disk.
+ */
+function runsHere(t: TierSummary, hw: HardwareProfile): boolean {
   const gpu = hw.gpus[0];
   if (!gpu) return false;
   if (gpu.vendor !== t.match.vendor) return false;
   if (t.match.unifiedMemory !== undefined && gpu.unifiedMemory !== t.match.unifiedMemory) return false;
-  if (gpu.vramGb < t.match.minVramGb) return false;
-  if (t.match.maxVramGb !== undefined && gpu.vramGb > t.match.maxVramGb) return false;
-  return hw.ramGb >= t.match.minRamGb;
+  if (gpu.vramGb < t.match.minVramGb * MATCH_TOLERANCE) return false;
+  return hw.ramGb >= t.match.minRamGb * MATCH_TOLERANCE;
 }
 
 function whyNot(t: TierSummary, hw: HardwareProfile): string {
   const gpu = hw.gpus[0];
   if (!gpu || gpu.vendor !== t.match.vendor) return "For a different kind of graphics chip";
-  if (gpu.vramGb < t.match.minVramGb) return `Needs ${gb(t.match.minVramGb)} of graphics memory`;
-  if (hw.ramGb < t.match.minRamGb) return `Needs ${gb(t.match.minRamGb)} of memory`;
+  if (gpu.vramGb < t.match.minVramGb * MATCH_TOLERANCE) return `Needs ${gb(t.match.minVramGb)} of graphics memory`;
+  if (hw.ramGb < t.match.minRamGb * MATCH_TOLERANCE) return `Needs ${gb(t.match.minRamGb)} of memory`;
   return "For a different kind of machine";
 }
 
@@ -758,15 +807,21 @@ function StepBar({ frac, bad, night }: { frac: number | null; bad?: boolean; nig
   );
 }
 
-function Install() {
+/**
+ * The download, and where a failed one stops. The engine saves the tier only once it is installed, so during a first
+ * install (and after one fails) the tier comes from the runtime's status.
+ */
+function Install({ choice, onInstall, onBack }: { choice: Choice | null; onInstall: (c: Choice) => Promise<void>; onBack: () => void }) {
   const demo = useDemoMode();
-  const { status, settings, install: progress } = useEngineState();
-  const { install } = useEngine();
+  const { status, settings, tiers, install: progress } = useEngineState();
   const startRef = useRef<{ t: number; gb: number } | null>(null);
   const [retrying, setRetrying] = useState(false);
   const error = status?.phase === "error" ? status.error : null;
   const remote = !!settings?.remote;
   const remoteName = settings?.remote?.name ?? settings?.remote?.url ?? "";
+  const tier = status?.tier ?? settings?.tier ?? null;
+  // Again with the limit the user chose; after a reload, the saved one or the tier's default, as the setup card shows.
+  const memoryLimitGb = (choice?.tier === tier ? choice.memoryLimitGb : null) ?? settings?.memoryLimitGb ?? tiers?.find((t) => t.tier === tier)?.defaultMemoryLimitGb ?? null;
 
   useEffect(() => {
     if (!progress) return;
@@ -778,11 +833,22 @@ function Install() {
   const frac = total > 0 ? Math.min(1, done / total) : 0;
   const [plan, setPlan] = useState<InstallPlan | null>(null);
   const { client } = useEngine();
+  // The plan says which files are on disk. Asked again as each file starts, it counts them however late this window
+  // opened in the install.
+  const fileId = progress?.modelId ?? null;
   useEffect(() => {
-    if (settings?.tier && !plan) void client.installPlan(settings.tier).then(setPlan).catch(() => undefined);
-  }, [settings?.tier, plan, client]);
+    if (!tier) return;
+    let active = true;
+    void client
+      .installPlan(tier)
+      .then((p) => active && setPlan(p))
+      .catch(() => undefined);
+    return () => {
+      active = false;
+    };
+  }, [tier, fileId, client]);
   const fileCount = plan ? plan.downloads.length + plan.alreadyPresent.length : 0;
-  const filesDone = plan && progress ? plan.alreadyPresent.length + plan.downloads.filter((d) => d.id !== progress.modelId && cumulative(plan, d.id) <= progress.doneGb + 0.05).length : 0;
+  const filesDone = plan?.alreadyPresent.length ?? 0;
   let eta = "";
   if (progress && startRef.current && done > startRef.current.gb + 0.2) {
     const elapsed = (progress.updatedAt - startRef.current.t) / 1000;
@@ -791,6 +857,11 @@ function Install() {
     eta = `${roughDuration(left)} left`;
   }
   const known = demo || total > 0;
+  // On a line of their own under what is happening, so a long file name never splits them.
+  const numbers = demo ? "" : [known ? `${gb(done)} of ${gb(total)}` : "", eta, fileCount > 0 ? `${Math.min(filesDone, fileCount)} of ${fileCount} files` : ""].filter(Boolean).join(", ");
+  // The file coming down, by the plain name its recipe gives it and its size. Its file name is only the tooltip.
+  const file = fileId ? plan?.downloads.find((d) => d.id === fileId) : undefined;
+  const fileLabel = file?.name ? [file.name, fileSize(file.sizeGb)].filter(Boolean).join(", ") : null;
 
   return (
     <div className="ob__step">
@@ -808,31 +879,41 @@ function Install() {
       ) : (
         <Rise i={2} className="ob__progress">
           <StepBar frac={known ? frac : null} />
-          <div className="ob__status">
-            <span className="pulse" />
-            <span>{demo ? "Simulating setup" : (progress?.message ?? "Connecting")}</span>
-            {known && !demo && <span className="t-muted">, {gb(done)} of {gb(total)}</span>}
-            {!demo && eta && <span className="t-muted">, {eta}</span>}
-            {!demo && fileCount > 0 && (
-              <span className="t-muted">
-                , {Math.min(filesDone, fileCount)} of {fileCount} files
-              </span>
-            )}
+          <div className="ob__status ob__status--stack">
+            <span className="ob__status-line">
+              <span className="pulse" />
+              {fileLabel ? (
+                <span title={file!.filename}>{`${demo ? "Simulating" : "Downloading"} ${fileLabel}`}</span>
+              ) : (
+                <span>{demo ? "Simulating setup" : (progress?.message ?? "Connecting")}</span>
+              )}
+            </span>
+            {numbers && <span className="t-muted">{numbers}</span>}
           </div>
         </Rise>
       )}
-      <Actions step="install">
+      <Actions
+        step="install"
+        quiet={
+          error ? (
+            <button type="button" className="ob__quiet" onClick={onBack}>
+              Back
+            </button>
+          ) : null
+        }
+      >
         {error && (
           <Button
             variant="primary"
             size="l"
             className="ob__cta"
             busy={retrying}
+            disabled={!tier}
             onClick={async () => {
-              if (!settings?.tier) return;
+              if (!tier) return;
               setRetrying(true);
               try {
-                await install(settings.tier, settings.memoryLimitGb);
+                await onInstall({ tier, memoryLimitGb });
               } catch (e) {
                 toast({ title: "Still can't download", text: e instanceof Error ? e.message : String(e), tone: "bad" });
               } finally {
@@ -848,14 +929,10 @@ function Install() {
   );
 }
 
-/** Gigabytes downloaded once this file is complete, assuming the plan's order. */
-function cumulative(plan: InstallPlan, modelId: string): number {
-  let sum = 0;
-  for (const d of plan.downloads) {
-    sum += d.sizeGb;
-    if (d.id === modelId) return sum;
-  }
-  return sum;
+/** "6.4 GB", "17 GB", "490 MB"; nothing for a settings file of a few kilobytes. */
+function fileSize(sizeGb: number): string {
+  if (sizeGb < 0.001) return "";
+  return gb(sizeGb, sizeGb >= 1 && sizeGb < 10 ? 1 : 0);
 }
 
 function Starting() {
@@ -896,8 +973,9 @@ function FirstShot() {
   const pid = onboarding?.sampleProjectId ?? null;
   const project = useProject(pid ?? undefined);
   const jobs = useJobs();
+  const tier = useInstalledTier();
   // Where the final only upscales the draft, the copy says that, not "sharpens".
-  const upscale = upscaleOnly(useInstalledTier());
+  const upscale = upscaleOnly(tier);
 
   const ask = useCallback(
     async (again = false) => {
@@ -943,6 +1021,14 @@ function FirstShot() {
 
   const stage = best?.rung === "draft" ? "done" : best?.rung === "still" ? "draft" : "still";
   const remoteName = status?.mode === "remote" && settings?.remote ? (settings.remote.name ?? settings.remote.url) : null;
+  // The three steps, each done once what it makes is there. The first one not done is the one under way.
+  const doneSteps = SAMPLE_STEPS.filter((s) => (s === "text" ? !!project?.shots.length : s === "still" ? !!shot?.stillAssetId : best?.rung === "draft" || best?.rung === "final"));
+  const current = SAMPLE_STEPS.find((s) => !doneSteps.includes(s));
+  const elapsedSec = active?.status === "running" && active.startedAt && current === sampleStepOf(active.step) ? Math.max(0, (now - Date.parse(active.startedAt)) / 1000) : 0;
+  // From the recipe's times: about how long it all takes, then what is left once a step is done.
+  const timeLine = sampleTimeLine({ estimates: sampleEstimates(tier, project ? draftStepFor(project) : "video_draft"), done: doneSteps, elapsedSec, where: remoteName ?? "this machine" });
+  // Until the still is there, the frame shows the steps, not an empty box. A failure says why under it instead.
+  const showSteps = !best && !deleted && !(answer === "failed" && !project) && !(failed && !active);
 
   return (
     <div className="ob__step ob__step--wide">
@@ -950,7 +1036,8 @@ function FirstShot() {
         <h1 className="ob__title">{stage === "done" ? (demo ? "Your demo shot" : remoteName ? `${remoteName} made this` : "Your machine made this") : "Your first shot"}</h1>
         <p className="ob__lead">{stage === "done" ? `A still, then a motion draft, in ${elapsed ? shortDuration(elapsed) : "under a minute"}. ${upscale ? `A final upscales the take you like${upscale.to}` : "A final sharpens the take you like"}, now or overnight.` : `A lighthouse in a storm, camera pushing in. Made ${remoteName ? `on ${remoteName}` : "on your machine"} while you watch.`}</p>
       </Rise>
-      <Rise i={1} className={cx("frame ob__shot", frameClass("16:9"), !best && "frame--empty", active && best?.rung !== "draft" && "frame--working", stage === "done" && "ob__shot--done")}>
+      <Rise i={1} className={cx("frame ob__shot", frameClass("16:9"), !best && "frame--empty", showSteps && "shimmer", active && best?.rung !== "draft" && "frame--working", stage === "done" && "ob__shot--done")}>
+        {showSteps && <SampleSteps current={current} done={doneSteps} />}
         {best && <Media src={client.assetUrl(project!.id, best.asset.id)} kind={best.rung === "still" ? "image" : "video"} playing durationSec={shot?.durationSec} />}
         {best && best.rung === "draft" && (
           <div className="frame__corner">
@@ -963,7 +1050,7 @@ function FirstShot() {
           </div>
         )}
       </Rise>
-      <Rise i={2} className="ob__status">
+      <Rise i={2} className={cx("ob__status", timeLine && !deleted && !failed && "ob__status--stack")}>
         {deleted ? (
           <div className="ob__notice">
             <Notice
@@ -1002,13 +1089,16 @@ function FirstShot() {
           </Notice></div>
         ) : active ? (
           <>
-            <span className="pulse" />
-            <span>
-              {/* The text step's stage is "Writing" too, so only its time follows. */}
-              {active.step === "text"
-                ? ["Writing the shot", jobElapsed(active, now)].filter(Boolean).join(", ")
-                : `${active.step === "still" ? "Making the still" : "Making the motion draft"}, ${jobStatusLine(active, now).toLowerCase()}`}
+            <span className="ob__status-line">
+              <span className="pulse" />
+              <span>
+                {/* The text step's stage is "Writing" too, so only its time follows. */}
+                {active.step === "text"
+                  ? ["Writing the shot", jobElapsed(active, now)].filter(Boolean).join(", ")
+                  : `${active.step === "still" ? "Making the still" : "Making the motion draft"}, ${jobStatusLine(active, now).toLowerCase()}`}
+              </span>
             </span>
+            {timeLine && <span className="t-muted">{timeLine}</span>}
           </>
         ) : stage === "done" ? (
           // A dot on this line means something is running; a finished draft and a wait before it have none.
@@ -1016,7 +1106,10 @@ function FirstShot() {
             <b>Draft ready.</b> {upscale ? `The final upscales it${upscale.to}.` : "Soft on purpose. The final sharpens it."}
           </span>
         ) : (
-          <span>Getting ready</span>
+          <>
+            <span>Getting ready</span>
+            {timeLine && <span className="t-muted">{timeLine}</span>}
+          </>
         )}
       </Rise>
       <Actions
@@ -1034,6 +1127,39 @@ function FirstShot() {
         </Button>
       </Actions>
     </div>
+  );
+}
+
+/** Which of the sample's steps a job is. */
+function sampleStepOf(step: Job["step"]): SampleStep {
+  return step === "text" ? "text" : step === "still" ? "still" : "draft";
+}
+
+const sampleStepNames: Record<SampleStep, { label: string; icon: ReactNode }> = {
+  text: { label: "Shot list", icon: <PenLine /> },
+  still: { label: "Still", icon: <Image /> },
+  draft: { label: "Draft", icon: <Film /> },
+};
+
+/** The sample's steps in the empty frame: what is done, what is under way, what comes next. */
+function SampleSteps({ current, done }: { current: SampleStep | undefined; done: SampleStep[] }) {
+  return (
+    <ol className="ob__steps">
+      {SAMPLE_STEPS.map((s) => {
+        const state = done.includes(s) ? "done" : s === current ? "now" : "next";
+        return (
+          <li key={s} className={cx("ob__stp", `ob__stp--${state}`)} aria-current={state === "now" ? "step" : undefined}>
+            <span className="ob__stp-mark" aria-hidden>
+              {state === "done" ? <Check /> : sampleStepNames[s].icon}
+            </span>
+            <span className="ob__stp-label">
+              {sampleStepNames[s].label}
+              {state === "done" && <span className="visually-hidden">, done</span>}
+            </span>
+          </li>
+        );
+      })}
+    </ol>
   );
 }
 

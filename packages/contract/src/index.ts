@@ -39,6 +39,11 @@ export const TierIdSchema = z.string().regex(/^[a-z0-9-]+$/);
 
 export const ModelFileSchema = z.object({
   id: z.string(),
+  /**
+   * What the file is, in plain words, for the download line: "Kandinsky 6 Lite, video model". Shipped recipes name
+   * every model; the filename stays for the tooltip.
+   */
+  name: z.string().optional(),
   /** Destination: ComfyUI models subfolder and filename, e.g. "diffusion_models", "ltx-2.5-....safetensors". */
   folder: z.string(),
   filename: z.string(),

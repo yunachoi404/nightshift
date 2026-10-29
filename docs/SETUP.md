@@ -13,9 +13,9 @@ Four ways to run it. Each section says what was tested and on what.
 - Node 22 or newer. pnpm 10.33.0; `npx pnpm@10.33.0` works if your pnpm differs.
 - [uv](https://docs.astral.sh/uv/). It installs Python 3.12 for ComfyUI and comfy-api-proxy.
 - ffmpeg on the machine that exports (the Mac app bundles its own).
-- Optional: [whisper.cpp](https://github.com/ggml-org/whisper.cpp) for captions timed to the spoken words. On a Mac,
-  `brew install whisper-cpp`. On Linux, build it from source and put `whisper-cli` on the PATH. Nightshift downloads its models, not the program. Without it, caption timing is estimated from
-  the text.
+- Optional: [whisper.cpp](https://github.com/ggml-org/whisper.cpp) (`brew install whisper-cpp`; on Linux, build it as
+  in [a local install](#4-a-local-install-on-one-machine)) for captions timed to the spoken words. Nightshift
+  downloads its models, not the program. Without it, caption timing is estimated from the text.
 - For the Mac app: an Apple Silicon Mac, Homebrew `ffmpeg` and `uv` on the build Mac, and the Xcode command line
   tools.
 - For real renders: a Linux computer with an NVIDIA GPU, or a supported Mac (see the tier table in the README).
@@ -189,11 +189,32 @@ Open the Mac app with no switches, or on Linux run the engine and open its web U
 node packages/engine/dist/cli.js --data-dir ~/.nightshift --web-dir apps/web/dist
 ```
 
+On Linux the engine needs a driver for CUDA 13 (`nvidia-smi` lists the card), and uv and ffmpeg on its `PATH`.
+whisper.cpp is optional. None of this needs `sudo`:
+
+```sh
+# uv, into ~/.local/bin
+curl -LsSf https://astral.sh/uv/install.sh | sh
+# ffmpeg: from your package manager (sudo apt install ffmpeg), or a static build (x86-64; arm64 has its own file)
+mkdir -p ~/.local/opt/ffmpeg
+curl -fsSL https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-amd64-static.tar.xz |
+  tar -xJ --strip-components=1 -C ~/.local/opt/ffmpeg
+# whisper.cpp, for captions timed to the voice. Needs cmake and a C++ compiler.
+mkdir -p ~/.local/src/whisper.cpp
+curl -fsSL https://github.com/ggml-org/whisper.cpp/archive/refs/tags/v1.9.5.tar.gz |
+  tar -xz --strip-components=1 -C ~/.local/src/whisper.cpp
+cmake -S ~/.local/src/whisper.cpp -B ~/.local/src/whisper.cpp/build -DBUILD_SHARED_LIBS=OFF
+cmake --build ~/.local/src/whisper.cpp/build -j --config Release
+export PATH="$HOME/.local/opt/ffmpeg:$HOME/.local/src/whisper.cpp/build/bin:$HOME/.local/bin:$PATH"
+```
+
+Put the `export` line in `~/.profile` as well, so the engine finds them after a restart.
+
 Onboarding reads the hardware, recommends a recipe, shows the download size against free disk, and offers a memory
-limit. **Download and set up** installs Python 3.12 (through uv), ComfyUI v0.41.3, the recipe's node packs,
-comfy-api-proxy, the models and the editor's tools into the data folder (`~/Library/Application Support/Nightshift`
-for the app, the `--data-dir` folder for the engine). Set `HF_TOKEN` in the environment first for recipes with
-LTX 2.5. Then the first-run sample renders.
+limit. The **Download** button installs Python 3.12 (through uv), ComfyUI v0.41.3, the recipe's node packs,
+comfy-api-proxy and the models into the data folder (`~/Library/Application Support/Nightshift` for the app, the
+`--data-dir` folder for the engine), and the editor's tools into `~/.cache/nightshift`. Set `HF_TOKEN` in the
+environment first for recipes with LTX 2.5. Then the first-run sample renders.
 
 Supported: Apple Silicon Macs with 16 GB or more, and Linux with an NVIDIA GPU (8 GB or more, see the tier table).
 

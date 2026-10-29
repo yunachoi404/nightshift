@@ -27,6 +27,9 @@ const previews: Record<TemplateId, string> = {
   vfx_effect: "/effects/freeze.webp",
 };
 
+/** The template a new project starts on. */
+const FIRST_TEMPLATE: TemplateId = "cinematic_shot";
+
 export function NewProject() {
   const nav = useNavigate();
   const { createProject, storyboard, updateProject, client } = useEngine();
@@ -38,9 +41,9 @@ export function NewProject() {
     if (t.id === "camera_move") return tier?.steps?.includes("video_camera_move") && tier.steps.includes("camera_layout");
     return true;
   });
-  const [template, setTemplate] = useState<TemplateId>("cinematic_shot");
-  const [aspect, setAspect] = useState<Aspect>("16:9");
-  const [brief, setBrief] = useState<Record<string, unknown>>({});
+  const [template, setTemplate] = useState<TemplateId>(FIRST_TEMPLATE);
+  const [aspect, setAspect] = useState<Aspect>(() => templates.find((t) => t.id === FIRST_TEMPLATE)!.defaultAspect);
+  const [brief, setBrief] = useState<Record<string, unknown>>(() => defaultBrief(FIRST_TEMPLATE));
   const [file, setFile] = useState<File | null>(null);
   const [references, setReferences] = useState<DraftReference[]>([]);
   const [name, setName] = useState("");
@@ -48,13 +51,16 @@ export function NewProject() {
   const [busy, setBusy] = useState(false);
   const meta = templates.find((t) => t.id === template)!;
 
-  // Switching template resets the brief and the aspect to the template default.
-  useEffect(() => {
-    setBrief(defaultBrief(template));
-    setAspect(templates.find((t) => t.id === template)!.defaultAspect);
+  // Switching template resets the brief and the aspect to the template default. Here, not in an effect: an effect runs
+  // after the first paint and could wipe a choice made right then.
+  const pickTemplate = (id: TemplateId) => {
+    if (id === template) return;
+    setTemplate(id);
+    setBrief(defaultBrief(id));
+    setAspect(templates.find((t) => t.id === id)!.defaultAspect);
     setFile(null);
     setNameTouched(false);
-  }, [template]);
+  };
 
   const suggested = useMemo(() => suggestName(template, brief), [template, brief]);
   const finalName = nameTouched && name.trim() ? name.trim() : suggested;
@@ -94,7 +100,7 @@ export function NewProject() {
       <div className="np__templates" role="radiogroup" aria-label="Template" onKeyDown={radioGroupKeyDown}>
         <div className="side__head">Template</div>
         {availableTemplates.map((t) => (
-          <button key={t.id} type="button" role="radio" aria-checked={t.id === template} tabIndex={t.id === template ? 0 : -1} className="tpl" onClick={() => setTemplate(t.id)}>
+          <button key={t.id} type="button" role="radio" aria-checked={t.id === template} tabIndex={t.id === template ? 0 : -1} className="tpl" onClick={() => pickTemplate(t.id)}>
             <div className="tpl__thumb">
               <div className={cx("frame", frameClass(t.defaultAspect))}>
                 <Media src={previews[t.id]} kind="image" />
@@ -141,9 +147,12 @@ export function NewProject() {
                 <Field label="What's in the shot" hint="One or two sentences. Subject, place, weather, time of day.">
                   {(id) => <Textarea id={id} autoFocus value={str(brief.idea)} onChange={(e) => set("idea", e.target.value)} placeholder="A lone lighthouse on a cliff as a storm rolls in, waves hitting the rocks" rows={3} />}
                 </Field>
-                <Field label="Start from a photo" hint="Optional. Keeps its subject recognizable across shots.">
-                  {() => <DropZone file={file} onFile={setFile} accept="image/*" icon={<ImagePlus />} label="Drop a photo here, or click to choose" />}
-                </Field>
+                {/* The photo becomes a reference. A setup that cannot render from photos would drop it without a word. */}
+                {tier?.referenceImageLimit !== 0 && (
+                  <Field label="Start from a photo" hint="Optional. Keeps its subject recognizable across shots.">
+                    {() => <DropZone file={file} onFile={setFile} accept="image/*" icon={<ImagePlus />} label="Drop a photo here, or click to choose" />}
+                  </Field>
+                )}
                 <OptionGrid label="Camera move" value={str(brief.cameraMove)} onChange={(v) => set("cameraMove", v)} options={cameraMoves.map((c) => ({ id: c.id, name: c.label, hint: c.hint }))} />
                 <OptionGrid label="Look" value={str(brief.look)} onChange={(v) => set("look", v)} options={looks.map((l) => ({ id: l.id, name: l.label, hint: l.phrase[0]!.toUpperCase() + l.phrase.slice(1) }))} />
                 <Field label="Length">

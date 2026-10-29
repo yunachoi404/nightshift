@@ -350,6 +350,60 @@ def node_packs(steps):
     ]
 
 
+# What each file is, in plain words, for the download line during setup. The first entry whose id prefix matches
+# names the file; every shipped model needs one.
+BREEZE = "breezetts2-drbaph_Breeze-TTS-2-comfyui-"
+MODEL_NAMES = [
+    ("diffusion_models-krea2_turbo", "Krea 2 Turbo, image model"),
+    ("diffusion_models-moss_image", "MOSS-Image, image model"),
+    ("diffusion_models-flux-2-klein-4b", "FLUX.2 Klein 4B, photo reference model"),
+    ("diffusion_models-ltx-2.5-22b", "LTX-2.5, video model"),
+    ("diffusion_models-Kandinsky-6.0-Lite", "Kandinsky 6 Lite, video model"),
+    ("diffusion_models-minimax_h3", "MiniMax H3, overnight video model"),
+    ("diffusion_models-acestep_v1.5_turbo", "ACE-Step 1.5 Turbo, music model"),
+    ("diffusion_models-minimax_music3", "MiniMax Music 3, music model"),
+    ("text_encoders-qwen3vl_4b", "Qwen3-VL 4B, writing model"),
+    ("text_encoders-qwen3vl_32b_minimax_h3", "Qwen3-VL 32B, overnight prompt reader"),
+    ("text_encoders-qwen3.5_9b", "Qwen 3.5 9B, image prompt reader"),
+    ("text_encoders-qwen_3_4b", "Qwen3 4B, photo reference prompt reader"),
+    ("text_encoders-gemma4-12b", "Gemma 4 12B, video prompt reader"),
+    ("text_encoders-qwen_2.5_vl_7b", "Qwen2.5-VL 7B, video prompt reader"),
+    ("text_encoders-clip_l", "CLIP-L, video prompt reader"),
+    ("text_encoders-qwen_0.6b_ace15", "Qwen3 0.6B, music prompt reader"),
+    ("text_encoders-qwen_1.7b_ace15", "Qwen3 1.7B, music prompt reader"),
+    ("text_encoders-minimax_music3", "MiniMax Music 3, music prompt reader"),
+    ("vae-qwen_image_vae", "Qwen-Image, image decoder"),
+    ("vae-flux2-vae", "FLUX.2, image decoder"),
+    ("vae-ltx-2.5-video-vae", "LTX-2.5, video decoder"),
+    ("vae-ltx-2.5-audio-vae", "LTX-2.5, sound decoder"),
+    ("vae-hunyuan_video_vae", "HunyuanVideo, video decoder"),
+    ("vae-minimax_h3_video_vae", "MiniMax H3, video decoder"),
+    ("vae-minimax_h3_audio_vae", "MiniMax H3, sound decoder"),
+    ("vae-ace_1.5_vae", "ACE-Step 1.5, music decoder"),
+    ("vae-minimax_music3_dav", "MiniMax Music 3, music decoder"),
+    ("audio_vae-v1-44", "MMAudio, sound decoder"),
+    ("audio_vae-bigvgan_vocoder-bigvgan_generator", "BigVGAN, waveform decoder"),
+    ("audio_vae-bigvgan_vocoder-config", "BigVGAN, settings"),
+    ("latent_upscale_models-ltx-2.5", "LTX-2.5, video upscaler"),
+    ("loras-minimax_h3_ref2v_turbo", "MiniMax H3, speed add-on"),
+    ("loras-ltx25-layout", "LTX-2.5, camera move add-on"),
+    ("geometry_estimation-moge2", "MoGe 2, depth model"),
+    (BREEZE + "Breeze-TTS-2", "Breeze TTS 2, voice model"),
+    (BREEZE + "audio_tokenizer-model", "Breeze TTS 2, sound codec"),
+    (BREEZE + "audio_tokenizer-", "Breeze TTS 2, sound codec settings"),
+    (BREEZE + "tokenizer.json", "Breeze TTS 2, vocabulary"),
+    (BREEZE, "Breeze TTS 2, settings"),
+]
+
+
+def named(model):
+    """The model with its plain name, right after its id."""
+    name = next((n for prefix, n in MODEL_NAMES if model["id"].startswith(prefix)), None)
+    if name is None:
+        raise ValueError(f"No plain name for model {model['id']}. Add one to MODEL_NAMES.")
+    return {"id": model["id"], "name": name, **{k: v for k, v in model.items() if k not in ("id", "name")}}
+
+
 def estimate(tier, workflow, peak):
     seconds, _ = estimate_seconds(tier, workflow)
     return {"peakGb": peak, "seconds": seconds, "measured": False}
@@ -661,6 +715,7 @@ def main():
             recipe["estimates"].update(research("2026-10-21_camera_measurements.json")["estimates"])
             recipe["steps"]["video_what_if"] = ref("ltx25_what_if")
             recipe["estimates"].update(research("2026-10-28_what_if_measurements.json")["estimates"])
+        recipe["models"] = [named(m) for m in recipe["models"]]
         built_recipes.append(recipe)
         (ROOT / "recipes" / f"{tier}.json").write_text(
             json.dumps(recipe, indent=2) + "\n"

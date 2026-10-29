@@ -52,7 +52,12 @@ export async function renderPicture(options: RenderPictureOptions): Promise<void
     format: "mp4",
     entryFile: "index.html",
     logger,
-    producerConfig: resolveConfig(options.chrome ? { chromePath: options.chrome } : {}),
+    // No frame cache. HyperFrames' default is one folder in the system temp dir, shared by every render on the
+    // machine, and after each render it sizes the whole folder with synchronous file stats on the caller's thread.
+    // It grows by every render of the last hour, so that sweep froze the engine for seconds, long enough for its
+    // HTTP server to drop requests waiting on kept-alive connections. Without it, frames go to the render's own
+    // scratch folder and are removed with it.
+    producerConfig: resolveConfig({ ...(options.chrome ? { chromePath: options.chrome } : {}), extractCacheDir: undefined }),
     ...(options.workers ? { workers: options.workers } : {}),
   });
   const restoreConsole = quietConsole((line) => sink("debug", line));

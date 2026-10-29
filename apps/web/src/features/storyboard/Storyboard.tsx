@@ -12,7 +12,7 @@ import { Button, Dialog, Menu, MenuItem, Notice, Select, Tag, cx, toast } from "
 import { Media } from "@/media/Media";
 import { activeJob, bestAssetFor, failureText, frameClass, isActive, jobElapsed, jobStatusLine, lastFailed, totalDuration } from "@/features/project/helpers";
 import { useNow } from "@/lib/useNow";
-import { cameraMoves, sentenceCase } from "@nightshift/contract";
+import { cameraMoves, fallbackShots, sentenceCase } from "@nightshift/contract";
 import { id as newId } from "@/lib/ids";
 import { plural, roughDuration, shortDuration } from "@/lib/format";
 import { CameraShot } from "./CameraShot";
@@ -183,7 +183,8 @@ export function Storyboard() {
                     }}
                   />
                 ))}
-                {writing && !project.shots.length && [0, 1, 2].map((k) => <div key={k} className={cx("frame shimmer", frameClass(project.aspect))} />)}
+                {/* One placeholder per shot the brief asks for: a one-shot project waits on one frame, not three. */}
+                {writing && !project.shots.length && fallbackShots(project.template, project.brief).map((_, k) => <div key={k} className={cx("frame shimmer", frameClass(project.aspect))} data-testid="shot-placeholder" />)}
                 {project.shots.length > 0 && (
                   <button type="button" className={cx("frame shot__add", frameClass(project.aspect))} onClick={addShot}>
                     <Plus /> Add a shot
@@ -323,7 +324,8 @@ function ShotCard({
             type="number"
             min={1}
             max={30}
-            step={0.1}
+            // Hundredths: a recipe's longest shot (2.04 s at 49 frames, 24 fps) is not a tenth, and would read as invalid.
+            step={0.01}
             value={shot.durationSec}
             style={{ width: `${Math.max(1.2, String(shot.durationSec).length + 0.2)}ch` }}
             disabled={shot.locked}

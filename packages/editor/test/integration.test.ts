@@ -7,7 +7,7 @@ import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import type { Project, Timeline } from "@nightshift/contract";
-import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { soundSpans } from "../src/audio/activity.js";
 import { alignCaptions } from "../src/captions/index.js";
 import { decodePcm, probeMedia, writeWav } from "../src/media/ffmpeg.js";
@@ -88,7 +88,11 @@ describe.skipIf(!canRender)("export", () => {
     };
     const stages = new Set<string>();
     const out = join(dir, "out.mp4");
-    const result = await exportVideo(project, timeline, { projectDir: dir, outPath: out, aspect: "9:16", shortSide: 270, quality: "draft", onProgress: (p) => stages.add(p.stage) });
+    // HyperFrames' frame cache stays off even when its env var asks for one (see renderPicture).
+    const frameCache = join(dir, "frame-cache");
+    vi.stubEnv("HYPERFRAMES_EXTRACT_CACHE_DIR", frameCache);
+    const result = await exportVideo(project, timeline, { projectDir: dir, outPath: out, aspect: "9:16", shortSide: 270, quality: "draft", onProgress: (p) => stages.add(p.stage) }).finally(() => vi.unstubAllEnvs());
+    expect(existsSync(frameCache)).toBe(false);
     expect(result.warnings).toEqual([]);
     expect([result.width, result.height]).toEqual([270, 480]);
     expect(result.durationSec).toBeCloseTo(4, 1);

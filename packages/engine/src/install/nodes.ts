@@ -206,9 +206,10 @@ async function installRequirements(src: PackSource, o: NodeInstallOptions): Prom
   o.onStep(`Installing the Python packages ${src.pack.name} needs`);
   const freeze = await execCapture(o.uv, ["pip", "freeze", "--python", o.python], { timeoutMs: 120_000 });
   if (freeze.code !== 0) o.log(`uv pip freeze failed (${freeze.code}); installing ${src.pack.name}'s packages without pinning PyTorch`);
-  const constraints = join(o.workDir, "constraints.txt");
-  await writeFile(constraints, torchConstraints(freeze.stdout) + PYTHON_HOLDS.map((h) => `${h}\n`).join(""));
-  await runStreaming(o.uv, ["pip", "install", "--python", o.python, "-r", file, "-c", constraints], { onLine: (l) => o.log(`uv: ${l}`), signal: o.signal });
+  await writeFile(join(o.workDir, "constraints.txt"), torchConstraints(freeze.stdout) + PYTHON_HOLDS.map((h) => `${h}\n`).join(""));
+  // uv splits a constraints path on spaces, even as one argument, and the Mac's data folder is in "Application
+  // Support": name the file from the folder it is in.
+  await runStreaming(o.uv, ["pip", "install", "--python", o.python, "-r", file, "-c", "constraints.txt"], { cwd: o.workDir, onLine: (l) => o.log(`uv: ${l}`), signal: o.signal });
   o.requirements[src.pack.name] = stamp;
   await o.save();
 }

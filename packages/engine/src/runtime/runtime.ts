@@ -36,8 +36,11 @@ export interface Runtime {
   noteLost(): void;
   /** GPU memory ComfyUI holds right now, in GB, if the runtime can tell. */
   sampleMemoryGb(): Promise<number | null>;
-  /** Mark the runtime as installing, not installed, or starting while its install is checked (the installer drives this). */
-  setPhase(phase: "not_installed" | "installing" | "starting", tier: string | null, error?: string): void;
+  /**
+   * Mark the runtime as installing, not installed, starting while its install is checked, or failed to install (the
+   * installer drives this).
+   */
+  setPhase(phase: "not_installed" | "installing" | "starting" | "error", tier: string | null, error?: string): void;
   /**
    * Whether a GPU job runs now. Meanwhile local mode on an NVIDIA card looks every 15 s for other programs holding the
    * GPU's memory (status().otherGpuUse; see gpuShare.ts). The others do nothing.
@@ -63,7 +66,7 @@ export abstract class BaseRuntime {
     return { ...structuredClone(this.state), mode: this.mode };
   }
 
-  setPhase(phase: "not_installed" | "installing" | "starting", tier: string | null, error?: string): void {
+  setPhase(phase: "not_installed" | "installing" | "starting" | "error", tier: string | null, error?: string): void {
     this.set({ phase, tier, comfyui: { running: false, url: null, version: null }, memoryUsedGb: null, ...(error ? { error } : {}) }, true);
   }
 

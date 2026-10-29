@@ -11,6 +11,7 @@
   "models": [
     {
       "id": "diffusion_models-moss_image_base_int8_convrot",
+      "name": "MOSS-Image, image model",
       "folder": "diffusion_models",
       "filename": "moss_image_base_int8_convrot.safetensors",
       "url": "https://huggingface.co/Comfy-Org/MOSS-Image/resolve/3284a1dbb351e3396d70f39f2a71cbf6ed2ef1bb/diffusion_models/moss_image_base_int8_convrot.safetensors",
@@ -23,6 +24,7 @@
     },
     {
       "id": "text_encoders-qwen3.5_9b_w4a8_gptq",
+      "name": "Qwen 3.5 9B, image prompt reader",
       "folder": "text_encoders",
       "filename": "qwen3.5_9b_w4a8_gptq.safetensors",
       "url": "https://huggingface.co/Comfy-Org/MOSS-Image/resolve/3284a1dbb351e3396d70f39f2a71cbf6ed2ef1bb/text_encoders/qwen3.5_9b_w4a8_gptq.safetensors",
@@ -35,6 +37,7 @@
     },
     {
       "id": "vae-flux2-vae",
+      "name": "FLUX.2, image decoder",
       "folder": "vae",
       "filename": "flux2-vae.safetensors",
       "url": "https://huggingface.co/Comfy-Org/MOSS-Image/resolve/3284a1dbb351e3396d70f39f2a71cbf6ed2ef1bb/vae/flux2-vae.safetensors",
@@ -47,6 +50,7 @@
     },
     {
       "id": "diffusion_models-Kandinsky-6.0-Lite-distill-5s-Diffusers-transformer-diffusion_pytorch_model",
+      "name": "Kandinsky 6 Lite, video model",
       "folder": "diffusion_models/Kandinsky-6.0-Lite-distill-5s-Diffusers/transformer",
       "filename": "diffusion_pytorch_model.safetensors",
       "url": "https://huggingface.co/kandinskylab/Kandinsky-6.0-Lite-distill-5s-Diffusers/resolve/4c487e8b4aeeb9059e5a77905aa2ddb59ec28f81/transformer/diffusion_pytorch_model.safetensors",
@@ -59,6 +63,7 @@
     },
     {
       "id": "text_encoders-qwen_2.5_vl_7b_fp8_scaled",
+      "name": "Qwen2.5-VL 7B, video prompt reader",
       "folder": "text_encoders",
       "filename": "qwen_2.5_vl_7b_fp8_scaled.safetensors",
       "url": "https://huggingface.co/Comfy-Org/Qwen-Image_ComfyUI/resolve/1f12b17be14c89b026c51a91d67c32f84bb047bc/split_files/text_encoders/qwen_2.5_vl_7b_fp8_scaled.safetensors",
@@ -71,6 +76,7 @@
     },
     {
       "id": "text_encoders-clip_l",
+      "name": "CLIP-L, video prompt reader",
       "folder": "text_encoders",
       "filename": "clip_l.safetensors",
       "url": "https://huggingface.co/Comfy-Org/HunyuanVideo_repackaged/resolve/533a43813f01517d9e624f9e824a85bb94094120/split_files/text_encoders/clip_l.safetensors",
@@ -83,6 +89,7 @@
     },
     {
       "id": "vae-hunyuan_video_vae_bf16",
+      "name": "HunyuanVideo, video decoder",
       "folder": "vae",
       "filename": "hunyuan_video_vae_bf16.safetensors",
       "url": "https://huggingface.co/Comfy-Org/HunyuanVideo_repackaged/resolve/533a43813f01517d9e624f9e824a85bb94094120/split_files/vae/hunyuan_video_vae_bf16.safetensors",
@@ -95,6 +102,7 @@
     },
     {
       "id": "audio_vae-v1-44.pth",
+      "name": "MMAudio, sound decoder",
       "folder": "audio_vae",
       "filename": "v1-44.pth",
       "url": "https://huggingface.co/hkchengrex/MMAudio/resolve/eb13a1a98fdbec91753775c57b074ccdfc60587c/ext_weights/v1-44.pth",
@@ -107,6 +115,7 @@
     },
     {
       "id": "audio_vae-bigvgan_vocoder-bigvgan_generator.pt",
+      "name": "BigVGAN, waveform decoder",
       "folder": "audio_vae/bigvgan_vocoder",
       "filename": "bigvgan_generator.pt",
       "url": "https://huggingface.co/nvidia/bigvgan_v2_44khz_128band_512x/resolve/95a9d1dcb12906c03edd938d77b9333d6ded7dfb/bigvgan_generator.pt",
@@ -119,6 +128,7 @@
     },
     {
       "id": "audio_vae-bigvgan_vocoder-config.json",
+      "name": "BigVGAN, settings",
       "folder": "audio_vae/bigvgan_vocoder",
       "filename": "config.json",
       "url": "https://huggingface.co/nvidia/bigvgan_v2_44khz_128band_512x/resolve/95a9d1dcb12906c03edd938d77b9333d6ded7dfb/config.json",
@@ -130,6 +140,7 @@
     },
     {
       "id": "breezetts2-drbaph_Breeze-TTS-2-comfyui-Breeze-TTS-2-int8-hybrid",
+      "name": "Breeze TTS 2, voice model",
       "folder": "breezetts2/drbaph_Breeze-TTS-2-comfyui",
       "filename": "Breeze-TTS-2-int8-hybrid.safetensors",
       "url": "https://huggingface.co/drbaph/Breeze-TTS-2-comfyui/resolve/a6bfd9d0d4e8b3b61c3a5ed3ecf55468c8ab88e4/Breeze-TTS-2-int8-hybrid.safetensors",
@@ -143,6 +154,7 @@
     },
     {
       "id": "breezetts2-drbaph_Breeze-TTS-2-comfyui-config.json",
+      "name": "Breeze TTS 2, settings",
       "folder": "breezetts2/drbaph_Breeze-TTS-2-comfyui",
       "filename": "config.json",
       "url": "https://huggingface.co/drbaph/Breeze-TTS-2-comfyui/resolve/a6bfd9d0d4e8b3b61c3a5ed3ecf55468c8ab88e4/config.json",
@@ -155,6 +167,7 @@
     },
     {
       "id": "breezetts2-drbaph_Breeze-TTS-2-comfyui-generation_config.json",
+      "name": "Breeze TTS 2, settings",
       "folder": "breezetts2/drbaph_Breeze-TTS-2-comfyui",
       "filename": "generation_config.json",
       "url": "https://huggingface.co/drbaph/Breeze-TTS-2-comfyui/resolve/a6bfd9d0d4e8b3b61c3a5ed3ecf55468c8ab88e4/generation_config.json",
@@ -167,6 +180,7 @@
     },
     {
       "id": "breezetts2-drbaph_Breeze-TTS-2-comfyui-tokenizer.json",
+      "name": "Breeze TTS 2, vocabulary",
       "folder": "breezetts2/drbaph_Breeze-TTS-2-comfyui",
       "filename": "tokenizer.json",
       "url": "https://huggingface.co/drbaph/Breeze-TTS-2-comfyui/resolve/a6bfd9d0d4e8b3b61c3a5ed3ecf55468c8ab88e4/tokenizer.json",
@@ -180,6 +194,7 @@
     },
     {
       "id": "breezetts2-drbaph_Breeze-TTS-2-comfyui-tokenizer_config.json",
+      "name": "Breeze TTS 2, settings",
       "folder": "breezetts2/drbaph_Breeze-TTS-2-comfyui",
       "filename": "tokenizer_config.json",
       "url": "https://huggingface.co/drbaph/Breeze-TTS-2-comfyui/resolve/a6bfd9d0d4e8b3b61c3a5ed3ecf55468c8ab88e4/tokenizer_config.json",
@@ -192,6 +207,7 @@
     },
     {
       "id": "breezetts2-drbaph_Breeze-TTS-2-comfyui-special_tokens_map.json",
+      "name": "Breeze TTS 2, settings",
       "folder": "breezetts2/drbaph_Breeze-TTS-2-comfyui",
       "filename": "special_tokens_map.json",
       "url": "https://huggingface.co/drbaph/Breeze-TTS-2-comfyui/resolve/a6bfd9d0d4e8b3b61c3a5ed3ecf55468c8ab88e4/special_tokens_map.json",
@@ -204,6 +220,7 @@
     },
     {
       "id": "breezetts2-drbaph_Breeze-TTS-2-comfyui-audio_tokenizer-model",
+      "name": "Breeze TTS 2, sound codec",
       "folder": "breezetts2/drbaph_Breeze-TTS-2-comfyui/audio_tokenizer",
       "filename": "model.safetensors",
       "url": "https://huggingface.co/drbaph/Breeze-TTS-2-comfyui/resolve/a6bfd9d0d4e8b3b61c3a5ed3ecf55468c8ab88e4/audio_tokenizer/model.safetensors",
@@ -217,6 +234,7 @@
     },
     {
       "id": "breezetts2-drbaph_Breeze-TTS-2-comfyui-audio_tokenizer-config.json",
+      "name": "Breeze TTS 2, sound codec settings",
       "folder": "breezetts2/drbaph_Breeze-TTS-2-comfyui/audio_tokenizer",
       "filename": "config.json",
       "url": "https://huggingface.co/drbaph/Breeze-TTS-2-comfyui/resolve/a6bfd9d0d4e8b3b61c3a5ed3ecf55468c8ab88e4/audio_tokenizer/config.json",
@@ -229,6 +247,7 @@
     },
     {
       "id": "breezetts2-drbaph_Breeze-TTS-2-comfyui-audio_tokenizer-configuration.json",
+      "name": "Breeze TTS 2, sound codec settings",
       "folder": "breezetts2/drbaph_Breeze-TTS-2-comfyui/audio_tokenizer",
       "filename": "configuration.json",
       "url": "https://huggingface.co/drbaph/Breeze-TTS-2-comfyui/resolve/a6bfd9d0d4e8b3b61c3a5ed3ecf55468c8ab88e4/audio_tokenizer/configuration.json",
@@ -241,6 +260,7 @@
     },
     {
       "id": "breezetts2-drbaph_Breeze-TTS-2-comfyui-audio_tokenizer-preprocessor_config.json",
+      "name": "Breeze TTS 2, sound codec settings",
       "folder": "breezetts2/drbaph_Breeze-TTS-2-comfyui/audio_tokenizer",
       "filename": "preprocessor_config.json",
       "url": "https://huggingface.co/drbaph/Breeze-TTS-2-comfyui/resolve/a6bfd9d0d4e8b3b61c3a5ed3ecf55468c8ab88e4/audio_tokenizer/preprocessor_config.json",
@@ -253,6 +273,7 @@
     },
     {
       "id": "diffusion_models-acestep_v1.5_turbo",
+      "name": "ACE-Step 1.5 Turbo, music model",
       "folder": "diffusion_models",
       "filename": "acestep_v1.5_turbo.safetensors",
       "url": "https://huggingface.co/Comfy-Org/ace_step_1.5_ComfyUI_files/resolve/6707deb277e9e0907fd9c14ce6b6f1d695c6a3fc/split_files/diffusion_models/acestep_v1.5_turbo.safetensors",
@@ -265,6 +286,7 @@
     },
     {
       "id": "text_encoders-qwen_0.6b_ace15",
+      "name": "Qwen3 0.6B, music prompt reader",
       "folder": "text_encoders",
       "filename": "qwen_0.6b_ace15.safetensors",
       "url": "https://huggingface.co/Comfy-Org/ace_step_1.5_ComfyUI_files/resolve/6707deb277e9e0907fd9c14ce6b6f1d695c6a3fc/split_files/text_encoders/qwen_0.6b_ace15.safetensors",
@@ -277,6 +299,7 @@
     },
     {
       "id": "text_encoders-qwen_1.7b_ace15",
+      "name": "Qwen3 1.7B, music prompt reader",
       "folder": "text_encoders",
       "filename": "qwen_1.7b_ace15.safetensors",
       "url": "https://huggingface.co/Comfy-Org/ace_step_1.5_ComfyUI_files/resolve/6707deb277e9e0907fd9c14ce6b6f1d695c6a3fc/split_files/text_encoders/qwen_1.7b_ace15.safetensors",
@@ -289,6 +312,7 @@
     },
     {
       "id": "vae-ace_1.5_vae",
+      "name": "ACE-Step 1.5, music decoder",
       "folder": "vae",
       "filename": "ace_1.5_vae.safetensors",
       "url": "https://huggingface.co/Comfy-Org/ace_step_1.5_ComfyUI_files/resolve/6707deb277e9e0907fd9c14ce6b6f1d695c6a3fc/split_files/vae/ace_1.5_vae.safetensors",
@@ -301,6 +325,7 @@
     },
     {
       "id": "text_encoders-qwen3vl_4b_bf16",
+      "name": "Qwen3-VL 4B, writing model",
       "folder": "text_encoders",
       "filename": "qwen3vl_4b_bf16.safetensors",
       "url": "https://huggingface.co/Comfy-Org/Krea-2/resolve/1171f4dc7e325bf3734586942e737872506c73e1/text_encoders/qwen3vl_4b_bf16.safetensors",

@@ -1,3 +1,4 @@
+import torch
 from torch import nn
 
 
@@ -40,3 +41,12 @@ class Model(nn.Module):
         self.blocks = nn.ModuleList(
             [_Block(dim, ffn_dim, num_heads, device, dtype, operations) for _ in range(num_layers)]
         )
+
+    def forward(self, hidden_states, timestep):
+        times = torch.as_tensor(timestep, device=hidden_states.device, dtype=torch.float32).reshape(-1)
+        # Training computes the sinusoid in float64 and feeds float32 into its MLP.
+        half = self.freq_dim // 2
+        freq = 10000 ** (-torch.arange(half, device=times.device, dtype=torch.float64) / half)
+        phase = times.double()[:, None] * freq
+        embedding = torch.cat((phase.cos(), phase.sin()), -1).float()
+        return embedding

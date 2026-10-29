@@ -1,5 +1,7 @@
 import { HardwareProfileSchema } from "@nightshift/contract";
-import { readFileSync } from "node:fs";
+import { mkdtempSync, readFileSync, statfsSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import {
   parseLscpuModel,
@@ -11,7 +13,8 @@ import {
   parseWindowsVideoControllers,
   vendorFromName,
 } from "../src/hardware/parse.js";
-import { detectHardware, type ProbeEnv } from "../src/hardware/probe.js";
+import { detectHardware, freeDiskGb, type ProbeEnv } from "../src/hardware/probe.js";
+import { execCapture } from "../src/util.js";
 import type { ExecResult } from "../src/util.js";
 
 const fixture = (name: string) => readFileSync(new URL(`./fixtures/probe/${name}`, import.meta.url), "utf8");
@@ -145,5 +148,23 @@ describe("detectHardware", () => {
       ["nvidia", 12],
       ["intel", 1],
     ]);
+  });
+});
+
+describe("free disk", () => {
+  // Model sizes are GB of 10^9 bytes. Free disk in GiB, without the space macOS frees on demand, put a Mac with 87 GB
+  // available in Finder at 72 and refused a 63 GB setup that fit.
+  it("is in GB, like the model sizes, and on macOS counts what Finder counts as available", async () => {
+    const dir = mkdtempSync(join(tmpdir(), "ns-disk-"));
+    const s = statfsSync(dir);
+    const statfsGb = (s.bavail * s.bsize) / 1e9;
+    const free = await freeDiskGb(dir);
+    expect(free).toBeGreaterThanOrEqual(Math.floor(statfsGb * 10) / 10 - 1);
+    if (process.platform !== "darwin") {
+      expect(free).toBeLessThanOrEqual(statfsGb + 1);
+      return;
+    }
+    const finder = await execCapture("/usr/bin/osascript", ["-l", "JavaScript", "-e", 'ObjC.import("Foundation"); function run(a) { const v = Ref(); $.NSURL.fileURLWithPath(a[0]).getResourceValueForKeyError(v, $.NSURLVolumeAvailableCapacityForImportantUsageKey, null); return String(ObjC.unwrap(v[0])); }', dir]);
+    expect(free).toBeCloseTo(Math.max(statfsGb, Number(finder.stdout) / 1e9), -0.5);
   });
 });

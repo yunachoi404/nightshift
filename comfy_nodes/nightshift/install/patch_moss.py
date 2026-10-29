@@ -4,6 +4,7 @@ The official repack has proj.qkv; the standalone node expects proj.q/k/v.
 Missing projections are None in both DynamicVRAM and static mode. Detect the
 checkpoint layout and construct its matching projections without changing weights.
 The activation dtype also avoids reading packed quantized weight storage.
+MPS has no float64, so on a Mac the timestep sinusoid is computed on the CPU.
 """
 
 import argparse
@@ -64,3 +65,27 @@ else:
     path.write_text(source)
     loader_path.write_text(loader)
     print("Applied MOSS fused projection layout fix")
+
+source = path.read_text()
+mps_marker = "# Nightshift: MPS has no float64; compute the sinusoid on the CPU there."
+if mps_marker in source:
+    print("MOSS float64 timestep fix already applied")
+else:
+    target = (
+        '        freq = 10000 ** (-torch.arange(half, device=times.device, dtype=torch.float64) / half)\n'
+        '        phase = times.double()[:, None] * freq\n'
+        '        embedding = torch.cat((phase.cos(), phase.sin()), -1).float()\n'
+    )
+    if source.count(target) != 1:
+        raise RuntimeError("Pinned MOSS timestep embedding changed. Inspect before patching.")
+    replacement = (
+        f'        {mps_marker}\n'
+        '        where = torch.device("cpu") if times.device.type == "mps" else times.device\n'
+        '        freq = 10000 ** (-torch.arange(half, device=where, dtype=torch.float64) / half)\n'
+        '        phase = times.to(where).double()[:, None] * freq\n'
+        '        embedding = torch.cat((phase.cos(), phase.sin()), -1).float().to(times.device)\n'
+    )
+    source = source.replace(target, replacement)
+    compile(source, str(path), "exec")
+    path.write_text(source)
+    print("Applied MOSS float64 timestep fix")

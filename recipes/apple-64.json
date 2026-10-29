@@ -10,6 +10,7 @@
   "models": [
     {
       "id": "diffusion_models-krea2_turbo_bf16",
+      "name": "Krea 2 Turbo, image model",
       "folder": "diffusion_models",
       "filename": "krea2_turbo_bf16.safetensors",
       "url": "https://huggingface.co/Comfy-Org/Krea-2/resolve/1171f4dc7e325bf3734586942e737872506c73e1/diffusion_models/krea2_turbo_bf16.safetensors",
@@ -22,6 +23,7 @@
     },
     {
       "id": "text_encoders-qwen3vl_4b_bf16",
+      "name": "Qwen3-VL 4B, writing model",
       "folder": "text_encoders",
       "filename": "qwen3vl_4b_bf16.safetensors",
       "url": "https://huggingface.co/Comfy-Org/Krea-2/resolve/1171f4dc7e325bf3734586942e737872506c73e1/text_encoders/qwen3vl_4b_bf16.safetensors",
@@ -34,6 +36,7 @@
     },
     {
       "id": "vae-qwen_image_vae",
+      "name": "Qwen-Image, image decoder",
       "folder": "vae",
       "filename": "qwen_image_vae.safetensors",
       "url": "https://huggingface.co/Comfy-Org/Krea-2/resolve/1171f4dc7e325bf3734586942e737872506c73e1/vae/qwen_image_vae.safetensors",
@@ -46,6 +49,7 @@
     },
     {
       "id": "diffusion_models-ltx-2.5-22b-distilled-transformer-bf16",
+      "name": "LTX-2.5, video model",
       "folder": "diffusion_models",
       "filename": "ltx-2.5-22b-distilled-transformer-bf16.safetensors",
       "url": "https://huggingface.co/Lightricks/LTX-2.5/resolve/49b093a39c19169a8a81721dcc541e07e945232f/diffusion_models/ltx-2.5-22b-distilled-transformer-bf16.safetensors",
@@ -58,6 +62,7 @@
     },
     {
       "id": "text_encoders-gemma4-12b-with-proj-ltx-2.5-bf16",
+      "name": "Gemma 4 12B, video prompt reader",
       "folder": "text_encoders",
       "filename": "gemma4-12b-with-proj-ltx-2.5-bf16.safetensors",
       "url": "https://huggingface.co/Lightricks/LTX-2.5/resolve/49b093a39c19169a8a81721dcc541e07e945232f/text_encoders/gemma4-12b-with-proj-ltx-2.5-bf16.safetensors",
@@ -70,6 +75,7 @@
     },
     {
       "id": "vae-ltx-2.5-video-vae-bf16",
+      "name": "LTX-2.5, video decoder",
       "folder": "vae",
       "filename": "ltx-2.5-video-vae-bf16.safetensors",
       "url": "https://huggingface.co/Lightricks/LTX-2.5/resolve/49b093a39c19169a8a81721dcc541e07e945232f/vae/ltx-2.5-video-vae-bf16.safetensors",
@@ -82,6 +88,7 @@
     },
     {
       "id": "vae-ltx-2.5-audio-vae-bf16",
+      "name": "LTX-2.5, sound decoder",
       "folder": "vae",
       "filename": "ltx-2.5-audio-vae-bf16.safetensors",
       "url": "https://huggingface.co/Lightricks/LTX-2.5/resolve/49b093a39c19169a8a81721dcc541e07e945232f/vae/ltx-2.5-audio-vae-bf16.safetensors",
@@ -94,6 +101,7 @@
     },
     {
       "id": "latent_upscale_models-ltx-2.5-latent-spatial-upscaler-x2-bf16-1.0",
+      "name": "LTX-2.5, video upscaler",
       "folder": "latent_upscale_models",
       "filename": "ltx-2.5-latent-spatial-upscaler-x2-bf16-1.0.safetensors",
       "url": "https://huggingface.co/Lightricks/LTX-2.5/resolve/49b093a39c19169a8a81721dcc541e07e945232f/latent_upscale_models/ltx-2.5-latent-spatial-upscaler-x2-bf16-1.0.safetensors",
@@ -106,6 +114,7 @@
     },
     {
       "id": "breezetts2-drbaph_Breeze-TTS-2-comfyui-Breeze-TTS-2-int8-hybrid",
+      "name": "Breeze TTS 2, voice model",
       "folder": "breezetts2/drbaph_Breeze-TTS-2-comfyui",
       "filename": "Breeze-TTS-2-int8-hybrid.safetensors",
       "url": "https://huggingface.co/drbaph/Breeze-TTS-2-comfyui/resolve/a6bfd9d0d4e8b3b61c3a5ed3ecf55468c8ab88e4/Breeze-TTS-2-int8-hybrid.safetensors",
@@ -119,6 +128,7 @@
     },
     {
       "id": "breezetts2-drbaph_Breeze-TTS-2-comfyui-config.json",
+      "name": "Breeze TTS 2, settings",
       "folder": "breezetts2/drbaph_Breeze-TTS-2-comfyui",
       "filename": "config.json",
       "url": "https://huggingface.co/drbaph/Breeze-TTS-2-comfyui/resolve/a6bfd9d0d4e8b3b61c3a5ed3ecf55468c8ab88e4/config.json",
@@ -131,6 +141,7 @@
     },
     {
       "id": "breezetts2-drbaph_Breeze-TTS-2-comfyui-generation_config.json",
+      "name": "Breeze TTS 2, settings",
       "folder": "breezetts2/drbaph_Breeze-TTS-2-comfyui",
       "filename": "generation_config.json",
       "url": "https://huggingface.co/drbaph/Breeze-TTS-2-comfyui/resolve/a6bfd9d0d4e8b3b61c3a5ed3ecf55468c8ab88e4/generation_config.json",
@@ -143,6 +154,7 @@
     },
     {
       "id": "breezetts2-drbaph_Breeze-TTS-2-comfyui-tokenizer.json",
+      "name": "Breeze TTS 2, vocabulary",
       "folder": "breezetts2/drbaph_Breeze-TTS-2-comfyui",
       "filename": "tokenizer.json",
       "url": "https://huggingface.co/drbaph/Breeze-TTS-2-comfyui/resolve/a6bfd9d0d4e8b3b61c3a5ed3ecf55468c8ab88e4/tokenizer.json",
@@ -156,6 +168,7 @@
     },
     {
       "id": "breezetts2-drbaph_Breeze-TTS-2-comfyui-tokenizer_config.json",
+      "name": "Breeze TTS 2, settings",
       "folder": "breezetts2/drbaph_Breeze-TTS-2-comfyui",
       "filename": "tokenizer_config.json",
       "url": "https://huggingface.co/drbaph/Breeze-TTS-2-comfyui/resolve/a6bfd9d0d4e8b3b61c3a5ed3ecf55468c8ab88e4/tokenizer_config.json",
@@ -168,6 +181,7 @@
     },
     {
       "id": "breezetts2-drbaph_Breeze-TTS-2-comfyui-special_tokens_map.json",
+      "name": "Breeze TTS 2, settings",
       "folder": "breezetts2/drbaph_Breeze-TTS-2-comfyui",
       "filename": "special_tokens_map.json",
       "url": "https://huggingface.co/drbaph/Breeze-TTS-2-comfyui/resolve/a6bfd9d0d4e8b3b61c3a5ed3ecf55468c8ab88e4/special_tokens_map.json",
@@ -180,6 +194,7 @@
     },
     {
       "id": "breezetts2-drbaph_Breeze-TTS-2-comfyui-audio_tokenizer-model",
+      "name": "Breeze TTS 2, sound codec",
       "folder": "breezetts2/drbaph_Breeze-TTS-2-comfyui/audio_tokenizer",
       "filename": "model.safetensors",
       "url": "https://huggingface.co/drbaph/Breeze-TTS-2-comfyui/resolve/a6bfd9d0d4e8b3b61c3a5ed3ecf55468c8ab88e4/audio_tokenizer/model.safetensors",
@@ -193,6 +208,7 @@
     },
     {
       "id": "breezetts2-drbaph_Breeze-TTS-2-comfyui-audio_tokenizer-config.json",
+      "name": "Breeze TTS 2, sound codec settings",
       "folder": "breezetts2/drbaph_Breeze-TTS-2-comfyui/audio_tokenizer",
       "filename": "config.json",
       "url": "https://huggingface.co/drbaph/Breeze-TTS-2-comfyui/resolve/a6bfd9d0d4e8b3b61c3a5ed3ecf55468c8ab88e4/audio_tokenizer/config.json",
@@ -205,6 +221,7 @@
     },
     {
       "id": "breezetts2-drbaph_Breeze-TTS-2-comfyui-audio_tokenizer-configuration.json",
+      "name": "Breeze TTS 2, sound codec settings",
       "folder": "breezetts2/drbaph_Breeze-TTS-2-comfyui/audio_tokenizer",
       "filename": "configuration.json",
       "url": "https://huggingface.co/drbaph/Breeze-TTS-2-comfyui/resolve/a6bfd9d0d4e8b3b61c3a5ed3ecf55468c8ab88e4/audio_tokenizer/configuration.json",
@@ -217,6 +234,7 @@
     },
     {
       "id": "breezetts2-drbaph_Breeze-TTS-2-comfyui-audio_tokenizer-preprocessor_config.json",
+      "name": "Breeze TTS 2, sound codec settings",
       "folder": "breezetts2/drbaph_Breeze-TTS-2-comfyui/audio_tokenizer",
       "filename": "preprocessor_config.json",
       "url": "https://huggingface.co/drbaph/Breeze-TTS-2-comfyui/resolve/a6bfd9d0d4e8b3b61c3a5ed3ecf55468c8ab88e4/audio_tokenizer/preprocessor_config.json",
@@ -229,6 +247,7 @@
     },
     {
       "id": "diffusion_models-acestep_v1.5_turbo",
+      "name": "ACE-Step 1.5 Turbo, music model",
       "folder": "diffusion_models",
       "filename": "acestep_v1.5_turbo.safetensors",
       "url": "https://huggingface.co/Comfy-Org/ace_step_1.5_ComfyUI_files/resolve/6707deb277e9e0907fd9c14ce6b6f1d695c6a3fc/split_files/diffusion_models/acestep_v1.5_turbo.safetensors",
@@ -241,6 +260,7 @@
     },
     {
       "id": "text_encoders-qwen_0.6b_ace15",
+      "name": "Qwen3 0.6B, music prompt reader",
       "folder": "text_encoders",
       "filename": "qwen_0.6b_ace15.safetensors",
       "url": "https://huggingface.co/Comfy-Org/ace_step_1.5_ComfyUI_files/resolve/6707deb277e9e0907fd9c14ce6b6f1d695c6a3fc/split_files/text_encoders/qwen_0.6b_ace15.safetensors",
@@ -253,6 +273,7 @@
     },
     {
       "id": "text_encoders-qwen_1.7b_ace15",
+      "name": "Qwen3 1.7B, music prompt reader",
       "folder": "text_encoders",
       "filename": "qwen_1.7b_ace15.safetensors",
       "url": "https://huggingface.co/Comfy-Org/ace_step_1.5_ComfyUI_files/resolve/6707deb277e9e0907fd9c14ce6b6f1d695c6a3fc/split_files/text_encoders/qwen_1.7b_ace15.safetensors",
@@ -265,6 +286,7 @@
     },
     {
       "id": "vae-ace_1.5_vae",
+      "name": "ACE-Step 1.5, music decoder",
       "folder": "vae",
       "filename": "ace_1.5_vae.safetensors",
       "url": "https://huggingface.co/Comfy-Org/ace_step_1.5_ComfyUI_files/resolve/6707deb277e9e0907fd9c14ce6b6f1d695c6a3fc/split_files/vae/ace_1.5_vae.safetensors",
