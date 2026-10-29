@@ -6,6 +6,7 @@ import { useThemeMode } from "@/store/theme";
 import { Button, Dialog, Input, Segmented, Slider, Switch, cx, toast } from "@/ui/primitives";
 import { clock, gb, roughDuration } from "@/lib/format";
 import { RemoteSetup } from "@/features/compute/RemoteSetup";
+import { DemoSection } from "@/features/demo/DemoNote";
 import "./settings.css";
 
 export function SettingsPage() {
@@ -93,6 +94,7 @@ export function SettingsPage() {
         </div>
       </div>
       <div className="settings">
+        <DemoSection />
         <section>
           <div className="group__head">Appearance</div>
           <div className="group">

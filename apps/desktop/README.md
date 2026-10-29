@@ -20,6 +20,17 @@ The editor's `ensureRenderBrowser()` helper downloads Chrome headless shell into
 
 For UI hot reload, start Vite separately, then launch with `NIGHTSHIFT_UI_URL=http://127.0.0.1:5173`. Only loopback HTTP(S) URLs are accepted, and the override is ignored in packaged apps. The shell adds `?api=<engine origin>` so Vite uses the real engine rather than its own browser mock. Without the override, development serves the production UI through the engine too.
 
+## Look around first
+
+Onboarding offers **Look around first, with sample renders**, and the demo offers **Set up for real** (in Settings and
+on the welcome). The sandboxed bridge's `setDemo(on)` asks the shell to switch. The shell writes `{"demo": true}` or
+`false` to `desktop-demo.json` in the real data folder, then quits and opens again (`app.relaunch`), so the engine, its
+data folder and the window's browser storage all belong to the new mode from launch. The demo runs the engine in mock
+mode on a folder beside the real one: `~/Library/Application Support/Nightshift Demo`, or `<data-dir> Demo` with
+`--data-dir`. The quit is the usual one: with overnight jobs running it asks first, and **Keep rendering** keeps the
+current mode. Launch switches (`--mock`, `--comfy-base-url`, `NIGHTSHIFT_MOCK`, `NIGHTSHIFT_COMFY_BASE_URL`) win over the
+choice, and then `getStatus()` reports `canSwitchDemo: false` and the UI offers neither.
+
 ## Packaged demo switches
 
 Quit Nightshift before changing modes. A second launch focuses the existing process and does not change its mode.
@@ -73,7 +84,7 @@ The engine loads the editor at runtime from the sibling package. Exports use its
 
 ## Native behavior
 
-The window uses a hidden-inset title bar: the UI draws its toolbar in the title strip and keeps the traffic lights (at 14, 20) in the sidebar's top strip. On macOS the window paints the `sidebar` vibrancy material behind the page, and the UI leaves its sidebar transparent so the material shows. The sandboxed preload exposes `window.nightshiftDesktop` with `platform`, `titlebarHeight: 52`, `vibrancy`, `getStatus()`, `setTheme(mode)`, `revealProject(id)`, `revealExport(projectId, assetId)` and `openExternal(url)`.
+The window uses a hidden-inset title bar: the UI draws its toolbar in the title strip and keeps the traffic lights (at 14, 20) in the sidebar's top strip. On macOS the window paints the `sidebar` vibrancy material behind the page, and the UI leaves its sidebar transparent so the material shows. The sandboxed preload exposes `window.nightshiftDesktop` with `platform`, `titlebarHeight: 52`, `vibrancy`, `getStatus()`, `setTheme(mode)`, `setDemo(on)`, `revealProject(id)`, `revealExport(projectId, assetId)` and `openExternal(url)`.
 
 `setTheme` takes the UI's Appearance choice (`system`, `light` or `dark`), sets `nativeTheme.themeSource` so the window material, menus and native controls follow, and remembers it in `desktop-theme.json` in app data for the next launch. The page itself resolves the theme before its first paint. File > Open studio is `Cmd+0`, so `Cmd+1` to `Cmd+4` reach the UI as the four stages of a project.
 
@@ -102,6 +113,6 @@ hdiutil detach '/Volumes/Install Nightshift'
 open /Applications/Nightshift.app
 ```
 
-The app uses a local ad-hoc signature, `identity: "-"`, for native notifications. There is no Developer ID, certificate lookup, notarization, publishing, auto-updater, account sign-in or analytics. Gatekeeper behavior for downloaded distribution on other Macs is untested.
+The app uses a local ad-hoc signature, `identity: "-"`, for native notifications. There is no Developer ID, certificate lookup, notarization, publishing, auto-updater, account sign-in or analytics. `spctl --assess` rejects it. A downloaded copy (quarantined) is blocked the first time it opens: "Nightshift" Not Opened, with Move to Trash and Done. That was seen on macOS 27 with a copy marked as downloaded. The way past it, per macOS version, is in [docs/RELEASE_NOTES.md](../../docs/RELEASE_NOTES.md).
 
 See the [full judge-path QA report](../../docs/qa/2026-10-19_e2e.md) for current installed-app evidence and remaining findings. [VERIFICATION.md](VERIFICATION.md) preserves the earlier shell checks. No shared contract changes were needed. The desktop dependencies are open-source; Electron and electron-builder are MIT. Native tool licenses and formulas ship in `runtime/licenses`, and deployed packages retain their own license files.

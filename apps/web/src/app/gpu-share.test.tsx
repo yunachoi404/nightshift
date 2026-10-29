@@ -10,7 +10,11 @@ import { EngineProvider } from "@/store/engine";
 import { App } from "./App";
 
 vi.mock("@/api/config", () => ({
+  API_KEY: "nightshift.api",
+  buildApiBase: () => "",
   isMock: () => false,
+  isDevMock: () => false,
+  isBrowserDemo: () => false,
   getClient: () => {
     throw new Error("the test gives the app its own client");
   },

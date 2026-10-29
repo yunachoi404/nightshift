@@ -15,6 +15,20 @@ One setting, `apps/web/src/api/config.ts`:
 | `VITE_NIGHTSHIFT_API=http://127.0.0.1:7788 pnpm --filter @nightshift/web dev` | that engine |
 | production build served by the engine | same origin |
 | `?api=mock` or `?api=http://host:port` in the URL | override, sticks in localStorage until `?api=reset` |
+| `VITE_NIGHTSHIFT_API=demo`, `?api=demo`, or **Look around first** in a browser on a real engine | the browser demo (below) |
+| `pnpm --filter @nightshift/web build:pages` | the browser demo as static files for GitHub Pages |
+
+## The browser demo
+
+The same in-browser engine, for people trying Nightshift rather than building it (`api/mock/engine.ts`, flavor
+`demo`). It keeps its own state (`nightshift.demo.state.v1`), has no Mock button or panel, runs at a demo pace (a
+setup in about 6 s, stills in 3 s, drafts in 6 s), and starts on the DGX Spark. The machine step offers four sample
+machines, the two tested ones first. Its setups are the real recipes (`api/mock/recipes.ts`), as in dev.
+
+It replays real renders where it has them (`api/mock/samples.ts`, files in `public/demo/`): the First shot's lighthouse
+still and draft, and The Croissant ad, seeded as a finished project with its recorded cut, voice, music, captions and
+export. A recorded take's new drafts and finals are its real takes; the recorded cut exports the real film until the
+user changes a pick. A prompt it has no render of gets a procedural placeholder. Home and Settings say which is which.
 
 ## Mock controls
 
@@ -46,8 +60,8 @@ For scripts, the engine is on `window.nightshiftMock` (`finishRunningNow()`, `se
 
 ## What the mock does
 
-- Hardware presets map to the tiers in `docs/PLAN.md` with the plan's napkin numbers as estimates. Only the
-  Spark tier is marked measured.
+- Hardware presets are matched against the real recipes in `recipes/`, with the engine's rules, so sizes, models,
+  licenses and measured times are the app's.
 - The GPU computer on the network is the Spark preset behind any address. `remoteCheck` normalizes what
   was typed (default port 8190) and answers per the fixture. `remoteUse` switches the runtime to mode
   `remote` with no download and remembers the local setup, so "Use this Mac" comes back to it (or to

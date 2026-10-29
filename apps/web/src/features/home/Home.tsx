@@ -8,6 +8,7 @@ import { templates } from "@nightshift/contract";
 import { plural, relativeTime } from "@/lib/format";
 import { useMorningSummary } from "@/features/finals/morning";
 import { TemplateIcon } from "@/features/project/TemplateIcon";
+import { DemoBanner } from "@/features/demo/DemoNote";
 import "./home.css";
 
 export function Home() {
@@ -30,6 +31,8 @@ export function Home() {
           </Link>
         </div>
       </div>
+
+      <DemoBanner />
 
       {morning && (
         <div className="morning" role="status">

@@ -8,10 +8,15 @@ import { act, fireEvent, render, screen, waitFor, within } from "@testing-librar
 import { describe, expect, it, vi } from "vitest";
 import { ApiError, type NightshiftClient } from "@/api/client";
 import { EngineProvider } from "@/store/engine";
+import { initializeDesktop } from "@/lib/desktop";
 import { App } from "./App";
 
 vi.mock("@/api/config", () => ({
+  API_KEY: "nightshift.api",
+  buildApiBase: () => "",
   isMock: () => false,
+  isDevMock: () => false,
+  isBrowserDemo: () => false,
   getClient: () => {
     throw new Error("each test gives the app its own client");
   },
@@ -762,5 +767,63 @@ describe("the demo", () => {
     // The next step is the setup for this Mac. This fake engine has no setups, so it says so.
     await screen.findByRole("heading", { name: "Couldn't load the setups" });
     expect(engine.called("remoteUse")).toEqual([]);
+  });
+
+  it("is a quiet choice on the welcome of a browser on a real engine, kept in this browser", async () => {
+    const engine = new FakeEngine();
+    engine.status = { ...engine.status, phase: "not_installed", tier: null, comfyui: DOWN };
+    open(engine, "#/setup");
+    await screen.findByRole("button", { name: /Get started/ });
+    expect(screen.getByText("Setup is mostly one large download.")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Look around first, with sample renders" }));
+    // The page reloads into the in-browser demo; the engine is not asked for anything.
+    expect(localStorage.getItem("nightshift.api")).toBe("demo");
+    expect(engine.called("install")).toEqual([]);
+  });
+
+  it("in the Mac app, relaunches into the demo, which opens on the machine step with a way back", async () => {
+    const setDemo = vi.fn(async () => undefined);
+    const bridge = (mode: "local" | "mock") => ({ platform: "darwin", titlebarHeight: 52, getStatus: async () => ({ engineUrl: "http://127.0.0.1:9000", mode, canSwitchDemo: true }), revealProject: async () => undefined, revealExport: async () => undefined, openExternal: async () => undefined, setDemo });
+    try {
+      window.nightshiftDesktop = bridge("local");
+      await initializeDesktop();
+      const real = new FakeEngine();
+      real.status = { ...real.status, phase: "not_installed", tier: null, comfyui: DOWN };
+      const first = open(real, "#/setup");
+      fireEvent.click(await screen.findByRole("button", { name: "Look around first, with sample renders" }));
+      expect(setDemo).toHaveBeenLastCalledWith(true);
+      first.unmount();
+
+      // The app opens again in the demo: it skips the welcome it just showed.
+      window.nightshiftDesktop = bridge("mock");
+      await initializeDesktop();
+      const demo = new FakeEngine();
+      demo.status = { ...demo.status, phase: "not_installed", tier: null, comfyui: DOWN, mode: "mock" };
+      open(demo, "#/setup");
+      await screen.findByRole("heading", { name: DETECT });
+      fireEvent.click(screen.getByRole("button", { name: "Back" }));
+      await screen.findByText("Sample renders. Nothing is downloaded.");
+      fireEvent.click(screen.getByRole("button", { name: "Set up for real instead" }));
+      expect(setDemo).toHaveBeenLastCalledWith(false);
+    } finally {
+      delete window.nightshiftDesktop;
+      await initializeDesktop();
+    }
+  });
+
+  it("goes on with the lightest setup on a machine too small for any", async () => {
+    const engine = new FakeEngine();
+    engine.status = { ...engine.status, phase: "not_installed", tier: null, comfyui: DOWN, mode: "mock" };
+    engine.settings = { ...engine.settings, tier: null };
+    const tier = (id: string, vendor: "apple" | "nvidia", minVramGb: number, downloadGb: number): TierSummary => ({ tier: id, label: id, match: { vendor, unifiedMemory: vendor === "apple", minVramGb, minRamGb: minVramGb }, downloadGb, recommended: false });
+    // The fake engine reads an M4 Max; these setups all ask for more than it has.
+    engine.tiers = [tier("apple-huge", "apple", 512, 300), tier("apple-big", "apple", 256, 200), tier("nvidia-small", "nvidia", 8, 50)];
+    open(engine, "#/setup");
+    fireEvent.click(await screen.findByRole("button", { name: /Get started/ }));
+    fireEvent.click(await screen.findByRole("button", { name: "Continue" }, { timeout: 3000 }));
+    await screen.findByRole("heading", { name: "This machine can't run Nightshift yet" });
+    expect(screen.getByText(/The demo can still show you around/)).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Continue with sample renders" }));
+    await waitFor(() => expect(engine.called("install").map((c) => c.args[0])).toEqual([{ tier: "apple-big", memoryLimitGb: null }]));
   });
 });

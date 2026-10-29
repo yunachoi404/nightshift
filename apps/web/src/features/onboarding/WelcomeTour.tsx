@@ -3,6 +3,7 @@ import { Check, Clapperboard, Download, Moon, Play, Plus, RectangleHorizontal, R
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { cx } from "@/ui/primitives";
 import "./welcome-tour.css";
+import { publicUrl } from "@/lib/publicUrl";
 
 /**
  * The welcome's app window: one real project, Northern Lights, walked through the four stages in order. Every
@@ -37,7 +38,7 @@ const shots = [
   { move: "dolly_out", prompt: "Closing wide view from farther back along the same frozen shore, tall spruce tree in silhouette at left, broad mirror of black ice below a graceful green aurora arch edged in violet." },
 ];
 const moveLabel = (id: string) => cameraMoves.find((c) => c.id === id)?.label ?? "Still camera";
-const still = (n: number) => `/welcome/still-${n}.jpg`;
+const still = (n: number) => publicUrl(`welcome/still-${n}.jpg`);
 
 /** The edit's cuts in seconds, shot by shot, as the project's timeline has them. */
 const cuts: Array<[shot: number, start: number, length: number]> = [
@@ -128,7 +129,7 @@ export function WelcomeTour() {
           <div className="pw__head">Projects</div>
           {sideProjects.map((p) => (
             <div key={p.cover} className={cx("pw__item", p.on && "pw__item--on")}>
-              <img src={`/welcome/cover-${p.cover}.jpg`} alt="" />
+              <img src={publicUrl(`welcome/cover-${p.cover}.jpg`)} alt="" />
               <span>{p.name}</span>
             </div>
           ))}
@@ -292,7 +293,7 @@ function TakesStage({ picked, playing }: { picked: boolean; playing: boolean }) 
           {takes.map((n) => (
             <div key={n} className="pw-take">
               <div className={cx("pw-frame", n === chosen && "pw-frame--picked")}>
-                <Clip src={`/welcome/take-${n}.mp4`} poster={`/welcome/take-${n}.jpg`} playing={playing} />
+                <Clip src={publicUrl(`welcome/take-${n}.mp4`)} poster={publicUrl(`welcome/take-${n}.jpg`)} playing={playing} />
                 <span className="tag tag--onmedia pw-frame__tag">Draft</span>
               </div>
               <div className="pw-take__meta">
@@ -315,7 +316,7 @@ function FinalsStage({ playing }: { playing: boolean }) {
   return (
     <div className="pw-fn">
       <div className="pw__viewer">
-        <Clip src="/welcome/window.mp4" poster="/welcome/window.jpg" playing={playing} />
+        <Clip src={publicUrl("welcome/window.mp4")} poster={publicUrl("welcome/window.jpg")} playing={playing} />
         <span className="tag tag--onmedia tag--night pw__tag">Final, same take</span>
       </div>
       <div className="pw__insp">
@@ -357,7 +358,7 @@ function EditorStage({ playing }: { playing: boolean }) {
       <div className="pw-ed__top">
         <div className="pw-ed__viewer">
           <div className="pw-ed__picture">
-            <Clip src="/welcome/window.mp4" poster="/welcome/window.jpg" playing={playing} />
+            <Clip src={publicUrl("welcome/window.mp4")} poster={publicUrl("welcome/window.jpg")} playing={playing} />
           </div>
         </div>
         <div className="pw-ed__insp">

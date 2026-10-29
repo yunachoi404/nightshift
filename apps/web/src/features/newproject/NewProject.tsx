@@ -16,15 +16,16 @@ import { EffectFields } from "./EffectFields";
 import { shotListSeconds, useInstalledTier } from "@/store/tier";
 import { roughDuration } from "@/lib/format";
 import { WhatIfFields } from "./WhatIfFields";
+import { publicUrl } from "@/lib/publicUrl";
 
 const previews: Record<TemplateId, string> = {
-  what_if: "/what-if/preview.webp",
+  what_if: publicUrl("what-if/preview.webp"),
   cinematic_shot: mockUrl({ kind: "water", seed: 31, w: 480, h: 270, quality: "final", palette: 5, move: "static" }),
   music_video: mockUrl({ kind: "city", seed: 7, w: 270, h: 480, quality: "final", palette: 2, move: "static" }),
   product_ad: mockUrl({ kind: "product", seed: 3, w: 270, h: 480, quality: "final", palette: 6, move: "static" }),
   talking_intro: mockUrl({ kind: "abstract", seed: 12, w: 480, h: 270, quality: "final", palette: 5, move: "static" }),
   camera_move: mockUrl({ kind: "water", seed: 44, w: 480, h: 270, quality: "final", palette: 3, move: "static" }),
-  vfx_effect: "/effects/freeze.webp",
+  vfx_effect: publicUrl("effects/freeze.webp"),
 };
 
 /** The template a new project starts on. */

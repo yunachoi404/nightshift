@@ -82,3 +82,8 @@
   width: 20px;
   height: 20px;
 }
+
+/* The demo's note: what is real and what is a placeholder, above the projects until dismissed. */
+.demo-note {
+  margin-bottom: 20px;
+}

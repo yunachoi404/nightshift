@@ -22,14 +22,22 @@ import type {
 } from "@nightshift/contract";
 import { id } from "@/lib/ids";
 import { kindForPrompt, mockUrl, type SceneKind } from "@/media/placeholder";
-import { hardwarePresets, mockTiers, rankTiers } from "./data";
+import { hardwarePresets, mockTier, rankTiers } from "./data";
+import { croissantExport, croissantProject, firstShot as firstShotSample, isSamplePath, keepsRecordedCut, sampleForDraft, sampleForPrompt, sampleForStill, sampleUrl } from "./samples";
 import { fallbackShots, finalFor, quickEffects, scriptLines } from "@nightshift/contract";
 import { genres, looks } from "@nightshift/contract";
 import type { AudioBody, CreateProjectBody, FinalBody, ProjectPatch } from "../client";
 
 // ---------------------------------------------------------------- types
 
-export type Speed = "quick" | "realistic";
+/** "demo" paces the browser demo: a whole setup and First shot in well under a minute. */
+export type Speed = "quick" | "realistic" | "demo";
+
+/**
+ * "dev": the mock for building the UI, with its controls panel. "demo": the browser demo for people trying Nightshift,
+ * with real sample renders, a finished sample project and no controls. Each keeps its own state.
+ */
+export type MockFlavor = "dev" | "demo";
 
 export interface Faults {
   /** `GET /api/hardware` fails, so onboarding falls back to manual entry. */
@@ -83,10 +91,11 @@ interface State {
   localTier: TierId | null;
   /** Like the engine's onboarding.json: setup done, the First shot sample, and the draft queued for it. */
   onboarding: Onboarding & { draftJobId?: string };
+  /** Projects seeded from real renders (samples.ts), whose recorded cut is kept until the user changes a pick. */
+  samples: string[];
 }
 
-const STATE_KEY = "nightshift.mock.state.v1";
-const DEV_KEY = "nightshift.mock.dev.v1";
+const keys = (flavor: MockFlavor) => (flavor === "demo" ? { state: "nightshift.demo.state.v1", dev: "nightshift.demo.dev.v1" } : { state: "nightshift.mock.state.v1", dev: "nightshift.mock.dev.v1" });
 
 const defaultDev: DevSettings = {
   speed: "quick",
@@ -96,19 +105,24 @@ const defaultDev: DevSettings = {
   remote: "reachable",
 };
 
-function freshState(): State {
+/** The demo starts on the tested DGX Spark, at its own pace. */
+const demoDev: Partial<DevSettings> = { speed: "demo", preset: "spark" };
+
+function freshState(flavor: MockFlavor = "dev"): State {
+  const seeded = flavor === "demo" ? [croissantProject()] : [];
   return {
     hardware: null,
     settings: { tier: null, memoryLimitGb: null, overnight: { enabled: true, startAt: "23:00", endAt: "07:00" } },
     runtime: { mode: "mock", phase: "not_installed", tier: null, comfyui: { running: false, url: null, version: null }, memoryUsedGb: null },
     install: null,
     present: [],
-    projects: [],
     jobs: [],
     uploads: {},
     overnightForced: false,
     localTier: null,
     onboarding: { done: false, sampleProjectId: null },
+    samples: seeded.map((p) => p.id),
+    projects: seeded,
   };
 }
 
@@ -116,6 +130,23 @@ function freshState(): State {
 const SAMPLE = { name: "First shot", template: "cinematic_shot", aspect: "16:9", brief: { idea: "A lone lighthouse on a cliff as a storm rolls in, waves hitting the rocks", cameraMove: "dolly_in", look: "dawn", sequence: "one" } } as const;
 
 const now = () => new Date().toISOString();
+
+/** Seconds a step takes in the demo: quick enough to see every stage in a couple of minutes, slow enough to watch. */
+const demoSeconds: Record<StepId | "export", number> = {
+  text: 3,
+  still: 3,
+  video_draft: 6,
+  video_final_same_take: 8,
+  video_final_remaster: 12,
+  voice: 4,
+  music: 5,
+  camera_layout: 3,
+  video_camera_move: 7,
+  effect_end_frame: 3,
+  video_effect: 7,
+  video_what_if: 9,
+  export: 5,
+};
 
 /** Seconds a step takes in quick mode. Realistic mode uses the tier's estimates instead. */
 const quickSeconds: Record<StepId | "export", number> = {
@@ -179,16 +210,21 @@ export class MockEngine {
   private persistTimer: number | null = null;
   private lastJobEmit = new Map<string, number>();
 
-  constructor() {
-    this.dev = loadJson<DevSettings>(DEV_KEY) ?? { ...defaultDev };
-    this.dev = { ...defaultDev, ...this.dev, faults: { ...defaultDev.faults, ...this.dev.faults } };
+  private readonly keys: { state: string; dev: string };
+
+  constructor(readonly flavor: MockFlavor = "dev") {
+    this.keys = keys(flavor);
+    const base = flavor === "demo" ? { ...defaultDev, ...demoDev } : defaultDev;
+    this.dev = loadJson<DevSettings>(this.keys.dev) ?? { ...base };
+    this.dev = { ...base, ...this.dev, faults: { ...base.faults, ...this.dev.faults } };
     this.applyUrlParams();
-    this.state = loadJson<State>(STATE_KEY) ?? freshState();
+    this.state = loadJson<State>(this.keys.state) ?? freshState(flavor);
+    this.state.samples ??= [];
     this.state.localTier ??= null;
     this.state.onboarding ??= { done: this.state.projects.length > 0, sampleProjectId: this.state.projects.find((p) => p.name === SAMPLE.name && p.brief.idea === SAMPLE.brief.idea)?.id ?? null };
     this.state.settings.remote ??= null;
     this.state.runtime.mode = this.state.settings.remote && this.state.runtime.phase === "ready" ? "remote" : "mock";
-    for (const p of this.state.projects) if (!p.timeline?.edited) p.timeline = buildTimeline(p);
+    for (const p of this.state.projects) if (!p.timeline?.edited && !keepsRecordedCut(p, this.state.samples)) p.timeline = buildTimeline(p);
     for (const project of this.state.projects) this.storeMediaSources(project);
     // Jobs that were running when the page closed keep running.
     this.timer = window.setInterval(() => this.tick(), 120);
@@ -204,10 +240,10 @@ export class MockEngine {
     for (const part of raw.split(",")) {
       const [k, v] = part.split(":");
       if (k === "reset") {
-        for (const key of Object.keys(localStorage)) if (key.startsWith("nightshift.") && key !== DEV_KEY && key !== "nightshift.api") localStorage.removeItem(key);
+        for (const key of Object.keys(localStorage)) if (key.startsWith("nightshift.") && key !== this.keys.dev && key !== "nightshift.api") localStorage.removeItem(key);
       } else if (k === "hw" && v && hardwarePresets[v]) {
         this.dev.preset = v;
-      } else if (k === "speed" && (v === "quick" || v === "realistic")) {
+      } else if (k === "speed" && (v === "quick" || v === "realistic" || v === "demo")) {
         this.dev.speed = v;
       } else if (k === "fail") {
         if (v === "detect") this.dev.faults.detectFails = true;
@@ -224,13 +260,13 @@ export class MockEngine {
         this.dev.simulateNight = true;
       }
     }
-    saveJson(DEV_KEY, this.dev);
+    saveJson(this.keys.dev, this.dev);
   }
 
   setDev(patch: Partial<DevSettings>) {
     const was = this.dev.faults;
     this.dev = { ...this.dev, ...patch, faults: { ...this.dev.faults, ...(patch.faults ?? {}) } };
-    saveJson(DEV_KEY, this.dev);
+    saveJson(this.keys.dev, this.dev);
     if (was.unreachable !== this.dev.faults.unreachable) {
       for (const l of this.connListeners) l(!this.dev.faults.unreachable);
       if (!this.dev.faults.unreachable) this.emit({ type: "runtime", status: this.status() });
@@ -248,9 +284,9 @@ export class MockEngine {
   }
 
   resetAll() {
-    localStorage.removeItem(STATE_KEY);
+    localStorage.removeItem(this.keys.state);
     localStorage.removeItem("nightshift.overnightSeen");
-    this.state = freshState();
+    this.state = freshState(this.flavor);
     this.persist();
     window.location.replace(window.location.pathname);
   }
@@ -297,7 +333,7 @@ export class MockEngine {
   }
 
   private persist() {
-    saveJson(STATE_KEY, this.state);
+    saveJson(this.keys.state, this.state);
   }
 
   // ------------------------------------------------------------ hardware and tiers
@@ -322,7 +358,7 @@ export class MockEngine {
   }
 
   installPlan(tier: TierId): InstallPlan {
-    const t = mockTiers.find((x) => x.tier === tier);
+    const t = mockTier(tier, this.state.hardware);
     if (!t) throw new MockHttpError(404, `Unknown tier ${tier}`);
     const downloads = t.models.filter((m) => !this.state.present.includes(m.id));
     const totalDownloadGb = round1(downloads.reduce((s, m) => s + m.sizeGb, 0));
@@ -335,7 +371,6 @@ export class MockEngine {
       freeDiskGb,
       fits: true,
       simulated: true,
-      notes: ["Demo setup. No models or tools are downloaded."],
     };
   }
 
@@ -353,6 +388,11 @@ export class MockEngine {
     };
     this.setRuntime({ phase: "installing", tier: body.tier, error: undefined });
     this.emit({ type: "install", progress: { modelId: null, doneGb: 0, totalGb: plan.totalDownloadGb, message: "Starting the download" } });
+  }
+
+  /** The setup in use, from the real recipes. */
+  private currentTier() {
+    return this.state.settings.tier ? mockTier(this.state.settings.tier, this.state.hardware) : undefined;
   }
 
   private setRuntime(patch: Partial<RuntimeStatus>) {
@@ -413,7 +453,7 @@ export class MockEngine {
   remoteUse(body: { url: string; tier: TierId }): RuntimeStatus {
     const check = this.remoteCheck(body.url);
     if (!check.reachable) throw new MockHttpError(502, check.error ?? "That computer is not answering.");
-    if (!mockTiers.some((t) => t.tier === body.tier)) throw new MockHttpError(404, `Unknown tier ${body.tier}`);
+    if (!mockTier(body.tier)) throw new MockHttpError(404, `Unknown tier ${body.tier}`);
     if (this.state.runtime.phase === "ready" && !this.state.settings.remote && this.state.settings.tier) this.state.localTier = this.state.settings.tier;
     this.state.hardware = check.hardware;
     this.state.install = null;
@@ -529,7 +569,7 @@ export class MockEngine {
       const fields = ["clips", "audio", "captions", "overlays", "markers"] as const;
       next.timeline = { ...patch.timeline, edited: p.timeline?.edited || fields.some((key) => JSON.stringify(patch.timeline?.[key] ?? []) !== JSON.stringify(p.timeline?.[key] ?? [])) };
     }
-    if (patch.timeline === null || patch.timeline?.edited === false || !next.timeline?.edited) next.timeline = buildTimeline(next);
+    if (patch.timeline === null || patch.timeline?.edited === false || (!next.timeline?.edited && !keepsRecordedCut(next, this.state.samples))) next.timeline = buildTimeline(next);
     this.replaceProject(next);
     return next;
   }
@@ -565,7 +605,8 @@ export class MockEngine {
 
   assetUrl(pid: string, assetId: string): string {
     const asset = this.state.projects.find((p) => p.id === pid)?.assets.find((a) => a.id === assetId);
-    return asset ? this.state.uploads[assetId] ?? asset.path : `mock:missing:${assetId}`;
+    if (!asset) return `mock:missing:${assetId}`;
+    return isSamplePath(asset.path) ? sampleUrl(asset.path) : (this.state.uploads[assetId] ?? asset.path);
   }
 
   private storeMediaSources(project: Project) {
@@ -641,7 +682,7 @@ export class MockEngine {
     const take = p.takes.find((t) => t.id === body.draftId);
     if (!take) throw new MockHttpError(404, "Take not found");
     const step: StepId = body.kind === "remaster" ? "video_final_remaster" : "video_final_same_take";
-    const tier = mockTiers.find((t) => t.tier === this.state.settings.tier);
+    const tier = this.currentTier();
     if (tier && tier.steps && !tier.steps.includes(step)) throw new MockHttpError(409, "This machine can only do same-take finals.");
     const job = this.enqueue({ projectId: pid, shotId, step, mode: body.mode });
     (job as Job & { parent?: string }).parent = take.id;
@@ -668,7 +709,7 @@ export class MockEngine {
       (job as Job & { reveal?: boolean }).reveal = true;
       return job;
     }
-    if (body.rebuild || !project.timeline?.edited) this.replaceProject({ ...project, timeline: buildTimeline(project) });
+    if (body.rebuild || (!project.timeline?.edited && !keepsRecordedCut(project, this.state.samples))) this.replaceProject({ ...project, timeline: buildTimeline(project) });
     const job = this.enqueue({ projectId: pid, step: "export" });
     (job as Job & { quality?: ExportRequest["quality"] }).quality = body.quality;
     (job as Job & { aspect?: Project["aspect"] }).aspect = body.aspect;
@@ -724,8 +765,8 @@ export class MockEngine {
   private tickInstall(dt: number) {
     const inst = this.state.install;
     if (!inst || this.state.runtime.phase !== "installing") return;
-    const tier = mockTiers.find((x) => x.tier === inst.tier)!;
-    const rate = this.dev.speed === "quick" ? Math.max(0.5, inst.totalGb / 28) : 0.06; // GB per second
+    const tier = mockTier(inst.tier)!;
+    const rate = this.dev.speed === "demo" ? Math.max(0.5, inst.totalGb / 6) : this.dev.speed === "quick" ? Math.max(0.5, inst.totalGb / 28) : 0.06; // GB per second
     let budget = rate * dt;
     while (budget > 0) {
       if (!inst.current) {
@@ -749,13 +790,13 @@ export class MockEngine {
     const fail = this.dev.faults.installFail;
     if (fail === "network" && frac >= 0.4) {
       this.dev.faults.installFail = null;
-      saveJson(DEV_KEY, this.dev);
+      saveJson(this.keys.dev, this.dev);
       this.setRuntime({ phase: "error", error: "Lost the connection while downloading. Check your network, then try again. What's already downloaded is kept." });
       return;
     }
     if (fail === "disk" && frac >= 0.7) {
       this.dev.faults.installFail = null;
-      saveJson(DEV_KEY, this.dev);
+      saveJson(this.keys.dev, this.dev);
       const need = round1(inst.totalGb - inst.doneGb + 8);
       this.setRuntime({ phase: "error", error: `The disk is full. Free about ${Math.ceil(need)} GB, then try again. What's already downloaded is kept.` });
       return;
@@ -769,7 +810,7 @@ export class MockEngine {
   private finishInstall() {
     this.state.install = null;
     this.setRuntime({ phase: "starting", comfyui: { running: false, url: null, version: null } });
-    const delay = this.dev.speed === "quick" ? 3500 : 12000;
+    const delay = this.dev.speed === "demo" ? 1500 : this.dev.speed === "quick" ? 3500 : 12000;
     window.setTimeout(() => {
       if (this.state.runtime.phase !== "starting") return;
       this.state.localTier = this.state.settings.tier;
@@ -799,7 +840,7 @@ export class MockEngine {
       }
       running = { ...running, status: "running", startedAt: now(), progress: 0, message: messagesFor(running)[0] };
       this.setJob(running);
-      const tier = mockTiers.find((x) => x.tier === this.state.settings.tier);
+      const tier = this.currentTier();
       const est = tier?.estimates?.[running.step as StepId]?.peakGb;
       if (est) this.setRuntime({ memoryUsedGb: Math.min(est, (this.state.settings.memoryLimitGb ?? est) * 0.96) });
     }
@@ -808,8 +849,8 @@ export class MockEngine {
     const fail = this.dev.faults.nextJobFail;
     if (fail && next >= 0.58) {
       this.dev.faults.nextJobFail = null;
-      saveJson(DEV_KEY, this.dev);
-      const tier = mockTiers.find((x) => x.tier === this.state.settings.tier);
+      saveJson(this.keys.dev, this.dev);
+      const tier = this.currentTier();
       const peak = tier?.estimates?.[running.step as StepId]?.peakGb ?? 30;
       const limit = this.state.settings.memoryLimitGb ?? peak;
       const error =
@@ -841,9 +882,10 @@ export class MockEngine {
   }
 
   private jobSeconds(step: Job["step"], analysis = false): number {
-    if (analysis) return this.dev.speed === "quick" ? 4 : 12;
+    if (analysis) return this.dev.speed === "demo" ? 2 : this.dev.speed === "quick" ? 4 : 12;
+    if (this.dev.speed === "demo") return demoSeconds[step];
     if (this.dev.speed === "quick") return quickSeconds[step];
-    const tier = mockTiers.find((x) => x.tier === this.state.settings.tier);
+    const tier = this.currentTier();
     const est = step === "export" ? 40 : tier?.estimates?.[step]?.seconds;
     return est ?? quickSeconds[step] * 6;
   }
@@ -878,8 +920,10 @@ export class MockEngine {
     switch (job.step) {
       case "text": {
         // As the engine does: no shot is longer than one draft of this setup makes.
-        const longest = mockTiers.find((x) => x.tier === this.state.settings.tier)?.longestShotSec;
-        const gen = fallbackShots(p.template, p.brief).map(s => ({ ...s, durationSec: longest ? Math.min(s.durationSec, longest) : s.durationSec, prompt: [s.prompt, ...(p.references ?? []).slice(0, 3).map(r => `Featuring ${r.label}.`)].join(" ") }));
+        const longest = this.currentTier()?.longestShotSec;
+        let gen = fallbackShots(p.template, p.brief).map(s => ({ ...s, durationSec: longest ? Math.min(s.durationSec, longest) : s.durationSec, prompt: [s.prompt, ...(p.references ?? []).slice(0, 3).map(r => `Featuring ${r.label}.`)].join(" ") }));
+        // The First shot sample writes the shot the real one wrote, so its still and draft are the real renders.
+        if (p.id === this.state.onboarding.sampleProjectId && gen[0] && p.shots.length === 0) gen = [{ ...gen[0], prompt: firstShotSample.prompt, cameraMove: firstShotSample.cameraMove, durationSec: firstShotSample.durationSec }];
         let planIndex = 0;
         const fresh = (g: (typeof gen)[number]): Shot => ({ id: id("sht"), index: 0, ...g, locked: false });
         const merged: Shot[] = [];
@@ -919,14 +963,17 @@ export class MockEngine {
           break;
         }
         const kind: SceneKind = kindForPrompt(shot.prompt, p.template);
-        const asset: Asset = {
-          id: id("ast"),
-          kind: "image",
-          path: mockUrl({ kind, seed: seedOf(shot.id + shot.prompt + job.id), w: size.w, h: size.h, quality: "still", palette: paletteFor(shot.prompt), move: "static" }),
-          width: size.w,
-          height: size.h,
-          createdAt: now(),
-        };
+        const recorded = sampleForPrompt(shot.prompt)?.still;
+        const asset: Asset = recorded
+          ? { id: id("ast"), kind: "image", ...recorded, createdAt: now() }
+          : {
+              id: id("ast"),
+              kind: "image",
+              path: mockUrl({ kind, seed: seedOf(shot.id + shot.prompt + job.id), w: size.w, h: size.h, quality: "still", palette: paletteFor(shot.prompt), move: "static" }),
+              width: size.w,
+              height: size.h,
+              createdAt: now(),
+            };
         outputs.push(asset.id);
         next.assets = [...p.assets, asset];
         next.shots = p.shots.map((s) => (s.id === shot.id ? { ...s, stillAssetId: asset.id } : s));
@@ -944,15 +991,21 @@ export class MockEngine {
         const seed = (job as Job & { seed?: number }).seed ?? Math.floor(Math.random() * 1e9);
         const kind = (base?.[1] as SceneKind) ?? kindForPrompt(shot.prompt, p.template);
         const sceneSeed = base ? Number(base[2]) + (seed % 7) : seedOf(shot.id + seed);
-        const video: Asset = {
-          id: id("ast"),
-          kind: "video",
-          path: mockUrl({ kind, seed: sceneSeed, w: Math.round(size.w / 2), h: Math.round(size.h / 2), quality: "draft", palette: paletteFor(shot.prompt), move: shot.cameraMove ?? "static" }),
-          width: Math.round(size.w / 2),
-          height: Math.round(size.h / 2),
-          durationSec: shot.durationSec,
-          createdAt: now(),
-        };
+        // A recorded shot's drafts are its real takes, in the order they were made.
+        const recorded = job.step === "video_draft" ? sampleForStill(still?.path) : undefined;
+        const made = p.takes.filter((t) => t.shotId === shot.id && t.rung === "draft").length;
+        const real = recorded?.drafts[made % recorded.drafts.length];
+        const video: Asset = real
+          ? { id: id("ast"), kind: "video", ...real, createdAt: now() }
+          : {
+              id: id("ast"),
+              kind: "video",
+              path: mockUrl({ kind, seed: sceneSeed, w: Math.round(size.w / 2), h: Math.round(size.h / 2), quality: "draft", palette: paletteFor(shot.prompt), move: shot.cameraMove ?? "static" }),
+              width: Math.round(size.w / 2),
+              height: Math.round(size.h / 2),
+              durationSec: shot.durationSec,
+              createdAt: now(),
+            };
         const latent: Asset = { id: id("ast"), kind: "latent", path: `latents/${video.id}.safetensors`, createdAt: now() };
         const take: Take = { id: id("tk"), shotId: shot.id, rung: "draft", seed, videoAssetId: video.id, latentAssetId: latent.id, jobId: job.id };
         if (p.template === "what_if") {
@@ -976,7 +1029,13 @@ export class MockEngine {
         const draftAsset = p.assets.find((a) => a.id === parent.videoAssetId);
         const parts = draftAsset ? this.assetUrl(p.id, draftAsset.id).split(":") : undefined;
         const remaster = job.step === "video_final_remaster";
-        const video: Asset = {
+        // A recorded take finishes as its real same-take final did. A take with none recorded (the First shot's, made on
+        // an 8 GB card whose final is a 2x resize) shows its own frames.
+        const recorded = sampleForDraft(draftAsset?.path);
+        const real = recorded && (recorded.final ?? recorded.drafts.find((d) => d.path === draftAsset?.path));
+        const video: Asset = real
+          ? { id: id("ast"), kind: "video", ...real, createdAt: now() }
+          : {
           id: id("ast"),
           kind: "video",
           path: mockUrl({
@@ -1064,27 +1123,32 @@ export class MockEngine {
           sz.w = Math.round(sz.w * scale / 2) * 2;
           sz.h = Math.round(sz.h * scale / 2) * 2;
         }
-        const asset: Asset = {
-          id: id("ast"),
-          kind: "video",
-          path: mockUrl({ kind: (parts?.[1] as SceneKind) ?? "landscape", seed: Number(parts?.[2] ?? 7), w: sz.w, h: sz.h, quality: "final", palette: Number(parts?.[5] ?? 0), move: firstShot?.cameraMove ?? "static" }),
-          width: sz.w,
-          height: sz.h,
-          durationSec: total,
-          createdAt: now(),
-        };
+        // The recorded project, cut as it was recorded, exports the film it really exported.
+        const recordedExport = aspect === "16:9" && keepsRecordedCut(p, this.state.samples) ? croissantExport : undefined;
+        const asset: Asset = recordedExport
+          ? { ...recordedExport, id: id("ast"), createdAt: now() }
+          : {
+              id: id("ast"),
+              kind: "video",
+              path: mockUrl({ kind: (parts?.[1] as SceneKind) ?? "landscape", seed: Number(parts?.[2] ?? 7), w: sz.w, h: sz.h, quality: "final", palette: Number(parts?.[5] ?? 0), move: firstShot?.cameraMove ?? "static" }),
+              width: sz.w,
+              height: sz.h,
+              durationSec: total,
+              createdAt: now(),
+            };
         outputs.push(asset.id);
         next.assets = [...p.assets, asset];
         break;
       }
     }
 
-    if (!next.timeline?.edited) next.timeline = buildTimeline(next);
+    if (!next.timeline?.edited && !keepsRecordedCut(next, this.state.samples)) next.timeline = buildTimeline(next);
     this.storeMediaSources(next);
     this.state.projects = this.state.projects.map((x) => (x.id === next.id ? next : x));
     this.emit({ type: "project", project: next });
-    const peak = mockTiers.find((x) => x.tier === this.state.settings.tier)?.estimates?.[job.step as StepId]?.peakGb;
-    const doneMessage = (job as Job & { reveal?: boolean }).reveal ? "Demo preview. The real engine writes a 9.9 s reveal clip." : job.step === "export" ? "Demo preview. No MP4 was written. Caption timings are estimated." : "Done";
+    const peak = this.currentTier()?.estimates?.[job.step as StepId]?.peakGb;
+    const recordedFilm = job.step === "export" && next.assets.some((a) => outputs.includes(a.id) && a.path === croissantExport.path);
+    const doneMessage = (job as Job & { reveal?: boolean }).reveal ? "Demo preview. The real engine writes a 9.9 s reveal clip." : recordedFilm ? "The film this project exported on the DGX Spark, made smaller for the web. Captions are timed to the spoken words." : job.step === "export" ? "Demo preview. No MP4 was written. Caption timings are estimated." : "Done";
     this.setJob({ ...job, status: "done", progress: 1, message: doneMessage, finishedAt: now(), outputAssetIds: outputs, peakGb: peak });
 
     // A sensible engine queues stills right after the shot list exists.
@@ -1232,7 +1296,8 @@ function captionsFor(lines: string[], total: number): Caption[] {
 }
 
 let engine: MockEngine | null = null;
-export function getMockEngine(): MockEngine {
-  if (!engine) engine = new MockEngine();
+/** The page's one mock engine. Its flavor is fixed by the first call: the page reloads to change it. */
+export function getMockEngine(flavor: MockFlavor = "dev"): MockEngine {
+  if (!engine) engine = new MockEngine(flavor);
   return engine;
 }

@@ -4,6 +4,11 @@ export interface LaunchOptions {
   mode: 'local' | 'mock' | 'attach';
   comfyBaseUrl?: string;
   dataDir: string;
+  /**
+   * The app may switch between the demo and a real setup from the UI: it was opened without --mock,
+   * --comfy-base-url or their environment variables. --data-dir alone still allows it.
+   */
+  canSwitchDemo: boolean;
 }
 
 export function launchOptions(args: string[], env: NodeJS.ProcessEnv, defaultDataDir: string): LaunchOptions {
@@ -23,7 +28,30 @@ export function launchOptions(args: string[], env: NodeJS.ProcessEnv, defaultDat
     if (!['http:', 'https:'].includes(url.protocol) || url.username || url.password || url.search || url.hash) throw new Error('Comfy proxy must be an HTTP URL without credentials');
     comfyBaseUrl = url.href.replace(/\/+$/, '');
   }
-  return { mode: mock ? 'mock' : comfyBaseUrl ? 'attach' : 'local', dataDir: resolve(option('--data-dir') ?? env.NIGHTSHIFT_DATA_DIR ?? defaultDataDir), ...(comfyBaseUrl ? { comfyBaseUrl } : {}) };
+  return { mode: mock ? 'mock' : comfyBaseUrl ? 'attach' : 'local', dataDir: resolve(option('--data-dir') ?? env.NIGHTSHIFT_DATA_DIR ?? defaultDataDir), canSwitchDemo: !mock && !comfyBaseUrl, ...(comfyBaseUrl ? { comfyBaseUrl } : {}) };
+}
+
+/** Where the user's choice of the demo is kept: in the real data folder, so the demo's own folder can be thrown away. */
+export const DEMO_CHOICE_FILE = 'desktop-demo.json';
+
+/** The demo's own data folder, beside the real one: "Nightshift" gets "Nightshift Demo". Nothing in it mixes with a real setup. */
+export function demoDataDir(realDataDir: string): string {
+  return `${realDataDir.replace(/[/\\]+$/, '')} Demo`;
+}
+
+/** The choice file's content, read leniently: anything but an explicit yes is the real setup. */
+export function demoChosen(raw: string | undefined): boolean {
+  if (!raw) return false;
+  try { return (JSON.parse(raw) as { demo?: unknown }).demo === true; } catch { return false; }
+}
+
+/**
+ * The mode the app opens in. Switches on the command line or in the environment win. Without them, the demo the user
+ * chose ("Look around first") runs the engine in mock mode on its own data folder.
+ */
+export function withDemoChoice(options: LaunchOptions, chosen: boolean): LaunchOptions {
+  if (!options.canSwitchDemo || !chosen) return options;
+  return { mode: 'mock', dataDir: demoDataDir(options.dataDir), canSwitchDemo: true };
 }
 
 export function resourcePaths(runtime: string) {

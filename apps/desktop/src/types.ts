@@ -18,6 +18,8 @@ export interface DesktopStatus {
   activeOvernightJobs: number;
   notificationsSupported: boolean;
   mode: 'local' | 'mock' | 'attach';
+  /** The UI may offer "Look around first" or "Set up for real": no mode switch was given at launch. */
+  canSwitchDemo: boolean;
 }
 export interface DesktopBridge {
   platform: string;
@@ -31,4 +33,6 @@ export interface DesktopBridge {
   revealProject(projectId: string): Promise<void>;
   revealExport(projectId: string, assetId: string): Promise<void>;
   openExternal(url: string): Promise<void>;
+  /** Relaunch in the demo (true) or the real setup (false). Rejected when the app was opened with a mode switch. */
+  setDemo(on: boolean): Promise<void>;
 }

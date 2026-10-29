@@ -4,7 +4,7 @@ import { Plus } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router";
 import { useEngineState, useJobs } from "@/store/engine";
 import { Button, Segmented, cx } from "@/ui/primitives";
-import { isMock } from "@/api/config";
+import { isDevMock } from "@/api/config";
 import { isGpuJob, jobLabel, projectStage } from "@/features/project/helpers";
 import { plural, shortDuration } from "@/lib/format";
 import { totalDuration } from "@/features/project/helpers";
@@ -63,7 +63,7 @@ export function Toolbar({ project, onDev }: { project?: Project; onDev: () => vo
       </div>
       <div className="toolbar__right">
         <Activity />
-        {isMock() && (
+        {isDevMock() && (
           <Button variant="toolbar" size="s" onClick={onDev} title="Mock engine controls (press M)">
             Mock
           </Button>

@@ -2,10 +2,11 @@ import { quickEffects } from "@nightshift/contract";
 import type { ReactNode } from "react";
 import { Field, Input, radioGroupKeyDown } from "@/ui/primitives";
 import "./effects.css";
+import { publicUrl } from "@/lib/publicUrl";
 
 /** Real model-lab shots. Motion only plays after a pointer or keyboard interaction. */
 function EffectPreview({ id }: { id: string }) {
-  return <video className="effect__preview" src={`/effects/${id}.mp4`} poster={`/effects/${id}.webp`} preload="none" muted loop playsInline aria-hidden="true" />;
+  return <video className="effect__preview" src={publicUrl(`effects/${id}.mp4`)} poster={publicUrl(`effects/${id}.webp`)} preload="none" muted loop playsInline aria-hidden="true" />;
 }
 
 /** The effect gallery. Each tile plays its real model-lab clip on hover or focus. */

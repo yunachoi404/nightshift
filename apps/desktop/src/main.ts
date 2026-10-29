@@ -1,5 +1,6 @@
 import { app, BrowserWindow, dialog, ipcMain, Menu, nativeTheme, Notification, powerSaveBlocker, session, shell, utilityProcess } from 'electron';
 import type { IpcMainInvokeEvent, MenuItemConstructorOptions, UtilityProcess } from 'electron';
+import { readFileSync } from 'node:fs';
 import { mkdir, readFile, rename, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { ProjectSchema, RuntimeStatusSchema } from '@nightshift/contract';
@@ -8,13 +9,21 @@ import { JobTracker } from './jobs.js';
 import { watchJobs } from './events.js';
 import { containedPath, externalUrl, safeId } from './paths.js';
 import type { DesktopStatus } from './types.js';
-import { launchOptions, mergeDisabledFeatures, resourcePaths } from './runtime.js';
+import { DEMO_CHOICE_FILE, demoChosen, launchOptions, mergeDisabledFeatures, resourcePaths, withDemoChoice } from './runtime.js';
 
 app.setName('Nightshift');
 // Before ready: never register as the Mac's Now Playing source or take the media keys (see runtime.ts).
 app.commandLine.appendSwitch('disable-features', mergeDisabledFeatures(app.commandLine.getSwitchValue('disable-features')));
-// Keep browser storage beside the engine data, including isolated demo runs.
-app.setPath('userData', launchOptions(process.argv, process.env, app.getPath('userData')).dataDir);
+// The mode and data folder for this run: switches on the command line win, then the demo the user chose in the app.
+const opened = launchOptions(process.argv, process.env, app.getPath('userData'));
+/** The real setup's data folder. The demo choice lives here; the demo's own data lives beside it. */
+const realDataDir = opened.dataDir;
+const launch = withDemoChoice(opened, opened.canSwitchDemo && demoChosen(readChoice()));
+function readChoice(): string | undefined {
+  try { return readFileSync(join(realDataDir, DEMO_CHOICE_FILE), 'utf8'); } catch { return undefined; }
+}
+// Keep browser storage beside the engine data, including the demo's and other isolated runs.
+app.setPath('userData', launch.dataDir);
 const locked = app.requestSingleInstanceLock();
 if (!locked) app.quit();
 let window: BrowserWindow | undefined;
@@ -24,6 +33,8 @@ let blocker: number | undefined;
 let quitting = false;
 let allowQuit = false;
 let quitPrompt = false;
+/** Set while quitting to open again in the other mode: the demo choice it replaced, restored if the user stays. */
+let relaunching: { previous: boolean } | undefined;
 let starting: Promise<void> | undefined;
 let uiUrl = '';
 let dataDir = '';
@@ -34,7 +45,7 @@ const themeModes: ThemeMode[] = ['system', 'light', 'dark'];
 let themeMode: ThemeMode = 'system';
 let statusWrites: Promise<void> = Promise.resolve();
 const notices = new Set<Notification>();
-const state: DesktopStatus = { engineUrl: '', engineState: 'starting', eventsConnected: false, keepingAwake: false, activeOvernightJobs: 0, notificationsSupported: false, mode: 'local' };
+const state: DesktopStatus = { engineUrl: '', engineState: 'starting', eventsConnected: false, keepingAwake: false, activeOvernightJobs: 0, notificationsSupported: false, mode: launch.mode, canSwitchDemo: launch.canSwitchDemo };
 
 function persistStatus(): void {
   if (!dataDir) return;
@@ -121,6 +132,24 @@ function installIpc(): void {
   ipcMain.handle('desktop:external', async (event, value: unknown) => { trusted(event); await shell.openExternal(externalUrl(value)); });
   ipcMain.handle('desktop:reveal-project', async (event, id: unknown) => { trusted(event); await revealProject(id); });
   ipcMain.handle('desktop:reveal-export', async (event, id: unknown, assetId: unknown) => { trusted(event); await revealExport(id, assetId); });
+  ipcMain.handle('desktop:demo', async (event, on: unknown) => { trusted(event); await switchDemo(on); });
+}
+async function writeChoice(demo: boolean): Promise<void> {
+  await mkdir(realDataDir, { recursive: true });
+  await writeFile(join(realDataDir, DEMO_CHOICE_FILE), JSON.stringify({ demo }));
+}
+/**
+ * "Look around first" and "Set up for real": remember the choice, then quit and open again in that mode, so the engine,
+ * its data folder and the window's storage all belong to it from the start. The usual quit runs, so overnight work is
+ * never stopped without asking.
+ */
+async function switchDemo(on: unknown): Promise<void> {
+  if (typeof on !== 'boolean') throw new Error('Expected true or false');
+  if (!launch.canSwitchDemo) throw new Error('Nightshift was opened with a mode switch. Quit it and open it without one.');
+  if (on === (launch.mode === 'mock')) return;
+  await writeChoice(on);
+  relaunching = { previous: !on };
+  app.quit();
 }
 async function revealProject(id: unknown): Promise<void> {
   const value = await project(id);
@@ -192,7 +221,7 @@ async function statusDialog(): Promise<void> {
   // The engine may send its work to a GPU computer on the network (Settings.remote) though it was started for this Mac.
   const runtime = await fetch(`${state.engineUrl}/api/status`, { signal: AbortSignal.timeout(2000) }).then(async res => RuntimeStatusSchema.parse(await res.json())).catch(() => undefined);
   await dialog.showMessageBox({ type: 'info', message: 'Nightshift desktop status', detail: [
-    runtime?.mode === 'remote' ? `Real engine, on a GPU computer on the network${runtime.comfyui.url ? ` (${runtime.comfyui.url})` : ''}.` : `Real engine (${state.mode} mode).`,
+    runtime?.mode === 'remote' ? `Real engine, on a GPU computer on the network${runtime.comfyui.url ? ` (${runtime.comfyui.url})` : ''}.` : state.mode === 'mock' && launch.canSwitchDemo ? 'Real engine, demo mode: sample renders, its own data folder.' : `Real engine (${state.mode} mode).`,
     `Engine: ${state.engineState}`,
     `Queue events: ${state.eventsConnected ? 'connected' : 'reconnecting'}`,
     `Overnight jobs: ${activeJobs}`,
@@ -235,7 +264,6 @@ function installMenu(): void {
 async function start(): Promise<void> {
   state.engineState = 'starting';
   persistStatus();
-  const launch = launchOptions(process.argv, process.env, app.getPath('userData'));
   state.mode = launch.mode;
   const runtime = app.isPackaged ? join(process.resourcesPath, 'runtime') : join(__dirname, 'runtime');
   const resources = resourcePaths(runtime);
@@ -321,7 +349,13 @@ app.on('before-quit', event => {
   void (async () => {
     if (activeJobs > 0) {
       const result = await dialog.showMessageBox({ type: 'warning', message: 'Stop the overnight queue and quit?', detail: 'Keep Nightshift open while jobs run. You can close the window and rendering will continue. The engine must recover unfinished jobs when the app reopens.', buttons: ['Keep rendering', 'Stop and quit'], defaultId: 0, cancelId: 0 });
-      if (result.response === 0) { quitPrompt = false; return; }
+      if (result.response === 0) {
+        quitPrompt = false;
+        // Staying: the switch is off, and the next launch opens in this mode.
+        if (relaunching) await writeChoice(relaunching.previous).catch(() => {});
+        relaunching = undefined;
+        return;
+      }
     }
     quitting = true;
     eventAbort?.abort();
@@ -335,11 +369,12 @@ app.on('before-quit', event => {
       });
     }
     allowQuit = true;
+    if (relaunching) app.relaunch();
     app.quit();
   })();
 });
 if (locked) void app.whenReady().then(async () => {
-  dataDir = launchOptions(process.argv, process.env, app.getPath('userData')).dataDir;
+  dataDir = launch.dataDir;
   await mkdir(dataDir, { recursive: true });
   await restoreTheme();
   state.notificationsSupported = Notification.isSupported();

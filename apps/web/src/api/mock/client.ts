@@ -1,10 +1,10 @@
 import type { Asset } from "@nightshift/contract";
 import { ApiError, type NightshiftClient } from "../client";
-import { getMockEngine, MockHttpError } from "./engine";
+import { getMockEngine, MockHttpError, type MockFlavor } from "./engine";
 
 /** Wraps the in-browser engine in the same promise-based interface as the HTTP client, with a little latency. */
-export function createMockClient(): NightshiftClient {
-  const engine = getMockEngine();
+export function createMockClient(flavor: MockFlavor = "dev"): NightshiftClient {
+  const engine = getMockEngine(flavor);
 
   async function call<T>(fn: () => T, ms = 90): Promise<T> {
     if (engine.dev.faults.unreachable) {

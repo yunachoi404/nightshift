@@ -9,6 +9,40 @@ Apache-2.0.
 
 <!-- Demo video: add the link here before publishing (docs/PUBLISHING.md). -->
 
+## Try it
+
+Four ways in, shortest first. Most of them need no GPU and download no models.
+
+1. **Watch the 2-minute film** (2 minutes). [The Nightshift film](DEMO_VIDEO_URL) shows real projects made on a DGX
+   Spark, from the first question to the export.
+2. **Try it in your browser** (about 2 minutes, nothing to install). Open
+   **[yunachoi404.github.io/nightshift](https://yunachoi404.github.io/nightshift/)** in a desktop browser. Choose
+   **Get started**, pick a sample machine, then **Try the demo**. The First shot (a lighthouse) and The Croissant ad are
+   real renders: open the ad for its takes, finals and edit with voice, music and word-timed captions, then **Export
+   video**. New projects you start there get placeholder pictures. Nothing runs on a server; it all stays in your
+   browser.
+3. **Download the Mac app** (Apple Silicon, macOS 12 or later; a 294 MB download, then about 3 minutes).
+   1. Download `Nightshift-0.1.0-arm64.dmg` from the [latest release](https://github.com/yunachoi404/nightshift/releases/latest),
+      open it and drag Nightshift to Applications.
+   2. The app is not notarized, so the first time you open it macOS says **"Nightshift" Not Opened**. Choose **Done**.
+      On macOS 15 or later, open **System Settings > Privacy & Security**, scroll to Security, choose **Open Anyway**
+      next to "Nightshift was blocked", then **Open Anyway** again and enter your password. On macOS 12 to 14,
+      Control-click the app and choose **Open**. Only once. The [release notes](docs/RELEASE_NOTES.md) have a Terminal
+      alternative.
+   3. Choose **Look around first, with sample renders**. The app opens again in a demo with its own data folder: it
+      reads your real hardware, picks your recipe, and runs the real engine and editor with placeholder renders and
+      real MP4 exports. Nothing is downloaded. **Set up for real** in Settings goes back to a real setup.
+4. **Real renders** (an hour or more, most of it downloading 56 to 148 GB of models). Follow
+   **[docs/SETUP.md](docs/SETUP.md)**. What each machine gets:
+   - **A Linux PC with an NVIDIA card, local install.** Tested on an 8 GB RTX 2080 Super: setup took 51 minutes, 47.5
+     of them for 56 GB of models. Stills in about 2.4 minutes, drafts with sound in about a minute, 384x256 and about
+     2 s a shot. Good for storyboards and animatics. Bigger cards get bigger recipes; those are estimates.
+   - **A Mac with a GPU computer on your network.** Tested with a DGX Spark: stills in 31 s, 4-second drafts in 56 s,
+     same-take finals at twice the size, H3 remasters, What if? films, effects and camera moves. The GPU computer needs
+     Linux, an NVIDIA GPU and 148 GB of models.
+   - **A Mac on its own.** The app installs everything, 63 to 122 GB. Untested with real renders on a Mac: the Apple
+     recipes are estimates, and MPS support for LTX 2.5 and the quantized MOSS kernels is unproven.
+
 ![The Nightshift editor with a product ad made in the app. Its stills, drafts, finals, voice and music were rendered on a DGX Spark on the same network.](docs/media/editor.jpg)
 
 <sub>The editor, with a 15-second product ad made in the app. Every shot, the voice and the music were rendered on a
@@ -179,9 +213,10 @@ Step-by-step instructions, and what was tested for each path, are in **[docs/SET
 
 | Path | What you need | Tested |
 |---|---|---|
-| Demo mode | Any Mac or Linux with Node 22. No GPU, nothing downloaded | Yes, in a browser and in the Mac app |
+| Browser demo | A desktop browser. Nothing to install | Yes, as a static build under `/nightshift/` |
+| Demo mode | The Mac app (**Look around first**), or any Mac or Linux with Node 22. No GPU, nothing downloaded | Yes, in a browser and in the Mac app |
 | Mac app with a GPU computer on the network | Apple Silicon Mac, and a Linux NVIDIA computer prepared with `scripts/setup_comfyui.sh` | Yes, with a DGX Spark |
-| Local install on one machine | Apple Silicon Mac or Linux NVIDIA computer, 56 to 146 GB of downloads | Yes, on Linux with an RTX 2080 Super (`nvidia-8`), from install to export. Not on a Mac |
+| Local install on one machine | Apple Silicon Mac or Linux NVIDIA computer, 56 to 148 GB of downloads | Yes, on Linux with an RTX 2080 Super (`nvidia-8`), from install to export. Not on a Mac |
 | Build from source | Node 22, pnpm 10, uv; macOS for the app | Yes |
 
 The quickest look, with no GPU:
@@ -232,7 +267,7 @@ sizes and memory bandwidth ([napkin math](research/2026-10-19_napkin_math.md)), 
 
 | Tier | Example | Still / draft / final models | Download | Still, draft, same-take final, remaster | Status |
 |---|---|---|---|---|---|
-| unified-128-cuda | DGX Spark (GB10, 128 GB unified) | Krea 2 bf16 / LTX 2.5 int8 / same take or H3 remaster; Music 3 | 146 GB | 31 s, 56 s, 81 s, 10 min | **Tested** |
+| unified-128-cuda | DGX Spark (GB10, 128 GB unified) | Krea 2 bf16 / LTX 2.5 int8 / same take or H3 remaster; Music 3 | 148 GB | 31 s, 56 s, 81 s, 10 min | **Tested** |
 | apple-64 | Apple Silicon, 64 GB or more | Krea 2 bf16 / LTX 2.5 bf16 / same take; ACE-Step | 122 GB | ~50 s, ~2 min, ~4 min, none | Estimated |
 | nvidia-32 | RTX 5090 | Krea 2 NVFP4 / LTX 2.5 int8 / same take or H3; Music 3 | 127 GB | ~15 s, ~25 s, ~45 s, ~3.5 min | Estimated |
 | nvidia-24-offload | RTX 4090 or 3090 with 64 GB RAM | Krea 2 int8 / LTX 2.5 int8 offloaded / same take or H3; ACE-Step | 140 GB | ~25 s, ~40 s, ~80 s, ~6 min | Estimated |
@@ -298,8 +333,9 @@ carries these measured times, so the app calls this tier tested.
   especially glass. Other templates use prompt guidance. See the [camera quality report](research/2026-10-21_camera_moves.md).
 - **Shots are at most about 4 s** with LTX 2.5 (97 frames), and about 2 s with Kandinsky 6 Lite on the 8 GB and
   Apple 16 GB tiers (49 frames). Longer shots are trimmed to that, not extended.
-- **The Mac app is not notarized.** It is ad-hoc signed and Apple Silicon only. A copy downloaded on another Mac
-  will likely be blocked by Gatekeeper; that path is untested.
+- **The Mac app is not notarized.** It is ad-hoc signed and Apple Silicon only. A downloaded copy is blocked the first
+  time it opens ("Nightshift" Not Opened, seen on macOS 27 with a copy marked as downloaded). Apple's way past it is
+  Privacy & Security > Open Anyway; the steps are in the [release notes](docs/RELEASE_NOTES.md).
 - **The GPU computer's ComfyUI has no password.** Keep port 8190 on a network you trust.
 
 ## Repository

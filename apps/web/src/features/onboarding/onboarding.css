@@ -446,6 +446,13 @@
 .ob__where {
   margin-bottom: 4px;
 }
+/* The browser demo's sample machines, between the title and what was read about the one picked. */
+.ob__machines {
+  display: flex;
+  justify-content: center;
+  max-width: 100%;
+  overflow-x: auto;
+}
 .ob__facts {
   width: 100%;
 }

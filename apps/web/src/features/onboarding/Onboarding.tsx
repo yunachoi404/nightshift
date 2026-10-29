@@ -2,14 +2,15 @@ import type { HardwareProfile, InstallPlan, Job, Project, TierSummary } from "@n
 import { Check, ChevronDown, ChevronRight, Cpu, Film, HardDrive, Image, MemoryStick, Mic, Monitor, Music, PenLine, Sparkles, Wand2 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useNavigate } from "react-router";
-import { isMock } from "@/api/config";
+import { isBrowserDemo, isDevMock } from "@/api/config";
+import { getMockEngine } from "@/api/mock/engine";
 import { ApiError } from "@/api/client";
 import { useEngine, useEngineState, useJobs, useProject } from "@/store/engine";
 import { Button, Field, Input, Notice, Segmented, Select, Slider, Tag, cx, toast } from "@/ui/primitives";
 import { Mark } from "@/ui/Mark";
 import { gb, roughDuration, shortDuration } from "@/lib/format";
 import { Media } from "@/media/Media";
-import { useDemoMode } from "@/store/demo";
+import { demoSwitch, enterDemo, leaveDemo, useDemoMode, useDemoSwitch } from "@/store/demo";
 import { isMac, machineName, tierFor, tierName, upscaleOnly, useInstalledTier, useTiers } from "@/store/tier";
 import { RemoteSetup } from "@/features/compute/RemoteSetup";
 import { WelcomeTour } from "./WelcomeTour";
@@ -18,6 +19,7 @@ import { draftStepFor } from "@/features/project/draftSteps";
 import { useNow } from "@/lib/useNow";
 import { SAMPLE_STEPS, sampleEstimates, sampleTimeLine, type SampleStep } from "./firstShot";
 import "./onboarding.css";
+import { publicUrl } from "@/lib/publicUrl";
 
 type Step = "welcome" | "detect" | "tier" | "install" | "starting" | "first";
 
@@ -33,8 +35,9 @@ const dotSteps: Step[] = ["detect", "tier", "install", "first"];
 export function Onboarding({ onDev }: { onDev: () => void }) {
   const { status, onboarding } = useEngineState();
   const { install } = useEngine();
-  // Someone who has been through setup before (say, after leaving a GPU computer) skips the welcome.
-  const [local, setLocal] = useState<Step>(() => (onboarding?.done ? "detect" : "welcome"));
+  // Someone who has been through setup before (say, after leaving a GPU computer) skips the welcome, and so does someone
+  // who just chose to look around first: they come back to it with Back.
+  const [local, setLocal] = useState<Step>(() => (onboarding?.done || demoSwitch(status?.mode).canLeave ? "detect" : "welcome"));
   const [hardware, setHardware] = useState<HardwareProfile | null>(null);
   // What the user chose: the setup card shows it, Download installs it, and after an install stops, Try again installs it
   // again and Back comes back to it. Until they choose in this window (say, after a reload), it is the setup the engine
@@ -57,7 +60,7 @@ export function Onboarding({ onDev }: { onDev: () => void }) {
   return (
     <div className="ob">
       <div className="ob__strip drag">
-        {isMock() && (
+        {isDevMock() && (
           <Button variant="toolbar" size="s" onClick={onDev}>
             Mock
           </Button>
@@ -128,7 +131,7 @@ function Rise({ i, children, className }: { i: number; children: ReactNode; clas
 function Chip({ img, after, children }: { img: string; after?: string; children: ReactNode }) {
   const chip = (
     <span className="ob__chip">
-      <img src={`/welcome/chip-${img}.jpg`} alt="" />
+      <img src={publicUrl(`welcome/chip-${img}.jpg`)} alt="" />
       {children}
     </span>
   );
@@ -164,6 +167,7 @@ function Welcome({ onNext }: { onNext: () => void }) {
             Get started
           </Button>
           <span className="ob__fine">{demo ? "Sample renders. Nothing is downloaded." : "Setup is mostly one large download."}</span>
+          <DemoChoice />
         </Rise>
       </div>
       <div className="ob__stagefloor">
@@ -172,6 +176,31 @@ function Welcome({ onNext }: { onNext: () => void }) {
         </Rise>
       </div>
     </div>
+  );
+}
+
+/**
+ * "Look around first": the demo, with sample renders and its own data, never mixed with a real setup. In the demo the
+ * user chose, the way back to a real setup. Quiet, under the step's main action. See store/demo.ts.
+ */
+function DemoChoice() {
+  const sw = useDemoSwitch();
+  const [busy, setBusy] = useState(false);
+  if (!sw.canEnter && !sw.canLeave) return null;
+  const go = async () => {
+    setBusy(true);
+    try {
+      // The Mac app opens again in the other mode, and a browser reloads: either way this page goes away.
+      await (sw.canEnter ? enterDemo() : leaveDemo());
+    } catch (e) {
+      setBusy(false);
+      toast({ title: sw.canEnter ? "Couldn't open the demo" : "Couldn't leave the demo", text: e instanceof Error ? e.message : String(e), tone: "bad" });
+    }
+  };
+  return (
+    <button type="button" className="ob__linkbtn" disabled={busy} onClick={() => void go()}>
+      {busy ? (sw.canEnter ? "Opening the demo" : "Opening setup") : sw.canEnter ? "Look around first, with sample renders" : "Set up for real instead"}
+    </button>
   );
 }
 
@@ -187,6 +216,9 @@ function Detect({ onNext, onBack }: { onNext: (hw: HardwareProfile) => void; onB
   const [manual, setManual] = useState(false);
   const [revealed, setRevealed] = useState(0);
   const [where, setWhere] = useState<Where>("local");
+  // A browser can't read the machine it runs on: the browser demo shows sample machines, the tested ones first.
+  const sample = isBrowserDemo();
+  const [machine, setMachine] = useState(() => (sample ? getMockEngine().dev.preset : ""));
 
   const detect = useCallback(async () => {
     setError(null);
@@ -243,11 +275,25 @@ function Detect({ onNext, onBack }: { onNext: (hw: HardwareProfile) => void; onB
         />
       </Rise>
       <Rise i={1} className="ob__head">
-        <h1 className="ob__title">{where === "remote" ? "A GPU computer on your network" : error || manual ? "Tell Nightshift about this machine" : done ? "Here's what you've got" : "Looking at your machine"}</h1>
-        <p className="ob__lead">{where === "remote" ? "Renders go there. Projects stay here." : error ? "It couldn't read the hardware. Fill in the basics." : manual ? "Models and settings are picked for this exact hardware." : "Models and settings picked for this exact hardware."}</p>
+        <h1 className="ob__title">{where === "remote" ? "A GPU computer on your network" : error || manual ? "Tell Nightshift about this machine" : sample ? "Here's a sample machine" : done ? "Here's what you've got" : "Looking at your machine"}</h1>
+        <p className="ob__lead">{where === "remote" ? "Renders go there. Projects stay here." : error ? "It couldn't read the hardware. Fill in the basics." : manual ? "Models and settings are picked for this exact hardware." : sample ? "A browser can't read your machine. Each of these gets its own setup." : "Models and settings picked for this exact hardware."}</p>
       </Rise>
       {where === "local" && <SetupAgain />}
 
+      {where === "local" && sample && !manual && (
+        <Rise i={2} className="ob__machines">
+          <Segmented
+            label="Sample machine"
+            value={machine}
+            onChange={(v) => {
+              setMachine(v);
+              getMockEngine().setDev({ preset: v });
+              void detect();
+            }}
+            options={sampleMachines.map(([value, label]) => ({ value, label }))}
+          />
+        </Rise>
+      )}
       {where === "local" && (
         <>
           {error && (
@@ -319,7 +365,7 @@ function Detect({ onNext, onBack }: { onNext: (hw: HardwareProfile) => void; onB
           <>
             {where === "local" && !error && !manual && done && hw?.source !== "manual" && (
               <button type="button" className="ob__linkbtn" onClick={() => setManual(true)}>
-                Not right? Enter it yourself
+                {sample ? "Enter your own machine" : "Not right? Enter it yourself"}
               </button>
             )}
             <button type="button" className="ob__quiet" onClick={onBack}>
@@ -337,6 +383,14 @@ function Detect({ onNext, onBack }: { onNext: (hw: HardwareProfile) => void; onB
     </div>
   );
 }
+
+/** The browser demo's machines: the two tested ones, then two Macs whose setups are estimates. */
+const sampleMachines: Array<[preset: string, label: string]> = [
+  ["spark", "DGX Spark"],
+  ["rtx2080", "RTX 2080 Super PC"],
+  ["m4max", "MacBook Pro, M4 Max"],
+  ["air16", "MacBook Air, 16 GB"],
+];
 
 function ManualForm({ initial, onSave, onCancel }: { initial: HardwareProfile | null; onSave: (p: HardwareProfile) => Promise<void>; onCancel?: () => void }) {
   const g = initial?.gpus[0];
@@ -464,6 +518,7 @@ function archName(arch: string, os: HardwareProfile["os"]): string {
 
 function Tier({ hardware, choice, onChoose, onInstall, onBack }: { hardware: HardwareProfile; choice: Choice | null; onChoose: (c: Choice) => void; onInstall: (c: Choice) => Promise<void>; onBack: () => void }) {
   const runtimeDemo = useDemoMode();
+  const sw = useDemoSwitch();
   const { client } = useEngine();
   const { settings } = useEngineState();
   const savedLimit = settings?.memoryLimitGb ?? null;
@@ -554,17 +609,72 @@ function Tier({ hardware, choice, onChoose, onInstall, onBack }: { hardware: Har
     );
 
   if (!recommended) {
+    // The demo renders nothing, so it goes on with the lightest setup for this kind of machine.
+    const stand = [...tiers].sort((a, b) => Number(b.match.vendor === gpu?.vendor) - Number(a.match.vendor === gpu?.vendor) || a.downloadGb - b.downloadGb)[0];
     return (
       <div className="ob__step">
         <Rise i={0} className="ob__head">
           <h1 className="ob__title">This machine can't run Nightshift yet</h1>
           <p className="ob__lead">It needs a graphics chip with 8 GB, or an Apple Silicon Mac with 16 GB. {gpu && gpu.vramGb > 0 ? `This one has ${gb(gpu.vramGb)}.` : "This one doesn't have one it can use."}</p>
-          <p className="ob__fine">Go back to enter your hardware by hand, or use a GPU computer on your network.</p>
+          <p className="ob__fine">
+            {demo && stand
+              ? `The demo can still show you around, with sample renders and the ${tierName(stand, stand)} setup.`
+              : sw.canEnter
+                ? "Look around with sample renders, use a GPU computer on your network, or go back to enter your hardware by hand."
+                : "Go back to enter your hardware by hand, or use a GPU computer on your network."}
+          </p>
         </Rise>
-        <Actions step="tier">
-          <Button variant="primary" size="l" className="ob__cta" onClick={onBack}>
-            Back
-          </Button>
+        <Actions
+          step="tier"
+          quiet={
+            demo || sw.canEnter ? (
+              <button type="button" className="ob__quiet" onClick={onBack}>
+                Back
+              </button>
+            ) : null
+          }
+        >
+          {demo && stand ? (
+            <Button
+              variant="primary"
+              size="l"
+              className="ob__cta"
+              busy={busy}
+              onClick={async () => {
+                setBusy(true);
+                try {
+                  await onInstall({ tier: stand.tier, memoryLimitGb: null });
+                } catch (e) {
+                  toast({ title: "Couldn't start the demo", text: e instanceof Error ? e.message : String(e), tone: "bad" });
+                  setBusy(false);
+                }
+              }}
+            >
+              Continue with sample renders
+            </Button>
+          ) : sw.canEnter ? (
+            <Button
+              variant="primary"
+              size="l"
+              className="ob__cta"
+              busy={busy}
+              onClick={async () => {
+                setBusy(true);
+                try {
+                  await enterDemo();
+                } catch (e) {
+                  toast({ title: "Couldn't open the demo", text: e instanceof Error ? e.message : String(e), tone: "bad" });
+                  setBusy(false);
+                }
+              }}
+            >
+              Look around with sample renders
+            </Button>
+          ) : (
+            <Button variant="primary" size="l" className="ob__cta" onClick={onBack}>
+              Back
+            </Button>
+          )}
         </Actions>
       </div>
     );
@@ -608,6 +718,7 @@ function Tier({ hardware, choice, onChoose, onInstall, onBack }: { hardware: Har
                 <b>{demo ? "Demo setup" : "Download"}</b>
                 <span>{demo ? "Nothing is downloaded" : plan ? `${gb(plan.totalDownloadGb)} of ${gb(plan.freeDiskGb)} free` : "Checking"}</span>
               </div>
+              {demo && <p className="t-small t-muted">A real setup on this machine downloads {gb(tier.downloadGb)}.</p>}
               {plan && !demo && <DiskBar plan={plan} />}
               {!demo && plan?.downloads
                 .filter((d) => d.id.startsWith("editor-"))
@@ -676,9 +787,12 @@ function Tier({ hardware, choice, onChoose, onInstall, onBack }: { hardware: Har
       <Actions
         step="tier"
         quiet={
-          <button type="button" className="ob__quiet" onClick={onBack}>
-            Back
-          </button>
+          <>
+            <DemoChoice />
+            <button type="button" className="ob__quiet" onClick={onBack}>
+              Back
+            </button>
+          </>
         }
       >
         <Button
@@ -1026,7 +1140,8 @@ function FirstShot() {
   const current = SAMPLE_STEPS.find((s) => !doneSteps.includes(s));
   const elapsedSec = active?.status === "running" && active.startedAt && current === sampleStepOf(active.step) ? Math.max(0, (now - Date.parse(active.startedAt)) / 1000) : 0;
   // From the recipe's times: about how long it all takes, then what is left once a step is done.
-  const timeLine = sampleTimeLine({ estimates: sampleEstimates(tier, project ? draftStepFor(project) : "video_draft"), done: doneSteps, elapsedSec, where: remoteName ?? "this machine" });
+  // The recipe's times are for real renders. The demo's take seconds, so it promises none.
+  const timeLine = demo ? null : sampleTimeLine({ estimates: sampleEstimates(tier, project ? draftStepFor(project) : "video_draft"), done: doneSteps, elapsedSec, where: remoteName ?? "this machine" });
   // Until the still is there, the frame shows the steps, not an empty box. A failure says why under it instead.
   const showSteps = !best && !deleted && !(answer === "failed" && !project) && !(failed && !active);
 
@@ -1034,7 +1149,7 @@ function FirstShot() {
     <div className="ob__step ob__step--wide">
       <Rise i={0} className="ob__head">
         <h1 className="ob__title">{stage === "done" ? (demo ? "Your demo shot" : remoteName ? `${remoteName} made this` : "Your machine made this") : "Your first shot"}</h1>
-        <p className="ob__lead">{stage === "done" ? `A still, then a motion draft, in ${elapsed ? shortDuration(elapsed) : "under a minute"}. ${upscale ? `A final upscales the take you like${upscale.to}` : "A final sharpens the take you like"}, now or overnight.` : `A lighthouse in a storm, camera pushing in. Made ${remoteName ? `on ${remoteName}` : "on your machine"} while you watch.`}</p>
+        <p className="ob__lead">{stage === "done" ? `${isBrowserDemo() ? "A real still and motion draft, made on an RTX 2080 Super and replayed here." : demo ? `A placeholder still and motion draft, in ${elapsed ? shortDuration(elapsed) : "a few seconds"}.` : `A still, then a motion draft, in ${elapsed ? shortDuration(elapsed) : "under a minute"}.`} ${upscale ? `A final upscales the take you like${upscale.to}` : "A final sharpens the take you like"}, now or overnight.` : `A lighthouse in a storm, camera pushing in. ${isBrowserDemo() ? "Real renders, replayed while you watch." : demo ? "Placeholder renders, made here while you watch." : `Made ${remoteName ? `on ${remoteName}` : "on your machine"} while you watch.`}`}</p>
       </Rise>
       <Rise i={1} className={cx("frame ob__shot", frameClass("16:9"), !best && "frame--empty", showSteps && "shimmer", active && best?.rung !== "draft" && "frame--working", stage === "done" && "ob__shot--done")}>
         {showSteps && <SampleSteps current={current} done={doneSteps} />}

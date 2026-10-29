@@ -9,6 +9,7 @@ state/
 *.log
 node_modules/
 dist/
+dist-pages/
 out/
 *.tsbuildinfo
 

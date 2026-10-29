@@ -1,0 +1,49 @@
+# The browser demo on GitHub Pages: the web UI on its in-browser engine, with real sample renders and no server.
+# It deploys on every push to main. It only takes effect once the repository is public and Pages is set to
+# "GitHub Actions" (Settings > Pages > Build and deployment > Source). See docs/SETUP.md.
+name: Browser demo
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install the web UI and what it needs
+        run: npx pnpm@10.33.0 install --frozen-lockfile --filter "@nightshift/web..."
+      - name: Test the web UI
+        run: npx pnpm@10.33.0 --filter @nightshift/web test
+      - id: pages
+        uses: actions/configure-pages@v5
+      - name: Build the static demo
+        # The base path is the repository's Pages path, "/nightshift/" for github.io/nightshift.
+        run: npx pnpm@10.33.0 --filter @nightshift/web build:pages --base "${{ steps.pages.outputs.base_path }}/"
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: apps/web/dist-pages
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

@@ -15,7 +15,7 @@ import { Editor } from "@/features/editor/Editor";
 import { SettingsPage } from "@/features/settings/Settings";
 import { QueuePage } from "@/features/queue/QueuePanel";
 import { DevPanel } from "@/features/dev/DevPanel";
-import { isMock } from "@/api/config";
+import { isDevMock } from "@/api/config";
 
 export function App() {
   return (
@@ -52,7 +52,7 @@ function Shell() {
       const typing = !!t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.tagName === "SELECT" || t.isContentEditable);
       const cmd = e.metaKey || e.ctrlKey;
       if (e.key === "Escape") setDevOpen(false);
-      if (!typing && isMock() && (e.key === "m" || e.key === "M") && !cmd) setDevOpen((v) => !v);
+      if (!typing && isDevMock() && (e.key === "m" || e.key === "M") && !cmd) setDevOpen((v) => !v);
       if (!cmd || e.altKey || onSetup || !ready || lost) return;
       if (e.key === "n" && !e.shiftKey) {
         e.preventDefault();
@@ -94,13 +94,13 @@ function Shell() {
           <div className="titlebar drag" />
           <Unreachable onRetry={() => void reload()} />
         </div>
-        {isMock() && devOpen && <DevPanel onClose={() => setDevOpen(false)} />}
-        {isMock() && <DevHotspot onOpen={() => setDevOpen(true)} />}
+        {isDevMock() && devOpen && <DevPanel onClose={() => setDevOpen(false)} />}
+        {isDevMock() && <DevHotspot onOpen={() => setDevOpen(true)} />}
       </div>
     );
   }
 
-  const devPanel = isMock() && devOpen && <DevPanel onClose={() => setDevOpen(false)} />;
+  const devPanel = isDevMock() && devOpen && <DevPanel onClose={() => setDevOpen(false)} />;
   return (
     <>
       <div className={cx("app", onSetup && "app--single")} inert={lost}>
@@ -136,7 +136,7 @@ function Shell() {
             <Unreachable onRetry={() => void reload()} />
           </div>
           {devPanel}
-          {isMock() && <DevHotspot onOpen={() => setDevOpen(true)} />}
+          {isDevMock() && <DevHotspot onOpen={() => setDevOpen(true)} />}
         </div>
       )}
     </>

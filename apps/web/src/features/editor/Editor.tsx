@@ -8,7 +8,7 @@ import { Button, Notice, Segmented, Select, Switch, Tag, Textarea, cx, toast } f
 import { Media } from "@/media/Media";
 import { assetById, failureText, frameClass, isActive, jobStatusLine } from "@/features/project/helpers";
 import { useNow } from "@/lib/useNow";
-import { isMock } from "@/api/config";
+import { noFileToast } from "@/store/demo";
 import { plural, relativeTime, roughDuration, timecode } from "@/lib/format";
 import { genres, voices, scriptLines } from "@nightshift/contract";
 import { RevealSheet } from "@/features/reveal/RevealSheet";
@@ -182,8 +182,10 @@ function ProjectEditor({ project }: { project: Project }) {
 
   return (
     <div className="ed">
-      {!isMock() && timeline.audio.map((track) => (
-        <PreviewAudio key={track.assetId} src={client.assetUrl(project.id, track.assetId)} time={time} start={track.start} playing={playing} gain={track.gain} trimIn={track.in ?? 0} trimOut={track.out} />
+      {/* A voice is often several pieces of one file, so each piece is keyed by where it starts. The mock's own songs and
+          voices are stand-ins with nothing to play; the browser demo's recorded ones are real files. */}
+      {timeline.audio.map((track) => ({ track, src: client.assetUrl(project.id, track.assetId) })).filter(({ src }) => !src.startsWith("mock:")).map(({ track, src }) => (
+        <PreviewAudio key={`${track.assetId}@${track.start}`} src={src} time={time} start={track.start} playing={playing} gain={track.gain} trimIn={track.in ?? 0} trimOut={track.out} />
       ))}
       <div className="ed__top">
         <div className="ed__stage" ref={stageRef} tabIndex={-1}>
@@ -382,10 +384,11 @@ function ProjectEditor({ project }: { project: Project }) {
                   size="s"
                   className="insp__file-open"
                   onClick={() => {
+                    const url = client.assetUrl(project.id, exportAsset.id);
                     if (window.nightshiftDesktop) {
                       void window.nightshiftDesktop.revealExport(project.id, exportAsset.id).catch((error) => toast({ title: "Couldn't show the export", text: error instanceof Error ? error.message : String(error), tone: "bad" }));
-                    } else if (isMock()) toast({ title: "This is the mock engine", text: "Nothing was written to disk. The real engine saves to your Nightshift folder.", tone: "accent" });
-                    else window.open(client.assetUrl(project.id, exportAsset.id), "_blank");
+                    } else if (url.startsWith("mock:")) toast(noFileToast());
+                    else window.open(url, "_blank");
                   }}
                 >
                   {window.nightshiftDesktop ? window.nightshiftDesktop.platform === "darwin" ? "Show in Finder" : "Show in folder" : "Open file"}

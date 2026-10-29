@@ -37,7 +37,8 @@ beforeEach(() => {
   vi.useFakeTimers();
   engine = new MockEngine();
   engine.state.runtime = { ...engine.state.runtime, phase: "ready" };
-  engine.state.settings = { ...engine.state.settings, tier: "apple-64" };
+  // The real DGX Spark recipe: it has both finals, same take and remaster.
+  engine.state.settings = { ...engine.state.settings, tier: "unified-128-cuda" };
   engine.state.projects = [ferry()];
 });
 afterEach(() => vi.useRealTimers());

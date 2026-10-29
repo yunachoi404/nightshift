@@ -6,7 +6,7 @@ import { Button, Dialog, Notice, Segmented, Tag, cx, toast } from "@/ui/primitiv
 import { Media } from "@/media/Media";
 import { assetById, failureText, frameClass, isActive, jobStatusLine } from "@/features/project/helpers";
 import { useNow } from "@/lib/useNow";
-import { isMock } from "@/api/config";
+import { noFileToast } from "@/store/demo";
 import { relativeTime, timecode } from "@/lib/format";
 import { revealJobs, revealable, sourceLabel } from "./reveal";
 import "./reveal.css";
@@ -52,7 +52,7 @@ export function RevealSheet({ project, shot, open, onClose }: { project: Project
   const openFile = (assetId: string) => {
     if (window.nightshiftDesktop) {
       void window.nightshiftDesktop.revealExport(project.id, assetId).catch((error) => toast({ title: "Couldn't show the clip", text: error instanceof Error ? error.message : String(error), tone: "bad" }));
-    } else if (isMock()) toast({ title: "This is the mock engine", text: "Nothing was written to disk. The real engine saves to your Nightshift folder.", tone: "accent" });
+    } else if (client.assetUrl(project.id, assetId).startsWith("mock:")) toast(noFileToast());
     else window.open(client.assetUrl(project.id, assetId), "_blank");
   };
   const shotNo = [...project.shots].sort((a, b) => a.index - b.index).findIndex((s) => s.id === shot.id) + 1;

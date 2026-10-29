@@ -2,6 +2,10 @@
 
 Four ways to run it. Each section says what was tested and on what.
 
+No GPU and no build? The [browser demo](https://yunachoi404.github.io/nightshift/) runs in any desktop browser, and
+the Mac app's **Look around first** opens a demo with nothing downloaded. Both are in the README's
+[Try it](../README.md#try-it).
+
 1. [Build from source](#1-build-from-source). Every other path starts here.
 2. [Demo mode](#2-demo-mode-no-gpu). No GPU, nothing downloaded. Real engine, editor and exports; placeholder renders.
 3. [The Mac app with a GPU computer on your network](#3-the-mac-app-with-a-gpu-computer-on-your-network). How
@@ -50,8 +54,9 @@ open /Applications/Nightshift.app
 
 If an older Nightshift is in `/Applications`, quit it and move it aside first. Copying over it can leave stale
 signed files. The build bundles ffmpeg, ffprobe, uv and a headless Chrome for rendering, so the installed app does
-not need Homebrew. It is ad-hoc signed and not notarized. On the Mac that built it, it opens normally. A copy
-downloaded on another Mac will likely be blocked by Gatekeeper; we have not tested that path.
+not need Homebrew. It is ad-hoc signed and not notarized. On the Mac that built it, it opens normally. A downloaded
+copy is blocked the first time ("Nightshift" Not Opened); [docs/RELEASE_NOTES.md](RELEASE_NOTES.md) has the steps
+past it. We saw the block on macOS 27 with a copy marked as downloaded, and did not click through it there.
 
 Tested: all of the above on an M4 Max Mac (macOS 27), including the dmg build and install.
 More detail: [apps/desktop/README.md](../apps/desktop/README.md).
@@ -62,7 +67,24 @@ Demo mode runs the real engine, editor and exports, and fakes only the GPU. Stil
 pictures, songs are synthesized, and the voice uses the system's speech (`say` on macOS, `espeak-ng` on Linux).
 Nothing is downloaded. Use it to walk through onboarding, a project, the overnight queue and the editor.
 
-In a browser, after building:
+**From the app, no switches.** The welcome and the setup card offer **Look around first, with sample renders**.
+
+- In the Mac app it quits and opens again in demo mode, with its own data folder beside the real one
+  (`~/Library/Application Support/Nightshift Demo`) and its own window storage. It opens on the machine step: it reads
+  the real hardware and picks the real recipe, then installs nothing. **Settings > Set up for real** (or **Set up for
+  real instead** in setup) opens the real setup again. The choice is kept in `desktop-demo.json` in the real data
+  folder, so the app reopens in the mode you left it in. A machine too small for any recipe goes on in the demo with
+  the lightest one.
+- In a browser on a real engine it switches the page to the in-browser demo, kept in that browser's storage. The
+  engine and its data are not touched. That demo is the same one as the [browser demo](#host-the-browser-demo): real
+  renders for the First shot and The Croissant ad, placeholders for anything new, and simulated exports. **Settings >
+  Set up for real** goes back to the engine.
+
+Tested: both, on the M4 Max Mac, from a fresh data folder there and back. In the Mac app's demo a new project went
+through stills, a draft, a same-take final, music, a spoken voice with word-timed captions and a 1080p export,
+written only to the demo folder.
+
+**With switches**, in a browser, after building:
 
 ```sh
 node packages/engine/dist/cli.js --mock --data-dir /tmp/nightshift-demo --web-dir apps/web/dist
@@ -77,7 +99,8 @@ env -u ELECTRON_RUN_AS_NODE /Applications/Nightshift.app/Contents/MacOS/Nightshi
   --data-dir "$HOME/Library/Application Support/Nightshift Demo"
 ```
 
-Quit Nightshift before switching modes. A second launch only focuses the running app.
+Quit Nightshift before switching modes. A second launch only focuses the running app. An app opened with `--mock`
+or `--comfy-base-url` offers no Look around first or Set up for real: the switches decide its mode.
 
 Tested: both, on the M4 Max Mac.
 
@@ -95,7 +118,7 @@ projects through the browser UI and one through the installed Mac app, recorded 
 ### Prepare the GPU computer
 
 You need Linux, an NVIDIA GPU with a driver for CUDA 13, `git`, `curl`, `jq` and
-[uv](https://docs.astral.sh/uv/), and room for the models (146 GB for the DGX Spark recipe, plus about 15 GB for
+[uv](https://docs.astral.sh/uv/), and room for the models (148 GB for the DGX Spark recipe, plus about 15 GB for
 ComfyUI and its Python packages).
 
 **Install ComfyUI and the node packs.**
@@ -137,7 +160,7 @@ jq -r '.models[] | select(.sha256) | "\(.sha256)  comfyui/models/\(.folder)/\(.f
 
 These are the same files, folders and checksums the app's own installer uses. `curl -C -` resumes a broken
 download. Tested: the loop and the checksum check on the recipe's small files, and every URL in the DGX Spark recipe
-answers. We did not re-download the full 146 GB this way: on our DGX Spark the files were already on disk and read
+answers. We did not re-download the full 148 GB this way: on our DGX Spark the files were already on disk and read
 through `MODELS_BASE`.
 
 **Start ComfyUI for the network.**
@@ -253,3 +276,30 @@ node packages/engine/dist/cli.js --comfy-base-url http://127.0.0.1:8191 --data-d
 
 The engine's README covers every option, environment variable and API route:
 [packages/engine/README.md](../packages/engine/README.md).
+
+## Host the browser demo
+
+The browser demo is the web UI on its in-browser engine, built as static files: no server and no GPU. It starts with
+real renders (the First shot and The Croissant ad, about 2.4 MB in `apps/web/public/demo/`) and sample machines to
+pick from. Anything else it makes is a placeholder.
+
+```sh
+npx pnpm@10.33.0 install --frozen-lockfile
+npx pnpm@10.33.0 --filter @nightshift/web build:pages            # apps/web/dist-pages, for /nightshift/
+npx pnpm@10.33.0 --filter @nightshift/web build:pages --base /    # or for the root of a site
+cd apps/web && npx vite preview --mode pages --base /nightshift/ --outDir dist-pages
+# open http://localhost:4173/nightshift/
+```
+
+`.github/workflows/pages.yml` builds it and deploys it to GitHub Pages on every push to `main`, under the
+repository's Pages path. It takes effect only after two one-time settings on GitHub:
+
+1. The repository is public (Pages on a private repository needs a paid plan).
+2. **Settings > Pages > Build and deployment > Source** is **GitHub Actions**.
+
+Then push to `main`, or run the workflow by hand (**Actions > Browser demo > Run workflow**). The site is at
+`https://<owner>.github.io/<repository>/`.
+
+Tested: the static build served under `/nightshift/` by `vite preview`, from onboarding to an export, in light and
+dark. The workflow has not run on GitHub yet.
+
