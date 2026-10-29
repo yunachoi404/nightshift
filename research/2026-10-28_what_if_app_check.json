@@ -1,0 +1,134 @@
+{
+  "gravity": {
+    "projectId": "prj_mvrnkce064d9d20133",
+    "draftId": "take_mvrnqjffc03ca5e531",
+    "finalId": "take_mvro7r9p311117dbd1",
+    "seedMatches": true,
+    "guideIdsMatch": true,
+    "timelineUsesFinal": true,
+    "video": {
+      "draft": {
+        "width": 384,
+        "height": 640,
+        "r_frame_rate": "24/1",
+        "nb_frames": "361",
+        "duration": "15.041667",
+        "audioHash": "SHA256=503aa0b886dff560d71c895d7360ed26da3e66c3c1149b789835e6b14c69c63c"
+      },
+      "final": {
+        "width": 768,
+        "height": 1280,
+        "r_frame_rate": "24/1",
+        "nb_frames": "361",
+        "duration": "15.041667",
+        "audioHash": "SHA256=503aa0b886dff560d71c895d7360ed26da3e66c3c1149b789835e6b14c69c63c"
+      }
+    },
+    "sameFrameCount": true,
+    "audioMatches": true,
+    "ssim": "SSIM Y:0.952379 (13.222033) U:0.986182 (18.595559) V:0.985774 (18.469114) All:0.963579 (14.386455)",
+    "export": {
+      "file": "01-gravity.mp4",
+      "width": 1080,
+      "height": 1920,
+      "frames": "360",
+      "duration": "15.000000",
+      "audioCodec": "aac",
+      "audioChannels": 2
+    },
+    "narrationWords": 40,
+    "captionBlocks": 11,
+    "audioTracks": [
+      "music",
+      "voice"
+    ]
+  },
+  "jupiter": {
+    "projectId": "prj_mvrnmv5x4567093c8a",
+    "draftId": "take_mvrnyxa15b7ac380fe",
+    "finalId": "take_mvrodybd881329a727",
+    "seedMatches": true,
+    "guideIdsMatch": true,
+    "timelineUsesFinal": true,
+    "video": {
+      "draft": {
+        "width": 384,
+        "height": 640,
+        "r_frame_rate": "24/1",
+        "nb_frames": "361",
+        "duration": "15.041667",
+        "audioHash": "SHA256=93574de99ee4c12c4382677d20158181adf7fdfebfc846b4a33a02004770af07"
+      },
+      "final": {
+        "width": 768,
+        "height": 1280,
+        "r_frame_rate": "24/1",
+        "nb_frames": "361",
+        "duration": "15.041667",
+        "audioHash": "SHA256=93574de99ee4c12c4382677d20158181adf7fdfebfc846b4a33a02004770af07"
+      }
+    },
+    "sameFrameCount": true,
+    "audioMatches": true,
+    "ssim": "SSIM Y:0.796479 (6.913915) U:0.940538 (12.257613) V:0.901912 (10.083841) All:0.838061 (7.906492)",
+    "export": {
+      "file": "02-jupiter.mp4",
+      "width": 1080,
+      "height": 1920,
+      "frames": "360",
+      "duration": "15.000000",
+      "audioCodec": "aac",
+      "audioChannels": 2
+    },
+    "narrationWords": 40,
+    "captionBlocks": 12,
+    "audioTracks": [
+      "music",
+      "voice"
+    ]
+  },
+  "forest": {
+    "projectId": "prj_mvrnmvmie728a981de",
+    "draftId": "take_mvro1i1bc6dadde222",
+    "finalId": "take_mvrok5ag81f755ca86",
+    "seedMatches": true,
+    "guideIdsMatch": true,
+    "timelineUsesFinal": true,
+    "video": {
+      "draft": {
+        "width": 384,
+        "height": 640,
+        "r_frame_rate": "24/1",
+        "nb_frames": "361",
+        "duration": "15.041667",
+        "audioHash": "SHA256=b96446c8043b48b2883a54457890ec7f132e31b6d53120c0089f99ca9ff77ded"
+      },
+      "final": {
+        "width": 768,
+        "height": 1280,
+        "r_frame_rate": "24/1",
+        "nb_frames": "361",
+        "duration": "15.041667",
+        "audioHash": "SHA256=b96446c8043b48b2883a54457890ec7f132e31b6d53120c0089f99ca9ff77ded"
+      }
+    },
+    "sameFrameCount": true,
+    "audioMatches": true,
+    "ssim": "SSIM Y:0.898207 (9.922812) U:0.957792 (13.746006) V:0.970378 (15.283927) All:0.920166 (10.978132)",
+    "export": {
+      "file": "03-forest.mp4",
+      "width": 1080,
+      "height": 1920,
+      "frames": "360",
+      "duration": "15.000000",
+      "audioCodec": "aac",
+      "audioChannels": 2
+    },
+    "narrationWords": 39,
+    "captionBlocks": 10,
+    "audioTracks": [
+      "music",
+      "voice"
+    ]
+  }
+}

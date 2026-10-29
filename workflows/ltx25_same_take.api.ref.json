@@ -1,0 +1,33 @@
+{
+  "workflow": "ltx25_same_take.api.json",
+  "inputs": {
+    "prompt": {
+      "node": "7",
+      "field": "text"
+    },
+    "negative": {
+      "node": "8",
+      "field": "text"
+    },
+    "image": {
+      "node": "5",
+      "field": "image"
+    },
+    "seed": {
+      "node": "15",
+      "field": "noise_seed"
+    },
+    "latent": {
+      "node": "30",
+      "field": "latent"
+    },
+    "video": {
+      "node": "25",
+      "field": "reference_video"
+    }
+  },
+  "params": {},
+  "outputNodes": [
+    "25"
+  ]
+}

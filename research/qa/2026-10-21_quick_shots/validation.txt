@@ -1,0 +1,173 @@
+Root typecheck
+
+> nightshift@ typecheck <repo>
+> pnpm -r typecheck
+
+Scope: 5 of 6 workspace projects
+apps/desktop typecheck$ tsc --noEmit
+packages/contract typecheck$ tsc -p . --noEmit
+packages/contract typecheck: Done
+apps/desktop typecheck: Done
+apps/web typecheck$ tsc -p . --noEmit
+packages/editor typecheck$ tsc -p ../contract && tsc -p . --noEmit && tsc -p tsconfig.scripts.json --noEmit
+apps/web typecheck: Done
+packages/editor typecheck: Done
+packages/engine typecheck$ tsc -p ../contract && tsc -p ../editor && tsc -p . --noEmit && tsc -p tsconfig.scripts.json --noEmit
+packages/engine typecheck: Done
+
+
+Root tests (local ASR disabled)
+
+> nightshift@ test <repo>
+> pnpm -r test
+
+Scope: 5 of 6 workspace projects
+apps/desktop test$ node --import tsx --test test/*.test.ts
+apps/desktop test: ✔ overnight lifecycle holds awake through queued/running and notifies once per final (1.110667ms)
+apps/desktop test: ✔ reconnect detects an offline completion without replaying history and drops removed jobs (2.671167ms)
+apps/desktop test: ✔ snapshot terminal state cannot regress when older SSE frames were buffered (0.109792ms)
+apps/desktop test: ✔ SSE handles CRLF boundaries, multiline JSON, comments and malformed frames (0.214167ms)
+apps/desktop test: ✔ Finder rejects traversal and symlink escapes; external links reject executable protocols (70.191542ms)
+apps/desktop test: ✔ real SSE disconnect preserves awake state and resync notifies an offline completion (3106.995041ms)
+apps/desktop test: ✔ packaged launch defaults to local, supports mock and attach, and never combines them (0.972792ms)
+apps/desktop test: ✔ all engine resources resolve inside the supplied packaged runtime (0.087667ms)
+apps/desktop test: ℹ tests 8
+apps/desktop test: ℹ suites 0
+apps/desktop test: ℹ pass 8
+apps/desktop test: ℹ fail 0
+apps/desktop test: ℹ cancelled 0
+apps/desktop test: ℹ skipped 0
+apps/desktop test: ℹ todo 0
+apps/desktop test: ℹ duration_ms 3517.050916
+apps/desktop test: Done
+packages/editor test$ vitest run
+packages/editor test:  RUN  v3.2.7 <repo>/packages/editor
+packages/editor test:  ✓ test/style.test.ts (7 tests) 25ms
+packages/editor test:  ✓ test/reframe.test.ts (6 tests) 371ms
+packages/editor test:  ✓ test/captions.test.ts (19 tests) 10ms
+packages/editor test:  ✓ test/composition.test.ts (40 tests) 49ms
+packages/editor test:  ✓ test/plan.test.ts (14 tests) 39ms
+packages/editor test:  ✓ test/assemble.test.ts (2 tests) 271ms
+packages/editor test:  ✓ test/audio.test.ts (6 tests) 3329ms
+packages/editor test:    ✓ beat analysis > finds the synthetic song's tempo, beats and bars  1876ms
+packages/editor test:    ✓ mixAudio > levels the master to the target and ducks the music under the voice  933ms
+packages/editor test:    ✓ mixAudio > leaves a song alone at the music level when nothing speaks  358ms
+packages/editor test:  ✓ test/integration.test.ts (2 tests | 1 skipped) 12492ms
+packages/editor test:    ✓ export > renders a small timeline to an MP4 with picture, cards and sound  12473ms
+packages/editor test:  Test Files  8 passed (8)
+packages/editor test:       Tests  95 passed | 1 skipped (96)
+packages/editor test:    Start at  02:33:37
+packages/editor test:    Duration  15.22s (transform 1.46s, setup 0ms, collect 6.61s, tests 16.59s, environment 2ms, prepare 1.64s)
+packages/editor test: Done
+packages/engine test$ vitest run
+packages/engine test:  RUN  v3.2.7 <repo>/packages/engine
+packages/engine test:  ✓ test/effect.e2e.test.ts (2 tests) 39429ms
+packages/engine test:    ✓ Effect quick shot through the API > freeze keeps the uploaded photo, makes a take, then finishes and exports it  19006ms
+packages/engine test:    ✓ Effect quick shot through the API > levitate keeps the uploaded photo, makes a take, then finishes and exports it  20422ms
+packages/engine test:  ✓ test/engine.e2e.test.ts (12 tests) 54511ms
+packages/engine test:    ✓ mock engine, end to end > serves every route in the contract  4514ms
+packages/engine test:    ✓ mock engine, end to end > onboarding: hardware, manual override, tiers, plan, install  1060ms
+packages/engine test:    ✓ mock engine, end to end > still, draft, same-take final, remaster, music, voice, export  47335ms
+packages/engine test:    ✓ mock engine, end to end > overnight finals wait for the window and can be cancelled without leaving a take  532ms
+packages/engine test:    ✓ mock engine, end to end > shot edits are validated and the array order becomes the storyboard order  482ms
+packages/engine test:  ✓ test/remote.e2e.test.ts (11 tests) 21366ms
+packages/engine test:    ✓ a GPU computer on the network, through the real comfy-api-proxy > refuses a bad address, an unknown tier, and an address that is not ComfyUI  1044ms
+packages/engine test:    ✓ a GPU computer on the network, through the real comfy-api-proxy > POST /api/remote: ready on the remote through a proxy here, and the settings keep it  4427ms
+packages/engine test:    ✓ a GPU computer on the network, through the real comfy-api-proxy > a still, a draft and a same-take final run on the remote, with every file they need uploaded there  1606ms
+packages/engine test:    ✓ a GPU computer on the network, through the real comfy-api-proxy > the remote goes away: jobs wait for it and run once it is back  856ms
+packages/engine test:    ✓ a GPU computer on the network, through the real comfy-api-proxy > the remote restarts mid-job: the job waits, then is sent again  409ms
+packages/engine test:    ✓ a GPU computer on the network, through the real comfy-api-proxy > a crashed proxy here: jobs wait while it restarts by itself  3825ms
+packages/engine test:    ✓ a GPU computer on the network, through the real comfy-api-proxy > a new launch goes back to the remote  1517ms
+packages/engine test:    ✓ a GPU computer on the network, through the real comfy-api-proxy > another GPU computer gets every file uploaded again, though the proxy has sent the same bytes elsewhere  6785ms
+packages/engine test:    ✓ a GPU computer on the network, through the real comfy-api-proxy > DELETE /api/remote: back to this machine, which has no install, and the proxy stops  329ms
+packages/engine test:  ✓ test/hardening.e2e.test.ts (8 tests) 36168ms
+packages/engine test:    ✓ long shots and the measured frame limits > a shot longer than LTX's 97 frames is clamped to the clip, and the job says so; the remaster covers it on H3's grid  4000ms
+packages/engine test:    ✓ long shots and the measured frame limits > a recipe's maxFrames replaces the measured limit, for drafts and for remasters  5502ms
+packages/engine test:    ✓ a same-take final is the same take, or it does not run > is refused at once when the draft's latent or still is gone from the project  3764ms
+packages/engine test:    ✓ a same-take final is the same take, or it does not run > a queued one fails with the reason, rather than making a different take, when the latent is gone by the time it runs  1839ms
+packages/engine test:    ✓ a same-take final is the same take, or it does not run > a draft that does not record the prompt it was made with cannot be finished as the same take  2470ms
+packages/engine test:    ✓ song analysis is a queued job > shows in the queue on the CPU worker, can be cancelled running or queued, and measures the song when it runs  6511ms
+packages/engine test:    ✓ a cut measured while drafts land > keeps the drafts that landed while the song was measured  5524ms
+packages/engine test:    ✓ a PATCH that crosses an engine re-cut > is not taken for a hand edit: the newer cut stays and the style change lands  2394ms
+packages/engine test:  ✓ test/editor-export.test.ts (12 tests) 83638ms
+packages/engine test:    ✓ native aspect shots from the real recipes > passes the chosen voice design to Breeze instead of always using its default  7481ms
+packages/engine test:    ✓ native aspect shots from the real recipes > honors an explicit voice instruction over the named voice's default  3747ms
+packages/engine test:    ✓ native aspect shots from the real recipes > routes an uploaded product photo to a workflow that actually consumes it  2156ms
+packages/engine test:    ✓ native aspect shots from the real recipes > unified-128-cuda, 16:9: stills, drafts and finals are made in the project's shape  5923ms
+packages/engine test:    ✓ native aspect shots from the real recipes > unified-128-cuda, 9:16: stills, drafts and finals are made in the project's shape  5992ms
+packages/engine test:    ✓ native aspect shots from the real recipes > unified-128-cuda, 1:1: stills, drafts and finals are made in the project's shape  6062ms
+packages/engine test:    ✓ native aspect shots from the real recipes > apple-64 (LTX bf16, Krea on MPS) and nvidia-8 (Kandinsky 6 Lite, MOSS) use their own workflows' sizes  9256ms
+packages/engine test:    ✓ a same-take final gets exactly what its draft was made from > prompt, negative prompt, still and seed come from the draft even after the shot changed  2545ms
+packages/engine test:    ✓ a same-take final gets exactly what its draft was made from > a remaster points H3 at the draft with its reference tag, then gives the draft's prompt  2235ms
+packages/engine test:    ✓ who owns the timeline > the editor cuts it until it is edited; mirroring the plain cut is not an edit; new audio fits into an edit  3923ms
+packages/engine test:    ✓ who owns the timeline > an audio upload in a music video becomes the music track and the cut follows its beat  4092ms
+packages/engine test:    ✓ exports > respect a hand edit, rebuild on request, and stop cleanly when cancelled  29594ms
+packages/engine test:  ✓ test/references.e2e.test.ts (3 tests) 8837ms
+packages/engine test:    ✓ retains named references and validates project ownership, labels and selections  1578ms
+packages/engine test:    ✓ sends selected references in order, supports an empty selection, and gives names to the writer  6670ms
+packages/engine test:  ✓ test/nodes.test.ts (25 tests) 11142ms
+packages/engine test:    ✓ the shipped recipes' node packs > load without problems, and each lists exactly the packs its workflows use  365ms
+packages/engine test:    ✓ the shipped recipes' node packs > match the pins of the Spark's installer (comfy_nodes/nightshift/install_upstream.py)  1573ms
+packages/engine test:    ✓ installing node packs > a fresh install fetches, patches and links every pack the tier lists, plus ours; a second run changes nothing  869ms
+packages/engine test:    ✓ installing node packs > switching tiers leaves exactly the new tier's packs, offline, and switching back needs no download  694ms
+packages/engine test:    ✓ installing node packs > replaces what Nightshift put there before, and leaves everything else alone  515ms
+packages/engine test:    ✓ installing node packs > refuses to replace a pack folder Nightshift did not put there, and touches nothing  526ms
+packages/engine test:    ✓ installing node packs > a changed patch gets a fresh, patched copy of the same upstream code; the old copy goes  493ms
+packages/engine test:    ✓ installing node packs > a failed download leaves nothing half-made, and the next install finishes  368ms
+packages/engine test:    ✓ the runtime install, per shipped recipe > apple-16: custom_nodes holds exactly its packs and ours, and a repeat install does nothing  1009ms
+packages/engine test:    ✓ the runtime install, per shipped recipe > apple-64: custom_nodes holds exactly its packs and ours, and a repeat install does nothing  387ms
+packages/engine test:    ✓ the runtime install, per shipped recipe > nvidia-12-offload: custom_nodes holds exactly its packs and ours, and a repeat install does nothing  511ms
+packages/engine test:    ✓ the runtime install, per shipped recipe > nvidia-24-offload: custom_nodes holds exactly its packs and ours, and a repeat install does nothing  472ms
+packages/engine test:    ✓ the runtime install, per shipped recipe > nvidia-32: custom_nodes holds exactly its packs and ours, and a repeat install does nothing  320ms
+packages/engine test:    ✓ the runtime install, per shipped recipe > nvidia-8: custom_nodes holds exactly its packs and ours, and a repeat install does nothing  614ms
+packages/engine test:    ✓ the runtime install, per shipped recipe > unified-128-cuda: custom_nodes holds exactly its packs and ours, and a repeat install does nothing  318ms
+packages/engine test:    ✓ the runtime install, per shipped recipe > clears the unpinned packs an older engine installed, and a new Python environment gets every package again  731ms
+packages/engine test:    ✓ Nightshift's patches > apply once to the pinned code and change nothing the second time  755ms
+packages/engine test:  ✓ test/camera.e2e.test.ts (2 tests) 6420ms
+packages/engine test:    ✓ camera quick shots > uses the uploaded photo, makes its layout before the shot, and finishes the same take  6418ms
+packages/engine test:  ✓ test/attach.e2e.test.ts (5 tests) 3954ms
+packages/engine test:    ✓ the engine attached to a proxy that goes away and comes back > a still waits for the GPU while ComfyUI is preempted, tries nothing, and runs when it is back  684ms
+packages/engine test:    ✓ the engine attached to a proxy that goes away and comes back > the ssh tunnel drops mid-job: the job waits, then follows the same ComfyUI job instead of running it twice  1471ms
+packages/engine test:    ✓ the engine attached to a proxy that goes away and comes back > ComfyUI is preempted mid-job: the job waits, and is submitted again once ComfyUI is back  875ms
+packages/engine test:  ✓ test/abort.test.ts (2 tests) 1271ms
+packages/engine test:    ✓ client aborts > cancelled Range and full requests log nothing and leave the asset servable  732ms
+packages/engine test:  ✓ test/install.test.ts (10 tests) 4215ms
+packages/engine test:    ✓ downloadFile > a stale part file bigger than the server's file is thrown away, not renamed into place  2032ms
+packages/engine test:    ✓ downloadFile > retries a dropped connection and resumes where it stopped  2073ms
+packages/engine test:  ✓ test/recipes.test.ts (14 tests) 84ms
+packages/engine test:  ✓ test/remote.test.ts (11 tests) 564ms
+packages/engine test:    ✓ checking a GPU computer > says plainly why it did not answer: nothing on the port, no such computer, too slow, not ComfyUI  393ms
+packages/engine test:  ✓ test/sdk-runner.test.ts (9 tests) 54ms
+packages/engine test:  ✓ test/queue.test.ts (27 tests) 1984ms
+packages/engine test:    ✓ JobQueue > runs one job at a time, in priority order, and reports progress  429ms
+packages/engine test:  ✓ test/installer.test.ts (8 tests) 248ms
+packages/engine test:  ✓ test/effects.test.ts (5 tests) 19ms
+packages/engine test:  ✓ test/templates.test.ts (13 tests) 25ms
+packages/engine test:  ✓ test/editor-bridge.test.ts (15 tests) 82ms
+packages/engine test:  ✓ test/probe.test.ts (13 tests) 13ms
+packages/engine test:  ✓ test/flags.test.ts (12 tests) 8ms
+packages/engine test:  ✓ test/camera.test.ts (8 tests) 92ms
+packages/engine test:  ✓ test/reference-workflow.test.ts (6 tests) 9ms
+packages/engine test:  ✓ test/bind.test.ts (10 tests) 180ms
+packages/engine test:  ✓ test/mock-tags.test.ts (10 tests) 53ms
+packages/engine test:  ✓ test/templates.e2e.test.ts (4 tests) 233760ms
+packages/engine test:    ✓ every template, creation to export > cinematic_shot  190138ms
+packages/engine test:    ✓ every template, creation to export > music_video  233758ms
+packages/engine test:    ✓ every template, creation to export > product_ad  191954ms
+packages/engine test:    ✓ every template, creation to export > talking_intro  173342ms
+packages/engine test:  Test Files  26 passed (26)
+packages/engine test:       Tests  257 passed (257)
+packages/engine test:    Start at  02:33:53
+packages/engine test:    Duration  237.06s (transform 1.99s, setup 0ms, collect 21.66s, tests 508.13s, environment 2ms, prepare 3.59s)
+packages/engine test: Done
+
+
+Recipes
+apple-16: 6 steps, 25 files, 63.0 GB
+apple-64: 6 steps, 22 files, 122.1 GB
+nvidia-12-offload: 6 steps, 23 files, 76.1 GB
+nvidia-24-offload: 9 steps, 30 files, 140.2 GB
+nvidia-32: 9 steps, 29 files, 127.3 GB
+nvidia-8: 6 steps, 25 files, 55.8 GB
+unified-128-cuda: 11 steps, 31 files, 147.9 GB
+Validated 7 recipes and 44 workflow references.

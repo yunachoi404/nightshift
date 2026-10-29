@@ -1,0 +1,13 @@
+{
+  "workflow": "tests/echo_image.api.json",
+  "inputs": {
+    "image": {
+      "node": "1",
+      "field": "image"
+    }
+  },
+  "params": {},
+  "outputNodes": [
+    "3"
+  ]
+}

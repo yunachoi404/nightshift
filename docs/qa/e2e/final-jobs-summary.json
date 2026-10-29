@@ -1,0 +1,17 @@
+{
+  "statuses": {
+    "done": 74,
+    "cancelled": 7
+  },
+  "steps": {
+    "export": 11,
+    "music": 3,
+    "voice": 3,
+    "video_final_same_take": 24,
+    "video_draft": 18,
+    "still": 17,
+    "text": 5
+  },
+  "active": 0,
+  "failed": []
+}

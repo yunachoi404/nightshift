@@ -1,0 +1,6 @@
+{
+  "1": {"class_type": "LoadImage", "inputs": {"image": "x.png"}},
+  "2": {"class_type": "UNETLoader", "inputs": {"unet_name": "echo_unet.safetensors", "weight_dtype": "default"}},
+  "3": {"class_type": "CLIPTextEncode", "inputs": {"text": "", "clip": ["2", 0]}},
+  "4": {"class_type": "SaveImage", "inputs": {"images": ["1", 0], "filename_prefix": "nightshift/still"}}
+}

@@ -1,0 +1,143 @@
+{
+  "scope": "Three seeds of one still per move. Embedded metadata verifies identical prompts for normal completed jobs. Seed 42 handheld is a latent-decode rescue whose video omits the original inference prompt. These observations do not estimate general reliability.",
+  "cases": [
+    {
+      "case": "camera_dolly_in",
+      "seed": 42,
+      "prompt": "A woman in a red coat walks down a wet city street at dusk. The camera makes one continuous smooth dolly in, moving physically forward behind the woman, closing the distance. Buildings expand through parallax. No pull back, no cuts. Quiet city ambience.",
+      "path": "outputs/model_lab/camera_dolly_in/25/ltx_draft_00004_.mp4",
+      "sha256": "662600f8e7e9f3b002d7658f0877433472dba3cc77b9f5cd070b080679491f65",
+      "verdict": "partial",
+      "observation": "Forward tracking, but little evidence of closing distance; subject size stays nearly constant."
+    },
+    {
+      "case": "camera_dolly_in_seed43",
+      "seed": 43,
+      "prompt": "A woman in a red coat walks down a wet city street at dusk. The camera makes one continuous smooth dolly in, moving physically forward behind the woman, closing the distance. Buildings expand through parallax. No pull back, no cuts. Quiet city ambience.",
+      "path": "outputs/model_lab/camera_dolly_in_seed43/25/ltx_draft_00013_.mp4",
+      "sha256": "b31cba145ed02a0422aa140f9f9250fb194604b5e75e54e7fdbaa1b60174c3db",
+      "verdict": "opposite",
+      "observation": "The camera pulls back and the subject shrinks despite explicit no-pull-back wording."
+    },
+    {
+      "case": "camera_dolly_in_seed44",
+      "seed": 44,
+      "prompt": "A woman in a red coat walks down a wet city street at dusk. The camera makes one continuous smooth dolly in, moving physically forward behind the woman, closing the distance. Buildings expand through parallax. No pull back, no cuts. Quiet city ambience.",
+      "path": "outputs/model_lab/camera_dolly_in_seed44/25/ltx_draft_00015_.mp4",
+      "sha256": "b2bd85f9850aeb8f96585325dd16e4d8868e0c088e58aba0422f8c8230dd52a3",
+      "verdict": "partial",
+      "observation": "Subtle forward tracking; subject does not clearly grow as requested."
+    },
+    {
+      "case": "camera_crash_zoom",
+      "seed": 42,
+      "prompt": "A woman in a red coat walks down a wet city street at dusk. The camera makes a sudden fast optical crash zoom toward the woman in red. The subject rapidly grows from a wide shot to a close shot. Camera position stays fixed. No cuts. Quiet city ambience.",
+      "path": "outputs/model_lab/camera_crash_zoom/25/ltx_draft_00006_.mp4",
+      "sha256": "c2cd2a9a478be5335a5d82a71308b5cb8d8c80deccd6ec41e598dc635d5a6c5a",
+      "verdict": "clear",
+      "observation": "Strong zoom to a closer back-facing subject. Best zoom demo sample."
+    },
+    {
+      "case": "camera_crash_zoom_seed43",
+      "seed": 43,
+      "prompt": "A woman in a red coat walks down a wet city street at dusk. The camera makes a sudden fast optical crash zoom toward the woman in red. The subject rapidly grows from a wide shot to a close shot. Camera position stays fixed. No cuts. Quiet city ambience.",
+      "path": "outputs/model_lab/camera_crash_zoom_seed43/25/ltx_draft_00017_.mp4",
+      "sha256": "681c80a9b60f1ad0feba1e2eb0a9663fe522e022aae7a184627fda9f7ebf9cd2",
+      "verdict": "drift",
+      "observation": "Strong zoom, but adds an unrequested turn or front-facing reveal."
+    },
+    {
+      "case": "camera_crash_zoom_seed44",
+      "seed": 44,
+      "prompt": "A woman in a red coat walks down a wet city street at dusk. The camera makes a sudden fast optical crash zoom toward the woman in red. The subject rapidly grows from a wide shot to a close shot. Camera position stays fixed. No cuts. Quiet city ambience.",
+      "path": "outputs/model_lab/camera_crash_zoom_seed44/25/ltx_draft_00019_.mp4",
+      "sha256": "2e6c5fcde71ef5d3a4bfe5bb946d4a063fa79a2569078a780c1e2079d9baa7fe",
+      "verdict": "drift",
+      "observation": "Strong zoom, but invents a front-facing reveal above the raised hood or collar."
+    },
+    {
+      "case": "camera_orbit",
+      "seed": 42,
+      "prompt": "A woman in a red coat walks down a wet city street at dusk. The camera orbits left around the woman by ninety degrees, moving from behind to a side view. The buildings slide through the background with clear parallax. No cuts. Quiet city ambience.",
+      "path": "outputs/model_lab/camera_orbit/25/ltx_draft_00008_.mp4",
+      "sha256": "7a310f9f206be8d1e1b26d0661ba31fcec593213fb8c3ea73c4a0f1d35922326",
+      "verdict": "partial",
+      "observation": "Clear orbit, but exceeds the requested ninety-degree move."
+    },
+    {
+      "case": "camera_orbit_seed43",
+      "seed": 43,
+      "prompt": "A woman in a red coat walks down a wet city street at dusk. The camera orbits left around the woman by ninety degrees, moving from behind to a side view. The buildings slide through the background with clear parallax. No cuts. Quiet city ambience.",
+      "path": "outputs/model_lab/camera_orbit_seed43/25/ltx_draft_00021_.mp4",
+      "sha256": "6ac7363c1dddfa07cd458796166bdac51022bad501e09bfbb921d383ba8751c3",
+      "verdict": "drift",
+      "observation": "Large lateral or panning move loses the woman out of frame; weak evidence of an orbit around her."
+    },
+    {
+      "case": "camera_orbit_seed44",
+      "seed": 44,
+      "prompt": "A woman in a red coat walks down a wet city street at dusk. The camera orbits left around the woman by ninety degrees, moving from behind to a side view. The buildings slide through the background with clear parallax. No cuts. Quiet city ambience.",
+      "path": "outputs/model_lab/camera_orbit_seed44/25/ltx_draft_00023_.mp4",
+      "sha256": "6df7fb086730c6ab15b3a0d34b53a9c0096a6ada7206b090820da4e1ef45cc74",
+      "verdict": "partial",
+      "observation": "Clear orbit, but does not stop at a calibrated ninety-degree side view."
+    },
+    {
+      "case": "camera_crane_up",
+      "seed": 42,
+      "prompt": "A woman in a red coat walks down a wet city street at dusk. The camera cranes steadily upward from street level to a high overhead view, revealing the wet street below. The camera points down as it rises. No cuts. Quiet city ambience.",
+      "path": "outputs/model_lab/camera_crane_up/25/ltx_draft_00010_.mp4",
+      "sha256": "2c0a523fcd3d3e6211386e0bad753b38c0df6368f6e030e8934e5f100c40735e",
+      "verdict": "clear",
+      "observation": "Clear rise and increasing downward view. Good demo sample."
+    },
+    {
+      "case": "camera_crane_up_seed43",
+      "seed": 43,
+      "prompt": "A woman in a red coat walks down a wet city street at dusk. The camera cranes steadily upward from street level to a high overhead view, revealing the wet street below. The camera points down as it rises. No cuts. Quiet city ambience.",
+      "path": "outputs/model_lab/camera_crane_up_seed43/25/ltx_draft_00025_.mp4",
+      "sha256": "12bc75706f0f623c57a8200156c340e2485ca5ce8c4babc2dbce81ff9e60ad93",
+      "verdict": "clear",
+      "observation": "Clear rise to a higher downward street view, preserving the subject in frame."
+    },
+    {
+      "case": "camera_crane_up_seed44",
+      "seed": 44,
+      "prompt": "A woman in a red coat walks down a wet city street at dusk. The camera cranes steadily upward from street level to a high overhead view, revealing the wet street below. The camera points down as it rises. No cuts. Quiet city ambience.",
+      "path": "outputs/model_lab/camera_crane_up_seed44/25/ltx_draft_00027_.mp4",
+      "sha256": "ef3fa42a111fa0f67c95392535cb7df1cec95c8c9d5f11a7878fef7c63e15fda",
+      "verdict": "clear",
+      "observation": "Clear, more restrained rise and downward view; subject stays in frame."
+    },
+    {
+      "case": "camera_handheld_rescued",
+      "seed": 42,
+      "prompt": null,
+      "path": "outputs/model_lab/camera_handheld_rescued/8/checkpoint_decode_00001_.mp4",
+      "sha256": "952936588942e0983b66717eda74f4e80f64bf3e82c49f3fdd01184ced27c2f2",
+      "verdict": "weak",
+      "observation": "Smooth tracking rather than unmistakable handheld walking bumps. Median background translation-fit jitter is below the dolly sample at the corresponding seed.",
+      "provenance": "SDK latent-decode rescue; seed from original lab record"
+    },
+    {
+      "case": "camera_handheld_seed43",
+      "seed": 43,
+      "prompt": "A woman in a red coat walks down a wet city street at dusk. The camera follows behind the woman with unmistakable handheld walking sway, small irregular lateral and vertical camera bumps. One continuous shot, no cuts. Quiet city ambience.",
+      "path": "outputs/model_lab/camera_handheld_seed43/25/ltx_draft_00029_.mp4",
+      "sha256": "c2a7ff8a11bb1103b8202e8dc7cc80805409cdc309d7f0081a72ea812296abdf",
+      "verdict": "weak",
+      "observation": "Smooth tracking rather than unmistakable handheld walking bumps. Median background translation-fit jitter is below the dolly sample at the corresponding seed.",
+      "provenance": "Embedded inference graph"
+    },
+    {
+      "case": "camera_handheld_seed44",
+      "seed": 44,
+      "prompt": "A woman in a red coat walks down a wet city street at dusk. The camera follows behind the woman with unmistakable handheld walking sway, small irregular lateral and vertical camera bumps. One continuous shot, no cuts. Quiet city ambience.",
+      "path": "outputs/model_lab/camera_handheld_seed44/25/ltx_draft_00031_.mp4",
+      "sha256": "c490c0ab560dd5e0619ff7dc103ee6105d3ad70fbd6ec1d51c20ff81bae849a5",
+      "verdict": "weak",
+      "observation": "Smooth tracking rather than unmistakable handheld walking bumps. Median background translation-fit jitter is below the dolly sample at the corresponding seed.",
+      "provenance": "Embedded inference graph"
+    }
+  ]
+}

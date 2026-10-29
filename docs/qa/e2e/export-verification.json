@@ -1,0 +1,376 @@
+[
+  {
+    "project": "QA Music",
+    "template": "music_video",
+    "projectId": "prj_mvez8rna58ad446922",
+    "assetId": "ast_mvezdl2ta58be0434d",
+    "path": "~/Library/Application Support/Nightshift QA 2026-10-19/projects/prj_mvez8rna58ad446922/assets/ast_mvezdl2ta58be0434d.mp4",
+    "bytes": 2539187,
+    "duration": 25.625,
+    "streams": [
+      {
+        "codec_type": "video",
+        "codec_name": "h264",
+        "width": 540,
+        "height": 960
+      },
+      {
+        "codec_type": "audio",
+        "codec_name": "aac",
+        "sample_rate": "48000",
+        "channels": 2
+      }
+    ],
+    "decodePass": true,
+    "decodeErrors": "",
+    "audioLevels": [
+      "[Parsed_volumedetect_0 @ 0x786b02cb40] mean_volume: -15.9 dB",
+      "[Parsed_volumedetect_0 @ 0x786b02cb40] max_volume: -1.9 dB"
+    ],
+    "frames": [
+      "docs/qa/e2e/qa-music-1-frame-1.jpg",
+      "docs/qa/e2e/qa-music-1-frame-2.jpg",
+      "docs/qa/e2e/qa-music-1-frame-3.jpg"
+    ]
+  },
+  {
+    "project": "QA Music",
+    "template": "music_video",
+    "projectId": "prj_mvez8rna58ad446922",
+    "assetId": "ast_mvezf6dz85775e8748",
+    "path": "~/Library/Application Support/Nightshift QA 2026-10-19/projects/prj_mvez8rna58ad446922/assets/ast_mvezf6dz85775e8748.mp4",
+    "bytes": 15019648,
+    "duration": 25.625,
+    "streams": [
+      {
+        "codec_type": "video",
+        "codec_name": "h264",
+        "width": 1920,
+        "height": 1080
+      },
+      {
+        "codec_type": "audio",
+        "codec_name": "aac",
+        "sample_rate": "48000",
+        "channels": 2
+      }
+    ],
+    "decodePass": true,
+    "decodeErrors": "",
+    "audioLevels": [
+      "[Parsed_volumedetect_0 @ 0x765502cb40] mean_volume: -15.9 dB",
+      "[Parsed_volumedetect_0 @ 0x765502cb40] max_volume: -1.9 dB"
+    ],
+    "frames": [
+      "docs/qa/e2e/qa-music-2-frame-1.jpg",
+      "docs/qa/e2e/qa-music-2-frame-2.jpg",
+      "docs/qa/e2e/qa-music-2-frame-3.jpg"
+    ]
+  },
+  {
+    "project": "QA Music",
+    "template": "music_video",
+    "projectId": "prj_mvez8rna58ad446922",
+    "assetId": "ast_mvezsfvq94b453d9b0",
+    "path": "~/Library/Application Support/Nightshift QA 2026-10-19/projects/prj_mvez8rna58ad446922/assets/ast_mvezsfvq94b453d9b0.mp4",
+    "bytes": 2899791,
+    "duration": 30.0,
+    "streams": [
+      {
+        "codec_type": "video",
+        "codec_name": "h264",
+        "width": 540,
+        "height": 960
+      },
+      {
+        "codec_type": "audio",
+        "codec_name": "aac",
+        "sample_rate": "48000",
+        "channels": 2
+      }
+    ],
+    "decodePass": true,
+    "decodeErrors": "",
+    "audioLevels": [
+      "[Parsed_volumedetect_0 @ 0x77df05cb40] mean_volume: -16.4 dB",
+      "[Parsed_volumedetect_0 @ 0x77df05cb40] max_volume: -2.6 dB"
+    ],
+    "frames": [
+      "docs/qa/e2e/qa-music-3-frame-1.jpg",
+      "docs/qa/e2e/qa-music-3-frame-2.jpg",
+      "docs/qa/e2e/qa-music-3-frame-3.jpg"
+    ]
+  },
+  {
+    "project": "QA Music",
+    "template": "music_video",
+    "projectId": "prj_mvez8rna58ad446922",
+    "assetId": "ast_mveztslz84d28760a4",
+    "path": "~/Library/Application Support/Nightshift QA 2026-10-19/projects/prj_mvez8rna58ad446922/assets/ast_mveztslz84d28760a4.mp4",
+    "bytes": 17853466,
+    "duration": 30.0,
+    "streams": [
+      {
+        "codec_type": "video",
+        "codec_name": "h264",
+        "width": 1920,
+        "height": 1080
+      },
+      {
+        "codec_type": "audio",
+        "codec_name": "aac",
+        "sample_rate": "48000",
+        "channels": 2
+      }
+    ],
+    "decodePass": true,
+    "decodeErrors": "",
+    "audioLevels": [
+      "[Parsed_volumedetect_0 @ 0x785b43cb40] mean_volume: -16.4 dB",
+      "[Parsed_volumedetect_0 @ 0x785b43cb40] max_volume: -2.6 dB"
+    ],
+    "frames": [
+      "docs/qa/e2e/qa-music-4-frame-1.jpg",
+      "docs/qa/e2e/qa-music-4-frame-2.jpg",
+      "docs/qa/e2e/qa-music-4-frame-3.jpg"
+    ]
+  },
+  {
+    "project": "QA Product",
+    "template": "product_ad",
+    "projectId": "prj_mvezhs6jd538c9ab18",
+    "assetId": "ast_mvezjzd1d6bc021cc5",
+    "path": "~/Library/Application Support/Nightshift QA 2026-10-19/projects/prj_mvezhs6jd538c9ab18/assets/ast_mvezjzd1d6bc021cc5.mp4",
+    "bytes": 4080129,
+    "duration": 10.458333,
+    "streams": [
+      {
+        "codec_type": "video",
+        "codec_name": "h264",
+        "width": 1080,
+        "height": 1920
+      },
+      {
+        "codec_type": "audio",
+        "codec_name": "aac",
+        "sample_rate": "48000",
+        "channels": 2
+      }
+    ],
+    "decodePass": true,
+    "decodeErrors": "",
+    "audioLevels": [
+      "[Parsed_volumedetect_0 @ 0x7551020b40] mean_volume: -17.7 dB",
+      "[Parsed_volumedetect_0 @ 0x7551020b40] max_volume: -3.2 dB"
+    ],
+    "frames": [
+      "docs/qa/e2e/qa-product-1-frame-1.jpg",
+      "docs/qa/e2e/qa-product-1-frame-2.jpg",
+      "docs/qa/e2e/qa-product-1-frame-3.jpg"
+    ]
+  },
+  {
+    "project": "QA Product",
+    "template": "product_ad",
+    "projectId": "prj_mvezhs6jd538c9ab18",
+    "assetId": "ast_mvezktit539f05d15d",
+    "path": "~/Library/Application Support/Nightshift QA 2026-10-19/projects/prj_mvezhs6jd538c9ab18/assets/ast_mvezktit539f05d15d.mp4",
+    "bytes": 1132597,
+    "duration": 10.458333,
+    "streams": [
+      {
+        "codec_type": "video",
+        "codec_name": "h264",
+        "width": 960,
+        "height": 540
+      },
+      {
+        "codec_type": "audio",
+        "codec_name": "aac",
+        "sample_rate": "48000",
+        "channels": 2
+      }
+    ],
+    "decodePass": true,
+    "decodeErrors": "",
+    "audioLevels": [
+      "[Parsed_volumedetect_0 @ 0x7c3d414b40] mean_volume: -17.7 dB",
+      "[Parsed_volumedetect_0 @ 0x7c3d414b40] max_volume: -3.2 dB"
+    ],
+    "frames": [
+      "docs/qa/e2e/qa-product-2-frame-1.jpg",
+      "docs/qa/e2e/qa-product-2-frame-2.jpg",
+      "docs/qa/e2e/qa-product-2-frame-3.jpg"
+    ]
+  },
+  {
+    "project": "QA Cinematic",
+    "template": "cinematic_shot",
+    "projectId": "prj_mvez5cqm71c4676020",
+    "assetId": "ast_mvez773zfd8bbcd5d2",
+    "path": "~/Library/Application Support/Nightshift QA 2026-10-19/projects/prj_mvez5cqm71c4676020/assets/ast_mvez773zfd8bbcd5d2.mp4",
+    "bytes": 5125130,
+    "duration": 6.0,
+    "streams": [
+      {
+        "codec_type": "video",
+        "codec_name": "h264",
+        "width": 1920,
+        "height": 1080
+      },
+      {
+        "codec_type": "audio",
+        "codec_name": "aac",
+        "sample_rate": "48000",
+        "channels": 2
+      }
+    ],
+    "decodePass": true,
+    "decodeErrors": "",
+    "audioLevels": [
+      "[Parsed_volumedetect_0 @ 0x7b8104cc00] mean_volume: -22.3 dB",
+      "[Parsed_volumedetect_0 @ 0x7b8104cc00] max_volume: -4.3 dB"
+    ],
+    "frames": [
+      "docs/qa/e2e/qa-cinematic-1-frame-1.jpg",
+      "docs/qa/e2e/qa-cinematic-1-frame-2.jpg",
+      "docs/qa/e2e/qa-cinematic-1-frame-3.jpg"
+    ]
+  },
+  {
+    "project": "QA Cinematic",
+    "template": "cinematic_shot",
+    "projectId": "prj_mvez5cqm71c4676020",
+    "assetId": "ast_mvez86jgb9021f5427",
+    "path": "~/Library/Application Support/Nightshift QA 2026-10-19/projects/prj_mvez5cqm71c4676020/assets/ast_mvez86jgb9021f5427.mp4",
+    "bytes": 430749,
+    "duration": 6.0,
+    "streams": [
+      {
+        "codec_type": "video",
+        "codec_name": "h264",
+        "width": 540,
+        "height": 960
+      },
+      {
+        "codec_type": "audio",
+        "codec_name": "aac",
+        "sample_rate": "48000",
+        "channels": 2
+      }
+    ],
+    "decodePass": true,
+    "decodeErrors": "",
+    "audioLevels": [
+      "[Parsed_volumedetect_0 @ 0x74d503cc00] mean_volume: -22.3 dB",
+      "[Parsed_volumedetect_0 @ 0x74d503cc00] max_volume: -4.3 dB"
+    ],
+    "frames": [
+      "docs/qa/e2e/qa-cinematic-2-frame-1.jpg",
+      "docs/qa/e2e/qa-cinematic-2-frame-2.jpg",
+      "docs/qa/e2e/qa-cinematic-2-frame-3.jpg"
+    ]
+  },
+  {
+    "project": "QA Intro",
+    "template": "talking_intro",
+    "projectId": "prj_mvezlah8a0022da5ee",
+    "assetId": "ast_mveznmap72f83c7e0b",
+    "path": "~/Library/Application Support/Nightshift QA 2026-10-19/projects/prj_mvezlah8a0022da5ee/assets/ast_mveznmap72f83c7e0b.mp4",
+    "bytes": 2516278,
+    "duration": 6.0,
+    "streams": [
+      {
+        "codec_type": "video",
+        "codec_name": "h264",
+        "width": 1920,
+        "height": 1080
+      },
+      {
+        "codec_type": "audio",
+        "codec_name": "aac",
+        "sample_rate": "48000",
+        "channels": 2
+      }
+    ],
+    "decodePass": true,
+    "decodeErrors": "",
+    "audioLevels": [
+      "[Parsed_volumedetect_0 @ 0x795b05cc00] mean_volume: -17.8 dB",
+      "[Parsed_volumedetect_0 @ 0x795b05cc00] max_volume: -2.7 dB"
+    ],
+    "frames": [
+      "docs/qa/e2e/qa-intro-1-frame-1.jpg",
+      "docs/qa/e2e/qa-intro-1-frame-2.jpg",
+      "docs/qa/e2e/qa-intro-1-frame-3.jpg"
+    ]
+  },
+  {
+    "project": "QA Intro",
+    "template": "talking_intro",
+    "projectId": "prj_mvezlah8a0022da5ee",
+    "assetId": "ast_mvezofby984f848fb5",
+    "path": "~/Library/Application Support/Nightshift QA 2026-10-19/projects/prj_mvezlah8a0022da5ee/assets/ast_mvezofby984f848fb5.mp4",
+    "bytes": 867795,
+    "duration": 6.0,
+    "streams": [
+      {
+        "codec_type": "video",
+        "codec_name": "h264",
+        "width": 540,
+        "height": 960
+      },
+      {
+        "codec_type": "audio",
+        "codec_name": "aac",
+        "sample_rate": "48000",
+        "channels": 2
+      }
+    ],
+    "decodePass": true,
+    "decodeErrors": "",
+    "audioLevels": [
+      "[Parsed_volumedetect_0 @ 0x770b05cc00] mean_volume: -17.8 dB",
+      "[Parsed_volumedetect_0 @ 0x770b05cc00] max_volume: -2.7 dB"
+    ],
+    "frames": [
+      "docs/qa/e2e/qa-intro-2-frame-1.jpg",
+      "docs/qa/e2e/qa-intro-2-frame-2.jpg",
+      "docs/qa/e2e/qa-intro-2-frame-3.jpg"
+    ]
+  },
+  {
+    "project": "First shot",
+    "template": "cinematic_shot",
+    "projectId": "prj_mvez1ufl6418875976",
+    "assetId": "ast_mvez4mr4bd80fd4296",
+    "path": "~/Library/Application Support/Nightshift QA 2026-10-19/projects/prj_mvez1ufl6418875976/assets/ast_mvez4mr4bd80fd4296.mp4",
+    "bytes": 5073861,
+    "duration": 6.0,
+    "streams": [
+      {
+        "codec_type": "video",
+        "codec_name": "h264",
+        "width": 1920,
+        "height": 1080
+      },
+      {
+        "codec_type": "audio",
+        "codec_name": "aac",
+        "sample_rate": "48000",
+        "channels": 2
+      }
+    ],
+    "decodePass": true,
+    "decodeErrors": "",
+    "audioLevels": [
+      "[Parsed_volumedetect_0 @ 0x7b4b02cc00] mean_volume: -18.2 dB",
+      "[Parsed_volumedetect_0 @ 0x7b4b02cc00] max_volume: -5.2 dB"
+    ],
+    "frames": [
+      "docs/qa/e2e/first-shot-1-frame-1.jpg",
+      "docs/qa/e2e/first-shot-1-frame-2.jpg",
+      "docs/qa/e2e/first-shot-1-frame-3.jpg"
+    ]
+  }
+]

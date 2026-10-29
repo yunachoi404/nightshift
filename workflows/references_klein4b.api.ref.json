@@ -1,0 +1,37 @@
+{
+  "workflow": "references_klein4b.api.json",
+  "inputs": {
+    "image": {
+      "node": "10",
+      "field": "image"
+    },
+    "image2": {
+      "node": "200",
+      "field": "image"
+    },
+    "image3": {
+      "node": "300",
+      "field": "image"
+    },
+    "prompt": {
+      "node": "20",
+      "field": "text"
+    },
+    "seed": {
+      "node": "34",
+      "field": "noise_seed"
+    },
+    "width": {
+      "node": "50",
+      "field": "value"
+    },
+    "height": {
+      "node": "51",
+      "field": "value"
+    }
+  },
+  "params": {},
+  "outputNodes": [
+    "40"
+  ]
+}

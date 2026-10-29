@@ -1,0 +1,469 @@
+{
+  "id": "prj_mvf1vn122e9be9d5d1",
+  "name": "After the Rain",
+  "template": "cinematic_shot",
+  "aspect": "16:9",
+  "brief": {
+    "idea": "Exactly three shots, four seconds each. One quiet cafe after rain. A red ceramic coffee cup on a walnut table by a wet window. Begin wide with the empty cafe, move to the cup and rising steam, finish looking through the window at the wet street. No people, faces, text, logos or cuts inside a shot.",
+    "sequence": "three_shots",
+    "cameraMove": "dolly_in",
+    "look": "warm_film"
+  },
+  "shots": [
+    {
+      "id": "shot_mvf1vtu790f72960d7",
+      "index": 0,
+      "prompt": "A wide shot of a quiet, rain-slicked cafe interior, empty and still, with soft natural light filtering through wet windows. A single red ceramic coffee cup sits on a walnut table in the foreground, steam rising gently.",
+      "cameraMove": "dolly_in",
+      "durationSec": 4,
+      "stillAssetId": "ast_mvf1wc6dcf91340494",
+      "chosenDraftId": "take_mvf1yayscdb2bb056a",
+      "chosenFinalId": "take_mvf2b0tm3f5c6300b7",
+      "locked": false
+    },
+    {
+      "id": "shot_mvf1vtu72c54a823cd",
+      "index": 1,
+      "prompt": "Close on the red ceramic cup, steam curling upward in slow motion, the walnut table grain visible, reflections of raindrops on the window shimmering in the background.",
+      "cameraMove": "dolly_in",
+      "durationSec": 4,
+      "stillAssetId": "ast_mvf1wm5ga1fdee5b08",
+      "chosenDraftId": "take_mvf1zpb5138d014391",
+      "chosenFinalId": "take_mvf27xkp6c0ad3fb7b",
+      "locked": false
+    },
+    {
+      "id": "shot_mvf1vtu747dd6704a0",
+      "index": 2,
+      "prompt": "View from inside the same quiet cafe through a rain-covered window onto a soft blurred wet street and distant amber streetlights. A small vivid red glazed ceramic coffee cup with a red handle sits on the walnut windowsill in the lower center, gently steaming. The cup is entirely red, including its exterior and handle. No people, no lettering.",
+      "cameraMove": "dolly_in",
+      "durationSec": 4,
+      "stillAssetId": "ast_mvf1ypiw336eaf81d9",
+      "chosenDraftId": "take_mvf20udl1232435606",
+      "locked": false
+    }
+  ],
+  "takes": [
+    {
+      "id": "take_mvf1yayscdb2bb056a",
+      "shotId": "shot_mvf1vtu790f72960d7",
+      "rung": "draft",
+      "seed": 42,
+      "videoAssetId": "ast_mvf1yaxsaaf422999d",
+      "latentAssetId": "ast_mvf1yays38ed7db074",
+      "jobId": "job_mvf1wzkb2db873a5bc",
+      "prompt": "A wide shot of a quiet, rain-slicked cafe interior, empty and still, with soft natural light filtering through wet windows. A single red ceramic coffee cup sits on a walnut table in the foreground, steam rising gently. The camera slowly dollies in. Cinematic film still, shot on 35mm, shallow depth of field.",
+      "negative": "cartoon, video game, text, cuts, black frames",
+      "imageAssetId": "ast_mvf1wc6dcf91340494"
+    },
+    {
+      "id": "take_mvf1zpb5138d014391",
+      "shotId": "shot_mvf1vtu72c54a823cd",
+      "rung": "draft",
+      "seed": 43,
+      "videoAssetId": "ast_mvf1zpae41c297af2e",
+      "latentAssetId": "ast_mvf1zpb40f64f6a82a",
+      "jobId": "job_mvf1ydt1408c331e63",
+      "prompt": "Close on the red ceramic cup, steam curling upward in slow motion, the walnut table grain visible, reflections of raindrops on the window shimmering in the background. The camera slowly dollies in. Cinematic film still, shot on 35mm, shallow depth of field.",
+      "negative": "cartoon, video game, text, cuts, black frames",
+      "imageAssetId": "ast_mvf1wm5ga1fdee5b08"
+    },
+    {
+      "id": "take_mvf20udl1232435606",
+      "shotId": "shot_mvf1vtu747dd6704a0",
+      "rung": "draft",
+      "seed": 44,
+      "videoAssetId": "ast_mvf20ucr34fe11a1c3",
+      "latentAssetId": "ast_mvf20udl465cc40a8c",
+      "jobId": "job_mvf1zs1ua4ac31b3ae",
+      "prompt": "View from inside the same quiet cafe through a rain-covered window onto a soft blurred wet street and distant amber streetlights. A small vivid red glazed ceramic coffee cup with a red handle sits on the walnut windowsill in the lower center, gently steaming. The cup is entirely red, including its exterior and handle. No people, no lettering. The camera slowly dollies in. Cinematic film still, shot on 35mm, shallow depth of field.",
+      "negative": "cartoon, video game, text, cuts, black frames",
+      "imageAssetId": "ast_mvf1ypiw336eaf81d9"
+    },
+    {
+      "id": "take_mvf22jdb3a0ba1493a",
+      "shotId": "shot_mvf1vtu790f72960d7",
+      "rung": "final",
+      "finalKind": "same_take",
+      "parentTakeId": "take_mvf1yayscdb2bb056a",
+      "seed": 42,
+      "videoAssetId": "ast_mvf22jci63e6f837e6",
+      "jobId": "job_mvf20uot5eec97984f",
+      "prompt": "A wide shot of a quiet, rain-slicked cafe interior, empty and still, with soft natural light filtering through wet windows. A single red ceramic coffee cup sits on a walnut table in the foreground, steam rising gently. The camera slowly dollies in. Cinematic film still, shot on 35mm, shallow depth of field.",
+      "negative": "cartoon, video game, text, cuts, black frames",
+      "imageAssetId": "ast_mvf1wc6dcf91340494"
+    },
+    {
+      "id": "take_mvf27xkp6c0ad3fb7b",
+      "shotId": "shot_mvf1vtu72c54a823cd",
+      "rung": "final",
+      "finalKind": "remaster",
+      "parentTakeId": "take_mvf1zpb5138d014391",
+      "seed": 43,
+      "videoAssetId": "ast_mvf27xju390780aca5",
+      "jobId": "job_mvf22kia94045cf8ab",
+      "prompt": "Use <Video 1> as the exact composition, camera motion, subject and timing reference. Close on the red ceramic cup, steam curling upward in slow motion, the walnut table grain visible, reflections of raindrops on the window shimmering in the background. The camera slowly dollies in. Cinematic film still, shot on 35mm, shallow depth of field.",
+      "negative": "cartoon, video game, text, cuts, black frames",
+      "imageAssetId": "ast_mvf1wm5ga1fdee5b08"
+    },
+    {
+      "id": "take_mvf2b0tm3f5c6300b7",
+      "shotId": "shot_mvf1vtu790f72960d7",
+      "rung": "final",
+      "finalKind": "same_take",
+      "parentTakeId": "take_mvf1yayscdb2bb056a",
+      "seed": 42,
+      "videoAssetId": "ast_mvf2b0sr9109b88ea9",
+      "jobId": "job_mvf298dgcfaa31a831",
+      "prompt": "A wide shot of a quiet, rain-slicked cafe interior, empty and still, with soft natural light filtering through wet windows. A single red ceramic coffee cup sits on a walnut table in the foreground, steam rising gently. The camera slowly dollies in. Cinematic film still, shot on 35mm, shallow depth of field.",
+      "negative": "cartoon, video game, text, cuts, black frames",
+      "imageAssetId": "ast_mvf1wc6dcf91340494"
+    }
+  ],
+  "assets": [
+    {
+      "id": "ast_mvf1wc6dcf91340494",
+      "kind": "image",
+      "path": "assets/ast_mvf1wc6dcf91340494.png",
+      "width": 960,
+      "height": 576,
+      "createdAt": "2026-10-19T09:27:23.558Z"
+    },
+    {
+      "id": "ast_mvf1wm5ga1fdee5b08",
+      "kind": "image",
+      "path": "assets/ast_mvf1wm5ga1fdee5b08.png",
+      "width": 960,
+      "height": 576,
+      "createdAt": "2026-10-19T09:27:36.484Z"
+    },
+    {
+      "id": "ast_mvf1ww9i6e1179d2b5",
+      "kind": "image",
+      "path": "assets/ast_mvf1ww9i6e1179d2b5.png",
+      "width": 960,
+      "height": 576,
+      "createdAt": "2026-10-19T09:27:49.591Z"
+    },
+    {
+      "id": "ast_mvf1yaxsaaf422999d",
+      "kind": "video",
+      "path": "assets/ast_mvf1yaxsaaf422999d.mp4",
+      "width": 640,
+      "height": 384,
+      "durationSec": 4.04,
+      "createdAt": "2026-10-19T09:28:55.300Z"
+    },
+    {
+      "id": "ast_mvf1yays38ed7db074",
+      "kind": "latent",
+      "path": "assets/ast_mvf1yays38ed7db074.latent",
+      "createdAt": "2026-10-19T09:28:55.300Z"
+    },
+    {
+      "id": "ast_mvf1ypiw336eaf81d9",
+      "kind": "image",
+      "path": "assets/ast_mvf1ypiw336eaf81d9.png",
+      "width": 960,
+      "height": 576,
+      "createdAt": "2026-10-19T09:29:14.168Z"
+    },
+    {
+      "id": "ast_mvf1zpae41c297af2e",
+      "kind": "video",
+      "path": "assets/ast_mvf1zpae41c297af2e.mp4",
+      "width": 640,
+      "height": 384,
+      "durationSec": 4.04,
+      "createdAt": "2026-10-19T09:30:00.544Z"
+    },
+    {
+      "id": "ast_mvf1zpb40f64f6a82a",
+      "kind": "latent",
+      "path": "assets/ast_mvf1zpb40f64f6a82a.latent",
+      "createdAt": "2026-10-19T09:30:00.545Z"
+    },
+    {
+      "id": "ast_mvf20ucr34fe11a1c3",
+      "kind": "video",
+      "path": "assets/ast_mvf20ucr34fe11a1c3.mp4",
+      "width": 640,
+      "height": 384,
+      "durationSec": 4.04,
+      "createdAt": "2026-10-19T09:30:53.769Z"
+    },
+    {
+      "id": "ast_mvf20udl465cc40a8c",
+      "kind": "latent",
+      "path": "assets/ast_mvf20udl465cc40a8c.latent",
+      "createdAt": "2026-10-19T09:30:53.769Z"
+    },
+    {
+      "id": "ast_mvf22jci63e6f837e6",
+      "kind": "video",
+      "path": "assets/ast_mvf22jci63e6f837e6.mp4",
+      "width": 1280,
+      "height": 768,
+      "durationSec": 4.04,
+      "createdAt": "2026-10-19T09:32:12.815Z"
+    },
+    {
+      "id": "ast_mvf27xju390780aca5",
+      "kind": "video",
+      "path": "assets/ast_mvf27xju390780aca5.mp4",
+      "width": 1280,
+      "height": 768,
+      "durationSec": 4.46,
+      "createdAt": "2026-10-19T09:36:24.505Z"
+    },
+    {
+      "id": "ast_mvf2b0sr9109b88ea9",
+      "kind": "video",
+      "path": "assets/ast_mvf2b0sr9109b88ea9.mp4",
+      "width": 1280,
+      "height": 768,
+      "durationSec": 4.04,
+      "createdAt": "2026-10-19T09:38:48.682Z"
+    },
+    {
+      "id": "ast_mvf2bviv430c4b43eb",
+      "kind": "audio",
+      "path": "assets/ast_mvf2bviv430c4b43eb.flac",
+      "durationSec": 4.72,
+      "role": "voice",
+      "text": "After the rain, the city slows. A little warmth, a quiet moment. Tomorrow can wait.",
+      "createdAt": "2026-10-19T09:39:28.498Z"
+    },
+    {
+      "id": "ast_mvf2ct0j38a22ffa87",
+      "kind": "audio",
+      "path": "assets/ast_mvf2ct0j38a22ffa87.flac",
+      "durationSec": 11.99,
+      "role": "music",
+      "createdAt": "2026-10-19T09:40:11.903Z"
+    },
+    {
+      "id": "ast_mvf2d4ie082099603e",
+      "kind": "video",
+      "path": "assets/ast_mvf2d4ie082099603e.mp4",
+      "width": 1920,
+      "height": 1080,
+      "durationSec": 10.42,
+      "role": "export",
+      "createdAt": "2026-10-19T09:40:26.800Z"
+    },
+    {
+      "id": "ast_mvf2dg5lbb1edbdce5",
+      "kind": "video",
+      "path": "assets/ast_mvf2dg5lbb1edbdce5.mp4",
+      "width": 1080,
+      "height": 1920,
+      "durationSec": 10.42,
+      "role": "export",
+      "createdAt": "2026-10-19T09:40:41.891Z"
+    },
+    {
+      "id": "ast_mvf2fxo7a7ea15d43e",
+      "kind": "video",
+      "path": "assets/ast_mvf2fxo7a7ea15d43e.mp4",
+      "width": 1920,
+      "height": 1080,
+      "durationSec": 10.42,
+      "role": "export",
+      "createdAt": "2026-10-19T09:42:37.904Z"
+    },
+    {
+      "id": "ast_mvf2g9t752741a1808",
+      "kind": "video",
+      "path": "assets/ast_mvf2g9t752741a1808.mp4",
+      "width": 1080,
+      "height": 1920,
+      "durationSec": 10.42,
+      "role": "export",
+      "createdAt": "2026-10-19T09:42:53.637Z"
+    },
+    {
+      "id": "ast_mvf2j9813ea35c11b6",
+      "kind": "video",
+      "path": "assets/ast_mvf2j9813ea35c11b6.mp4",
+      "width": 1920,
+      "height": 1080,
+      "durationSec": 10.42,
+      "role": "export",
+      "createdAt": "2026-10-19T09:45:12.842Z"
+    },
+    {
+      "id": "ast_mvf2jlccf8f7a914b5",
+      "kind": "video",
+      "path": "assets/ast_mvf2jlccf8f7a914b5.mp4",
+      "width": 1080,
+      "height": 1920,
+      "durationSec": 10.42,
+      "role": "export",
+      "createdAt": "2026-10-19T09:45:28.550Z"
+    }
+  ],
+  "timeline": {
+    "clips": [
+      {
+        "shotId": "shot_mvf1vtu790f72960d7",
+        "assetId": "ast_mvf2b0sr9109b88ea9",
+        "start": 0,
+        "in": 0,
+        "out": 3.992,
+        "gain": 1,
+        "focus": {
+          "x": 0.53,
+          "y": 0.65
+        }
+      },
+      {
+        "shotId": "shot_mvf1vtu72c54a823cd",
+        "assetId": "ast_mvf27xju390780aca5",
+        "start": 3.192,
+        "in": 0,
+        "out": 4,
+        "gain": 1
+      },
+      {
+        "shotId": "shot_mvf1vtu747dd6704a0",
+        "assetId": "ast_mvf20ucr34fe11a1c3",
+        "start": 6.392,
+        "in": 0,
+        "out": 3.992,
+        "gain": 1
+      }
+    ],
+    "audio": [
+      {
+        "assetId": "ast_mvf2ct0j38a22ffa87",
+        "role": "music",
+        "start": 0,
+        "gain": 1,
+        "in": 0,
+        "out": 10.383
+      },
+      {
+        "assetId": "ast_mvf2bviv430c4b43eb",
+        "role": "voice",
+        "start": 0.6,
+        "gain": 1
+      }
+    ],
+    "captions": [
+      {
+        "start": 0.6,
+        "end": 2.2,
+        "text": "After the rain, the city slows.",
+        "words": [
+          {
+            "start": 0.6,
+            "end": 0.87,
+            "text": "After"
+          },
+          {
+            "start": 0.87,
+            "end": 1.03,
+            "text": "the"
+          },
+          {
+            "start": 1.03,
+            "end": 1.36,
+            "text": "rain,"
+          },
+          {
+            "start": 1.36,
+            "end": 1.42,
+            "text": "the"
+          },
+          {
+            "start": 1.52,
+            "end": 1.74,
+            "text": "city"
+          },
+          {
+            "start": 1.74,
+            "end": 2.2,
+            "text": "slows."
+          }
+        ]
+      },
+      {
+        "start": 2.2,
+        "end": 4.11,
+        "text": "A little warmth, a quiet moment.",
+        "words": [
+          {
+            "start": 2.2,
+            "end": 2.26,
+            "text": "A"
+          },
+          {
+            "start": 2.26,
+            "end": 2.63,
+            "text": "little"
+          },
+          {
+            "start": 2.63,
+            "end": 3.02,
+            "text": "warmth,"
+          },
+          {
+            "start": 3.18,
+            "end": 3.22,
+            "text": "a"
+          },
+          {
+            "start": 3.32,
+            "end": 3.44,
+            "text": "quiet"
+          },
+          {
+            "start": 3.49,
+            "end": 4.05,
+            "text": "moment."
+          }
+        ]
+      },
+      {
+        "start": 4.13,
+        "end": 5.47,
+        "text": "Tomorrow can wait.",
+        "words": [
+          {
+            "start": 4.13,
+            "end": 4.55,
+            "text": "Tomorrow"
+          },
+          {
+            "start": 4.55,
+            "end": 4.73,
+            "text": "can"
+          },
+          {
+            "start": 4.73,
+            "end": 5.12,
+            "text": "wait."
+          }
+        ]
+      }
+    ],
+    "overlays": [
+      {
+        "id": "title",
+        "kind": "title",
+        "start": 0.6,
+        "end": 4.2,
+        "text": "After the Rain"
+      }
+    ],
+    "markers": [],
+    "style": {
+      "look": "cinematic_shot"
+    },
+    "edited": true,
+    "revision": 15
+  },
+  "createdAt": "2026-10-19T09:26:50.966Z",
+  "updatedAt": "2026-10-19T09:45:28.550Z"
+}

@@ -1,0 +1,18 @@
+{
+  "estimates": {
+    "effect_end_frame": { "peakGb": 18.8, "seconds": 30.2, "measured": true },
+    "video_effect": { "peakGb": 45.1, "seconds": 78.6, "measured": true }
+  },
+  "method": "Conservative observed SDK wall time from the initial freeze probe, including model loading. Peak is scheduler-accounted process GB sampled every five seconds during the real-app freeze run. Time and peak come from separate runs. The shared queue can add arbitrary waiting time.",
+  "samples": {
+    "effect_end_frame": { "jobId": "52e8bc5f-bd30-45f0-8370-a2a0fd6ee47f", "count": 1, "executionSeconds": 6.204 },
+    "video_effect": { "jobId": "3d3cf507-61ca-48fd-99e7-7ccacaaff16c", "count": 7, "executionSeconds": 58.475 }
+  },
+  "initialProbe": {
+    "effect_end_frame": "4983dc4b-3cbc-47ba-8183-28f62566d85a",
+    "video_effect": "91aa4afa-88e2-499c-893e-de93efdf38c9"
+  },
+  "video": { "width": 384, "height": 640, "frames": 97, "fps": 24 },
+  "runtime": { "comfyui": "0.41.3", "sdk": "0.5.0", "videoModel": "LTX 2.5 distilled INT8", "editModel": "FLUX.2 Klein 4B FP8" },
+  "limitations": "Sparse samples can miss short memory peaks. These measurements do not prove a discrete GPU fit or benchmark other hardware tiers. Only freeze has completed the real-app final and export check so far."
+}

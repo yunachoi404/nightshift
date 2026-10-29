@@ -1,0 +1,25 @@
+{
+  "workflow": "krea2_turbo_int8_mix.api.json",
+  "inputs": {
+    "prompt": {
+      "node": "4",
+      "field": "text"
+    },
+    "seed": {
+      "node": "7",
+      "field": "seed"
+    },
+    "width": {
+      "node": "6",
+      "field": "width"
+    },
+    "height": {
+      "node": "6",
+      "field": "height"
+    }
+  },
+  "params": {},
+  "outputNodes": [
+    "9"
+  ]
+}

@@ -1,0 +1,48 @@
+{
+  "workflow": "kandinsky6_lite_fp16.api.json",
+  "inputs": {
+    "prompt": {
+      "node": "5",
+      "field": "video_caption"
+    },
+    "negative": {
+      "node": "6",
+      "field": "video_caption"
+    },
+    "image": {
+      "node": "8",
+      "field": "image"
+    },
+    "seed": {
+      "node": "12",
+      "field": "seed"
+    },
+    "width": {
+      "node": "20",
+      "field": "value"
+    },
+    "height": {
+      "node": "21",
+      "field": "value"
+    },
+    "frames": {
+      "node": "7",
+      "field": "length"
+    },
+    "fps": {
+      "node": "7",
+      "field": "fps"
+    }
+  },
+  "params": {
+    "width": 384,
+    "height": 256,
+    "fps": 24,
+    "frames": 49,
+    "maxFrames": 49
+  },
+  "outputNodes": [
+    "17",
+    "18"
+  ]
+}

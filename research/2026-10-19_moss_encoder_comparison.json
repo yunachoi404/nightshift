@@ -1,0 +1,113 @@
+{
+  "note": "Native pixel errors are differences, not quality scores. Raw's first failed configuration and corrected retry are shown separately; their conditioning, steps and runtime mode differ from Turbo.",
+  "cases": [
+    {
+      "case": "moss_image_fused_bf16_encoder",
+      "path": "outputs/model_lab/moss_image_fused_bf16_encoder/11/moss_00001_.png",
+      "sha256": "f9272e292d813b46cf2ff3d350002e0e10524570fcfaf4f6620c61b1339486bd",
+      "width": 768,
+      "height": 768,
+      "seconds": 120.85603972314857,
+      "peakGb": 22.3,
+      "settings": {
+        "model": [
+          "8",
+          0
+        ],
+        "positive": [
+          "4",
+          0
+        ],
+        "negative": [
+          "5",
+          0
+        ],
+        "latent_image": [
+          "6",
+          0
+        ],
+        "seed": 42,
+        "steps": 50,
+        "cfg": 3.0,
+        "sampler_name": "euler",
+        "scheduler": "sgm_uniform",
+        "denoise": 1.0
+      },
+      "pixelReferenceCase": "moss_image_fused_bf16_encoder",
+      "meanAbsolutePixelErrorVsBf16": 0.0,
+      "pixelRmseVsBf16": 0.0
+    },
+    {
+      "case": "moss_image_fused_int8_encoder",
+      "path": "outputs/model_lab/moss_image_fused_int8_encoder/11/moss_00002_.png",
+      "sha256": "c443f2bd54ec14731d3abc3a47e73211b59490fb8c22384075e3996573024f04",
+      "width": 768,
+      "height": 768,
+      "seconds": 80.54087117104791,
+      "peakGb": 15.2,
+      "settings": {
+        "model": [
+          "8",
+          0
+        ],
+        "positive": [
+          "4",
+          0
+        ],
+        "negative": [
+          "5",
+          0
+        ],
+        "latent_image": [
+          "6",
+          0
+        ],
+        "seed": 42,
+        "steps": 50,
+        "cfg": 3.0,
+        "sampler_name": "euler",
+        "scheduler": "sgm_uniform",
+        "denoise": 1.0
+      },
+      "pixelReferenceCase": "moss_image_fused_bf16_encoder",
+      "meanAbsolutePixelErrorVsBf16": 0.007524221204221249,
+      "pixelRmseVsBf16": 0.012742147780954838
+    },
+    {
+      "case": "moss_image_gptq_no_compiler",
+      "path": "outputs/model_lab/moss_image_gptq_no_compiler/11/moss_00003_.png",
+      "sha256": "401b760cf913a92d17163d60a208ee62eaf5de5c358974c0f4f6fd5860cf8398",
+      "width": 768,
+      "height": 768,
+      "seconds": 55.474867718992755,
+      "peakGb": 14.3,
+      "settings": {
+        "model": [
+          "8",
+          0
+        ],
+        "positive": [
+          "4",
+          0
+        ],
+        "negative": [
+          "5",
+          0
+        ],
+        "latent_image": [
+          "6",
+          0
+        ],
+        "seed": 42,
+        "steps": 50,
+        "cfg": 3.0,
+        "sampler_name": "euler",
+        "scheduler": "sgm_uniform",
+        "denoise": 1.0
+      },
+      "pixelReferenceCase": "moss_image_fused_bf16_encoder",
+      "meanAbsolutePixelErrorVsBf16": 0.010020200163125992,
+      "pixelRmseVsBf16": 0.015457798726856709
+    }
+  ]
+}

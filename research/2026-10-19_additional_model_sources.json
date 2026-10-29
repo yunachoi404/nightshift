@@ -1,0 +1,112 @@
+{
+  "checked": "2026-10-19",
+  "models": [
+    {
+      "upstreamRepository": "Comfy-Org/MiniMax-H3",
+      "revision": "e5eb578a89295337b8ff433a035929ce0279e0b6",
+      "upstreamFile": "vae/minimax_h3_video_vae_int8_convrot.safetensors",
+      "url": "https://huggingface.co/Comfy-Org/MiniMax-H3/resolve/e5eb578a89295337b8ff433a035929ce0279e0b6/vae/minimax_h3_video_vae_int8_convrot.safetensors",
+      "bytes": 2811065184,
+      "sha256": "52a2c8c73583c86e4f41cdcce3a6ad0ea562987bc0bf3d60a0cef5f5c8e60c0e",
+      "localName": "minimax_h3_video_vae_int8_convrot_comfyorg_20260918.safetensors",
+      "localShaVerified": true,
+      "license": {
+        "name": "MiniMax-H3 Community License, restricted",
+        "url": "https://huggingface.co/MiniMaxAI/MiniMax-H3/blob/main/LICENSE"
+      }
+    },
+    {
+      "upstreamRepository": "Comfy-Org/MiniMax-H3",
+      "revision": "e5eb578a89295337b8ff433a035929ce0279e0b6",
+      "upstreamFile": "loras/minimax_h3_fl2v_turbo_8step_v1.0_comfyui_bf16.safetensors",
+      "url": "https://huggingface.co/Comfy-Org/MiniMax-H3/resolve/e5eb578a89295337b8ff433a035929ce0279e0b6/loras/minimax_h3_fl2v_turbo_8step_v1.0_comfyui_bf16.safetensors",
+      "bytes": 1956193000,
+      "sha256": "2339acdf19bfe123f46b971ea35d367a84adb85de43627e1eceafa5a5b2b111e",
+      "localName": "minimax_h3_fl2v_turbo_8step_v1.0_comfyui_bf16_lightx2v.safetensors",
+      "localShaVerified": true,
+      "license": {
+        "name": "MiniMax-H3 Community License, restricted",
+        "url": "https://huggingface.co/MiniMaxAI/MiniMax-H3/blob/main/LICENSE"
+      }
+    },
+    {
+      "upstreamRepository": "joyfox/MiniMax-H3-Turbo",
+      "revision": "fc67f405ae0ccb36fefe48243bc76775ee2ba8eb",
+      "upstreamFile": "minimax_h3_fl2va_4step_lora.safetensors",
+      "url": "https://huggingface.co/joyfox/MiniMax-H3-Turbo/resolve/fc67f405ae0ccb36fefe48243bc76775ee2ba8eb/minimax_h3_fl2va_4step_lora.safetensors",
+      "bytes": 752004268,
+      "sha256": "4f3a4a4260f66c42dc6eeb7dbcf150cb5db240e246c72d8b79e5188692394e63",
+      "localName": "minimax_h3_fl2va_4step_lora_joyfox.safetensors",
+      "localShaVerified": true,
+      "license": {
+        "name": "Adapter license not separately declared; MiniMax-H3 base terms restricted",
+        "url": "https://huggingface.co/joyfox/MiniMax-H3-Turbo/blob/fc67f405ae0ccb36fefe48243bc76775ee2ba8eb/README.md"
+      },
+      "recipeDefault": false,
+      "note": "Evaluation only. Author specifies Euler and fixed four-step sigmas with bf16 base. Our first res_multistep/int8 run is outside that validated configuration."
+    },
+    {
+      "localName": "krea2/BSSDesirexKrea2_x2INT8ConvrotFastest.safetensors",
+      "upstreamFile": "BSSDesirexKrea2_x2INT8Convrot.safetensors",
+      "url": "https://civitai.com/api/download/models/3339307?fileId=3226107",
+      "bytes": 13149954464,
+      "sha256": "39d622b1e36ca0d50ed951719b4fb25e9daa61d2257e256dd5df2fc14f65d21b",
+      "localShaVerified": true,
+      "license": {
+        "name": "Civitai uploader restrictions plus Krea 2 Community License, restricted",
+        "url": "https://civitai.com/models/2945475?modelVersionId=3339307"
+      },
+      "uploaderPermissions": {
+        "allowNoCredit": false,
+        "allowCommercialUse": [
+          "RentCivit"
+        ],
+        "allowDerivatives": false,
+        "allowDifferentLicense": false
+      },
+      "metadataSource": "https://civitai.com/api/v1/models/2945475",
+      "recipeDefault": false,
+      "note": "Evaluation of weights already on the test machine only. Not selected for installer recipes."
+    },
+    {
+      "upstreamRepository": "Comfy-Org/Krea-2",
+      "revision": "1171f4dc7e325bf3734586942e737872506c73e1",
+      "upstreamFile": "diffusion_models/krea2_raw_bf16.safetensors",
+      "url": "https://huggingface.co/Comfy-Org/Krea-2/resolve/1171f4dc7e325bf3734586942e737872506c73e1/diffusion_models/krea2_raw_bf16.safetensors",
+      "bytes": 26283332608,
+      "sha256": "f99bb0ff8e362b77342bc4994e0c50906fe7ef7074864b181b7d48d2fa6d03d7",
+      "license": {
+        "name": "Krea 2 Community License, restricted",
+        "url": "https://www.krea.ai/krea-2-licensing"
+      }
+    },
+    {
+      "upstreamRepository": "Comfy-Org/MiniMax-H3",
+      "revision": "e5eb578a89295337b8ff433a035929ce0279e0b6",
+      "upstreamFile": "diffusion_models/minimax_h3_fl2va_pruned_int8_convrot.safetensors",
+      "url": "https://huggingface.co/Comfy-Org/MiniMax-H3/resolve/e5eb578a89295337b8ff433a035929ce0279e0b6/diffusion_models/minimax_h3_fl2va_pruned_int8_convrot.safetensors",
+      "bytes": 20970379616,
+      "sha256": "e889202c41dafb67b10d67b97f0d8541508036a6090af23425a5c2615d03c47a",
+      "license": {
+        "name": "MiniMax-H3 Community License, restricted",
+        "url": "https://huggingface.co/MiniMaxAI/MiniMax-H3/blob/main/LICENSE"
+      }
+    },
+    {
+      "upstreamRepository": "Comfy-Org/MiniMax-H3",
+      "revision": "e5eb578a89295337b8ff433a035929ce0279e0b6",
+      "upstreamFile": "diffusion_models/minimax_h3_ref2va_bf16.safetensors",
+      "url": "https://huggingface.co/Comfy-Org/MiniMax-H3/resolve/e5eb578a89295337b8ff433a035929ce0279e0b6/diffusion_models/minimax_h3_ref2va_bf16.safetensors",
+      "bytes": 66280487368,
+      "sha256": "e32c54c1a7b4f5f397f195cea267ccb18806303bb665678c4bee60953bdf3026",
+      "localName": "minimax_h3_ref2va_bf16.safetensors",
+      "localShaVerified": false,
+      "license": {
+        "name": "MiniMax-H3 Community License, restricted",
+        "url": "https://huggingface.co/MiniMaxAI/MiniMax-H3/blob/main/LICENSE"
+      },
+      "recipeDefault": false,
+      "note": "Read from existing weights on the test machine. No download or weight modification. Source digest is the pinned upstream digest; local hashing is not claimed."
+    }
+  ]
+}

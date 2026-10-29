@@ -1,0 +1,72 @@
+[
+  {
+    "path": "outputs/demo/after_the_rain_16x9.mp4",
+    "source": "outputs/real_project/assets/ast_mvf2j9813ea35c11b6.mp4",
+    "sha256": "4b2dcc51ce13d9f77c548e431d18eeb53fa580dc0a7e90beb999bc8a9511ce62",
+    "pipeline": "Engine attach: Qwen storyboard -> Krea Turbo bf16 -> LTX draft -> LTX same-take / H3 Ref2VA -> Breeze + Music3 -> editor export",
+    "use": "Real three-shot app proof, reviewed crop and captions. One independent-still color correction; cup identity differs across shots.",
+    "projectId": "prj_mvf1vn122e9be9d5d1",
+    "assetId": "ast_mvf2j9813ea35c11b6",
+    "licenseNote": "Restricted community models and Breeze research/non-commercial weights. See recipe licenses. Not a fully open stack."
+  },
+  {
+    "path": "outputs/demo/after_the_rain_9x16.mp4",
+    "source": "outputs/real_project/assets/ast_mvf2jlccf8f7a914b5.mp4",
+    "sha256": "6c4dcae1070e4e32a4de2e50c700866c3a2bc662904a41bc9cf63a1d70d614fd",
+    "pipeline": "Engine attach: Qwen storyboard -> Krea Turbo bf16 -> LTX draft -> LTX same-take / H3 Ref2VA -> Breeze + Music3 -> editor export",
+    "use": "Real three-shot app proof, reviewed crop and captions. One independent-still color correction; cup identity differs across shots.",
+    "projectId": "prj_mvf1vn122e9be9d5d1",
+    "assetId": "ast_mvf2jlccf8f7a914b5",
+    "licenseNote": "Restricted community models and Breeze research/non-commercial weights. See recipe licenses. Not a fully open stack."
+  },
+  {
+    "path": "outputs/demo/ltx_street_draft.mp4",
+    "source": "outputs/model_lab/ltx_draft_ok/25/ltx_draft_00002_.mp4",
+    "sha256": "fa9ade26c780047d07f7566b1e7c2a5a9c569f2641e6b91af702552d810de369",
+    "pipeline": "LTX 2.5 INT8, stage 1",
+    "use": "Pair with its continued final",
+    "comfyJobId": "14ff74c5-8c69-473d-877e-4b3c93484e5f",
+    "workflow": "workflows/ltx25_draft.api.json",
+    "licenseNote": "LTX or MiniMax H3 community terms, restricted; see recipe and adapter records."
+  },
+  {
+    "path": "outputs/demo/ltx_street_same_take.mp4",
+    "source": "outputs/model_lab/ltx_final_streamcopy/25/ltx_final_00005_.mp4",
+    "sha256": "f0c6492b16f6c74090a23e20ee6332bf5327bbdb32e48363affad271fbe7e80f",
+    "pipeline": "LTX 2.5, saved AV latent -> 2x + 3 steps; original audio packet copy",
+    "use": "Strongest same-take ladder proof",
+    "comfyJobId": "250e44b0-25a2-40c0-acb9-b8dea9020a05",
+    "workflow": "workflows/ltx25_same_take.api.json",
+    "licenseNote": "LTX or MiniMax H3 community terms, restricted; see recipe and adapter records."
+  },
+  {
+    "path": "outputs/demo/ltx_crane_up.mp4",
+    "source": "outputs/model_lab/camera_crane_up/25/ltx_draft_00010_.mp4",
+    "sha256": "2c0a523fcd3d3e6211386e0bad753b38c0df6368f6e030e8934e5f100c40735e",
+    "pipeline": "LTX 2.5 draft, named crane-up prompt",
+    "use": "Clear camera rise; one scene, not broad reliability",
+    "comfyJobId": "47838331-cb87-487d-be86-39283e773e2b",
+    "workflow": "workflows/ltx25_draft.api.json",
+    "licenseNote": "LTX or MiniMax H3 community terms, restricted; see recipe and adapter records."
+  },
+  {
+    "path": "outputs/demo/ltx_crash_zoom.mp4",
+    "source": "outputs/model_lab/camera_crash_zoom/25/ltx_draft_00006_.mp4",
+    "sha256": "c2cd2a9a478be5335a5d82a71308b5cb8d8c80deccd6ec41e598dc635d5a6c5a",
+    "pipeline": "LTX 2.5 draft, named crash-zoom prompt",
+    "use": "Clear zoom at seed 42",
+    "comfyJobId": "f0d48255-4558-4eff-a9b9-884a7389cc3d",
+    "workflow": "workflows/ltx25_draft.api.json",
+    "licenseNote": "LTX or MiniMax H3 community terms, restricted; see recipe and adapter records."
+  },
+  {
+    "path": "outputs/demo/h3_bf16_street_remaster.mp4",
+    "source": "outputs/model_lab/h3_ref2va_bf16_final/17/h3_ref_bf16_final_00001_.mp4",
+    "sha256": "a18ffca55a17d29fcc8c0d470ee0c3164195eec73065e3ddaa6f43bc16f8b39f",
+    "pipeline": "H3 full bf16 Ref2VA + four-step turbo, LTX reference",
+    "use": "Large-window comparison; 89 GB process peak, motion drift disclosed",
+    "comfyJobId": "f539ee0d-42f8-4026-9ce7-1de3266b5be8",
+    "workflow": "workflows/h3_ref2va_bf16_final.api.json",
+    "licenseNote": "LTX or MiniMax H3 community terms, restricted; see recipe and adapter records."
+  }
+]

@@ -1,0 +1,37 @@
+{
+  "workflow": "h3_ref2va_final.api.json",
+  "inputs": {
+    "prompt": {
+      "node": "8",
+      "field": "prompt"
+    },
+    "video": {
+      "node": "6",
+      "field": "file"
+    },
+    "width": {
+      "node": "8",
+      "field": "width"
+    },
+    "height": {
+      "node": "8",
+      "field": "height"
+    },
+    "frames": {
+      "node": "8",
+      "field": "length"
+    },
+    "seed": {
+      "node": "10",
+      "field": "noise_seed"
+    },
+    "fps": {
+      "node": "16",
+      "field": "fps"
+    }
+  },
+  "params": {},
+  "outputNodes": [
+    "17"
+  ]
+}

@@ -1,0 +1,130 @@
+{
+  "product-freeze-video": {
+    "keep": true,
+    "notes": "Clean first frame. Frost grows and cold mist travels along the plinth. Camera steady. Real app final and export also verified."
+  },
+  "product-ignite-video": {
+    "keep": true,
+    "notes": "Flames climb around the bottle and smoke builds above it. Source silhouette and camera stay stable. Flame shapes are stylized, especially at the end."
+  },
+  "product-disintegrate-video": {
+    "keep": true,
+    "notes": "Top breaks into moving dust as the bottle tips, then the subject is gone and dust settles. No crossfade. Strong demo candidate."
+  },
+  "product-melt-video": {
+    "keep": false,
+    "notes": "Body slumps convincingly into a puddle, but the cap floats upward instead of falling. Do not use this product version as the gallery or demo clip. Judge the effect on the statue before dropping it."
+  },
+  "product-explode-video": {
+    "keep": false,
+    "notes": "Clear burst, outward fragments and falling debris. Material changes from glass to stone, so prefer the marble statue if its motion is good."
+  },
+  "product-bloom-video": {
+    "keep": true,
+    "notes": "Vines spread across the original bottle and small flowers appear progressively. Clean first frame, stable subject and camera."
+  },
+  "product-gold-video": {
+    "keep": true,
+    "notes": "Liquid gold pours onto and coats the bottle. Clear physical spreading rather than a fade. Model chose top-down flow despite bottom-up prompt. Shape and camera remain stable."
+  },
+  "product-crystal-video": {
+    "keep": true,
+    "notes": "Faceted crystal spreads progressively across the bottle. Clean anchor frame and steady camera. Clear iridescent material transformation."
+  },
+  "product-levitate-video": {
+    "keep": true,
+    "notes": "Clean lift from the plinth with a detached shadow, no morphing or invented end state. Good prompt-only preset."
+  },
+  "product-earth_zoom-video": {
+    "keep": true,
+    "notes": "Continuous imagined pullback through fog/clouds to a full Earth view. Brief initial push-in. Does not preserve real geography; suitable as a fantasy zoom effect."
+  },
+  "product-glitch-video": {
+    "keep": false,
+    "notes": "No convincing glitch, RGB separation or pixel breakup in the reviewed sequence. Mostly a still bottle. Do not ship this preset on this evidence."
+  },
+  "person-freeze-video": {
+    "keep": true,
+    "notes": "Frost and mist spread continuously from the lower coat. Source framing and body silhouette stay steady. The finish is a stylized snowflake-pattern coat, rather than thick realistic ice."
+  },
+  "person-ignite-video": {
+    "keep": true,
+    "notes": "Continuous ignition around the coat with sparks and rising smoke. Stable person and camera. A large initial burst behind the body is more dramatic than the prompt; no injury detail."
+  },
+  "person-disintegrate-video": {
+    "keep": true,
+    "notes": "The head and upper coat break into a rising dust plume, the body disappears and powder settles. Coat briefly flares during the collapse, but no crossfade or surviving body. Strong demo candidate."
+  },
+  "person-melt-video": {
+    "keep": false,
+    "notes": "The figure mainly kneels and collapses, then resolves into the forced puddle near the end. Less convincing as material melting than as body motion. Do not use this as the gallery clip."
+  },
+  "statue-freeze-video": {
+    "keep": true,
+    "notes": "An ice shower wraps the bust, frost and blue ice grow and cold mist spreads. The object and plinth remain framed. Stylized snowflake patterns carry over from the end image. Completed through the real engine API with saved take and latent."
+  },
+  "person-explode-video": {
+    "keep": false,
+    "notes": "Strong radial burst and falling debris, but the person turns into flat stone pieces. The motion works; material identity does not. Reserve the preset for objects if the statue pass is convincing."
+  },
+  "person-bloom-video": {
+    "keep": true,
+    "notes": "Vines climb across the original coat, leaves unfurl and small flowers open. Body, silhouette and camera remain steady. Strong gallery candidate."
+  },
+  "person-gold-video": {
+    "keep": true,
+    "notes": "A liquid-metal sheet rolls down the coat and covers the legs. Clear evolving surface motion, steady camera. Clothing folds and hem change, so this is a stylized material transformation rather than exact garment preservation."
+  },
+  "statue-ignite-video": {
+    "keep": true,
+    "notes": "Flames start at the plinth and climb the bust, orange light spreads across the marble, then smoke rises. Stable recognizable sculpture and framing. Strong demo candidate. Real engine take and latent saved."
+  },
+  "person-crystal-video": {
+    "keep": true,
+    "notes": "Facets spread from the shoulders down into the legs. Clear progressive texture change, steady camera and head. The final coat becomes a fitted suit, so exact garment shape is not preserved."
+  },
+  "person-levitate-video": {
+    "keep": true,
+    "notes": "Feet leave the floor cleanly, shadow detaches, body shape stays steady. The lift eventually clips the head at the top, so this source needs more headroom. Use the bottle for the preview."
+  },
+  "statue-disintegrate-video": {
+    "keep": true,
+    "notes": "Dust erodes the head, the remaining bust tilts and crumbles, and the final powder pile stays on the floor. Convincing material breakup with stable lighting and camera. Real app pipeline passed."
+  },
+  "person-earth_zoom-video": {
+    "keep": false,
+    "notes": "Places a large Earth in the sky behind the person instead of pulling the camera back from the scene. Product version worked on two seeds; this person version does not."
+  },
+  "person-glitch-video": {
+    "keep": false,
+    "notes": "A few weak colored edge artifacts appear, but there is no clear digital breakup or strong glitch action. Confirms the product rejection."
+  },
+  "statue-melt-video": {
+    "keep": true,
+    "notes": "The plinth and bust sink into a widening glossy pool, with a smooth continuous transition and stable camera. Stylized sinking melt: the head stays rigid until late rather than visibly softening. Best suited to solid objects; bottle and person versions are rejected."
+  },
+  "statue-explode-video": {
+    "keep": true,
+    "notes": "The marble bust breaks into outward-flying stone fragments, dust expands and rubble falls onto the floor. Material is appropriate for the source. Strong object-only Shatter result, unlike the bottle and person versions."
+  },
+  "statue-bloom-video": {
+    "keep": true,
+    "notes": "Vines wind around the face and plinth, leaves open and flowers bloom. Recognizable sculpture, stable camera and lighting. Strong result through the real app."
+  },
+  "statue-gold-video": {
+    "keep": true,
+    "notes": "Liquid gold flows over the sculpture and makes a reflective metal bust. It briefly pools and retracts around the base and changes some facial detail. Usable stylized result; the bottle preserves shape better."
+  },
+  "statue-crystal-video": {
+    "keep": true,
+    "notes": "Facets spread over the marble from the head through the plinth, with transparent reflections. Stable sculpture and framing; some facial details simplify into facets. Strong material transformation."
+  },
+  "statue-levitate-video": {
+    "keep": true,
+    "notes": "The whole sculpture and plinth rise above a detached shadow. Shape stays recognizable. It rises far enough to clip the top late in the shot; leave more headroom."
+  },
+  "statue-earth_zoom-video": {
+    "keep": true,
+    "notes": "Pulls away through an invented city and clouds into an Earth view. A visible scene morph bridges the studio into the city. Usable fantasy transition, not a real geographic reconstruction; the bottle version is cleaner."
+  }
+}

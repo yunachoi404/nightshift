@@ -1,0 +1,18 @@
+{
+  "multi": {
+    "width": 384,
+    "height": 640,
+    "r_frame_rate": "24/1",
+    "nb_frames": "361",
+    "audio": "SHA256=492ed36470673c4d4879b4a8f7b1a900fdf3dba853b58579f3f9b08886fe9d9f"
+  },
+  "final": {
+    "width": 768,
+    "height": 1280,
+    "r_frame_rate": "24/1",
+    "nb_frames": "361",
+    "audio": "SHA256=492ed36470673c4d4879b4a8f7b1a900fdf3dba853b58579f3f9b08886fe9d9f"
+  },
+  "ssim": "SSIM Y:0.948306 (12.865638) U:0.986449 (18.680197) V:0.986194 (18.599346) All:0.960978 (14.086917)",
+  "audioMatches": true
+}

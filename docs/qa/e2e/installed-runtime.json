@@ -1,0 +1,11 @@
+{
+  "runtime": "/Applications/Nightshift.app/Contents/Resources/runtime",
+  "node": "24.19.0",
+  "sqlite": true,
+  "ui": "served",
+  "sampleTiers": 7,
+  "fonts": "all three families copied",
+  "editor": "loaded",
+  "browser": "executable",
+  "tools": "ffmpeg, ffprobe, uv run with bare PATH"
+}

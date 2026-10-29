@@ -1,0 +1,14 @@
+/* Four beats side by side, always: the whole story reads at a glance. A tall project keeps its keyframes at a
+   size that leaves room for the words under them; a wide one lets the pictures take the width. */
+.whatif-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 20px; align-items: start; }
+.whatif-grid--tall { max-width: 980px; gap: 16px; }
+.whatif-beat { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.whatif-beat__head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; font-weight: 600; min-height: 24px; }
+.whatif-beat__head span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.whatif-beat__head .t-micro { font-variant-numeric: tabular-nums; }
+.whatif-beat__label { margin-top: 4px; color: var(--text-2); font-size: var(--fs-small); line-height: var(--lh-small); }
+.whatif-beat textarea { font-size: 12px; line-height: 17px; resize: none; }
+.whatif-beat .frame--empty { display: flex; align-items: center; justify-content: center; text-align: center; padding: 12px; }
+.whatif-status { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; padding: 12px 16px; background: var(--inset); border: 1px solid var(--line); border-radius: 9px; color: var(--text-2); }
+.whatif-foot { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-top: 20px; }
+@media (max-width: 1100px) { .whatif-grid:not(.whatif-grid--tall) { grid-template-columns: repeat(2, minmax(0, 1fr)); } }

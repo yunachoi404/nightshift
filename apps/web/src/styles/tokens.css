@@ -1,0 +1,217 @@
+/*
+ * Nightshift design tokens. Two neutral themes. Light is white porcelain: a near-white canvas, white cards,
+ * zinc hairlines and zinc ink, with very soft shadows. Dark is true black with T3 Code's surfaces. The pictures
+ * carry the color; the chrome is ink, white and hairlines, and amber marks the overnight work. The effective
+ * theme is `data-theme` on <html>, resolved from the user's choice (System, Light, Dark) and the system setting
+ * by an inline script in index.html before the first paint, and kept in sync by store/theme.ts.
+ */
+@font-face {
+  font-family: "Young Serif";
+  src: url("./fonts/young-serif-latin.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: block;
+}
+@font-face {
+  font-family: "Sedgwick Ave";
+  src: url("./fonts/sedgwick-ave-latin.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: block;
+}
+
+:root {
+  color-scheme: light;
+
+  /* Surfaces. A near-white canvas, white cards, and a soft grey for the sidebar and inset panels. */
+  --window: #f6f6f7;
+  --sidebar: #f6f6f7;
+  --content: #fcfcfc;
+  --raised: #ffffff;
+  --inset: #f7f7f8;
+  --inset-2: #ededef;
+  --hover: rgba(24, 24, 27, 0.045);
+  --press: rgba(24, 24, 27, 0.08);
+  --select: rgba(24, 24, 27, 0.065);
+  --media: #111113;
+  --media-empty: #efeff1;
+
+  /* Lines: zinc hairlines, two strengths. */
+  --line: #e4e4e7;
+  --line-strong: #d4d4d8;
+
+  /* Text: zinc ink. */
+  --text: #18181b;
+  --text-2: #52525b;
+  --text-3: #71717a;
+  --text-4: #a1a1aa;
+
+  /* Ink: the main action, selection, progress and focus. Black on light, white on dark. */
+  --accent: #18181b;
+  --accent-2: #27272a;
+  --accent-soft: rgba(24, 24, 27, 0.06);
+  --accent-line: rgba(24, 24, 27, 0.5);
+  --on-accent: #ffffff;
+
+  /* Amber, a street lamp at night: overnight and finals only. */
+  --amber: #c26a00;
+  --amber-fill: #f5a524;
+  --amber-fill-2: #f8b444;
+  --on-amber: #18181b;
+  --amber-soft: rgba(245, 165, 36, 0.14);
+  --amber-line: rgba(245, 165, 36, 0.45);
+
+  --ok: #16803d;
+  --ok-soft: rgba(22, 128, 61, 0.1);
+  --bad: #d4321f;
+  --bad-soft: rgba(212, 50, 31, 0.08);
+  --bad-line: rgba(212, 50, 31, 0.3);
+
+  /* Controls: white porcelain pills on a crisp hairline, with a whisper of shadow. */
+  --btn-bg: #ffffff;
+  --btn-bg-hover: #fafafa;
+  --btn-bg-press: #f4f4f5;
+  --btn-line: #e4e4e7;
+  --btn-shadow: 0 1px 2px rgba(24, 24, 27, 0.05);
+  --btn-sheen: none;
+  --input-bg: #ffffff;
+  --input-line: #d4d4d8;
+  --seg-track: rgba(24, 24, 27, 0.055);
+  --seg-knob: #ffffff;
+  --seg-knob-shadow: 0 1px 2px rgba(24, 24, 27, 0.1), 0 0 0 0.5px rgba(24, 24, 27, 0.08);
+  --sheen: none;
+  --card-shadow: 0 1px 2px rgba(24, 24, 27, 0.04), 0 1px 1px rgba(24, 24, 27, 0.02);
+  --panel-shadow: 0 12px 36px rgba(24, 24, 27, 0.1), 0 0 0 1px rgba(24, 24, 27, 0.06);
+  --sheet-shadow: 0 28px 80px rgba(24, 24, 27, 0.18), 0 0 0 1px rgba(24, 24, 27, 0.06);
+  --scrim: rgba(24, 24, 27, 0.32);
+  --thumb: #ffffff;
+  --track: rgba(24, 24, 27, 0.1);
+  --kbd-bg: rgba(24, 24, 27, 0.06);
+  --focus-ring: 0 0 0 3px rgba(24, 24, 27, 0.18);
+  --selection: rgba(24, 24, 27, 0.12);
+
+  /* Radii: frames are film, controls are pills and soft fields, groups and sheets are rounder. */
+  --r-frame: 6px;
+  --r-s: 8px;
+  --r-m: 12px;
+  --r-l: 18px;
+  --r-pill: 999px;
+
+  /* Type: the system face at macOS sizes; Young Serif for headlines only; one handwritten note. */
+  --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", "Segoe UI", Roboto, sans-serif;
+  --font-display: "Young Serif", "Iowan Old Style", Georgia, serif;
+  --font-hand: "Sedgwick Ave", "Marker Felt", cursive;
+  --fs-micro: 11px;
+  --lh-micro: 14px;
+  --fs-small: 12px;
+  --lh-small: 16px;
+  --fs-body: 13px;
+  --lh-body: 18px;
+  --fs-read: 15px;
+  --lh-read: 22px;
+  --fs-title-3: 19px;
+  --lh-title-3: 24px;
+  --fs-title-2: 26px;
+  --lh-title-2: 31px;
+  --fs-title-1: 36px;
+  --lh-title-1: 42px;
+
+  /* Spacing on a 4px grid */
+  --s-1: 4px;
+  --s-2: 8px;
+  --s-3: 12px;
+  --s-4: 16px;
+  --s-5: 20px;
+  --s-6: 24px;
+  --s-8: 32px;
+  --s-10: 40px;
+
+  /* Chrome */
+  --toolbar-h: 52px;
+  --sidebar-w: 224px;
+  --inspector-w: 300px;
+  --gutter: 28px;
+  --traffic: 0px;
+
+  /* Motion */
+  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --t-fast: 110ms;
+  --t-med: 200ms;
+  --t-slow: 380ms;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  /* T3 Code's dark surfaces: black, a #111 card, #191a1d for hover and selection, #0a0a0a for muted fills. */
+  --window: #0a0a0a;
+  --sidebar: #0a0a0a;
+  --content: #000000;
+  --raised: #111111;
+  --inset: #0a0a0a;
+  --inset-2: #191a1d;
+  --hover: #191a1d;
+  --press: #222327;
+  --select: #191a1d;
+  --media: #000000;
+  --media-empty: #111111;
+
+  --line: #ffffff14;
+  --line-strong: #ffffff2e;
+
+  --text: #f1f3f7;
+  --text-2: #a3a3a3;
+  --text-3: #7c7c80;
+  --text-4: #505055;
+
+  --accent: #f1f3f7;
+  --accent-2: #ffffff;
+  --accent-soft: rgba(255, 255, 255, 0.08);
+  --accent-line: rgba(255, 255, 255, 0.5);
+  --on-accent: #000000;
+
+  --amber: #ffb547;
+  --amber-fill: #f5a524;
+  --amber-fill-2: #f8b444;
+  --on-amber: #000000;
+  --amber-soft: rgba(245, 165, 36, 0.14);
+  --amber-line: rgba(245, 165, 36, 0.4);
+
+  --ok: #4ade80;
+  --ok-soft: rgba(74, 222, 128, 0.12);
+  --bad: #ff6b5b;
+  --bad-soft: rgba(255, 107, 91, 0.12);
+  --bad-line: rgba(255, 107, 91, 0.38);
+
+  /* Controls: a #111 card on the input border, lighter on hover. */
+  --btn-bg: #111111;
+  --btn-bg-hover: #191a1d;
+  --btn-bg-press: #0a0a0a;
+  --btn-line: #ffffff2e;
+  --btn-shadow: none;
+  --btn-sheen: none;
+  --input-bg: #0a0a0a;
+  --input-line: #ffffff2e;
+  --seg-track: #111111;
+  --seg-knob: #26272b;
+  --seg-knob-shadow: inset 0 0 0 1px #ffffff14;
+  --sheen: none;
+  --card-shadow: none;
+  --panel-shadow: 0 18px 48px rgba(0, 0, 0, 0.6), 0 0 0 1px #ffffff14;
+  --sheet-shadow: 0 30px 80px rgba(0, 0, 0, 0.7), 0 0 0 1px #ffffff1f;
+  --scrim: rgba(0, 0, 0, 0.62);
+  --thumb: #f1f3f7;
+  --track: rgba(255, 255, 255, 0.14);
+  --kbd-bg: rgba(255, 255, 255, 0.08);
+  --focus-ring: 0 0 0 3px rgba(255, 255, 255, 0.26);
+  --selection: rgba(255, 255, 255, 0.22);
+}
+
+/* Keep a trace of the native material, without letting wallpaper colour dominate the sidebar. */
+:root[data-desktop-vibrancy] {
+  --sidebar: rgba(246, 246, 247, 0.96);
+}
+:root[data-desktop-vibrancy][data-theme="dark"] {
+  --sidebar: rgba(10, 10, 10, 0.96);
+}

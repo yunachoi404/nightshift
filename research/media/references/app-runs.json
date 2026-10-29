@@ -1,0 +1,169 @@
+{
+  "projects": [
+    {
+      "id": "prj_mvhnw5c6311d457860",
+      "name": "Mara holds the Solenne bottle at\u2026",
+      "references": [
+        {
+          "id": "ref_w4y22xgwqf",
+          "assetId": "ast_mvhnw5co6949b54467",
+          "kind": "character",
+          "label": "Mara"
+        },
+        {
+          "id": "ref_w4y2rveb5p",
+          "assetId": "ast_mvhnw5d16065da3a30",
+          "kind": "place",
+          "label": "The harbor"
+        },
+        {
+          "id": "ref_w4y2jopw75",
+          "assetId": "ast_mvhnw5dd4560acf242",
+          "kind": "product",
+          "label": "The Solenne bottle"
+        }
+      ],
+      "shots": [
+        {
+          "id": "shot_mvhnylssb89aefaed5",
+          "prompt": "Mara stands at the harbor, holding the Solenne bottle, her teal coat flapping in the breeze as long shadows stretch across the sand, framed by a striped red lighthouse and turquoise boathouse under low warm sun.",
+          "stillAssetId": "ast_mvho0ni13d128551f4",
+          "referenceIds": null
+        }
+      ]
+    },
+    {
+      "id": "prj_mvhntrard5f81a08b8",
+      "name": "Solenne - references check",
+      "references": [
+        {
+          "id": "solenne",
+          "assetId": "ast_mvhntraw294dd91eb9",
+          "kind": "product",
+          "label": "the Solenne bottle"
+        }
+      ],
+      "shots": [
+        {
+          "id": "solenne-1",
+          "prompt": "Low angle hero view of the Solenne bottle on a black marble pedestal, dramatic narrow side lighting, black background.",
+          "stillAssetId": "ast_mvhnuuyp73e72887fc",
+          "referenceIds": null
+        },
+        {
+          "id": "solenne-2",
+          "prompt": "Overhead flat lay of the Solenne bottle on pale linen with a small olive branch to the side, soft morning sunlight.",
+          "stillAssetId": "ast_mvhnw18edecabce6d8",
+          "referenceIds": null
+        },
+        {
+          "id": "solenne-3",
+          "prompt": "Extreme close-up of the Solenne bottle brass cap and amber glass shoulder, sparkling rain droplets, cool blue background.",
+          "stillAssetId": "ast_mvhnyezs4cc13ad9d9",
+          "referenceIds": null
+        },
+        {
+          "id": "solenne-4",
+          "prompt": "Wide scene of the Solenne bottle standing on a dune at sunset, full bottle visible, small in frame with generous negative space.",
+          "stillAssetId": "ast_mvho098w7a81160bf8",
+          "referenceIds": null
+        }
+      ]
+    }
+  ],
+  "jobs": [
+    {
+      "id": "job_mvhnylsu553b61999e",
+      "projectId": "prj_mvhnw5c6311d457860",
+      "step": "still",
+      "mode": "now",
+      "status": "done",
+      "progress": 1,
+      "outputAssetIds": [
+        "ast_mvho0ni13d128551f4"
+      ],
+      "createdAt": "2026-10-21T05:20:33.246Z",
+      "shotId": "shot_mvhnylssb89aefaed5",
+      "startedAt": "2026-10-21T05:21:50.450Z",
+      "message": "Still ready",
+      "finishedAt": "2026-10-21T05:22:08.829Z"
+    },
+    {
+      "id": "job_mvhnyfgwcf3bbb6866",
+      "projectId": "prj_mvhntrard5f81a08b8",
+      "step": "still",
+      "mode": "now",
+      "status": "done",
+      "progress": 1,
+      "outputAssetIds": [
+        "ast_mvho098w7a81160bf8"
+      ],
+      "createdAt": "2026-10-21T05:20:25.040Z",
+      "shotId": "solenne-4",
+      "startedAt": "2026-10-21T05:20:33.246Z",
+      "message": "Still ready",
+      "finishedAt": "2026-10-21T05:21:50.450Z"
+    },
+    {
+      "id": "job_mvhnw5do132e48a378",
+      "projectId": "prj_mvhnw5c6311d457860",
+      "step": "text",
+      "mode": "now",
+      "status": "done",
+      "progress": 1,
+      "outputAssetIds": [],
+      "createdAt": "2026-10-21T05:18:38.652Z",
+      "startedAt": "2026-10-21T05:20:24.481Z",
+      "message": "Shot list drafted.",
+      "finishedAt": "2026-10-21T05:20:33.246Z"
+    },
+    {
+      "id": "job_mvhnw1xf09b30fa8a1",
+      "projectId": "prj_mvhntrard5f81a08b8",
+      "step": "still",
+      "mode": "now",
+      "status": "done",
+      "progress": 1,
+      "outputAssetIds": [
+        "ast_mvhnyezs4cc13ad9d9"
+      ],
+      "createdAt": "2026-10-21T05:18:34.179Z",
+      "shotId": "solenne-3",
+      "startedAt": "2026-10-21T05:18:34.180Z",
+      "message": "Still ready",
+      "finishedAt": "2026-10-21T05:20:24.481Z"
+    },
+    {
+      "id": "job_mvhnuvtj7081ed7036",
+      "projectId": "prj_mvhntrard5f81a08b8",
+      "step": "still",
+      "mode": "now",
+      "status": "done",
+      "progress": 1,
+      "outputAssetIds": [
+        "ast_mvhnw18edecabce6d8"
+      ],
+      "createdAt": "2026-10-21T05:17:39.607Z",
+      "shotId": "solenne-2",
+      "startedAt": "2026-10-21T05:17:39.607Z",
+      "message": "Still ready",
+      "finishedAt": "2026-10-21T05:18:33.425Z"
+    },
+    {
+      "id": "job_mvhntrb7ec935b85e9",
+      "projectId": "prj_mvhntrard5f81a08b8",
+      "step": "still",
+      "mode": "now",
+      "status": "done",
+      "progress": 1,
+      "outputAssetIds": [
+        "ast_mvhnuuyp73e72887fc"
+      ],
+      "createdAt": "2026-10-21T05:16:47.107Z",
+      "shotId": "solenne-1",
+      "startedAt": "2026-10-21T05:16:47.409Z",
+      "message": "Still ready",
+      "finishedAt": "2026-10-21T05:17:38.772Z"
+    }
+  ]
+}

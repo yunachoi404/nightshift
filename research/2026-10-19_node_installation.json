@@ -1,0 +1,27 @@
+[
+  {
+    "name": "ComfyUI-Breeze-TTS-2",
+    "repo": "Saganaki22/ComfyUI-Breeze-TTS-2",
+    "ref": "3461ca6011b7e833147b2e7edb779da7a08c6259",
+    "subdir": ".",
+    "patch": "breeze",
+    "license": "Apache-2.0"
+  },
+  {
+    "name": "MOSS-Image",
+    "node": "moss-image",
+    "repo": "OpenMOSS/MOSS-Image",
+    "ref": "608158b568fa2e769d918ceccaaf2461f52b3e38",
+    "subdir": "comfyui/moss-image",
+    "patch": "moss",
+    "license": "Apache-2.0"
+  },
+  {
+    "name": "kandinsky-6",
+    "node": "kandinsky6",
+    "repo": "kandinskylab/kandinsky-6",
+    "ref": "119d58ee5c5de0157644f09ef20bc9b2ab68a064",
+    "subdir": "comfyui",
+    "license": "MIT"
+  }
+]

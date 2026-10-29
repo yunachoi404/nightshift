@@ -1,0 +1,68 @@
+{
+  "freeze": {
+    "draft": {
+      "width": 384,
+      "height": 640,
+      "frames": 97,
+      "duration": 4.041667
+    },
+    "final": {
+      "width": 768,
+      "height": 1280,
+      "frames": 97,
+      "duration": 4.041667
+    },
+    "ssimDownscaled": 0.762671,
+    "decodedAudioEqual": true,
+    "audioHashes": [
+      "SHA256=500ae4c861740b8f5881e0afb21d3c28f6e43536fb6f9c4a2cc2480b73af21b8",
+      "SHA256=500ae4c861740b8f5881e0afb21d3c28f6e43536fb6f9c4a2cc2480b73af21b8"
+    ],
+    "sourceDraft": "outputs/vfx-spike/app/ast_mvhmzajj73fbdfcf14.mp4",
+    "finalPath": "outputs/vfx-demo/01-freeze-product.mp4"
+  },
+  "disintegrate": {
+    "draft": {
+      "width": 384,
+      "height": 640,
+      "frames": 97,
+      "duration": 4.041667
+    },
+    "final": {
+      "width": 768,
+      "height": 1280,
+      "frames": 97,
+      "duration": 4.041667
+    },
+    "ssimDownscaled": 0.922435,
+    "decodedAudioEqual": true,
+    "audioHashes": [
+      "SHA256=513568f57fd6783c55748c2bf2574c1e969db78af4a159220a26968a63628c0a",
+      "SHA256=513568f57fd6783c55748c2bf2574c1e969db78af4a159220a26968a63628c0a"
+    ],
+    "sourceDraft": "outputs/vfx-spike/person-disintegrate-video/25/effect_00024_.mp4",
+    "finalPath": "outputs/vfx-demo/02-disintegrate-person.mp4"
+  },
+  "ignite": {
+    "draft": {
+      "width": 384,
+      "height": 640,
+      "frames": 97,
+      "duration": 4.041667
+    },
+    "final": {
+      "width": 768,
+      "height": 1280,
+      "frames": 97,
+      "duration": 4.041667
+    },
+    "ssimDownscaled": 0.814398,
+    "decodedAudioEqual": true,
+    "audioHashes": [
+      "SHA256=ddefa12a4b5031b91fd79da1353875b0c8a86b922b0c6d07c6fb4030e45418e8",
+      "SHA256=ddefa12a4b5031b91fd79da1353875b0c8a86b922b0c6d07c6fb4030e45418e8"
+    ],
+    "sourceDraft": "outputs/vfx-spike/statue-ignite-video/25/ast_mvhoi9h0279572526d.mp4",
+    "finalPath": "outputs/vfx-demo/03-ignite-statue.mp4"
+  }
+}

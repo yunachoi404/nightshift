@@ -1,0 +1,211 @@
+{
+  "tier": "apple-16",
+  "label": "Sample: Apple Silicon with 16 to 32 GB",
+  "match": {
+    "vendor": "apple",
+    "minVramGb": 15,
+    "maxVramGb": 48,
+    "minRamGb": 15
+  },
+  "models": [
+    {
+      "id": "kandinsky-6-lite",
+      "folder": "diffusion_models",
+      "filename": "sample-kandinsky-6-lite.safetensors",
+      "url": "https://example.com/nightshift/sample/sample-kandinsky-6-lite.safetensors",
+      "sizeGb": 6.5,
+      "license": {
+        "name": "Sample entry (not a real download)",
+        "url": "https://example.com/nightshift/sample-license"
+      }
+    },
+    {
+      "id": "moss-image",
+      "folder": "diffusion_models",
+      "filename": "sample-moss-image-5b.safetensors",
+      "url": "https://example.com/nightshift/sample/sample-moss-image-5b.safetensors",
+      "sizeGb": 5.0,
+      "license": {
+        "name": "Sample entry (not a real download)",
+        "url": "https://example.com/nightshift/sample-license"
+      }
+    },
+    {
+      "id": "breeze-tts-2",
+      "folder": "checkpoints",
+      "filename": "sample-breeze-tts-2-int8.safetensors",
+      "url": "https://example.com/nightshift/sample/sample-breeze-tts-2-int8.safetensors",
+      "sizeGb": 4.5,
+      "license": {
+        "name": "Sample entry (not a real download)",
+        "url": "https://example.com/nightshift/sample-license"
+      }
+    },
+    {
+      "id": "ace-step-1.5-turbo",
+      "folder": "checkpoints",
+      "filename": "sample-ace-step-1.5-turbo.safetensors",
+      "url": "https://example.com/nightshift/sample/sample-ace-step-1.5-turbo.safetensors",
+      "sizeGb": 4.8,
+      "license": {
+        "name": "Sample entry (not a real download)",
+        "url": "https://example.com/nightshift/sample-license"
+      }
+    }
+  ],
+  "launch": {
+    "args": [],
+    "env": {}
+  },
+  "defaultMemoryLimitGb": 11,
+  "steps": {
+    "still": {
+      "workflow": "tests/echo_image.api.json",
+      "inputs": {
+        "prompt": {
+          "node": "3",
+          "field": "filename_prefix"
+        },
+        "seed": {
+          "node": "3",
+          "field": "filename_prefix"
+        },
+        "image": {
+          "node": "1",
+          "field": "image"
+        }
+      },
+      "params": {
+        "width": 1024,
+        "height": 576
+      },
+      "outputNodes": [
+        "3"
+      ]
+    },
+    "video_draft": {
+      "workflow": "tests/echo_image.api.json",
+      "inputs": {
+        "prompt": {
+          "node": "3",
+          "field": "filename_prefix"
+        },
+        "seed": {
+          "node": "3",
+          "field": "filename_prefix"
+        },
+        "image": {
+          "node": "1",
+          "field": "image"
+        }
+      },
+      "params": {
+        "width": 640,
+        "height": 352,
+        "fps": 24,
+        "maxFrames": 121
+      },
+      "outputNodes": [
+        "3"
+      ]
+    },
+    "video_final_same_take": {
+      "workflow": "tests/echo_image.api.json",
+      "inputs": {
+        "prompt": {
+          "node": "3",
+          "field": "filename_prefix"
+        },
+        "seed": {
+          "node": "3",
+          "field": "filename_prefix"
+        },
+        "video": {
+          "node": "1",
+          "field": "image"
+        },
+        "latent": {
+          "node": "1",
+          "field": "image"
+        }
+      },
+      "params": {
+        "width": 1280,
+        "height": 704,
+        "fps": 24
+      },
+      "outputNodes": [
+        "3"
+      ]
+    },
+    "voice": {
+      "workflow": "tests/echo_image.api.json",
+      "inputs": {
+        "text": {
+          "node": "3",
+          "field": "filename_prefix"
+        },
+        "seed": {
+          "node": "3",
+          "field": "filename_prefix"
+        }
+      },
+      "params": {},
+      "outputNodes": [
+        "3"
+      ]
+    },
+    "music": {
+      "workflow": "tests/echo_image.api.json",
+      "inputs": {
+        "prompt": {
+          "node": "3",
+          "field": "filename_prefix"
+        },
+        "lyrics": {
+          "node": "3",
+          "field": "filename_prefix"
+        },
+        "durationSec": {
+          "node": "3",
+          "field": "filename_prefix"
+        },
+        "seed": {
+          "node": "3",
+          "field": "filename_prefix"
+        }
+      },
+      "params": {},
+      "outputNodes": [
+        "3"
+      ]
+    }
+  },
+  "estimates": {
+    "still": {
+      "peakGb": 8,
+      "seconds": 8,
+      "measured": false
+    },
+    "video_draft": {
+      "peakGb": 12,
+      "seconds": 60,
+      "measured": false
+    },
+    "video_final_same_take": {
+      "peakGb": 12,
+      "seconds": 240,
+      "measured": false
+    },
+    "voice": {
+      "peakGb": 5,
+      "seconds": 15,
+      "measured": false
+    },
+    "music": {
+      "peakGb": 6,
+      "seconds": 90,
+      "measured": false
+    }
+  }
+}

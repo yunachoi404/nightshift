@@ -1,0 +1,218 @@
+.fn-kind {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.kind {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 12px;
+  border-radius: var(--r-m);
+  border: 1px solid var(--line);
+  background: var(--raised);
+  text-align: left;
+  transition:
+    border-color var(--t-fast) var(--ease),
+    background-color var(--t-fast) var(--ease),
+    box-shadow var(--t-fast) var(--ease);
+}
+.kind:hover:not(:disabled) {
+  border-color: var(--line-strong);
+}
+.kind[aria-checked="true"] {
+  border-color: var(--accent);
+  box-shadow: inset 0 0 0 1px var(--accent);
+  background: var(--accent-soft);
+}
+.kind:disabled {
+  opacity: 0.55;
+}
+.kind__name {
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.kind__text {
+  color: var(--text-3);
+  font-size: var(--fs-small);
+  line-height: var(--lh-small);
+}
+
+.fn-list {
+  border: 1px solid var(--line);
+  border-radius: var(--r-m);
+  background: var(--raised);
+  background-image: var(--sheen);
+  overflow: hidden;
+}
+.fn-list__head {
+  display: flex;
+  align-items: center;
+  padding: 7px 12px;
+  background: var(--inset);
+  border-bottom: 1px solid var(--line);
+  font-size: var(--fs-small);
+  color: var(--text-2);
+}
+.fn-list__all {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+.fn-row {
+  display: grid;
+  grid-template-columns: 24px 104px minmax(0, 1fr) 200px;
+  gap: 12px;
+  align-items: center;
+  padding: 9px 12px;
+  border-top: 1px solid var(--line);
+}
+.fn-row:first-of-type {
+  border-top: 0;
+}
+.fn-row--tall {
+  grid-template-columns: 24px 56px minmax(0, 1fr) 200px;
+}
+.fn-row__check {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.fn-row__thumb {
+  display: flex;
+  align-items: center;
+}
+.fn-row__thumb .frame {
+  width: 100%;
+}
+.fn-row__text {
+  min-width: 0;
+}
+.fn-row__title {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+.fn-row__n {
+  font-weight: 600;
+}
+.fn-row__prompt {
+  color: var(--text-3);
+  font-size: var(--fs-small);
+  line-height: var(--lh-small);
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+.fn-row__state {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: var(--fs-small);
+  color: var(--text-2);
+}
+.fn-row__state .bar {
+  width: 100%;
+}
+.fn-row__state--bad {
+  color: var(--bad);
+}
+.fn-row__state a {
+  color: var(--accent);
+}
+.fn-row__state .tag {
+  align-self: flex-start;
+}
+
+/* inspector bits */
+.fn-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-top: 4px;
+}
+.insp--night {
+  background: var(--amber-soft);
+}
+.insp__icon {
+  width: 13px;
+  height: 13px;
+  vertical-align: -2px;
+  margin-right: 4px;
+  color: var(--amber);
+}
+
+/* the overnight sheet */
+.night {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.night__head {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+}
+.night__moon {
+  flex: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: var(--amber-fill);
+  color: var(--on-amber);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.night__moon svg {
+  width: 20px;
+  height: 20px;
+}
+.night__rows {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+}
+.night__row {
+  padding: 10px 12px;
+  border-radius: var(--r-m);
+  background: var(--inset);
+  border: 1px solid var(--line);
+}
+.night__row small {
+  display: block;
+  color: var(--text-3);
+  font-size: var(--fs-micro);
+  margin-bottom: 1px;
+}
+.night__row b {
+  display: block;
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: var(--fs-title-3);
+  line-height: var(--lh-title-3);
+  margin-top: 2px;
+}
+
+/* A narrow pane (small window next to the inspector): the state drops under the shot's text. */
+@container page (max-width: 620px) {
+  .fn-kind {
+    grid-template-columns: 1fr;
+  }
+  .fn-row,
+  .fn-row--tall {
+    grid-template-columns: 24px 88px minmax(0, 1fr);
+    grid-template-rows: auto auto;
+    row-gap: 6px;
+  }
+  .fn-row--tall {
+    grid-template-columns: 24px 48px minmax(0, 1fr);
+  }
+  .fn-row__state {
+    grid-column: 3;
+  }
+}

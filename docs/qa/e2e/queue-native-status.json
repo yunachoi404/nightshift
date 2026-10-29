@@ -1,0 +1,12 @@
+{
+  "engineUrl": "http://127.0.0.1:49300",
+  "engineState": "ready",
+  "eventsConnected": true,
+  "keepingAwake": true,
+  "activeOvernightJobs": 7,
+  "notificationsSupported": true,
+  "mode": "mock",
+  "pid": 64876,
+  "enginePid": 65017,
+  "lastNotification": "done:shown"
+}

@@ -1,0 +1,654 @@
+[
+  {
+    "projectId": "prj_mvhpes7hd504811a2b",
+    "name": "QA Ignite statue",
+    "template": "vfx_effect",
+    "shotCount": 1,
+    "references": [],
+    "takes": [
+      {
+        "id": "take_mvhphentad54cfb0d1",
+        "rung": "draft",
+        "media": {
+          "programs": [],
+          "stream_groups": [],
+          "streams": [
+            {
+              "codec_name": "h264",
+              "codec_type": "video",
+              "width": 384,
+              "height": 640,
+              "nb_frames": "97"
+            },
+            {
+              "codec_name": "aac",
+              "codec_type": "audio",
+              "sample_rate": "48000",
+              "nb_frames": "189"
+            }
+          ],
+          "format": {
+            "duration": "4.041667"
+          }
+        }
+      },
+      {
+        "id": "take_mvhq25td9d8a0743c6",
+        "rung": "final",
+        "media": {
+          "programs": [],
+          "stream_groups": [],
+          "streams": [
+            {
+              "codec_name": "h264",
+              "codec_type": "video",
+              "width": 768,
+              "height": 1280,
+              "nb_frames": "97"
+            },
+            {
+              "codec_name": "aac",
+              "codec_type": "audio",
+              "sample_rate": "48000",
+              "nb_frames": "189"
+            }
+          ],
+          "format": {
+            "duration": "4.041667"
+          }
+        },
+        "parentTakeId": "take_mvhphentad54cfb0d1",
+        "sameDecodedAudio": true
+      }
+    ],
+    "exports": [
+      {
+        "assetId": "ast_mvhq41dr839e52da1d",
+        "path": "outputs/qa-quick-shots/app/projects/prj_mvhpes7hd504811a2b/assets/ast_mvhq41dr839e52da1d.mp4",
+        "media": {
+          "programs": [],
+          "stream_groups": [],
+          "streams": [
+            {
+              "codec_name": "h264",
+              "codec_type": "video",
+              "width": 1080,
+              "height": 1920,
+              "nb_frames": "96"
+            },
+            {
+              "codec_name": "aac",
+              "codec_type": "audio",
+              "sample_rate": "48000",
+              "nb_frames": "189"
+            }
+          ],
+          "format": {
+            "duration": "4.000000"
+          }
+        },
+        "sha256": "f7807412e6edfba4ff3cbbe45948d3ee1fada80db08ce0c35055a8dacff1fff1"
+      },
+      {
+        "assetId": "ast_mvhqaoqhe9e5487e79",
+        "path": "outputs/qa-quick-shots/app/projects/prj_mvhpes7hd504811a2b/assets/ast_mvhqaoqhe9e5487e79.mp4",
+        "media": {
+          "programs": [],
+          "stream_groups": [],
+          "streams": [
+            {
+              "codec_name": "h264",
+              "codec_type": "video",
+              "width": 1080,
+              "height": 1920,
+              "nb_frames": "96"
+            },
+            {
+              "codec_name": "aac",
+              "codec_type": "audio",
+              "sample_rate": "48000",
+              "nb_frames": "189"
+            }
+          ],
+          "format": {
+            "duration": "4.000000"
+          }
+        },
+        "sha256": "7586287bd2b43ce2455e557c55141bd91afaee54feb0d15a87a2d937d61be2b5"
+      }
+    ]
+  },
+  {
+    "projectId": "prj_mvhph0hid78ba5d513",
+    "name": "QA Lake pullback",
+    "template": "camera_move",
+    "shotCount": 1,
+    "references": [],
+    "takes": [
+      {
+        "id": "take_mvhpkc2c92b2477345",
+        "rung": "draft",
+        "media": {
+          "programs": [],
+          "stream_groups": [],
+          "streams": [
+            {
+              "codec_name": "h264",
+              "codec_type": "video",
+              "width": 640,
+              "height": 384,
+              "nb_frames": "97"
+            },
+            {
+              "codec_name": "aac",
+              "codec_type": "audio",
+              "sample_rate": "48000",
+              "nb_frames": "189"
+            }
+          ],
+          "format": {
+            "duration": "4.041667"
+          }
+        }
+      },
+      {
+        "id": "take_mvhq50fp1b557e5bad",
+        "rung": "final",
+        "media": {
+          "programs": [],
+          "stream_groups": [],
+          "streams": [
+            {
+              "codec_name": "h264",
+              "codec_type": "video",
+              "width": 1280,
+              "height": 768,
+              "nb_frames": "97"
+            },
+            {
+              "codec_name": "aac",
+              "codec_type": "audio",
+              "sample_rate": "48000",
+              "nb_frames": "189"
+            }
+          ],
+          "format": {
+            "duration": "4.041667"
+          }
+        },
+        "parentTakeId": "take_mvhpkc2c92b2477345",
+        "sameDecodedAudio": true
+      }
+    ],
+    "exports": [
+      {
+        "assetId": "ast_mvhqb6h8fe435e7f83",
+        "path": "outputs/qa-quick-shots/app/projects/prj_mvhph0hid78ba5d513/assets/ast_mvhqb6h8fe435e7f83.mp4",
+        "media": {
+          "programs": [],
+          "stream_groups": [],
+          "streams": [
+            {
+              "codec_name": "h264",
+              "codec_type": "video",
+              "width": 1920,
+              "height": 1080,
+              "nb_frames": "96"
+            },
+            {
+              "codec_name": "aac",
+              "codec_type": "audio",
+              "sample_rate": "48000",
+              "nb_frames": "189"
+            }
+          ],
+          "format": {
+            "duration": "4.000000"
+          }
+        },
+        "sha256": "1ea884f107f93cee7c81f048a5fb04f2211e5df78d1d01dd28678af0f4a5afe1"
+      }
+    ]
+  },
+  {
+    "projectId": "prj_mvhphpku9e812888b9",
+    "name": "QA Named references",
+    "template": "cinematic_shot",
+    "shotCount": 1,
+    "references": [
+      {
+        "label": "Solenne",
+        "kind": "product"
+      },
+      {
+        "label": "Aurora Lake",
+        "kind": "place"
+      }
+    ],
+    "takes": [
+      {
+        "id": "take_mvhpr5hs97feb08f82",
+        "rung": "draft",
+        "media": {
+          "programs": [],
+          "stream_groups": [],
+          "streams": [
+            {
+              "codec_name": "h264",
+              "codec_type": "video",
+              "width": 640,
+              "height": 384,
+              "nb_frames": "97"
+            },
+            {
+              "codec_name": "aac",
+              "codec_type": "audio",
+              "sample_rate": "48000",
+              "nb_frames": "189"
+            }
+          ],
+          "format": {
+            "duration": "4.041667"
+          }
+        }
+      },
+      {
+        "id": "take_mvhq9hug3ba6e4bbf7",
+        "rung": "final",
+        "media": {
+          "programs": [],
+          "stream_groups": [],
+          "streams": [
+            {
+              "codec_name": "h264",
+              "codec_type": "video",
+              "width": 1280,
+              "height": 768,
+              "nb_frames": "97"
+            },
+            {
+              "codec_name": "aac",
+              "codec_type": "audio",
+              "sample_rate": "48000",
+              "nb_frames": "189"
+            }
+          ],
+          "format": {
+            "duration": "4.041667"
+          }
+        },
+        "parentTakeId": "take_mvhpr5hs97feb08f82",
+        "sameDecodedAudio": true
+      }
+    ],
+    "exports": [
+      {
+        "assetId": "ast_mvhqbk1s9b3af695c6",
+        "path": "outputs/qa-quick-shots/app/projects/prj_mvhphpku9e812888b9/assets/ast_mvhqbk1s9b3af695c6.mp4",
+        "media": {
+          "programs": [],
+          "stream_groups": [],
+          "streams": [
+            {
+              "codec_name": "h264",
+              "codec_type": "video",
+              "width": 1920,
+              "height": 1080,
+              "nb_frames": "96"
+            },
+            {
+              "codec_name": "aac",
+              "codec_type": "audio",
+              "sample_rate": "48000",
+              "nb_frames": "189"
+            }
+          ],
+          "format": {
+            "duration": "4.000000"
+          }
+        },
+        "sha256": "ec3e17301a5252fbaa4da2425b3c51f9dc47285c0f0ab68aa2ce4dc6c8fe044b"
+      }
+    ]
+  },
+  {
+    "projectId": "prj_mvhpjtrzde9c9aba6e",
+    "name": "QA Product ad",
+    "template": "product_ad",
+    "shotCount": 5,
+    "references": [
+      {
+        "label": "Solenne",
+        "kind": "product"
+      }
+    ],
+    "takes": [
+      {
+        "id": "take_mvhpt2n3f66573c64c",
+        "rung": "draft",
+        "media": {
+          "programs": [],
+          "stream_groups": [],
+          "streams": [
+            {
+              "codec_name": "h264",
+              "codec_type": "video",
+              "width": 384,
+              "height": 640,
+              "nb_frames": "73"
+            },
+            {
+              "codec_name": "aac",
+              "codec_type": "audio",
+              "sample_rate": "48000",
+              "nb_frames": "143"
+            }
+          ],
+          "format": {
+            "duration": "3.041667"
+          }
+        }
+      },
+      {
+        "id": "take_mvhpu2pc3678eaad9d",
+        "rung": "draft",
+        "media": {
+          "programs": [],
+          "stream_groups": [],
+          "streams": [
+            {
+              "codec_name": "h264",
+              "codec_type": "video",
+              "width": 384,
+              "height": 640,
+              "nb_frames": "65"
+            },
+            {
+              "codec_name": "aac",
+              "codec_type": "audio",
+              "sample_rate": "48000",
+              "nb_frames": "128"
+            }
+          ],
+          "format": {
+            "duration": "2.708333"
+          }
+        }
+      },
+      {
+        "id": "take_mvhpuz036c81306930",
+        "rung": "draft",
+        "media": {
+          "programs": [],
+          "stream_groups": [],
+          "streams": [
+            {
+              "codec_name": "h264",
+              "codec_type": "video",
+              "width": 384,
+              "height": 640,
+              "nb_frames": "89"
+            },
+            {
+              "codec_name": "aac",
+              "codec_type": "audio",
+              "sample_rate": "48000",
+              "nb_frames": "174"
+            }
+          ],
+          "format": {
+            "duration": "3.708333"
+          }
+        }
+      },
+      {
+        "id": "take_mvhpx7ql8e1080fd91",
+        "rung": "draft",
+        "media": {
+          "programs": [],
+          "stream_groups": [],
+          "streams": [
+            {
+              "codec_name": "h264",
+              "codec_type": "video",
+              "width": 384,
+              "height": 640,
+              "nb_frames": "73"
+            },
+            {
+              "codec_name": "aac",
+              "codec_type": "audio",
+              "sample_rate": "48000",
+              "nb_frames": "143"
+            }
+          ],
+          "format": {
+            "duration": "3.041667"
+          }
+        }
+      },
+      {
+        "id": "take_mvhpy66yd698be039f",
+        "rung": "draft",
+        "media": {
+          "programs": [],
+          "stream_groups": [],
+          "streams": [
+            {
+              "codec_name": "h264",
+              "codec_type": "video",
+              "width": 384,
+              "height": 640,
+              "nb_frames": "73"
+            },
+            {
+              "codec_name": "aac",
+              "codec_type": "audio",
+              "sample_rate": "48000",
+              "nb_frames": "143"
+            }
+          ],
+          "format": {
+            "duration": "3.041667"
+          }
+        }
+      },
+      {
+        "id": "take_mvhqaz8oc559155112",
+        "rung": "final",
+        "media": {
+          "programs": [],
+          "stream_groups": [],
+          "streams": [
+            {
+              "codec_name": "h264",
+              "codec_type": "video",
+              "width": 768,
+              "height": 1280,
+              "nb_frames": "73"
+            },
+            {
+              "codec_name": "aac",
+              "codec_type": "audio",
+              "sample_rate": "48000",
+              "nb_frames": "143"
+            }
+          ],
+          "format": {
+            "duration": "3.041667"
+          }
+        },
+        "parentTakeId": "take_mvhpt2n3f66573c64c",
+        "sameDecodedAudio": true
+      },
+      {
+        "id": "take_mvhqcc53ed388717c8",
+        "rung": "final",
+        "media": {
+          "programs": [],
+          "stream_groups": [],
+          "streams": [
+            {
+              "codec_name": "h264",
+              "codec_type": "video",
+              "width": 768,
+              "height": 1280,
+              "nb_frames": "65"
+            },
+            {
+              "codec_name": "aac",
+              "codec_type": "audio",
+              "sample_rate": "48000",
+              "nb_frames": "128"
+            }
+          ],
+          "format": {
+            "duration": "2.708333"
+          }
+        },
+        "parentTakeId": "take_mvhpu2pc3678eaad9d",
+        "sameDecodedAudio": true
+      },
+      {
+        "id": "take_mvhqf7eua9da6e4da1",
+        "rung": "final",
+        "media": {
+          "programs": [],
+          "stream_groups": [],
+          "streams": [
+            {
+              "codec_name": "h264",
+              "codec_type": "video",
+              "width": 768,
+              "height": 1280,
+              "nb_frames": "89"
+            },
+            {
+              "codec_name": "aac",
+              "codec_type": "audio",
+              "sample_rate": "48000",
+              "nb_frames": "174"
+            }
+          ],
+          "format": {
+            "duration": "3.708333"
+          }
+        },
+        "parentTakeId": "take_mvhpuz036c81306930",
+        "sameDecodedAudio": true
+      },
+      {
+        "id": "take_mvhqgls7cca5918711",
+        "rung": "final",
+        "media": {
+          "programs": [],
+          "stream_groups": [],
+          "streams": [
+            {
+              "codec_name": "h264",
+              "codec_type": "video",
+              "width": 768,
+              "height": 1280,
+              "nb_frames": "73"
+            },
+            {
+              "codec_name": "aac",
+              "codec_type": "audio",
+              "sample_rate": "48000",
+              "nb_frames": "143"
+            }
+          ],
+          "format": {
+            "duration": "3.041667"
+          }
+        },
+        "parentTakeId": "take_mvhpx7ql8e1080fd91",
+        "sameDecodedAudio": true
+      },
+      {
+        "id": "take_mvhqj2qbe97507e13c",
+        "rung": "final",
+        "media": {
+          "programs": [],
+          "stream_groups": [],
+          "streams": [
+            {
+              "codec_name": "h264",
+              "codec_type": "video",
+              "width": 768,
+              "height": 1280,
+              "nb_frames": "73"
+            },
+            {
+              "codec_name": "aac",
+              "codec_type": "audio",
+              "sample_rate": "48000",
+              "nb_frames": "143"
+            }
+          ],
+          "format": {
+            "duration": "3.041667"
+          }
+        },
+        "parentTakeId": "take_mvhpy66yd698be039f",
+        "sameDecodedAudio": true
+      }
+    ],
+    "exports": [
+      {
+        "assetId": "ast_mvhqkgd5a40c910c22",
+        "path": "outputs/qa-quick-shots/app/projects/prj_mvhpjtrzde9c9aba6e/assets/ast_mvhqkgd5a40c910c22.mp4",
+        "media": {
+          "programs": [],
+          "stream_groups": [],
+          "streams": [
+            {
+              "codec_name": "h264",
+              "codec_type": "video",
+              "width": 1080,
+              "height": 1920,
+              "nb_frames": "360"
+            },
+            {
+              "codec_name": "aac",
+              "codec_type": "audio",
+              "sample_rate": "48000",
+              "nb_frames": "705"
+            }
+          ],
+          "format": {
+            "duration": "15.000000"
+          }
+        },
+        "sha256": "f826b2eeb987427d082fb7093e1e2f93d787030aa1ba140d8a8962a241260e5d"
+      },
+      {
+        "assetId": "ast_mvhqq9721ba1b1b580",
+        "path": "outputs/qa-quick-shots/app/projects/prj_mvhpjtrzde9c9aba6e/assets/ast_mvhqq9721ba1b1b580.mp4",
+        "media": {
+          "programs": [],
+          "stream_groups": [],
+          "streams": [
+            {
+              "codec_name": "h264",
+              "codec_type": "video",
+              "width": 1080,
+              "height": 1920,
+              "nb_frames": "360"
+            },
+            {
+              "codec_name": "aac",
+              "codec_type": "audio",
+              "sample_rate": "48000",
+              "nb_frames": "705"
+            }
+          ],
+          "format": {
+            "duration": "15.000000"
+          }
+        },
+        "sha256": "58ff312bcb6f9d68a2987d559fb8e03c268f047a0d226c827012131b582d3c75"
+      }
+    ]
+  }
+]

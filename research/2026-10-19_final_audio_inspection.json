@@ -1,0 +1,41 @@
+[
+  {
+    "case": "ltx_draft_ok",
+    "path": "outputs/model_lab/ltx_draft_ok/25/ltx_draft_00002_.mp4",
+    "durationSec": 4.01,
+    "sampleRate": 48000,
+    "channels": 2,
+    "peakAmplitude": 0.021990612149238586,
+    "rms": 0.0012462494196370244,
+    "nearFullScaleFraction": 0.0,
+    "overFullScaleFraction": 0.0,
+    "transcript": null,
+    "asrModel": null
+  },
+  {
+    "case": "ltx_final_v2",
+    "path": "outputs/model_lab/ltx_final_v2/25/ltx_final_00002_.mp4",
+    "durationSec": 4.01,
+    "sampleRate": 48000,
+    "channels": 2,
+    "peakAmplitude": 0.021990612149238586,
+    "rms": 0.0012462494196370244,
+    "nearFullScaleFraction": 0.0,
+    "overFullScaleFraction": 0.0,
+    "transcript": null,
+    "asrModel": null
+  },
+  {
+    "case": "h3_ref2va_final",
+    "path": "outputs/model_lab/h3_ref2va_final/17/h3_ref_final_00001_.mp4",
+    "durationSec": 5.1666875,
+    "sampleRate": 32000,
+    "channels": 2,
+    "peakAmplitude": 0.5321903228759766,
+    "rms": 0.0935254916548729,
+    "nearFullScaleFraction": 0.0,
+    "overFullScaleFraction": 0.0,
+    "transcript": null,
+    "asrModel": null
+  }
+]

@@ -1,0 +1,410 @@
+.ed {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  overflow: hidden;
+}
+.ed__top {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) var(--inspector-w);
+  min-height: 0;
+}
+.ed__stage {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  background: var(--viewer, #1b1b1e);
+}
+:root[data-theme="dark"] .ed__stage {
+  --viewer: #09090a;
+}
+.ed__preview {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px 24px 14px;
+  container-type: size;
+}
+/* The frame is as large as the viewer allows in either direction, never distorted. */
+.ed__preview .frame {
+  height: auto;
+  border-radius: 2px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.06);
+}
+.ed__preview .frame--16x9 {
+  width: min(100%, calc(100cqh * 16 / 9));
+}
+.ed__preview .frame--9x16 {
+  width: min(100%, calc(100cqh * 9 / 16));
+}
+.ed__preview .frame--1x1 {
+  width: min(100%, 100cqh);
+}
+.ed__transport {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 40px;
+  padding: 0 12px;
+  background: var(--content);
+  border-top: 1px solid var(--line);
+}
+.ed__play svg {
+  width: 17px;
+  height: 17px;
+  fill: currentColor;
+  stroke-width: 0;
+}
+.ed__time {
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+  font-size: var(--fs-body);
+  min-width: 96px;
+  font-weight: 500;
+}
+.ed__time-total {
+  color: var(--text-3);
+  font-weight: 400;
+}
+.ed__spacer {
+  flex: 1;
+}
+.ed__link {
+  color: var(--accent);
+}
+.ed__hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  flex: none;
+}
+.ed__note {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+@container (max-width: 560px) {
+  .ed__hint,
+  .ed__note {
+    display: none;
+  }
+}
+.ed__stage {
+  container-type: inline-size;
+}
+
+/* captions overlay */
+.cap {
+  position: absolute;
+  left: 6%;
+  right: 6%;
+  display: flex;
+  justify-content: center;
+  text-align: center;
+  pointer-events: none;
+}
+.cap--bottom {
+  bottom: 8%;
+}
+.cap--center {
+  top: 50%;
+  transform: translateY(-50%);
+}
+.cap__text {
+  display: inline;
+  padding: 0.25em 0.6em;
+  border-radius: 0.3em;
+  font-size: var(--cap-size, 28px);
+  line-height: 1.25;
+  font-weight: 600;
+  color: #fff;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.6);
+  max-width: 100%;
+}
+.cap__text--boxed {
+  background: rgba(0, 0, 0, 0.55);
+}
+.cap__text--serif {
+  font-family: "Iowan Old Style", "Palatino", Georgia, serif;
+  font-weight: 400;
+  font-style: italic;
+  letter-spacing: 0.01em;
+}
+.cap__word {
+  opacity: 0.55;
+  transition: opacity 80ms linear;
+}
+.cap__word--on {
+  opacity: 1;
+}
+.cap__word--lamp.cap__word--on {
+  color: #ffc876;
+}
+
+/* inspector: one column that scrolls as a whole. Export is the last section, in the same rhythm as the rest.
+   In a tall enough window it stays in view at the foot of the column while the rest scrolls under it. */
+.ed__side {
+  min-height: 0;
+  container-type: size;
+}
+.insp__export {
+  margin-top: auto;
+  border-top: 1px solid var(--line);
+  border-bottom: 0;
+}
+.insp:has(+ .insp__export) {
+  border-bottom: 0;
+}
+/* The export stays in reach at the foot of a tall inspector. A shorter one scrolls, so the captions, music and
+   voice sections above it are never covered. */
+@container (min-height: 760px) {
+  .insp__export {
+    position: sticky;
+    bottom: 0;
+    background: var(--inset);
+    z-index: 1;
+  }
+}
+.insp__row .insp__voice {
+  flex: 1;
+  width: 0;
+  min-width: 0;
+}
+.insp .select,
+.insp .input {
+  min-height: 26px;
+  padding: 3px 24px 3px 7px;
+  font-size: var(--fs-small);
+}
+.insp__result {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.insp__file {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 4px 10px;
+  align-items: start;
+  padding-top: 4px;
+}
+.insp__file .frame {
+  height: 44px;
+  width: auto;
+  grid-row: 1 / 3;
+}
+.insp__file .frame--16x9 {
+  width: 78px;
+}
+.insp__file .frame--9x16 {
+  width: 25px;
+}
+.insp__file .frame--1x1 {
+  width: 44px;
+}
+.insp__file-text {
+  min-width: 0;
+}
+.insp__filename {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 500;
+}
+.insp__file-open {
+  grid-column: 2;
+  justify-self: start;
+  margin-top: 2px;
+}
+/* timeline */
+.tl {
+  height: 224px;
+  display: grid;
+  grid-template-columns: 88px minmax(0, 1fr);
+  background: var(--inset);
+  border-top: 1px solid var(--line);
+  user-select: none;
+}
+.tl__labels {
+  border-right: 1px solid var(--line);
+  display: grid;
+  grid-template-rows: 24px 72px 32px 32px 32px;
+}
+.tl__label {
+  display: flex;
+  align-items: center;
+  padding: 0 10px;
+  font-size: var(--fs-micro);
+  font-weight: 600;
+  color: var(--text-3);
+  border-bottom: 1px solid var(--line);
+}
+/* The corner above the labels sits on the ruler's row and shares its background. */
+.tl__label:first-child {
+  background: var(--content);
+}
+.tl__scroll {
+  overflow-x: auto;
+  overflow-y: hidden;
+  position: relative;
+}
+.tl__inner {
+  position: relative;
+  min-width: 100%;
+  display: grid;
+  grid-template-rows: 24px 72px 32px 32px 32px;
+}
+.tl__ruler {
+  position: relative;
+  border-bottom: 1px solid var(--line);
+  background: var(--content);
+}
+.tl__tick {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  border-left: 1px solid var(--line-strong);
+  padding-left: 4px;
+  font-size: 10px;
+  color: var(--text-3);
+  font-variant-numeric: tabular-nums;
+  display: flex;
+  align-items: flex-end;
+  padding-bottom: 3px;
+}
+.tl__track {
+  position: relative;
+  border-bottom: 1px solid var(--line);
+}
+.tl__tick--end {
+  padding-left: 0;
+}
+.tl__tick--end > span {
+  transform: translateX(calc(-100% - 4px));
+}
+.tl__clip {
+  position: absolute;
+  top: 5px;
+  bottom: 5px;
+  border-radius: 4px;
+  overflow: hidden;
+  background: var(--media);
+  box-shadow: inset 0 0 0 1px var(--line-strong);
+  display: flex;
+  transition: box-shadow var(--t-fast) var(--ease);
+}
+.tl__clip:hover {
+  box-shadow: inset 0 0 0 1px var(--text-3);
+}
+.tl__clip--on {
+  box-shadow: inset 0 0 0 1px var(--content), 0 0 0 2px var(--accent);
+}
+.tl__clip:focus-visible {
+  box-shadow: inset 0 0 0 1px var(--content), 0 0 0 2px var(--accent);
+}
+.tl__filmstrip {
+  height: 100%;
+  width: auto;
+  flex: none;
+}
+.tl__clip-label {
+  position: absolute;
+  left: 5px;
+  bottom: 4px;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 1px 5px;
+  border-radius: 3px;
+  background: rgba(20, 20, 22, 0.75);
+  color: #fff;
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+.tl__clip-label--final {
+  color: #ffc876;
+}
+.tl__audio {
+  position: absolute;
+  top: 6px;
+  bottom: 6px;
+  border-radius: 3px;
+  overflow: hidden;
+  background: var(--ok-soft);
+  box-shadow: inset 0 0 0 1px rgba(31, 138, 76, 0.35);
+}
+.tl__audio--voice {
+  background: var(--accent-soft);
+  box-shadow: inset 0 0 0 1px var(--accent-line);
+}
+.tl__wave {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  gap: 1px;
+  padding: 0 4px;
+}
+.tl__wave i {
+  flex: 1;
+  background: var(--ok);
+  opacity: 0.65;
+  border-radius: 1px;
+  min-width: 1px;
+}
+.tl__audio--voice .tl__wave i {
+  background: var(--accent);
+}
+.tl__caption {
+  position: absolute;
+  top: 7px;
+  bottom: 7px;
+  border-radius: 3px;
+  background: var(--raised);
+  box-shadow: inset 0 0 0 1px var(--line-strong);
+  font-size: 10px;
+  color: var(--text-2);
+  padding: 0 6px;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.tl__empty {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  padding: 0 10px;
+  font-size: var(--fs-micro);
+  color: var(--text-4);
+}
+.tl__head {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--accent);
+  pointer-events: none;
+  z-index: 2;
+}
+.tl__head::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -5px;
+  border: 5px solid transparent;
+  border-top: 7px solid var(--accent);
+  border-bottom: 0;
+}
+.insp__framing {
+  width: auto;
+  max-width: 200px;
+}

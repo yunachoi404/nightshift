@@ -1,0 +1,21 @@
+{
+  "1": {"class_type": "UNETLoader", "inputs": {"unet_name": "flux-2-klein-4b-fp8.safetensors", "weight_dtype": "default"}},
+  "2": {"class_type": "CLIPLoader", "inputs": {"clip_name": "qwen_3_4b.safetensors", "type": "flux2", "device": "default"}},
+  "3": {"class_type": "VAELoader", "inputs": {"vae_name": "flux2-vae.safetensors"}},
+  "10": {"class_type": "LoadImage", "inputs": {"image": "layout_frame.png"}},
+  "11": {"class_type": "ImageScaleToTotalPixels", "inputs": {"image": ["10", 0], "upscale_method": "lanczos", "megapixels": 1.0, "resolution_steps": 64}},
+  "12": {"class_type": "GetImageSize", "inputs": {"image": ["11", 0]}},
+  "13": {"class_type": "VAEEncode", "inputs": {"pixels": ["11", 0], "vae": ["3", 0]}},
+  "20": {"class_type": "CLIPTextEncode", "inputs": {"text": "", "clip": ["2", 0]}},
+  "21": {"class_type": "ReferenceLatent", "inputs": {"conditioning": ["20", 0], "latent": ["13", 0]}},
+  "22": {"class_type": "ConditioningZeroOut", "inputs": {"conditioning": ["20", 0]}},
+  "23": {"class_type": "ReferenceLatent", "inputs": {"conditioning": ["22", 0], "latent": ["13", 0]}},
+  "30": {"class_type": "EmptyFlux2LatentImage", "inputs": {"width": ["12", 0], "height": ["12", 1], "batch_size": 1}},
+  "31": {"class_type": "Flux2Scheduler", "inputs": {"steps": 4, "width": ["12", 0], "height": ["12", 1]}},
+  "32": {"class_type": "CFGGuider", "inputs": {"model": ["1", 0], "positive": ["21", 0], "negative": ["23", 0], "cfg": 1}},
+  "33": {"class_type": "KSamplerSelect", "inputs": {"sampler_name": "euler"}},
+  "34": {"class_type": "RandomNoise", "inputs": {"noise_seed": 42}},
+  "35": {"class_type": "SamplerCustomAdvanced", "inputs": {"noise": ["34", 0], "guider": ["32", 0], "sampler": ["33", 0], "sigmas": ["31", 0], "latent_image": ["30", 0]}},
+  "36": {"class_type": "VAEDecode", "inputs": {"samples": ["35", 0], "vae": ["3", 0]}},
+  "40": {"class_type": "SaveImage", "inputs": {"images": ["36", 0], "filename_prefix": "ohf/look"}}
+}

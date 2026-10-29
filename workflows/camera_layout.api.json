@@ -1,0 +1,94 @@
+{
+  "photo": {
+    "class_type": "LoadImage",
+    "inputs": {
+      "image": "photo.png"
+    }
+  },
+  "resize": {
+    "class_type": "ImageScale",
+    "inputs": {
+      "image": [
+        "photo",
+        0
+      ],
+      "upscale_method": "lanczos",
+      "width": 640,
+      "height": 384,
+      "crop": "center"
+    }
+  },
+  "model": {
+    "class_type": "LoadMoGeModel",
+    "inputs": {
+      "model_name": "moge_2_vitl_normal_fp16.safetensors"
+    }
+  },
+  "geometry": {
+    "class_type": "MoGeInference",
+    "inputs": {
+      "moge_model": [
+        "model",
+        0
+      ],
+      "image": [
+        "resize",
+        0
+      ],
+      "resolution_level": 6,
+      "fov_x_degrees": 0,
+      "batch_size": 1,
+      "force_projection": true,
+      "apply_mask": false,
+      "refine_steps": 0
+    }
+  },
+  "move": {
+    "class_type": "PrimitiveString",
+    "inputs": {
+      "value": "dolly_in"
+    }
+  },
+  "frames": {
+    "class_type": "PrimitiveInt",
+    "inputs": {
+      "value": 97
+    }
+  },
+  "fps": {
+    "class_type": "PrimitiveFloat",
+    "inputs": {
+      "value": 24
+    }
+  },
+  "depth": {
+    "class_type": "MoGeRender",
+    "inputs": {
+      "moge_geometry": [
+        "geometry",
+        0
+      ],
+      "output": "depth"
+    }
+  },
+  "save_depth": {
+    "class_type": "SaveImage",
+    "inputs": {
+      "images": [
+        "depth",
+        0
+      ],
+      "filename_prefix": "nightshift/camera_depth"
+    }
+  },
+  "save_photo": {
+    "class_type": "SaveImage",
+    "inputs": {
+      "images": [
+        "resize",
+        0
+      ],
+      "filename_prefix": "nightshift/camera_photo"
+    }
+  }
+}

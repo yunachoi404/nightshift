@@ -1,0 +1,4 @@
+Architecture:                            aarch64
+Vendor ID:                               ARM
+Model name:                              Cortex-X925
+Model name:                              Cortex-A725

@@ -1,0 +1,13 @@
+{
+  "workflow": "ltx25_decode_checkpoint.api.json",
+  "inputs": {
+    "latent": {
+      "node": "1",
+      "field": "latent"
+    }
+  },
+  "params": {},
+  "outputNodes": [
+    "8"
+  ]
+}

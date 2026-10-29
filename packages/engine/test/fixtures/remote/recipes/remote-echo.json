@@ -1,0 +1,43 @@
+{
+  "tier": "remote-echo",
+  "label": "Test: a GPU computer on the network, light graphs only",
+  "match": { "vendor": "nvidia", "unifiedMemory": true, "minVramGb": 90, "minRamGb": 90 },
+  "models": [
+    {
+      "id": "diffusion_models-echo_unet",
+      "folder": "diffusion_models",
+      "filename": "echo_unet.safetensors",
+      "url": "https://example.com/echo_unet.safetensors",
+      "sizeGb": 1,
+      "license": { "name": "Apache-2.0", "url": "https://www.apache.org/licenses/LICENSE-2.0" }
+    }
+  ],
+  "launch": { "args": [], "env": {} },
+  "steps": {
+    "still": {
+      "workflow": "still.api.json",
+      "inputs": { "image": { "node": "1", "field": "image" }, "prompt": { "node": "3", "field": "text" } },
+      "params": { "width": 128, "height": 64 },
+      "outputNodes": ["4"]
+    },
+    "video_draft": {
+      "workflow": "draft.api.json",
+      "inputs": { "image": { "node": "1", "field": "image" }, "prompt": { "node": "2", "field": "text" }, "seed": { "node": "3", "field": "noise_seed" } },
+      "params": { "width": 128, "height": 64, "fps": 24 },
+      "outputNodes": ["6", "5"]
+    },
+    "video_final_same_take": {
+      "workflow": "same_take.api.json",
+      "inputs": {
+        "latent": { "node": "1", "field": "latent" },
+        "video": { "node": "2", "field": "file" },
+        "image": { "node": "3", "field": "image" },
+        "prompt": { "node": "4", "field": "text" },
+        "seed": { "node": "5", "field": "noise_seed" }
+      },
+      "params": { "fps": 24 },
+      "outputNodes": ["6"]
+    }
+  },
+  "estimates": {}
+}

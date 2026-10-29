@@ -1,0 +1,8 @@
+{
+  "1": {"class_type": "LoadImage", "inputs": {"image": "x.png"}},
+  "2": {"class_type": "CLIPTextEncode", "inputs": {"text": ""}},
+  "3": {"class_type": "RandomNoise", "inputs": {"noise_seed": 0}},
+  "4": {"class_type": "LatentUpscaleModelLoader", "inputs": {"model_name": "echo_upscaler.safetensors"}},
+  "5": {"class_type": "NightshiftSaveAVLatent", "inputs": {"samples": ["1", 0], "filename_prefix": "nightshift/ltx_draft"}},
+  "6": {"class_type": "SaveVideo", "inputs": {"video": ["1", 0], "filename_prefix": "nightshift/ltx_draft"}}
+}

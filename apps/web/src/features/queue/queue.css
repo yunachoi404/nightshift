@@ -1,0 +1,68 @@
+.q-group {
+  margin-bottom: 20px;
+}
+.q-item {
+  align-items: flex-start;
+}
+.q-item > .pulse {
+  margin-top: 6px;
+}
+.q-item__main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.q-item__name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+  min-width: 0;
+}
+.q-item__sub {
+  font-size: var(--fs-small);
+  line-height: var(--lh-small);
+  color: var(--text-3);
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+.q-item__sub a:hover {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.q-item__bad {
+  color: var(--bad);
+}
+/* Why a job failed, under its project. Two lines at most; the full error is its tooltip. */
+.q-item__reason {
+  font-size: var(--fs-small);
+  line-height: var(--lh-small);
+  color: var(--text-2);
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+}
+.q-item__end {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  flex: none;
+  font-size: var(--fs-small);
+  line-height: var(--lh-small);
+  color: var(--text-3);
+  white-space: nowrap;
+}
+/* The time sits on the name's line, the outcome on the project's. */
+.q-item__end > :first-child {
+  line-height: var(--lh-body);
+}
+.q-item__bar {
+  margin-top: 6px;
+}

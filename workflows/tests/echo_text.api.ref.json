@@ -1,0 +1,6 @@
+{
+  "workflow": "tests/echo_text.api.json",
+  "inputs": {"text": {"node": "1", "field": "text"}},
+  "params": {},
+  "outputNodes": ["1"]
+}

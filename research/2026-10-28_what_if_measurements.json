@@ -1,0 +1,28 @@
+{
+  "estimates": {
+    "video_what_if": {
+      "peakGb": 45.0,
+      "seconds": 145.54,
+      "measured": true
+    }
+  },
+  "method": "SDK wall time from the 15-second gravity chain, including loading and queue wait. Scheduler-accounted process memory sampled every five seconds during the 15-second Jupiter chain. Different runs supply time and memory. Sparse samples can miss short peaks. Only the unified-memory model-lab hardware was tested.",
+  "video": {
+    "width": 384,
+    "height": 640,
+    "frames": 361,
+    "fps": 24
+  },
+  "timeJobId": "d0e3ec5d-ff89-4b5d-8c1d-f76e74345981",
+  "memoryJobId": "88bd7af1-eb24-438d-86f5-d9f28bcd8829",
+  "memorySamples": 19,
+  "sameTake": {
+    "seconds": 277.69,
+    "peakGb": 51.0,
+    "memorySamples": 40,
+    "jobId": "540ccfc7-cca1-49c4-b03e-65810f79a6e2",
+    "width": 768,
+    "height": 1280,
+    "frames": 361
+  }
+}

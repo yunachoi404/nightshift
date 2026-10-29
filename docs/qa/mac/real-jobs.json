@@ -1,0 +1,261 @@
+[
+  {
+    "id": "job_mvfiitab1903b5ee05",
+    "step": "export",
+    "analysis": null,
+    "status": "done",
+    "mode": "now",
+    "message": "Exported 1080x1920, 11.0 s, 18.0 MB, captions timed to the words",
+    "error": null,
+    "startedAt": "2026-10-19T17:12:46.019Z",
+    "finishedAt": "2026-10-19T17:13:15.291Z",
+    "outputAssetIds": [
+      "ast_mvfijfu978fb3fe4b6"
+    ]
+  },
+  {
+    "id": "job_mvfiibjm54ce2b6864",
+    "step": "export",
+    "analysis": null,
+    "status": "done",
+    "mode": "now",
+    "message": "Exported 1920x1080, 11.0 s, 12.7 MB, captions timed to the words",
+    "error": null,
+    "startedAt": "2026-10-19T17:12:23.027Z",
+    "finishedAt": "2026-10-19T17:12:39.147Z",
+    "outputAssetIds": [
+      "ast_mvfiinyo84212513bf"
+    ]
+  },
+  {
+    "id": "job_mvfiazo479636a2714",
+    "step": "export",
+    "analysis": null,
+    "status": "done",
+    "mode": "now",
+    "message": "Exported 960x540, 11.0 s, 1.4 MB, captions timed to the words",
+    "error": null,
+    "startedAt": "2026-10-19T17:06:41.044Z",
+    "finishedAt": "2026-10-19T17:06:49.749Z",
+    "outputAssetIds": [
+      "ast_mvfib6d78c674b63d7"
+    ]
+  },
+  {
+    "id": "job_mvfi8v89e20f1704a1",
+    "step": "video_final_same_take",
+    "analysis": null,
+    "status": "done",
+    "mode": "now",
+    "message": "Same-take final ready",
+    "error": null,
+    "startedAt": "2026-10-19T17:10:24.237Z",
+    "finishedAt": "2026-10-19T17:11:56.503Z",
+    "outputAssetIds": [
+      "ast_mvfihr07c9308b9afd"
+    ]
+  },
+  {
+    "id": "job_mvfi8hzn0c86d55d88",
+    "step": "video_final_same_take",
+    "analysis": null,
+    "status": "cancelled",
+    "mode": "now",
+    "message": "Cancelled",
+    "error": null,
+    "startedAt": null,
+    "finishedAt": "2026-10-19T17:04:50.862Z",
+    "outputAssetIds": []
+  },
+  {
+    "id": "job_mvfi8fc36aeef7d8a3",
+    "step": "music",
+    "analysis": true,
+    "status": "done",
+    "mode": "now",
+    "message": "Song measured: words timed",
+    "error": null,
+    "startedAt": "2026-10-19T17:04:41.379Z",
+    "finishedAt": "2026-10-19T17:04:41.438Z",
+    "outputAssetIds": []
+  },
+  {
+    "id": "job_mvfi8dt82f7c482d4c",
+    "step": "video_final_remaster",
+    "analysis": null,
+    "status": "done",
+    "mode": "now",
+    "message": "Remaster ready",
+    "error": null,
+    "startedAt": "2026-10-19T17:06:00.894Z",
+    "finishedAt": "2026-10-19T17:10:24.237Z",
+    "outputAssetIds": [
+      "ast_mvfifrt0a6a567ae28"
+    ]
+  },
+  {
+    "id": "job_mvfi8be21f26e3d191",
+    "step": "video_final_remaster",
+    "analysis": null,
+    "status": "cancelled",
+    "mode": "overnight",
+    "message": "Cancelled",
+    "error": null,
+    "startedAt": null,
+    "finishedAt": "2026-10-19T17:04:39.399Z",
+    "outputAssetIds": []
+  },
+  {
+    "id": "job_mvfi7kb14fe1277d5c",
+    "step": "voice",
+    "analysis": true,
+    "status": "done",
+    "mode": "now",
+    "message": "Voiceover measured: words timed",
+    "error": null,
+    "startedAt": "2026-10-19T17:04:01.165Z",
+    "finishedAt": "2026-10-19T17:04:03.649Z",
+    "outputAssetIds": []
+  },
+  {
+    "id": "job_mvfi657g50cf87d25d",
+    "step": "video_final_same_take",
+    "analysis": null,
+    "status": "done",
+    "mode": "now",
+    "message": "Same-take final ready",
+    "error": null,
+    "startedAt": "2026-10-19T17:04:41.381Z",
+    "finishedAt": "2026-10-19T17:06:00.894Z",
+    "outputAssetIds": [
+      "ast_mvfia4m554a0c1c019"
+    ]
+  },
+  {
+    "id": "job_mvfi62sn1c9ae4dc6b",
+    "step": "music",
+    "analysis": null,
+    "status": "done",
+    "mode": "now",
+    "message": "Song ready",
+    "error": null,
+    "startedAt": "2026-10-19T17:04:01.173Z",
+    "finishedAt": "2026-10-19T17:04:41.381Z",
+    "outputAssetIds": [
+      "ast_mvfi8f9n519d92cecb"
+    ]
+  },
+  {
+    "id": "job_mvfi60la96d876079b",
+    "step": "voice",
+    "analysis": null,
+    "status": "done",
+    "mode": "now",
+    "message": "Voiceover ready",
+    "error": null,
+    "startedAt": "2026-10-19T17:03:55.607Z",
+    "finishedAt": "2026-10-19T17:04:01.172Z",
+    "outputAssetIds": [
+      "ast_mvfi7k7e39fbbbc269"
+    ]
+  },
+  {
+    "id": "job_mvfi3kq8c3357ca2bc",
+    "step": "video_draft",
+    "analysis": null,
+    "status": "done",
+    "mode": "now",
+    "message": "Draft ready",
+    "error": null,
+    "startedAt": "2026-10-19T17:02:59.475Z",
+    "finishedAt": "2026-10-19T17:03:55.607Z",
+    "outputAssetIds": [
+      "ast_mvfi7fxw7c06e49d95",
+      "ast_mvfi7fyx81ac8434a4"
+    ]
+  },
+  {
+    "id": "job_mvfi3kq628d7961022",
+    "step": "video_draft",
+    "analysis": null,
+    "status": "done",
+    "mode": "now",
+    "message": "Draft ready",
+    "error": null,
+    "startedAt": "2026-10-19T17:02:05.907Z",
+    "finishedAt": "2026-10-19T17:02:59.475Z",
+    "outputAssetIds": [
+      "ast_mvfi68mt222f520587",
+      "ast_mvfi68nr2ee4dc7670"
+    ]
+  },
+  {
+    "id": "job_mvfi3kopef0033de9e",
+    "step": "video_draft",
+    "analysis": null,
+    "status": "done",
+    "mode": "now",
+    "message": "Draft ready",
+    "error": null,
+    "startedAt": "2026-10-19T17:00:55.033Z",
+    "finishedAt": "2026-10-19T17:02:05.907Z",
+    "outputAssetIds": [
+      "ast_mvfi53bj98b3d74238",
+      "ast_mvfi53cf0cafdfa7fc"
+    ]
+  },
+  {
+    "id": "job_mvfi2afq81cdd50f01",
+    "step": "still",
+    "analysis": null,
+    "status": "done",
+    "mode": "now",
+    "message": "Still ready",
+    "error": null,
+    "startedAt": "2026-10-19T17:00:25.819Z",
+    "finishedAt": "2026-10-19T17:00:39.478Z",
+    "outputAssetIds": [
+      "ast_mvfi38n4cddc2515b4"
+    ]
+  },
+  {
+    "id": "job_mvfi2afq06172258cd",
+    "step": "still",
+    "analysis": null,
+    "status": "done",
+    "mode": "now",
+    "message": "Still ready",
+    "error": null,
+    "startedAt": "2026-10-19T17:00:11.641Z",
+    "finishedAt": "2026-10-19T17:00:25.819Z",
+    "outputAssetIds": [
+      "ast_mvfi2y3pf942603854"
+    ]
+  },
+  {
+    "id": "job_mvfi2afqc9ea48894f",
+    "step": "still",
+    "analysis": null,
+    "status": "done",
+    "mode": "now",
+    "message": "Still ready",
+    "error": null,
+    "startedAt": "2026-10-19T16:59:55.095Z",
+    "finishedAt": "2026-10-19T17:00:11.641Z",
+    "outputAssetIds": [
+      "ast_mvfi2n6b4c4af808b2"
+    ]
+  },
+  {
+    "id": "job_mvfi1bb359925bea65",
+    "step": "text",
+    "analysis": null,
+    "status": "done",
+    "mode": "now",
+    "message": "Shot list drafted.",
+    "error": null,
+    "startedAt": "2026-10-19T16:59:48.345Z",
+    "finishedAt": "2026-10-19T16:59:55.095Z",
+    "outputAssetIds": []
+  }
+]

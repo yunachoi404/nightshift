@@ -1,0 +1,26 @@
+[
+  {
+    "id": "geometry_estimation-moge2",
+    "folder": "geometry_estimation",
+    "filename": "moge_2_vitl_normal_fp16.safetensors",
+    "url": "https://huggingface.co/Comfy-Org/MoGe/resolve/1484985258ba7ef45c314144fcf0e90924ffbf44/geometry_estimation/moge_2_vitl_normal_fp16.safetensors",
+    "sizeGb": 0.661859924,
+    "sha256": "cb1a692d03235671e959e81360d7b4d9f44aefadb1f852d6ca6aa17799d5e31f",
+    "license": {
+      "name": "MIT",
+      "url": "https://github.com/microsoft/MoGe/blob/main/LICENSE"
+    }
+  },
+  {
+    "id": "loras-ltx25-layout",
+    "folder": "loras",
+    "filename": "ltx-2.5-22b-ic-lora-layout-to-render-1.0.safetensors",
+    "url": "https://huggingface.co/Lightricks/LTX-2.5-22b-IC-LoRA-Layout-To-Render/resolve/349625f9bad639dc41f1c70d2c63f75a02a09c59/ltx-2.5-22b-ic-lora-layout-to-render-1.0.safetensors",
+    "sizeGb": 1.308787439,
+    "sha256": "77567d81d71b4df558d622dffc0ec218ba1e22c69b2932f6fa12f34772697eae",
+    "license": {
+      "name": "LTX-2.x Community License, restricted",
+      "url": "https://github.com/Lightricks/LTX-2/blob/main/LICENSE"
+    }
+  }
+]

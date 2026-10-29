@@ -1,0 +1,13 @@
+{
+  "workflow": "video_pixel_upscale.api.json",
+  "inputs": {
+    "video": {
+      "node": "1",
+      "field": "file"
+    }
+  },
+  "params": {},
+  "outputNodes": [
+    "5"
+  ]
+}

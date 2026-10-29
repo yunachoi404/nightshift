@@ -1,0 +1,150 @@
+/* The "Share reveal" sheet. Same bones as the overnight dialog: an icon, a title, rows, actions. */
+.rv {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.rv__head {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+}
+.rv__icon {
+  flex: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 9px;
+  display: grid;
+  place-items: center;
+  color: var(--accent);
+  background: var(--accent-soft);
+}
+.rv__icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* The three steps the clip walks through: photo, draft, finished take. */
+.rv__strip {
+  display: grid;
+  grid-template-columns: 1fr 14px 1fr 14px 1fr;
+  gap: 8px;
+  align-items: start;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-m);
+  background: var(--inset);
+}
+.rv__step {
+  min-width: 0;
+}
+.rv__step-frame {
+  width: 100%;
+}
+.rv__step-label {
+  margin-top: 8px;
+  font-size: var(--fs-small);
+  line-height: var(--lh-small);
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.rv__step-label--night {
+  color: var(--amber);
+}
+.rv__step-meta {
+  font-size: var(--fs-micro);
+  line-height: var(--lh-micro);
+  color: var(--text-3);
+}
+.rv__arrow {
+  align-self: center;
+  width: 14px;
+  height: 14px;
+  margin-top: -22px;
+  background: currentColor;
+  color: var(--text-4);
+  -webkit-mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 14'><path d='M3 7h8M7.5 3.5 11 7l-3.5 3.5' fill='none' stroke='black' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/></svg>") center / contain no-repeat;
+  mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 14'><path d='M3 7h8M7.5 3.5 11 7l-3.5 3.5' fill='none' stroke='black' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/></svg>") center / contain no-repeat;
+}
+
+.rv__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.rv__k {
+  font-weight: 500;
+}
+.rv__hint {
+  margin: -8px 0 0;
+  font-size: var(--fs-small);
+  line-height: var(--lh-small);
+  color: var(--text-3);
+}
+.rv__status {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-m);
+  background: var(--raised);
+}
+.rv__status .bar {
+  width: 100%;
+}
+
+/* The clips made so far: a small player, what it is, and a way to the file. */
+.rv__clips {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.rv__clip {
+  display: grid;
+  grid-template-columns: 88px minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-m);
+  background: var(--raised);
+  background-image: var(--sheen);
+}
+.rv__clip .frame {
+  width: 88px;
+}
+.rv__clip .frame--9x16 {
+  width: 50px;
+  margin: 0 auto;
+}
+.rv__clip-text {
+  min-width: 0;
+}
+.rv__clip-name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+}
+.rv__clip-note {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Where the sheet is opened from. */
+.rv-open {
+  align-self: flex-start;
+}
+.insp__reveal {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-top: 10px;
+  margin-top: 4px;
+  border-top: 1px solid var(--line);
+}

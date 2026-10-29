@@ -1,0 +1,25 @@
+{
+  "workflow": "breeze_tts2_clone.api.json",
+  "inputs": {
+    "text": {
+      "node": "2",
+      "field": "text"
+    },
+    "seed": {
+      "node": "2",
+      "field": "seed"
+    },
+    "voiceRef": {
+      "node": "4",
+      "field": "audio"
+    },
+    "prompt": {
+      "node": "2",
+      "field": "reference_text"
+    }
+  },
+  "params": {},
+  "outputNodes": [
+    "3"
+  ]
+}

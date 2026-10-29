@@ -1,0 +1,25 @@
+{
+  "workflow": "tests/drama_clone_synthetic.api.json",
+  "inputs": {
+    "text": {
+      "node": "1",
+      "field": "text"
+    },
+    "seed": {
+      "node": "1",
+      "field": "seed"
+    },
+    "voiceRef": {
+      "node": "3",
+      "field": "audio"
+    },
+    "prompt": {
+      "node": "1",
+      "field": "reference_text"
+    }
+  },
+  "params": {},
+  "outputNodes": [
+    "2"
+  ]
+}

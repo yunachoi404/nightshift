@@ -1,0 +1,4 @@
+.whatif-examples { display: flex; flex-wrap: wrap; gap: 8px; margin-top: -8px; }
+.whatif-example { border: 1px solid var(--line); border-radius: 6px; background: var(--inset); color: var(--text-2); padding: 7px 10px; font: inherit; font-size: 12px; text-align: left; cursor: pointer; }
+.whatif-example:hover { background: var(--raised); color: var(--text); border-color: var(--line-strong); }
+.whatif-example:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }

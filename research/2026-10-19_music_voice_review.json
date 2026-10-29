@@ -1,0 +1,58 @@
+[
+  {
+    "case": "drama3_optional",
+    "path": "outputs/model_lab/drama3_optional/2/drama3_00001.flac",
+    "durationSec": 11.888616780045352,
+    "sampleRate": 44100,
+    "channels": 1,
+    "peakAmplitude": 0.0123291015625,
+    "rms": 0.005615096539258957,
+    "nearFullScaleFraction": 0.0,
+    "overFullScaleFraction": 0.0,
+    "transcript": "You",
+    "asrGain": 72.9980198019802,
+    "asrModel": "OpenAI Whisper base.en, CPU"
+  },
+  {
+    "case": "minimax_music3",
+    "path": "outputs/model_lab/minimax_music3/9/music3_00001.flac",
+    "durationSec": 11.993106575963719,
+    "sampleRate": 44100,
+    "channels": 2,
+    "peakAmplitude": 0.83111572265625,
+    "rms": 0.07388541847467422,
+    "nearFullScaleFraction": 0.0,
+    "overFullScaleFraction": 0.0,
+    "transcript": "",
+    "asrGain": 1.0828816920026438,
+    "asrModel": "OpenAI Whisper base.en, CPU"
+  },
+  {
+    "case": "ace15_turbo",
+    "path": "outputs/model_lab/ace15_turbo/9/ace15_00001.flac",
+    "durationSec": 12.0,
+    "sampleRate": 48000,
+    "channels": 2,
+    "peakAmplitude": 0.98291015625,
+    "rms": 0.11837906390428543,
+    "nearFullScaleFraction": 0.0,
+    "overFullScaleFraction": 0.0,
+    "transcript": "",
+    "asrGain": 0.9156482861400894,
+    "asrModel": "OpenAI Whisper base.en, CPU"
+  },
+  {
+    "case": "breeze_tts2_eager",
+    "path": "outputs/model_lab/breeze_tts2_eager/3/breeze_00005.flac",
+    "durationSec": 4.4,
+    "sampleRate": 24000,
+    "channels": 1,
+    "peakAmplitude": 0.5830078125,
+    "rms": 0.06413790583610535,
+    "nearFullScaleFraction": 0.0,
+    "overFullScaleFraction": 0.0,
+    "transcript": "Draft a little faster, keep the take you love, night shift finishes while you sleep.",
+    "asrGain": 1.543718592964824,
+    "asrModel": "OpenAI Whisper base.en, CPU"
+  }
+]

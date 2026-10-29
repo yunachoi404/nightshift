@@ -1,0 +1,15 @@
+{
+  "appClosed": true,
+  "lastAppPid": 64116,
+  "lastEnginePid": 64125,
+  "engineClosed": true,
+  "listeningPorts": {
+    "49300": false,
+    "5178": false
+  },
+  "activeJobs": 0,
+  "quickTimeClosed": true,
+  "previewTabsClosed": true,
+  "viteStopped": true,
+  "nightshiftSleepAssertions": 0
+}

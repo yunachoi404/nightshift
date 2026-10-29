@@ -1,0 +1,215 @@
+{
+  "note": "Native pixel errors are differences, not quality scores. Raw's first failed configuration and corrected retry are shown separately; their conditioning, steps and runtime mode differ from Turbo.",
+  "cases": [
+    {
+      "case": "krea2_turbo_bf16",
+      "path": "outputs/model_lab/krea2_turbo_bf16/9/krea2_bf16_00001_.png",
+      "sha256": "4f05c56b26a4ec6cf742a983a3b888009f6f853fdfce67d6b50fc6cdb2792667",
+      "width": 768,
+      "height": 768,
+      "seconds": 31.39965441916138,
+      "peakGb": 32.9,
+      "settings": {
+        "model": [
+          "1",
+          0
+        ],
+        "positive": [
+          "4",
+          0
+        ],
+        "negative": [
+          "5",
+          0
+        ],
+        "latent_image": [
+          "6",
+          0
+        ],
+        "seed": 42,
+        "steps": 8,
+        "cfg": 1.0,
+        "sampler_name": "euler",
+        "scheduler": "simple",
+        "denoise": 1.0
+      },
+      "meanAbsolutePixelErrorVsBf16": 0.0,
+      "pixelRmseVsBf16": 0.0
+    },
+    {
+      "case": "krea2_turbo_int8",
+      "path": "outputs/model_lab/krea2_turbo_int8/9/krea2_bf16_00002_.png",
+      "sha256": "6ee1ddf5f6f41b61ba14fe42eedc3ef2f0e5df46124a44a0ab40ad28b8ec12d4",
+      "width": 768,
+      "height": 768,
+      "seconds": 25.801724530989304,
+      "peakGb": 20.6,
+      "settings": {
+        "model": [
+          "1",
+          0
+        ],
+        "positive": [
+          "4",
+          0
+        ],
+        "negative": [
+          "5",
+          0
+        ],
+        "latent_image": [
+          "6",
+          0
+        ],
+        "seed": 42,
+        "steps": 8,
+        "cfg": 1.0,
+        "sampler_name": "euler",
+        "scheduler": "simple",
+        "denoise": 1.0
+      },
+      "meanAbsolutePixelErrorVsBf16": 0.008033365942537785,
+      "pixelRmseVsBf16": 0.024904552847146988
+    },
+    {
+      "case": "krea2_turbo_nvfp4",
+      "path": "outputs/model_lab/krea2_turbo_nvfp4/9/krea2_nvfp4_00001_.png",
+      "sha256": "baeef25178c26c5b86eb2618ed19c9013afaad0d9e1857f966c20bdd9abf49f3",
+      "width": 768,
+      "height": 768,
+      "seconds": 35.44499315088615,
+      "peakGb": 16.1,
+      "settings": {
+        "model": [
+          "1",
+          0
+        ],
+        "positive": [
+          "4",
+          0
+        ],
+        "negative": [
+          "5",
+          0
+        ],
+        "latent_image": [
+          "6",
+          0
+        ],
+        "seed": 42,
+        "steps": 8,
+        "cfg": 1.0,
+        "sampler_name": "euler",
+        "scheduler": "simple",
+        "denoise": 1.0
+      },
+      "meanAbsolutePixelErrorVsBf16": 0.02293689176440239,
+      "pixelRmseVsBf16": 0.045459598302841187
+    },
+    {
+      "case": "krea2_turbo_int8_mix",
+      "path": "outputs/model_lab/krea2_turbo_int8_mix/9/krea2_int8_mix_00001_.png",
+      "sha256": "0217e2882aba44657f29f72833e6c4d1a2f758d055d6a2f10c2c58c3753e806a",
+      "width": 768,
+      "height": 768,
+      "seconds": 35.44185099611059,
+      "peakGb": 20.3,
+      "settings": {
+        "model": [
+          "1",
+          0
+        ],
+        "positive": [
+          "4",
+          0
+        ],
+        "negative": [
+          "5",
+          0
+        ],
+        "latent_image": [
+          "6",
+          0
+        ],
+        "seed": 42,
+        "steps": 8,
+        "cfg": 1.0,
+        "sampler_name": "euler",
+        "scheduler": "simple",
+        "denoise": 1.0
+      },
+      "meanAbsolutePixelErrorVsBf16": 0.1659465730190277,
+      "pixelRmseVsBf16": 0.23177067935466766
+    },
+    {
+      "case": "krea2_raw_bf16",
+      "path": "outputs/model_lab/krea2_raw_bf16/9/krea2_raw_00001_.png",
+      "sha256": "52fc394fc186aabb6ea7e5953eab8ac82c887a08b4c8df499a79b150cf9646b0",
+      "width": 768,
+      "height": 768,
+      "seconds": 131.09416880598292,
+      "peakGb": 33.5,
+      "settings": {
+        "model": [
+          "1",
+          0
+        ],
+        "positive": [
+          "4",
+          0
+        ],
+        "negative": [
+          "5",
+          0
+        ],
+        "latent_image": [
+          "6",
+          0
+        ],
+        "seed": 42,
+        "steps": 28,
+        "cfg": 4.0,
+        "sampler_name": "euler",
+        "scheduler": "simple",
+        "denoise": 1.0
+      },
+      "meanAbsolutePixelErrorVsBf16": 0.22447504103183746,
+      "pixelRmseVsBf16": 0.31360167264938354
+    },
+    {
+      "case": "krea2_raw_empty_negative52",
+      "path": "outputs/model_lab/krea2_raw_empty_negative52/9/krea2_raw_00002_.png",
+      "sha256": "685dd6aa7fa7ac5a609b2856a2ea951a6822af7a506577b6cce49c586e7d7bde",
+      "width": 768,
+      "height": 768,
+      "seconds": 307.92886379011907,
+      "peakGb": 31.5,
+      "settings": {
+        "model": [
+          "1",
+          0
+        ],
+        "positive": [
+          "4",
+          0
+        ],
+        "negative": [
+          "5",
+          0
+        ],
+        "latent_image": [
+          "6",
+          0
+        ],
+        "seed": 42,
+        "steps": 52,
+        "cfg": 4.5,
+        "sampler_name": "euler",
+        "scheduler": "simple",
+        "denoise": 1.0
+      },
+      "meanAbsolutePixelErrorVsBf16": 0.1739998608827591,
+      "pixelRmseVsBf16": 0.24803023040294647
+    }
+  ]
+}

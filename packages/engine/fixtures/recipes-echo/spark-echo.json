@@ -1,0 +1,39 @@
+{
+  "tier": "spark-echo",
+  "label": "Test: the Spark through comfy-api-proxy, light echo graph only",
+  "match": {
+    "vendor": "nvidia",
+    "unifiedMemory": true,
+    "minVramGb": 90,
+    "minRamGb": 90
+  },
+  "models": [],
+  "launch": {
+    "args": [],
+    "env": {}
+  },
+  "steps": {
+    "still": {
+      "workflow": "tests/echo_image.api.json",
+      "inputs": {
+        "image": {
+          "node": "1",
+          "field": "image"
+        }
+      },
+      "params": {
+        "3.filename_prefix": "ohf/nightshift_echo"
+      },
+      "outputNodes": [
+        "3"
+      ]
+    }
+  },
+  "estimates": {
+    "still": {
+      "peakGb": 1,
+      "seconds": 2,
+      "measured": true
+    }
+  }
+}

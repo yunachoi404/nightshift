@@ -1,0 +1,29 @@
+{
+  "workflow": "layout_to_render.api.json",
+  "inputs": {
+    "prompt": {
+      "node": "5508",
+      "field": "value"
+    },
+    "negative": {
+      "node": "5509",
+      "field": "value"
+    },
+    "image": {
+      "node": "9009",
+      "field": "image"
+    },
+    "video": {
+      "node": "5001",
+      "field": "file"
+    },
+    "seed": {
+      "node": "5516:4832",
+      "field": "noise_seed"
+    }
+  },
+  "params": {},
+  "outputNodes": [
+    "4852"
+  ]
+}

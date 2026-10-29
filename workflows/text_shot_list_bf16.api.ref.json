@@ -1,0 +1,21 @@
+{
+  "workflow": "text_shot_list_bf16.api.json",
+  "inputs": {
+    "prompt": {
+      "node": "2",
+      "field": "prompt"
+    },
+    "system": {
+      "node": "2",
+      "field": "system_prompt"
+    },
+    "maxTokens": {
+      "node": "2",
+      "field": "max_length"
+    }
+  },
+  "params": {},
+  "outputNodes": [
+    "3"
+  ]
+}

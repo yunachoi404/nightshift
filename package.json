@@ -1,0 +1,16 @@
+{
+  "name": "nightshift",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@10.33.0",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "pnpm --filter \"@nightshift/engine...\" --filter @nightshift/web build",
+    "build:desktop": "pnpm --filter @nightshift/desktop build",
+    "test": "pnpm -r test",
+    "typecheck": "pnpm -r typecheck"
+  },
+  "license": "Apache-2.0"
+}

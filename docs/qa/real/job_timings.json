@@ -1,0 +1,1388 @@
+{
+  "method": "UTC engine job clocks. lastAttemptSeconds resets on retry or process restart. secondsSinceFirstComfySubmission spans those interruptions and includes upload/result transfer overhead, shared queues, model loading and runtime outages. Neither is an isolated inference benchmark.",
+  "projects": [
+    {
+      "template": "cinematic",
+      "projectId": "prj_mvfcp2qj02a4051a8c",
+      "jobs": [
+        {
+          "id": "job_mvff17atb8ffe73031",
+          "step": "export",
+          "mode": "now",
+          "status": "done",
+          "createdAt": "2026-10-19T15:35:05.525Z",
+          "startedAt": "2026-10-19T15:35:05.525Z",
+          "finishedAt": "2026-10-19T15:35:21.369Z",
+          "outputAssetIds": [
+            "ast_mvff1ji5d2905dcd1f"
+          ],
+          "lastAttemptSeconds": 15.844
+        },
+        {
+          "id": "job_mvff04h6fed2b07490",
+          "step": "export",
+          "mode": "now",
+          "status": "done",
+          "createdAt": "2026-10-19T15:34:15.210Z",
+          "startedAt": "2026-10-19T15:34:15.210Z",
+          "finishedAt": "2026-10-19T15:34:26.619Z",
+          "outputAssetIds": [
+            "ast_mvff0d9cc04abcd283"
+          ],
+          "lastAttemptSeconds": 11.409
+        },
+        {
+          "id": "job_mvfd0q3926a519688a",
+          "step": "voice",
+          "mode": "now",
+          "status": "done",
+          "analysis": true,
+          "createdAt": "2026-10-19T14:38:43.989Z",
+          "startedAt": "2026-10-19T14:38:43.989Z",
+          "finishedAt": "2026-10-19T14:38:45.003Z",
+          "outputAssetIds": [],
+          "lastAttemptSeconds": 1.014
+        },
+        {
+          "id": "job_mvfczvvc3fd976779a",
+          "step": "music",
+          "mode": "now",
+          "status": "done",
+          "analysis": true,
+          "createdAt": "2026-10-19T14:38:04.824Z",
+          "startedAt": "2026-10-19T14:38:04.824Z",
+          "finishedAt": "2026-10-19T14:38:04.882Z",
+          "outputAssetIds": [],
+          "lastAttemptSeconds": 0.058
+        },
+        {
+          "id": "job_mvfcv7ie32fc1db804",
+          "step": "video_final_remaster",
+          "mode": "now",
+          "status": "done",
+          "createdAt": "2026-10-19T14:34:26.630Z",
+          "startedAt": "2026-10-19T14:53:33.611Z",
+          "finishedAt": "2026-10-19T14:58:51.436Z",
+          "outputAssetIds": [
+            "ast_mvfdqloh178dd4cea7"
+          ],
+          "lastAttemptSeconds": 317.825,
+          "firstComfySubmittedAt": "2026-10-19T14:53:34Z",
+          "secondsSinceFirstComfySubmission": 317.436
+        },
+        {
+          "id": "job_mvfcunzfefbd69462e",
+          "step": "voice",
+          "mode": "now",
+          "status": "done",
+          "createdAt": "2026-10-19T14:34:01.323Z",
+          "startedAt": "2026-10-19T14:38:04.826Z",
+          "finishedAt": "2026-10-19T14:38:43.991Z",
+          "outputAssetIds": [
+            "ast_mvfd0q0i9d7be5e470"
+          ],
+          "lastAttemptSeconds": 39.165,
+          "firstComfySubmittedAt": "2026-10-19T14:38:04Z",
+          "secondsSinceFirstComfySubmission": 39.991
+        },
+        {
+          "id": "job_mvfcunuv9ec409818a",
+          "step": "music",
+          "mode": "now",
+          "status": "done",
+          "createdAt": "2026-10-19T14:34:01.159Z",
+          "startedAt": "2026-10-19T14:37:32.701Z",
+          "finishedAt": "2026-10-19T14:38:04.826Z",
+          "outputAssetIds": [
+            "ast_mvfczvsr8883a08437"
+          ],
+          "lastAttemptSeconds": 32.125,
+          "firstComfySubmittedAt": "2026-10-19T14:37:32Z",
+          "secondsSinceFirstComfySubmission": 32.826
+        },
+        {
+          "id": "job_mvfcub7edfce171e25",
+          "step": "video_final_same_take",
+          "mode": "overnight",
+          "status": "done",
+          "createdAt": "2026-10-19T14:33:44.762Z",
+          "startedAt": "2026-10-19T15:32:29.198Z",
+          "finishedAt": "2026-10-19T15:33:53.034Z",
+          "outputAssetIds": [
+            "ast_mvfeznak5f2af954d7"
+          ],
+          "lastAttemptSeconds": 83.836,
+          "firstComfySubmittedAt": "2026-10-19T15:32:32Z",
+          "secondsSinceFirstComfySubmission": 81.034
+        },
+        {
+          "id": "job_mvfcqlr0e9f2fc8a4e",
+          "step": "video_draft",
+          "mode": "now",
+          "status": "done",
+          "createdAt": "2026-10-19T14:30:51.804Z",
+          "startedAt": "2026-10-19T14:33:40.565Z",
+          "finishedAt": "2026-10-19T14:34:28.016Z",
+          "outputAssetIds": [
+            "ast_mvfcv8ik47bbdd04fe",
+            "ast_mvfcv8jce67565c640"
+          ],
+          "lastAttemptSeconds": 47.451,
+          "firstComfySubmittedAt": "2026-10-19T14:33:41Z",
+          "secondsSinceFirstComfySubmission": 47.016
+        },
+        {
+          "id": "job_mvfcqlkk7a9178e0cc",
+          "step": "video_draft",
+          "mode": "now",
+          "status": "done",
+          "createdAt": "2026-10-19T14:30:51.572Z",
+          "startedAt": "2026-10-19T14:32:50.580Z",
+          "finishedAt": "2026-10-19T14:33:40.565Z",
+          "outputAssetIds": [
+            "ast_mvfcu7wc397b8d9a15",
+            "ast_mvfcu7x3e8b7492bd6"
+          ],
+          "lastAttemptSeconds": 49.985,
+          "firstComfySubmittedAt": "2026-10-19T14:32:51Z",
+          "secondsSinceFirstComfySubmission": 49.565
+        },
+        {
+          "id": "job_mvfcqle1e02bf9863a",
+          "step": "video_draft",
+          "mode": "now",
+          "status": "done",
+          "createdAt": "2026-10-19T14:30:51.337Z",
+          "startedAt": "2026-10-19T14:32:04.554Z",
+          "finishedAt": "2026-10-19T14:32:50.579Z",
+          "outputAssetIds": [
+            "ast_mvfct5cib036494f87",
+            "ast_mvfct5db0d533c20d0"
+          ],
+          "lastAttemptSeconds": 46.025,
+          "firstComfySubmittedAt": "2026-10-19T14:32:05Z",
+          "secondsSinceFirstComfySubmission": 45.579
+        },
+        {
+          "id": "job_mvfcphdvfc74dd6b7d",
+          "step": "still",
+          "mode": "now",
+          "status": "done",
+          "createdAt": "2026-10-19T14:29:59.491Z",
+          "startedAt": "2026-10-19T14:30:25.896Z",
+          "finishedAt": "2026-10-19T14:30:40.871Z",
+          "outputAssetIds": [
+            "ast_mvfcqda00bdafaff0c"
+          ],
+          "lastAttemptSeconds": 14.975,
+          "firstComfySubmittedAt": "2026-10-19T14:30:26Z",
+          "secondsSinceFirstComfySubmission": 14.871
+        },
+        {
+          "id": "job_mvfcphdvd9cfcbfb6c",
+          "step": "still",
+          "mode": "now",
+          "status": "done",
+          "createdAt": "2026-10-19T14:29:59.491Z",
+          "startedAt": "2026-10-19T14:30:12.519Z",
+          "finishedAt": "2026-10-19T14:30:25.896Z",
+          "outputAssetIds": [
+            "ast_mvfcq1pxb0da81bca8"
+          ],
+          "lastAttemptSeconds": 13.377,
+          "firstComfySubmittedAt": "2026-10-19T14:30:12Z",
+          "secondsSinceFirstComfySubmission": 13.896
+        },
+        {
+          "id": "job_mvfcphdv891cb4c515",
+          "step": "still",
+          "mode": "now",
+          "status": "done",
+          "createdAt": "2026-10-19T14:29:59.491Z",
+          "startedAt": "2026-10-19T14:29:59.491Z",
+          "finishedAt": "2026-10-19T14:30:12.519Z",
+          "outputAssetIds": [
+            "ast_mvfcprerc498101124"
+          ],
+          "lastAttemptSeconds": 13.028,
+          "firstComfySubmittedAt": "2026-10-19T14:29:59Z",
+          "secondsSinceFirstComfySubmission": 13.519
+        },
+        {
+          "id": "job_mvfcp2qtd0e085ab4d",
+          "step": "text",
+          "mode": "now",
+          "status": "done",
+          "createdAt": "2026-10-19T14:29:40.517Z",
+          "startedAt": "2026-10-19T14:29:52.435Z",
+          "finishedAt": "2026-10-19T14:29:59.491Z",
+          "outputAssetIds": [],
+          "lastAttemptSeconds": 7.056,
+          "firstComfySubmittedAt": "2026-10-19T14:29:52Z",
+          "secondsSinceFirstComfySubmission": 7.491
+        }
+      ]
+    },
+    {
+      "template": "music",
+      "projectId": "prj_mvfcpnh825242cb7f5",
+      "jobs": [
+        {
+          "id": "job_mvfev19y8236622b05",
+          "step": "export",
+          "mode": "now",
+          "status": "done",
+          "createdAt": "2026-10-19T15:30:17.782Z",
+          "startedAt": "2026-10-19T15:30:17.783Z",
+          "finishedAt": "2026-10-19T15:30:56.679Z",
+          "outputAssetIds": [
+            "ast_mvfevv9icd543ffbae"
+          ],
+          "lastAttemptSeconds": 38.896
+        },
+        {
+          "id": "job_mvferw3k4c4d7a089b",
+          "step": "export",
+          "mode": "now",
+          "status": "done",
+          "createdAt": "2026-10-19T15:27:51.104Z",
+          "startedAt": "2026-10-19T15:27:51.104Z",
+          "finishedAt": "2026-10-19T15:28:19.277Z",
+          "outputAssetIds": [
+            "ast_mvfesht872250369ec"
+          ],
+          "lastAttemptSeconds": 28.173
+        },
+        {
+          "id": "job_mvfeqk60f15bfa15e7",
+          "step": "export",
+          "mode": "now",
+          "status": "done",
+          "createdAt": "2026-10-19T15:26:48.984Z",
+          "startedAt": "2026-10-19T15:26:48.985Z",
+          "finishedAt": "2026-10-19T15:27:33.434Z",
+          "outputAssetIds": [
+            "ast_mvferift85f5fabe55"
+          ],
+          "lastAttemptSeconds": 44.449
+        },
+        {
+          "id": "job_mvfdxadt2bbd4052af",
+          "step": "video_final_remaster",
+          "mode": "now",
+          "status": "done",
+          "createdAt": "2026-10-19T15:04:03.281Z",
+          "startedAt": "2026-10-19T15:23:17.060Z",
+          "finishedAt": "2026-10-19T15:26:26.234Z",
+          "outputAssetIds": [
+            "ast_mvfeq1kga205089622"
+          ],
+          "lastAttemptSeconds": 189.174,
+          "firstComfySubmittedAt": "2026-10-19T15:22:13Z",
+          "secondsSinceFirstComfySubmission": 253.234
+        },
+        {
+          "id": "job_mvfdxa4504a27406ee",
+          "step": "video_final_same_take",
+          "mode": "now",
+          "status": "done",
+          "createdAt": "2026-10-19T15:04:02.933Z",
+          "startedAt": "2026-10-19T15:20:35.523Z",
+          "finishedAt": "2026-10-19T15:22:12.532Z",
+          "outputAssetIds": [
+            "ast_mvfekmo08b407a9c0a"
+          ],
+          "lastAttemptSeconds": 97.009,
+          "firstComfySubmittedAt": "2026-10-19T15:20:42Z",
+          "secondsSinceFirstComfySubmission": 90.532
+        },
+        {
+          "id": "job_mvfdk6l264da1659ba",
+          "step": "video_draft",
+          "mode": "now",
+          "status": "done",
+          "createdAt": "2026-10-19T14:53:51.830Z",
+          "startedAt": "2026-10-19T15:06:21.191Z",
+          "finishedAt": "2026-10-19T15:07:24.818Z",
+          "outputAssetIds": [
+            "ast_mvfe1lky938cd94645",
+            "ast_mvfe1llyc956561974"
+          ],
+          "lastAttemptSeconds": 63.627,
+          "firstComfySubmittedAt": "2026-10-19T15:06:22Z",
+          "secondsSinceFirstComfySubmission": 62.818
+        },
+        {
+          "id": "job_mvfdk6l16c5d220fec",
+          "step": "video_draft",
+          "mode": "now",
+          "status": "done",
+          "createdAt": "2026-10-19T14:53:51.829Z",
+          "startedAt": "2026-10-19T15:05:12.305Z",
+          "finishedAt": "2026-10-19T15:06:21.190Z",
+          "outputAssetIds": [
+            "ast_mvfe08lz896a70a1fc",
+            "ast_mvfe08mu30e3b80ae9"
+          ],
+          "lastAttemptSeconds": 68.885,
+          "firstComfySubmittedAt": "2026-10-19T15:05:13Z",
+          "secondsSinceFirstComfySubmission": 68.19
+        },
+        {
+          "id": "job_mvfdk6kz94a5bfdd1f",
+          "step": "video_draft",
+          "mode": "now",
+          "status": "done",
+          "createdAt": "2026-10-19T14:53:51.827Z",
+          "startedAt": "2026-10-19T15:04:15.777Z",
+          "finishedAt": "2026-10-19T15:05:12.305Z",
+          "outputAssetIds": [
+            "ast_mvfdyrgoa3c10919e7",
+            "ast_mvfdyrhjec8b20781d"
+          ],
+          "lastAttemptSeconds": 56.528,
+          "firstComfySubmittedAt": "2026-10-19T15:04:17Z",
+          "secondsSinceFirstComfySubmission": 55.305
+        },
+        {
+          "id": "job_mvfdk6ksb4e471ecc7",
+          "step": "video_draft",
+          "mode": "now",
+          "status": "done",
+          "createdAt": "2026-10-19T14:53:51.820Z",
+          "startedAt": "2026-10-19T15:02:36.814Z",
+          "finishedAt": "2026-10-19T15:04:15.777Z",
+          "outputAssetIds": [
+            "ast_mvfdxjv2547b4c1d18",
+            "ast_mvfdxjvt3d5c0098b6"
+          ],
+          "lastAttemptSeconds": 98.963,
+          "firstComfySubmittedAt": "2026-10-19T15:02:39Z",
+          "secondsSinceFirstComfySubmission": 96.777
+        },
+        {
+          "id": "job_mvfdk6kp14fbbec0c1",
+          "step": "video_draft",
+          "mode": "now",
+          "status": "done",
+          "createdAt": "2026-10-19T14:53:51.817Z",
+          "startedAt": "2026-10-19T15:01:16.541Z",
+          "finishedAt": "2026-10-19T15:02:36.813Z",
+          "outputAssetIds": [
+            "ast_mvfdvfej8acd1662d0",
+            "ast_mvfdvffsf022edf774"
+          ],
+          "lastAttemptSeconds": 80.272,
+          "firstComfySubmittedAt": "2026-10-19T15:01:07Z",
+          "secondsSinceFirstComfySubmission": 89.813
+        },
+        {
+          "id": "job_mvfdk6kof6abec5fab",
+          "step": "video_draft",
+          "mode": "now",
+          "status": "done",
+          "createdAt": "2026-10-19T14:53:51.816Z",
+          "startedAt": "2026-10-19T14:59:57.412Z",
+          "finishedAt": "2026-10-19T15:01:05.490Z",
+          "outputAssetIds": [
+            "ast_mvfdth15ff8da35ab3",
+            "ast_mvfdth2cb9bf7e058a"
+          ],
+          "lastAttemptSeconds": 68.078,
+          "firstComfySubmittedAt": "2026-10-19T14:59:58Z",
+          "secondsSinceFirstComfySubmission": 67.49
+        },
+        {
+          "id": "job_mvfdk6kd974573e343",
+          "step": "video_draft",
+          "mode": "now",
+          "status": "done",
+          "createdAt": "2026-10-19T14:53:51.805Z",
+          "startedAt": "2026-10-19T14:58:51.436Z",
+          "finishedAt": "2026-10-19T14:59:57.412Z",
+          "outputAssetIds": [
+            "ast_mvfds0ijf7b9b235d1",
+            "ast_mvfds0jbad6d5db921"
+          ],
+          "lastAttemptSeconds": 65.976,
+          "firstComfySubmittedAt": "2026-10-19T14:58:53Z",
+          "secondsSinceFirstComfySubmission": 64.412
+        },
+        {
+          "id": "job_mvfdgnum73e9d27577",
+          "step": "still",
+          "mode": "now",
+          "status": "done",
+          "createdAt": "2026-10-19T14:51:07.582Z",
+          "startedAt": "2026-10-19T14:53:20.180Z",
+          "finishedAt": "2026-10-19T14:53:33.610Z",
+          "outputAssetIds": [
+            "ast_mvfdjsena8ffc55432"
+          ],
+          "lastAttemptSeconds": 13.43,
+          "firstComfySubmittedAt": "2026-10-19T14:53:20Z",
+          "secondsSinceFirstComfySubmission": 13.61
+        },
+        {
+          "id": "job_mvfdgnum5eb7599b02",
+          "step": "still",
+          "mode": "now",
+          "status": "done",
+          "createdAt": "2026-10-19T14:51:07.582Z",
+          "startedAt": "2026-10-19T14:53:06.763Z",
+          "finishedAt": "2026-10-19T14:53:20.180Z",
+          "outputAssetIds": [
+            "ast_mvfdji1wb2ded6e575"
+          ],
+          "lastAttemptSeconds": 13.417,
+          "firstComfySubmittedAt": "2026-10-19T14:53:06Z",
+          "secondsSinceFirstComfySubmission": 14.18
+        },
+        {
+          "id": "job_mvfdgnumffcfb69515",
+          "step": "still",
+          "mode": "now",
+          "status": "done",
+          "createdAt": "2026-10-19T14:51:07.582Z",
+          "startedAt": "2026-10-19T14:52:53.185Z",
+          "finishedAt": "2026-10-19T14:53:06.763Z",
+          "outputAssetIds": [
+            "ast_mvfdj7p018956dd9e7"
+          ],
+          "lastAttemptSeconds": 13.578,
+          "firstComfySubmittedAt": "2026-10-19T14:52:53Z",
+          "secondsSinceFirstComfySubmission": 13.763
+        },
+        {
+          "id": "job_mvfdgnum5c6487583a",
+          "step": "still",
+          "mode": "now",
+          "status": "done",
+          "createdAt": "2026-10-19T14:51:07.582Z",
+          "startedAt": "2026-10-19T14:52:39.990Z",
+          "finishedAt": "2026-10-19T14:52:53.185Z",
+          "outputAssetIds": [
+            "ast_mvfdix8354164c05a5"
+          ],
+          "lastAttemptSeconds": 13.195,
+          "firstComfySubmittedAt": "2026-10-19T14:52:40Z",
+          "secondsSinceFirstComfySubmission": 13.185
+        },
+        {
+          "id": "job_mvfdgnumb9f7c906c4",
+          "step": "still",
+          "mode": "now",
+          "status": "done",
+          "createdAt": "2026-10-19T14:51:07.582Z",
+          "startedAt": "2026-10-19T14:52:26.502Z",
+          "finishedAt": "2026-10-19T14:52:39.989Z",
+          "outputAssetIds": [
+            "ast_mvfdin1z53276acfcc"
+          ],
+          "lastAttemptSeconds": 13.487,
+          "firstComfySubmittedAt": "2026-10-19T14:52:26Z",
+          "secondsSinceFirstComfySubmission": 13.989
+        },
+        {
+          "id": "job_mvfdgnum2d1c5eb8c2",
+          "step": "still",
+          "mode": "now",
+          "status": "done",
+          "createdAt": "2026-10-19T14:51:07.582Z",
+          "startedAt": "2026-10-19T14:52:12.774Z",
+          "finishedAt": "2026-10-19T14:52:26.502Z",
+          "outputAssetIds": [
+            "ast_mvfdicn6475339ec52"
+          ],
+          "lastAttemptSeconds": 13.728,
+          "firstComfySubmittedAt": "2026-10-19T14:52:12Z",
+          "secondsSinceFirstComfySubmission": 14.502
+        },
+        {
+          "id": "job_mvfdgnum9277e6eae6",
+          "step": "still",
+          "mode": "now",
+          "status": "done",
+          "createdAt": "2026-10-19T14:51:07.582Z",
+          "startedAt": "2026-10-19T14:51:59.128Z",
+          "finishedAt": "2026-10-19T14:52:12.773Z",
+          "outputAssetIds": [
+            "ast_mvfdi222504f248356"
+          ],
+          "lastAttemptSeconds": 13.645,
+          "firstComfySubmittedAt": "2026-10-19T14:51:59Z",
+          "secondsSinceFirstComfySubmission": 13.773
+        },
+        {
+          "id": "job_mvfd8e7802f1a95e85",
+          "step": "text",
+          "mode": "now",
+          "status": "done",
+          "createdAt": "2026-10-19T14:44:41.828Z",
+          "startedAt": "2026-10-19T14:50:57.738Z",
+          "finishedAt": "2026-10-19T14:51:07.582Z",
+          "outputAssetIds": [],
+          "lastAttemptSeconds": 9.844,
+          "firstComfySubmittedAt": "2026-10-19T14:50:57Z",
+          "secondsSinceFirstComfySubmission": 10.582
+        },
+        {
+          "id": "job_mvfd13nd039df34d1e",
+          "step": "still",
+          "mode": "now",
+          "status": "done",
+          "createdAt": "2026-10-19T14:39:01.561Z",
+          "startedAt": "2026-10-19T14:43:44.132Z",
+          "finishedAt": "2026-10-19T14:43:59.746Z",
+          "outputAssetIds": [
+            "ast_mvfd7hn18c0778ac93"
+          ],
+          "lastAttemptSeconds": 15.614,
+          "firstComfySubmittedAt": "2026-10-19T14:43:44Z",
+          "secondsSinceFirstComfySubmission": 15.746
+        },
+        {
+          "id": "job_mvfd13ndacfa44448c",
+          "step": "still",
+          "mode": "now",
+          "status": "done",
+          "createdAt": "2026-10-19T14:39:01.561Z",
+          "startedAt": "2026-10-19T14:43:29.769Z",
+          "finishedAt": "2026-10-19T14:43:44.131Z",
+          "outputAssetIds": [
+            "ast_mvfd75m35ade5206e5"
+          ],
+          "lastAttemptSeconds": 14.362,
+          "firstComfySubmittedAt": "2026-10-19T14:43:29Z",
+          "secondsSinceFirstComfySubmission": 15.131
+        },
+        {
+          "id": "job_mvfd13ncd997c53817",
+          "step": "still",
+          "mode": "now",
+          "status": "done",
+          "createdAt": "2026-10-19T14:39:01.560Z",
+          "startedAt": "2026-10-19T14:43:16.382Z",
+          "finishedAt": "2026-10-19T14:43:29.769Z",
+          "outputAssetIds": [
+            "ast_mvfd6uj0ba67a3fbeb"
+          ],
+          "lastAttemptSeconds": 13.387,
+          "firstComfySubmittedAt": "2026-10-19T14:43:16Z",
+          "secondsSinceFirstComfySubmission": 13.769
+        },
+        {
+          "id": "job_mvfd13nc5498db2079",
+          "step": "still",
+          "mode": "now",
+          "status": "done",
+          "createdAt": "2026-10-19T14:39:01.560Z",
+          "startedAt": "2026-10-19T14:43:03.080Z",
+          "finishedAt": "2026-10-19T14:43:16.382Z",
+          "outputAssetIds": [
+            "ast_mvfd6k770149a94ec8"
+          ],
+          "lastAttemptSeconds": 13.302,
+          "firstComfySubmittedAt": "2026-10-19T14:43:03Z",
+          "secondsSinceFirstComfySubmission": 13.382
+        },
+        {
+          "id": "job_mvfd13nc34bbdae5b8",
+          "step": "still",
+          "mode": "now",
+          "status": "done",
+          "createdAt": "2026-10-19T14:39:01.560Z",
+          "startedAt": "2026-10-19T14:42:50.066Z",
+          "finishedAt": "2026-10-19T14:43:03.080Z",
+          "outputAssetIds": [
+            "ast_mvfd69xw00e7c734ef"
+          ],
+          "lastAttemptSeconds": 13.014,
+          "firstComfySubmittedAt": "2026-10-19T14:42:50Z",
+          "secondsSinceFirstComfySubmission": 13.08
+        },
+        {
+          "id": "job_mvfd13nc9499dece75",
+          "step": "still",
+          "mode": "now",
+          "status": "done",
+          "createdAt": "2026-10-19T14:39:01.560Z",
+          "startedAt": "2026-10-19T14:42:37.004Z",
+          "finishedAt": "2026-10-19T14:42:50.066Z",
+          "outputAssetIds": [
+            "ast_mvfd5zwk5f3e0e09a5"
+          ],
+          "lastAttemptSeconds": 13.062,
+          "firstComfySubmittedAt": "2026-10-19T14:42:37Z",
+          "secondsSinceFirstComfySubmission": 13.066
+        },
+        {
+          "id": "job_mvfd13nc06fcac43fc",
+          "step": "still",
+          "mode": "now",
+          "status": "done",
+          "createdAt": "2026-10-19T14:39:01.560Z",
+          "startedAt": "2026-10-19T14:42:16.885Z",
+          "finishedAt": "2026-10-19T14:42:37.004Z",
+          "outputAssetIds": [
+            "ast_mvfd5pu972ba3e5eb8"
+          ],
+          "lastAttemptSeconds": 20.119,
+          "firstComfySubmittedAt": "2026-10-19T14:42:16Z",
+          "secondsSinceFirstComfySubmission": 21.004
+        },
+        {
+          "id": "job_mvfcz72yd4da956e34",
+          "step": "music",
+          "mode": "now",
+          "status": "done",
+          "analysis": true,
+          "createdAt": "2026-10-19T14:37:32.698Z",
+          "startedAt": "2026-10-19T14:37:32.699Z",
+          "finishedAt": "2026-10-19T14:37:33.174Z",
+          "outputAssetIds": [],
+          "lastAttemptSeconds": 0.475
+        },
+        {
+          "id": "job_mvfcxk1o8545608e04",
+          "step": "text",
+          "mode": "now",
+          "status": "done",
+          "createdAt": "2026-10-19T14:36:16.188Z",
+          "startedAt": "2026-10-19T14:38:51.889Z",
+          "finishedAt": "2026-10-19T14:39:01.561Z",
+          "outputAssetIds": [],
+          "lastAttemptSeconds": 9.672,
+          "firstComfySubmittedAt": "2026-10-19T14:38:51Z",
+          "secondsSinceFirstComfySubmission": 10.561
+        },
+        {
+          "id": "job_mvfcre8s6120528e60",
+          "step": "music",
+          "mode": "now",
+          "status": "done",
+          "createdAt": "2026-10-19T14:31:28.732Z",
+          "startedAt": "2026-10-19T14:36:01.260Z",
+          "finishedAt": "2026-10-19T14:37:32.701Z",
+          "outputAssetIds": [
+            "ast_mvfcz6zw1d5aacc45f"
+          ],
+          "lastAttemptSeconds": 91.441,
+          "firstComfySubmittedAt": "2026-10-19T14:35:06Z",
+          "secondsSinceFirstComfySubmission": 146.701
+        },
+        {
+          "id": "job_mvfcqk4w4715ffe21d",
+          "step": "still",
+          "mode": "now",
+          "status": "done",
+          "createdAt": "2026-10-19T14:30:49.712Z",
+          "startedAt": "2026-10-19T14:31:51.362Z",
+          "finishedAt": "2026-10-19T14:32:04.554Z",
+          "outputAssetIds": [
+            "ast_mvfcs5rt2fcfa0093f"
+          ],
+          "lastAttemptSeconds": 13.192,
+          "firstComfySubmittedAt": "2026-10-19T14:31:51Z",
+          "secondsSinceFirstComfySubmission": 13.554
+        },
+        {
+          "id": "job_mvfcqk4w5d323acedc",
+          "step": "still",
+          "mode": "now",
+          "status": "done",
+          "createdAt": "2026-10-19T14:30:49.712Z",
+          "startedAt": "2026-10-19T14:31:38.363Z",
+          "finishedAt": "2026-10-19T14:31:51.362Z",
+          "outputAssetIds": [
+            "ast_mvfcrvo16087227966"
+          ],
+          "lastAttemptSeconds": 12.999,
+          "firstComfySubmittedAt": "2026-10-19T14:31:38Z",
+          "secondsSinceFirstComfySubmission": 13.362
+        },
+        {
+          "id": "job_mvfcqk4vd82d519f18",
+          "step": "still",
+          "mode": "now",
+          "status": "done",
+          "createdAt": "2026-10-19T14:30:49.711Z",
+          "startedAt": "2026-10-19T14:31:24.654Z",
+          "finishedAt": "2026-10-19T14:31:38.363Z",
+          "outputAssetIds": [
+            "ast_mvfcrlkj7586c53014"
+          ],
+          "lastAttemptSeconds": 13.709,
+          "firstComfySubmittedAt": "2026-10-19T14:31:24Z",
+          "secondsSinceFirstComfySubmission": 14.363
+        },
+        {
+          "id": "job_mvfcqk4v4108afc60c",
+          "step": "still",
+          "mode": "now",
+          "status": "done",
+          "createdAt": "2026-10-19T14:30:49.711Z",
+          "startedAt": "2026-10-19T14:31:11.353Z",
+          "finishedAt": "2026-10-19T14:31:24.654Z",
+          "outputAssetIds": [
+            "ast_mvfcrb2302bb1e5151"
+          ],
+          "lastAttemptSeconds": 13.301,
+          "firstComfySubmittedAt": "2026-10-19T14:31:11Z",
+          "secondsSinceFirstComfySubmission": 13.654
+        },
+        {
+          "id": "job_mvfcqk4vb5bcd5b80a",
+          "step": "still",
+          "mode": "now",
+          "status": "done",
+          "createdAt": "2026-10-19T14:30:49.711Z",
+          "startedAt": "2026-10-19T14:30:56.543Z",
+          "finishedAt": "2026-10-19T14:31:11.352Z",
+          "outputAssetIds": [
+            "ast_mvfcr0t65e185fc902"
+          ],
+          "lastAttemptSeconds": 14.809,
+          "firstComfySubmittedAt": "2026-10-19T14:30:56Z",
+          "secondsSinceFirstComfySubmission": 15.352
+        },
+        {
+          "id": "job_mvfcpnhkb649c7c07e",
+          "step": "text",
+          "mode": "now",
+          "status": "done",
+          "createdAt": "2026-10-19T14:30:07.400Z",
+          "startedAt": "2026-10-19T14:30:40.871Z",
+          "finishedAt": "2026-10-19T14:30:49.712Z",
+          "outputAssetIds": [],
+          "lastAttemptSeconds": 8.841,
+          "firstComfySubmittedAt": "2026-10-19T14:30:41Z",
+          "secondsSinceFirstComfySubmission": 8.712
+        }
+      ]
+    },
+    {
+      "template": "product",
+      "projectId": "prj_mvfcq2h1cf5c5886f3",
+      "jobs": [
+        {
+          "id": "job_mvfemr5ee75db4f391",
+          "step": "export",
+          "mode": "now",
+          "status": "done",
+          "createdAt": "2026-10-19T15:23:51.410Z",
+          "startedAt": "2026-10-19T15:23:51.411Z",
+          "finishedAt": "2026-10-19T15:24:37.692Z",
+          "outputAssetIds": [
+            "ast_mvfenqt333355bf0dd"
+          ],
+          "lastAttemptSeconds": 46.281
+        },
+        {
+          "id": "job_mvfem5uve82d265e90",
+          "step": "export",
+          "mode": "now",
+          "status": "done",
+          "createdAt": "2026-10-19T15:23:23.815Z",
+          "startedAt": "2026-10-19T15:23:23.815Z",
+          "finishedAt": "2026-10-19T15:23:41.210Z",
+          "outputAssetIds": [
+            "ast_mvfemj8zdc16537b5c"
+          ],
+          "lastAttemptSeconds": 17.395
+        },
+        {
+          "id": "job_mvfej1gse407ecd2bd",
+          "step": "export",
+          "mode": "now",
+          "status": "done",
+          "createdAt": "2026-10-19T15:20:58.156Z",
+          "startedAt": "2026-10-19T15:20:58.157Z",
+          "finishedAt": "2026-10-19T15:21:17.130Z",
+          "outputAssetIds": [
+            "ast_mvfejg2u34bb9c9a64"
+          ],
+          "lastAttemptSeconds": 18.973
+        },
+        {
+          "id": "job_mvfees6i40c5121550",
+          "step": "export",
+          "mode": "now",
+          "status": "done",
+          "createdAt": "2026-10-19T15:17:39.499Z",
+          "startedAt": "2026-10-19T15:17:39.499Z",
+          "finishedAt": "2026-10-19T15:17:53.404Z",
+          "outputAssetIds": [
+            "ast_mvfef2vza685d6c883"
+          ],
+          "lastAttemptSeconds": 13.905
+        },
+        {
+          "id": "job_mvfdfsp6eb09f23a25",
+          "step": "video_final_remaster",
+          "mode": "now",
+          "status": "done",
+          "createdAt": "2026-10-19T14:50:27.210Z",
+          "startedAt": "2026-10-19T15:20:33.155Z",
+          "finishedAt": "2026-10-19T15:20:35.522Z",
+          "outputAssetIds": [
+            "ast_mvfeijvmd1671f2004"
+          ],
+          "lastAttemptSeconds": 2.367,
+          "firstComfySubmittedAt": "2026-10-19T15:14:04Z",
+          "secondsSinceFirstComfySubmission": 391.522
+        },
+        {
+          "id": "job_mvfdfsgh8f9d9ee088",
+          "step": "video_final_same_take",
+          "mode": "now",
+          "status": "done",
+          "createdAt": "2026-10-19T14:50:26.897Z",
+          "startedAt": "2026-10-19T15:13:00.194Z",
+          "finishedAt": "2026-10-19T15:14:03.446Z",
+          "outputAssetIds": [
+            "ast_mvfea5cz2be06b6e16"
+          ],
+          "lastAttemptSeconds": 63.252,
+          "firstComfySubmittedAt": "2026-10-19T15:13:03Z",
+          "secondsSinceFirstComfySubmission": 60.446
+        },
+        {
+          "id": "job_mvfdc1us0c60c8f577",
+          "step": "video_draft",
+          "mode": "now",
+          "status": "done",
+          "createdAt": "2026-10-19T14:47:32.452Z",
+          "startedAt": "2026-10-19T14:51:07.583Z",
+          "finishedAt": "2026-10-19T14:51:59.127Z",
+          "outputAssetIds": [
+            "ast_mvfdhrhzb57b4d7f30",
+            "ast_mvfdhrja3cabbd6946"
+          ],
+          "lastAttemptSeconds": 51.544,
+          "firstComfySubmittedAt": "2026-10-19T14:51:08Z",
+          "secondsSinceFirstComfySubmission": 51.127
+        },
+        {
+          "id": "job_mvfd8th40b19dc9eb6",
+          "step": "music",
+          "mode": "now",
+          "status": "done",
+          "analysis": true,
+          "createdAt": "2026-10-19T14:45:01.624Z",
+          "startedAt": "2026-10-19T14:45:01.624Z",
+          "finishedAt": "2026-10-19T14:45:01.747Z",
+          "outputAssetIds": [],
+          "lastAttemptSeconds": 0.123
+        },
+        {
+          "id": "job_mvfd7wygc9edbc72a8",
+          "step": "voice",
+          "mode": "now",
+          "status": "done",
+          "analysis": true,
+          "createdAt": "2026-10-19T14:44:19.480Z",
+          "startedAt": "2026-10-19T14:44:19.480Z",
+          "finishedAt": "2026-10-19T14:44:21.658Z",
+          "outputAssetIds": [],
+          "lastAttemptSeconds": 2.178
+        },
+        {
+          "id": "job_mvfd63fb3d7e1a6755",
+          "step": "video_draft",
+          "mode": "now",
+          "status": "done",
+          "createdAt": "2026-10-19T14:42:54.551Z",
+          "startedAt": "2026-10-19T14:50:01.185Z",
+          "finishedAt": "2026-10-19T14:50:57.738Z",
+          "outputAssetIds": [
+            "ast_mvfdgg4d28513da456",
+            "ast_mvfdgg5jb8266fda5b"
+          ],
+          "lastAttemptSeconds": 56.553,
+          "firstComfySubmittedAt": "2026-10-19T14:50:03Z",
+          "secondsSinceFirstComfySubmission": 54.738
+        },
+        {
+          "id": "job_mvfd63f9f675efa149",
+          "step": "video_draft",
+          "mode": "now",
+          "status": "done",
+          "createdAt": "2026-10-19T14:42:54.549Z",
+          "startedAt": "2026-10-19T14:49:47.876Z",
+          "finishedAt": "2026-10-19T14:50:01.185Z",
+          "outputAssetIds": [
+            "ast_mvfdf8ikf8a663f01c",
+            "ast_mvfdf8jc4a7e45aa58"
+          ],
+          "lastAttemptSeconds": 13.309,
+          "firstComfySubmittedAt": "2026-10-19T14:47:48Z",
+          "secondsSinceFirstComfySubmission": 133.185
+        },
+        {
+          "id": "job_mvfd63f3ffbabdd3fe",
+          "step": "video_draft",
+          "mode": "now",
+          "status": "done",
+          "createdAt": "2026-10-19T14:42:54.543Z",
+          "startedAt": "2026-10-19T14:48:07.601Z",
+          "finishedAt": "2026-10-19T14:49:46.344Z",
+          "outputAssetIds": [
+            "ast_mvfdex1d99d18c1268",
+            "ast_mvfdex2678c5f035f6"
+          ],
+          "lastAttemptSeconds": 98.743,
+          "firstComfySubmittedAt": "2026-10-19T14:47:27Z",
+          "secondsSinceFirstComfySubmission": 139.344
+        },
+        {
+          "id": "job_mvfd63f1e76f4509b3",
+          "step": "video_draft",
+          "mode": "now",
+          "status": "done",
+          "createdAt": "2026-10-19T14:42:54.541Z",
+          "startedAt": "2026-10-19T14:46:11.314Z",
+          "finishedAt": "2026-10-19T14:47:20.198Z",
+          "outputAssetIds": [
+            "ast_mvfdbs8g8463b26143",
+            "ast_mvfdbs9t5ddd83080c"
+          ],
+          "lastAttemptSeconds": 68.884,
+          "firstComfySubmittedAt": "2026-10-19T14:46:13Z",
+          "secondsSinceFirstComfySubmission": 67.198
+        },
+        {
+          "id": "job_mvfd63ese29067a52a",
+          "step": "video_draft",
+          "mode": "now",
+          "status": "failed",
+          "createdAt": "2026-10-19T14:42:54.532Z",
+          "startedAt": "2026-10-19T14:45:54.086Z",
+          "finishedAt": "2026-10-19T14:46:11.314Z",
+          "outputAssetIds": [],
+          "error": "ComfyUI job ended canceled",
+          "lastAttemptSeconds": 17.228,
+          "firstComfySubmittedAt": "2026-10-19T14:45:02Z",
+          "secondsSinceFirstComfySubmission": 69.314
+        },
+        {
+          "id": "job_mvfd5ahg436bf3e10d",
+          "step": "music",
+          "mode": "now",
+          "status": "done",
+          "createdAt": "2026-10-19T14:42:17.044Z",
+          "startedAt": "2026-10-19T14:44:19.489Z",
+          "finishedAt": "2026-10-19T14:45:01.627Z",
+          "outputAssetIds": [
+            "ast_mvfd8tbp72865fe925"
+          ],
+          "lastAttemptSeconds": 42.138,
+          "firstComfySubmittedAt": "2026-10-19T14:44:19Z",
+          "secondsSinceFirstComfySubmission": 42.627
+        },
+        {
+          "id": "job_mvfd5ab068d46f0192",
+          "step": "voice",
+          "mode": "now",
+          "status": "done",
+          "createdAt": "2026-10-19T14:42:16.812Z",
+          "startedAt": "2026-10-19T14:44:08.071Z",
+          "finishedAt": "2026-10-19T14:44:19.489Z",
+          "outputAssetIds": [
+            "ast_mvfd7wv805c0033358"
+          ],
+          "lastAttemptSeconds": 11.418,
+          "firstComfySubmittedAt": "2026-10-19T14:43:59Z",
+          "secondsSinceFirstComfySubmission": 20.489
+        },
+        {
+          "id": "job_mvfd0w6pa49abecd2b",
+          "step": "still",
+          "mode": "now",
+          "status": "done",
+          "createdAt": "2026-10-19T14:38:51.889Z",
+          "startedAt": "2026-10-19T14:42:08.145Z",
+          "finishedAt": "2026-10-19T14:42:16.885Z",
+          "outputAssetIds": [
+            "ast_mvfd5ab8e22526b9dc"
+          ],
+          "lastAttemptSeconds": 8.74,
+          "firstComfySubmittedAt": "2026-10-19T14:42:08Z",
+          "secondsSinceFirstComfySubmission": 8.885
+        },
+        {
+          "id": "job_mvfd0w6p5b851caaae",
+          "step": "still",
+          "mode": "now",
+          "status": "done",
+          "createdAt": "2026-10-19T14:38:51.889Z",
+          "startedAt": "2026-10-19T14:41:58.771Z",
+          "finishedAt": "2026-10-19T14:42:08.145Z",
+          "outputAssetIds": [
+            "ast_mvfd53kc57047f722a"
+          ],
+          "lastAttemptSeconds": 9.374,
+          "firstComfySubmittedAt": "2026-10-19T14:41:59Z",
+          "secondsSinceFirstComfySubmission": 9.145
+        },
+        {
+          "id": "job_mvfd0w6p21c0d66c89",
+          "step": "still",
+          "mode": "now",
+          "status": "done",
+          "createdAt": "2026-10-19T14:38:51.889Z",
+          "startedAt": "2026-10-19T14:41:45.928Z",
+          "finishedAt": "2026-10-19T14:41:58.771Z",
+          "outputAssetIds": [
+            "ast_mvfd4wc86006eb6918"
+          ],
+          "lastAttemptSeconds": 12.843,
+          "firstComfySubmittedAt": "2026-10-19T14:41:46Z",
+          "secondsSinceFirstComfySubmission": 12.771
+        },
+        {
+          "id": "job_mvfd0w6p7711e23eee",
+          "step": "still",
+          "mode": "now",
+          "status": "done",
+          "createdAt": "2026-10-19T14:38:51.889Z",
+          "startedAt": "2026-10-19T14:41:36.458Z",
+          "finishedAt": "2026-10-19T14:41:45.928Z",
+          "outputAssetIds": [
+            "ast_mvfd4mg455db11267b"
+          ],
+          "lastAttemptSeconds": 9.47,
+          "firstComfySubmittedAt": "2026-10-19T14:41:37Z",
+          "secondsSinceFirstComfySubmission": 8.928
+        },
+        {
+          "id": "job_mvfd0w6p604dd452f1",
+          "step": "still",
+          "mode": "now",
+          "status": "done",
+          "createdAt": "2026-10-19T14:38:51.889Z",
+          "startedAt": "2026-10-19T14:41:21.783Z",
+          "finishedAt": "2026-10-19T14:41:36.458Z",
+          "outputAssetIds": [
+            "ast_mvfd4f535b8c9882e9"
+          ],
+          "lastAttemptSeconds": 14.675,
+          "firstComfySubmittedAt": "2026-10-19T14:41:22Z",
+          "secondsSinceFirstComfySubmission": 14.458
+        },
+        {
+          "id": "job_mvfcxja09da4826001",
+          "step": "text",
+          "mode": "now",
+          "status": "done",
+          "createdAt": "2026-10-19T14:36:15.192Z",
+          "startedAt": "2026-10-19T14:38:43.991Z",
+          "finishedAt": "2026-10-19T14:38:51.889Z",
+          "outputAssetIds": [],
+          "lastAttemptSeconds": 7.898,
+          "firstComfySubmittedAt": "2026-10-19T14:38:44Z",
+          "secondsSinceFirstComfySubmission": 7.889
+        },
+        {
+          "id": "job_mvfcqmeo99aa8dc5cd",
+          "step": "still",
+          "mode": "now",
+          "status": "done",
+          "createdAt": "2026-10-19T14:30:52.656Z",
+          "startedAt": "2026-10-19T14:34:28.016Z",
+          "finishedAt": "2026-10-19T14:34:40.795Z",
+          "outputAssetIds": [
+            "ast_mvfcvieq6f62ff69ee"
+          ],
+          "lastAttemptSeconds": 12.779,
+          "firstComfySubmittedAt": "2026-10-19T14:34:28Z",
+          "secondsSinceFirstComfySubmission": 12.795
+        },
+        {
+          "id": "job_mvfcq2ia7d4dfbf33d",
+          "step": "text",
+          "mode": "now",
+          "status": "done",
+          "createdAt": "2026-10-19T14:30:26.866Z",
+          "startedAt": "2026-10-19T14:30:49.712Z",
+          "finishedAt": "2026-10-19T14:30:52.656Z",
+          "outputAssetIds": [],
+          "lastAttemptSeconds": 2.944,
+          "firstComfySubmittedAt": "2026-10-19T14:30:49Z",
+          "secondsSinceFirstComfySubmission": 3.656
+        }
+      ]
+    },
+    {
+      "template": "intro",
+      "projectId": "prj_mvfcqdiq06dcf5fa65",
+      "jobs": [
+        {
+          "id": "job_mvfexw0a3045ebf1c1",
+          "step": "export",
+          "mode": "now",
+          "status": "done",
+          "createdAt": "2026-10-19T15:32:30.922Z",
+          "startedAt": "2026-10-19T15:32:30.922Z",
+          "finishedAt": "2026-10-19T15:32:39.865Z",
+          "outputAssetIds": [
+            "ast_mvfey2vxe8f7e8bc0a"
+          ],
+          "lastAttemptSeconds": 8.943
+        },
+        {
+          "id": "job_mvfex4uue4034a13cf",
+          "step": "export",
+          "mode": "now",
+          "status": "done",
+          "createdAt": "2026-10-19T15:31:55.734Z",
+          "startedAt": "2026-10-19T15:31:55.735Z",
+          "finishedAt": "2026-10-19T15:32:03.321Z",
+          "outputAssetIds": [
+            "ast_mvfexaor1277322fed"
+          ],
+          "lastAttemptSeconds": 7.586
+        },
+        {
+          "id": "job_mvfeii6810c0446c32",
+          "step": "voice",
+          "mode": "now",
+          "status": "done",
+          "analysis": true,
+          "createdAt": "2026-10-19T15:20:33.153Z",
+          "startedAt": "2026-10-19T15:20:33.153Z",
+          "finishedAt": "2026-10-19T15:20:33.409Z",
+          "outputAssetIds": [],
+          "lastAttemptSeconds": 0.256
+        },
+        {
+          "id": "job_mvfeahpu41eae4a94e",
+          "step": "voice",
+          "mode": "now",
+          "status": "done",
+          "createdAt": "2026-10-19T15:14:19.314Z",
+          "startedAt": "2026-10-19T15:20:26.056Z",
+          "finishedAt": "2026-10-19T15:20:33.154Z",
+          "outputAssetIds": [
+            "ast_mvfeii0o6868d8d91b"
+          ],
+          "lastAttemptSeconds": 7.098,
+          "firstComfySubmittedAt": "2026-10-19T15:20:26Z",
+          "secondsSinceFirstComfySubmission": 7.154
+        },
+        {
+          "id": "job_mvfe8so0436934c6e1",
+          "step": "voice",
+          "mode": "now",
+          "status": "done",
+          "analysis": true,
+          "createdAt": "2026-10-19T15:13:00.192Z",
+          "startedAt": "2026-10-19T15:13:00.193Z",
+          "finishedAt": "2026-10-19T15:13:00.363Z",
+          "outputAssetIds": [],
+          "lastAttemptSeconds": 0.17
+        },
+        {
+          "id": "job_mvfe7uc33395c95f4c",
+          "step": "video_final_remaster",
+          "mode": "now",
+          "status": "done",
+          "createdAt": "2026-10-19T15:12:15.699Z",
+          "startedAt": "2026-10-19T15:26:26.235Z",
+          "finishedAt": "2026-10-19T15:30:55.957Z",
+          "outputAssetIds": [
+            "ast_mvfevun81fcbdf57ba"
+          ],
+          "lastAttemptSeconds": 269.722,
+          "firstComfySubmittedAt": "2026-10-19T15:26:27Z",
+          "secondsSinceFirstComfySubmission": 268.957
+        },
+        {
+          "id": "job_mvfe7fbg75c31a9d33",
+          "step": "voice",
+          "mode": "now",
+          "status": "done",
+          "createdAt": "2026-10-19T15:11:56.236Z",
+          "startedAt": "2026-10-19T15:12:20.780Z",
+          "finishedAt": "2026-10-19T15:13:00.194Z",
+          "outputAssetIds": [
+            "ast_mvfe8skncd4e509af4"
+          ],
+          "lastAttemptSeconds": 39.414,
+          "firstComfySubmittedAt": "2026-10-19T15:12:20Z",
+          "secondsSinceFirstComfySubmission": 40.194
+        },
+        {
+          "id": "job_mvfdtxqpf9857adbc5",
+          "step": "voice",
+          "mode": "now",
+          "status": "failed",
+          "createdAt": "2026-10-19T15:01:26.929Z",
+          "startedAt": "2026-10-19T15:07:24.818Z",
+          "finishedAt": "2026-10-19T15:07:26.409Z",
+          "outputAssetIds": [],
+          "error": "ComfyUI failed in BreezeTTS2VoiceDesign node 2: CUDA error: an illegal memory access was encountered",
+          "lastAttemptSeconds": 1.591,
+          "firstComfySubmittedAt": "2026-10-19T15:07:24Z",
+          "secondsSinceFirstComfySubmission": 2.409
+        },
+        {
+          "id": "job_mvfd4rsf18e07eb5d4",
+          "step": "video_final_remaster",
+          "mode": "now",
+          "status": "failed",
+          "createdAt": "2026-10-19T14:41:52.815Z",
+          "startedAt": "2026-10-19T15:09:48.919Z",
+          "finishedAt": "2026-10-19T15:09:51.324Z",
+          "outputAssetIds": [],
+          "error": "Failed to reach ComfyUI for upload.",
+          "lastAttemptSeconds": 2.405
+        },
+        {
+          "id": "job_mvfd43uc0e970a8e6f",
+          "step": "music",
+          "mode": "now",
+          "status": "done",
+          "analysis": true,
+          "createdAt": "2026-10-19T14:41:21.780Z",
+          "startedAt": "2026-10-19T14:41:21.780Z",
+          "finishedAt": "2026-10-19T14:41:21.833Z",
+          "outputAssetIds": [],
+          "lastAttemptSeconds": 0.053
+        },
+        {
+          "id": "job_mvfd3knd1de9578717",
+          "step": "voice",
+          "mode": "now",
+          "status": "done",
+          "analysis": true,
+          "createdAt": "2026-10-19T14:40:56.905Z",
+          "startedAt": "2026-10-19T14:40:56.905Z",
+          "finishedAt": "2026-10-19T14:40:57.906Z",
+          "outputAssetIds": [],
+          "lastAttemptSeconds": 1.001
+        },
+        {
+          "id": "job_mvfd2py7df4acc5da0",
+          "step": "video_final_same_take",
+          "mode": "now",
+          "status": "done",
+          "createdAt": "2026-10-19T14:40:17.119Z",
+          "startedAt": "2026-10-19T15:11:45.640Z",
+          "finishedAt": "2026-10-19T15:12:20.780Z",
+          "outputAssetIds": [
+            "ast_mvfe7y36c06bb37399"
+          ],
+          "lastAttemptSeconds": 35.14,
+          "firstComfySubmittedAt": "2026-10-19T15:07:33Z",
+          "secondsSinceFirstComfySubmission": 287.78
+        },
+        {
+          "id": "job_mvfcxq930a38a3733e",
+          "step": "music",
+          "mode": "now",
+          "status": "done",
+          "createdAt": "2026-10-19T14:36:24.231Z",
+          "startedAt": "2026-10-19T14:40:56.907Z",
+          "finishedAt": "2026-10-19T14:41:21.782Z",
+          "outputAssetIds": [
+            "ast_mvfd43s7d734179762"
+          ],
+          "lastAttemptSeconds": 24.875,
+          "firstComfySubmittedAt": "2026-10-19T14:40:57Z",
+          "secondsSinceFirstComfySubmission": 24.782
+        },
+        {
+          "id": "job_mvfcxq1hcf9cf8973e",
+          "step": "voice",
+          "mode": "now",
+          "status": "done",
+          "createdAt": "2026-10-19T14:36:23.957Z",
+          "startedAt": "2026-10-19T14:40:50.728Z",
+          "finishedAt": "2026-10-19T14:40:56.907Z",
+          "outputAssetIds": [
+            "ast_mvfd3kl9e3b143f3a3"
+          ],
+          "lastAttemptSeconds": 6.179,
+          "firstComfySubmittedAt": "2026-10-19T14:40:50Z",
+          "secondsSinceFirstComfySubmission": 6.907
+        },
+        {
+          "id": "job_mvfcxpuhd5222443bc",
+          "step": "video_draft",
+          "mode": "now",
+          "status": "done",
+          "createdAt": "2026-10-19T14:36:23.705Z",
+          "startedAt": "2026-10-19T14:39:53.270Z",
+          "finishedAt": "2026-10-19T14:40:50.728Z",
+          "outputAssetIds": [
+            "ast_mvfd3fu5b1b2212011",
+            "ast_mvfd3fuv5558a0b330"
+          ],
+          "lastAttemptSeconds": 57.458,
+          "firstComfySubmittedAt": "2026-10-19T14:39:54Z",
+          "secondsSinceFirstComfySubmission": 56.728
+        },
+        {
+          "id": "job_mvfcxpu8e8bf4f2672",
+          "step": "video_draft",
+          "mode": "now",
+          "status": "done",
+          "createdAt": "2026-10-19T14:36:23.696Z",
+          "startedAt": "2026-10-19T14:39:01.561Z",
+          "finishedAt": "2026-10-19T14:39:53.270Z",
+          "outputAssetIds": [
+            "ast_mvfd27i3519abad759",
+            "ast_mvfd27itff4f783dc1"
+          ],
+          "lastAttemptSeconds": 51.709,
+          "firstComfySubmittedAt": "2026-10-19T14:39:02Z",
+          "secondsSinceFirstComfySubmission": 51.27
+        },
+        {
+          "id": "job_mvfcqpen81c96f5083",
+          "step": "still",
+          "mode": "now",
+          "status": "done",
+          "createdAt": "2026-10-19T14:30:56.543Z",
+          "startedAt": "2026-10-19T14:34:53.552Z",
+          "finishedAt": "2026-10-19T14:35:06.877Z",
+          "outputAssetIds": [
+            "ast_mvfcw2gec6da059ff1"
+          ],
+          "lastAttemptSeconds": 13.325,
+          "firstComfySubmittedAt": "2026-10-19T14:34:53Z",
+          "secondsSinceFirstComfySubmission": 13.877
+        },
+        {
+          "id": "job_mvfcqpen2246c9488b",
+          "step": "still",
+          "mode": "now",
+          "status": "done",
+          "createdAt": "2026-10-19T14:30:56.543Z",
+          "startedAt": "2026-10-19T14:34:40.796Z",
+          "finishedAt": "2026-10-19T14:34:53.552Z",
+          "outputAssetIds": [
+            "ast_mvfcvs9c82968cd8a3"
+          ],
+          "lastAttemptSeconds": 12.756,
+          "firstComfySubmittedAt": "2026-10-19T14:34:40Z",
+          "secondsSinceFirstComfySubmission": 13.552
+        },
+        {
+          "id": "job_mvfcqdj0d06c61a457",
+          "step": "text",
+          "mode": "now",
+          "status": "done",
+          "createdAt": "2026-10-19T14:30:41.148Z",
+          "startedAt": "2026-10-19T14:30:52.656Z",
+          "finishedAt": "2026-10-19T14:30:56.543Z",
+          "outputAssetIds": [],
+          "lastAttemptSeconds": 3.887,
+          "firstComfySubmittedAt": "2026-10-19T14:30:52Z",
+          "secondsSinceFirstComfySubmission": 4.543
+        }
+      ]
+    }
+  ]
+}

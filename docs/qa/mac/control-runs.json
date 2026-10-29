@@ -1,0 +1,164 @@
+[
+  {
+    "theme": "dark",
+    "area": "Cinematic shot",
+    "tiles": 15,
+    "segments": 5,
+    "form": true,
+    "uploads": true,
+    "created": true
+  },
+  {
+    "theme": "dark",
+    "area": "Music video",
+    "tiles": 6,
+    "segments": 5,
+    "form": true,
+    "uploads": true,
+    "created": true
+  },
+  {
+    "theme": "dark",
+    "area": "Product ad",
+    "tiles": 8,
+    "segments": 3,
+    "form": true,
+    "uploads": true,
+    "created": true
+  },
+  {
+    "theme": "dark",
+    "area": "Talking intro",
+    "tiles": 7,
+    "segments": 3,
+    "form": true,
+    "uploads": false,
+    "created": true
+  },
+  {
+    "theme": "light",
+    "area": "Cinematic shot",
+    "tiles": 15,
+    "segments": 5,
+    "form": true,
+    "uploads": true,
+    "created": true
+  },
+  {
+    "theme": "light",
+    "area": "Music video",
+    "tiles": 6,
+    "segments": 5,
+    "form": true,
+    "uploads": true,
+    "created": true
+  },
+  {
+    "theme": "light",
+    "area": "Product ad",
+    "tiles": 8,
+    "segments": 3,
+    "form": true,
+    "uploads": true,
+    "created": true
+  },
+  {
+    "theme": "light",
+    "area": "Talking intro",
+    "tiles": 7,
+    "segments": 3,
+    "form": true,
+    "uploads": false,
+    "created": true
+  },
+  {
+    "theme": "light",
+    "area": "Compute",
+    "result": "pass",
+    "controls": "GPU address, Check, Check again, missing models, Use GPU, Change, Escape, Cancel, Use this Mac"
+  },
+  {
+    "theme": "dark",
+    "area": "Compute",
+    "result": "pass",
+    "controls": "GPU address, Check, Check again, missing models, Use GPU, Change, Cancel, Use this Mac"
+  },
+  {
+    "theme": "dark",
+    "area": "Storyboard",
+    "result": "pass",
+    "controls": "lock/unlock, rewrite cancel/Escape, both Add buttons, More, menu End/Escape, delete, prompt, all nine camera options, duration; pointer reorder using a paced pointer driver"
+  },
+  {
+    "theme": "dark",
+    "area": "Takes and Finals",
+    "result": "pass",
+    "controls": "draft OOM/retry/Memory settings, make single/all drafts, Another take, Compare, Pick, shot rail, Finish, select all/one, finish now OOM, Tonight retry, Start now"
+  },
+  {
+    "theme": "dark",
+    "area": "Finals and Queue",
+    "result": "pass",
+    "controls": "Same take/Remaster, all/individual selection, Finish now/overnight, Not now/Escape/Queue, Remove, Cancel, OOM Try again/Tonight, Start now; all three finals complete"
+  },
+  {
+    "theme": "light",
+    "area": "Storyboard and Takes",
+    "result": "pass",
+    "controls": "lock/unlock, rewrite cancel/Escape, Add shot/tile, More/Delete, prompt, all camera options, duration, still OOM/retry, single/all drafts, Another take, Compare/Pick, all shot rail buttons, Finish"
+  },
+  {
+    "theme": "light",
+    "area": "Finals",
+    "result": "pass",
+    "controls": "Same take/Remaster, selection, now/overnight, Not now/Escape/Queue, Cancel, OOM Try again/Tonight, Start now"
+  },
+  {
+    "theme": "light",
+    "area": "Editor",
+    "result": "pass",
+    "controls": "Space on entry/after seek, play/pause/rewind, playhead keys, all tracks, all caption styles/positions/toggle, four voices, music/voice generation and repeat, all formats, both framing choices, Preview/Export/Open file, Re-cut, 920x620"
+  },
+  {
+    "theme": "dark",
+    "area": "Editor",
+    "result": "pass",
+    "controls": "Space on entry/after seek, play/pause/rewind, playhead keys, all tracks, all caption styles/positions/toggle, four voices, music/voice generation and repeat, all formats, both framing choices, Preview/Export/Open file, Re-cut, 920x620"
+  },
+  {
+    "theme": "light",
+    "area": "Onboarding recovery",
+    "result": "pass",
+    "controls": "Detect failure/manual fallback, Try again, Continue, Other setups, demo install connection failure/retry, first-shot OOM/retry, Open this shot, Start creating"
+  },
+  {
+    "theme": "dark",
+    "area": "Storyboard rewrite",
+    "result": "pass",
+    "controls": "Confirm rewrite and complete replacement shot list"
+  },
+  {
+    "theme": "mixed",
+    "area": "Packaged regression",
+    "result": "pass",
+    "controls": "Space after clicking selected Editor; photo choose/remove/rechoose same path; fixed demo Compute notice; queued overnight keep-awake/quit/relaunch/recovery; Finder normal launch reconnects Spark"
+  },
+  {
+    "theme": "light",
+    "area": "Storyboard rewrite",
+    "result": "pass",
+    "controls": "Confirm rewrite and complete replacement shot list"
+  },
+  {
+    "theme": "mixed",
+    "area": "Final installed real pass",
+    "result": "pass",
+    "controls": "Finder launch; Spark restored after Use this Mac; local Preview export; native export Finder menu; light and dark real Editor playback; Settings System restored; app quit"
+  },
+  {
+    "theme": "both",
+    "area": "Remaining navigation",
+    "result": "pass",
+    "controls": "Morning Got it dismiss using completed-overnight fixture; Takes Next shot reaches unpicked second shot; rewrite confirmation completes"
+  }
+]

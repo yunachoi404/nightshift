@@ -1,0 +1,123 @@
+{
+  "coffee-forest": {
+    "name": "coffee-forest",
+    "seed": 28500,
+    "interval": 120,
+    "anchor_reference": true,
+    "anchor": "A beautiful photographic handmade miniature diorama of a small empty kitchen, viewed straight on at table height. A single tiny cream ceramic coffee cup on a clean walnut breakfast table in the foreground. White kitchen cabinets, a large square window on the left, warm soft morning sunlight. Empty space above the table. Tilt-shift macro photography, tangible wood, porcelain and plaster, shallow depth of field, finely crafted scale model. No people, no text, no brands.",
+    "edits": [
+      "Three tiny green tree seedlings have sprouted out of the coffee inside the cream cup. Fine bright green moss forms a small circle around the cup base. Keep the cup, table, cabinets and window in the exact same positions. This is still the same photographic miniature diorama.",
+      "The seedlings have grown into a small lush branching tree about twice the height of the cup, rooted inside the cream cup. Fine roots spread out from the cup base across the tabletop and green moss covers half the table. Small ferns grow beside the cup. The tree has many detailed tiny leaves. Preserve the same kitchen and scale-model materials.",
+      "The tree rooted in the cup has grown into a lush miniature forest that fills the kitchen. Several tall leafy branches reach up beyond the top of the window. Moss covers the walnut table and green vines climb the white cabinets. Golden sunlight streams through the leaves. Keep the cup visible at the center of the roots and preserve the exact camera and room layout. Photographic handmade miniature diorama, not a painting."
+    ],
+    "motions": [
+      "Tiny green shoots slowly emerge from the coffee cup, leaves unfurl and a patch of moss spreads around its base. The miniature kitchen stays fixed.",
+      "The tiny shoots grow smoothly into a branching leafy tree rooted in the cup. Fine roots crawl across the walnut table and small ferns unfurl alongside it.",
+      "The miniature tree grows rapidly upward, branches spreading into a canopy. Moss and curling green vines spread over the table and cabinets, turning the kitchen into a tiny lush forest. Warm sunlight moves through the leaves."
+    ],
+    "continuous": "Locked macro camera on a handmade miniature kitchen diorama. Tiny green shoots emerge from the coffee cup and unfurl leaves. They grow continuously into a small branching tree rooted in the cup. Roots and moss spread across the walnut table. The tree grows into a lush green canopy filling the kitchen, with vines climbing the white cabinets and warm sunlight streaming through leaves. One continuous organic growth transformation, keep the miniature room and cup in place."
+  },
+  "gravity-anchor": {
+    "name": "gravity-anchor",
+    "seed": 28400,
+    "anchor": "Photorealistic cinematic still of a single cream ceramic coffee cup filled with black coffee, alone on a clean dark walnut kitchen table. No saucer, no spoon, no other objects on the table. Locked medium shot at table height, cup in lower middle of vertical frame, plenty of empty air above it. Warm sunlight through a large window on the left, pale cabinets softly blurred behind. Simple calm ordinary scene. No people, no text, no brands.",
+    "edits": [
+      "The cream ceramic cup has lifted ten centimeters off the table and floats in midair. There is a clear empty gap and a soft detached shadow below the floating cup. Keep its exact size, shape, color and orientation. The black coffee remains inside the cup. The table is empty beneath it.",
+      "The same cream ceramic cup now floats forty centimeters above the table. Black coffee has lifted out of the cup into one thick smooth floating dark liquid ring just above the cup rim. Detached cup shadow on the empty table below. The cup is the same size and shape, no additional cups.",
+      "Lower the existing cup to its exact original position in image 2, until its base touches the walnut tabletop. It is resting on the table again, not floating. Remove all coffee rings and all droplets above the cup. Add one shallow puddle of spilled coffee directly around its base on the table. The air above it is empty."
+    ],
+    "motions": [
+      "The single cream coffee cup slowly lifts from the walnut table. Its soft shadow separates from the base. The camera holds still.",
+      "The hovering cream cup rises higher and black coffee lifts from its rim into a floating ring of liquid. The cup gently rocks in midair.",
+      "The floating coffee ring collapses into the cup as gravity returns. The cream cup drops onto the table and coffee splashes out onto the wood, then settles."
+    ],
+    "continuous": "A single cream coffee cup rests on an empty walnut kitchen table. It slowly lifts into the air, its shadow detaching below. Black coffee rises from the cup into a floating liquid ring. After drifting for a moment, gravity returns: the cup lands on the table and coffee splashes into a puddle. The camera stays locked and the background remains unchanged.",
+    "interval": 120,
+    "anchor_reference": true
+  },
+  "gravity-simple": {
+    "name": "gravity-simple",
+    "seed": 28400,
+    "anchor": "Photorealistic cinematic still of a single cream ceramic coffee cup filled with black coffee, alone on a clean dark walnut kitchen table. No saucer, no spoon, no other objects on the table. Locked medium shot at table height, cup in lower middle of vertical frame, plenty of empty air above it. Warm sunlight through a large window on the left, pale cabinets softly blurred behind. Simple calm ordinary scene. No people, no text, no brands.",
+    "edits": [
+      "The cream ceramic cup has lifted ten centimeters off the table and floats in midair. There is a clear empty gap and a soft detached shadow below the floating cup. Keep its exact size, shape, color and orientation. The black coffee remains inside the cup. The table is empty beneath it.",
+      "The same cream ceramic cup now floats forty centimeters above the table. Black coffee has lifted out of the cup into one thick smooth floating dark liquid ring just above the cup rim. Detached cup shadow on the empty table below. The cup is the same size and shape, no additional cups.",
+      "The cream cup is back resting on the table in its original position. Remove all floating liquid and floating objects. A puddle of spilled black coffee surrounds the cup on the tabletop. The empty space above the cup is clear again. Quiet aftermath."
+    ],
+    "motions": [
+      "The single cream coffee cup slowly lifts from the walnut table. Its soft shadow separates from the base. The camera holds still.",
+      "The hovering cream cup rises higher and black coffee lifts from its rim into a floating ring of liquid. The cup gently rocks in midair.",
+      "The floating coffee ring collapses into the cup as gravity returns. The cream cup drops onto the table and coffee splashes out onto the wood, then settles."
+    ],
+    "continuous": "A single cream coffee cup rests on an empty walnut kitchen table. It slowly lifts into the air, its shadow detaching below. Black coffee rises from the cup into a floating liquid ring. After drifting for a moment, gravity returns: the cup lands on the table and coffee splashes into a puddle. The camera stays locked and the background remains unchanged.",
+    "interval": 120
+  },
+  "gravity": {
+    "name": "gravity",
+    "seed": 28100,
+    "anchor": "Cinematic photograph of a small sunlit kitchen. Locked medium-wide camera facing a walnut breakfast table. One cream ceramic cup full of black coffee and a silver teaspoon in the foreground, a small bowl with three oranges on the right, pale cabinets and a large bright window behind. Large clear empty space above the table. Warm morning sunlight from the left. No people, no lettering, no brands. Vertical composition, realistic materials, clean geometry.",
+    "edits": [
+      "Gravity has just stopped: a single round blob of black coffee floats five centimeters above the cream cup, and the teaspoon hovers slightly above the tabletop. The bowl and oranges stay on the table.",
+      "Gravity is gone: the cream cup, teaspoon and all three oranges now hover about thirty centimeters above the table, each clearly separated. A twisting ribbon of coffee and small round coffee droplets float above the cup. The table and cabinets stay exactly where they were.",
+      "Gravity has returned. The cup sits on the table again, coffee has splashed across the walnut tabletop, the teaspoon lies beside the cup and the oranges have rolled out of their bowl. Same sunlit kitchen, playful beautiful aftermath."
+    ],
+    "motions": [
+      "In the sunlit empty kitchen, black coffee slowly rises out of the cream cup into a floating round blob, and the silver teaspoon lifts off the walnut table.",
+      "The cup, teaspoon and oranges smoothly rise higher and drift in the air above the table. Coffee stretches into a floating twisting ribbon with scattered droplets.",
+      "Gravity suddenly returns. The hovering cup, spoon and oranges drop onto the table, and coffee splashes in slow motion across the wood before everything settles."
+    ],
+    "continuous": "In one locked-off view of a sunlit kitchen, black coffee rises out of a cream cup into a floating blob. The teaspoon, cup and oranges lift off the table and drift upward. Coffee curls into a ribbon of droplets. Finally gravity returns, objects drop onto the walnut table and coffee splashes across it. Playful impossible physical transformation."
+  },
+  "harbor": {
+    "name": "harbor",
+    "seed": 28200,
+    "anchor": "Cinematic photograph of a tiny quiet harbor at blue dawn. Locked wide camera from a stone quay. Two small red fishing boats floating on dark calm water, a simple pale lighthouse across the bay, distant dark mountains. Clear water foreground with boat reflections, peach light on the horizon, no people, no lettering, no brands. Vertical composition.",
+    "edits": [
+      "A thin intricate layer of white frost and transparent ice spreads over the foreground harbor water, reaching halfway toward the two red boats. The lighthouse, quay, boats and mountains keep exactly the same positions.",
+      "The entire harbor surface is now solid turquoise translucent ice, with beautiful branching white cracks. The two red boats are trapped in the ice in their exact positions. Frost coats their hulls. Preserve the dawn light.",
+      "A thick clear sculptural ridge of turquoise ice now rises from the foreground frozen harbor toward the two trapped red boats. Fine snow dust floats in the dawn light. Keep the lighthouse, boats and mountains in exactly the same places."
+    ],
+    "motions": [
+      "At dawn, delicate white frost races over the calm harbor water from the foreground, forming transparent ice around the reflections.",
+      "The ice spreads smoothly across the whole harbor and thickens into turquoise glass with branching white cracks, gently trapping the two stationary red fishing boats.",
+      "The frozen surface slowly buckles into a beautiful clear turquoise ice ridge in the foreground. Fine frost crystals drift through the dawn light."
+    ],
+    "continuous": "Locked view of a quiet harbor at dawn. White frost creeps across dark water, growing into transparent turquoise ice. Branching cracks race toward two red fishing boats and freeze them in place. A sculptural clear ice ridge slowly rises from the foreground surface. The lighthouse and mountains stay fixed.",
+    "interval": 120
+  },
+  "jupiter-dive": {
+    "name": "jupiter-dive",
+    "seed": 28300,
+    "anchor": "Cinematic first-person spacecraft view approaching Jupiter. No cockpit or person visible. Jupiter fills the lower two thirds of the vertical frame, richly detailed cream and rust-red swirling cloud bands, a huge red oval storm low in frame, black space and tiny stars above. Beautiful raking sunlight from the upper left, realistic atmospheric haze, no text.",
+    "edits": [
+      "Move the viewpoint much closer toward the large rust-red oval storm, as if diving toward it. Crop away all black space and the curved outer edge of the planet. The entire frame is filled with detailed swirling cream and rust cloud bands around the red storm.",
+      "The viewpoint is now INSIDE the red storm clouds. No planet or curved surface is visible anymore. Towering copper-red cloud walls surround a deep dark passage ahead. This is a first-person flight through a vast cloud canyon, with warm light illuminating the clouds from within.",
+      "Fly deeper inside the same immense cloud canyon. Golden light shines through a small opening directly ahead, with copper clouds flowing past on all sides and distant lightning inside the clouds. No planet surface, no buildings, no spacecraft."
+    ],
+    "motions": [
+      "The camera flies straight toward the great red storm on Jupiter. The cloud bands rush nearer until they fill the whole frame.",
+      "The camera plunges into the red cloud bands and continues forward between immense copper cloud walls.",
+      "The camera keeps flying through the storm toward a golden opening, with clouds flowing past on both sides and subtle lightning ahead."
+    ],
+    "continuous": "An uninterrupted first-person flight straight toward Jupiter and into its great red storm. The curved planet approaches rapidly, until cream and rust cloud bands fill the entire frame. The camera plunges into the atmosphere, then keeps flying forward through immense copper cloud canyons toward a golden opening with subtle lightning. Never stop or pull back. No solid planet surface or spacecraft.",
+    "interval": 120,
+    "fixed_camera": false
+  },
+  "jupiter": {
+    "name": "jupiter",
+    "seed": 28300,
+    "anchor": "Cinematic first-person spacecraft view approaching Jupiter. No cockpit or person visible. Jupiter fills the lower two thirds of the vertical frame, richly detailed cream and rust-red swirling cloud bands, a huge red oval storm low in frame, black space and tiny stars above. Beautiful raking sunlight from the upper left, realistic atmospheric haze, no text.",
+    "edits": [
+      "Move the viewpoint closer toward the same huge rust-red oval storm on Jupiter. Jupiter fills almost the entire frame, curved cloud bands remain in the same arrangement, black space only in a narrow strip at the top.",
+      "The viewpoint has descended into the upper atmosphere over the red storm. Immense red and gold cloud canyons surround a dark opening in the center, only a tiny pale sky above. No spacecraft, no people.",
+      "Deep inside the same red storm, towering copper and golden clouds curl around the viewpoint, with a luminous golden opening ahead and a subtle lightning glow within distant clouds. No ground or solid surface, no spacecraft."
+    ],
+    "motions": [
+      "First-person camera glides forward toward Jupiter, the curved cream and rust cloud bands growing larger as the great red storm approaches.",
+      "The camera steadily dives through the upper atmosphere into immense red and gold storm clouds, moving toward a dark opening.",
+      "The camera flows forward through towering copper cloud canyons. Clouds curl past on both sides and soft lightning glows ahead."
+    ],
+    "continuous": "One continuous first-person dive toward Jupiter. The planet grows larger, its cream and rust cloud bands fill the view. The camera descends toward the great red storm and passes into immense copper and gold cloud canyons, with soft lightning glowing deep inside. No ground, no spacecraft.",
+    "interval": 120
+  }
+}

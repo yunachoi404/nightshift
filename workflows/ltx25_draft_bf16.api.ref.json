@@ -1,0 +1,48 @@
+{
+  "workflow": "ltx25_draft_bf16.api.json",
+  "inputs": {
+    "prompt": {
+      "node": "7",
+      "field": "text"
+    },
+    "negative": {
+      "node": "8",
+      "field": "text"
+    },
+    "image": {
+      "node": "5",
+      "field": "image"
+    },
+    "seed": {
+      "node": "15",
+      "field": "noise_seed"
+    },
+    "width": {
+      "node": "26",
+      "field": "value"
+    },
+    "height": {
+      "node": "27",
+      "field": "value"
+    },
+    "frames": {
+      "node": "28",
+      "field": "value"
+    },
+    "fps": {
+      "node": "29",
+      "field": "value"
+    }
+  },
+  "params": {
+    "width": 640,
+    "height": 384,
+    "fps": 24,
+    "frames": 97,
+    "maxFrames": 97
+  },
+  "outputNodes": [
+    "20",
+    "25"
+  ]
+}

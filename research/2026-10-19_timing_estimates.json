@@ -1,0 +1,871 @@
+{
+  "unified-128-cuda": {
+    "still": {
+      "representative": "GB10",
+      "workflow": "krea2_turbo_bf16.api.json",
+      "baselineSeconds": 31.39965441916138,
+      "computeRatio": 1.0,
+      "bandwidthRatio": 1.0,
+      "kernelPressureMargin": 1.0,
+      "computeFraction": 0.7,
+      "weightReadRatio": 1.0,
+      "streamedGbPerStep": 0,
+      "transferSeconds": 0,
+      "initialCopySeconds": 0,
+      "seconds": 35,
+      "stored": {
+        "peakGb": 32.9,
+        "seconds": 31.39965441916138,
+        "measured": true
+      }
+    },
+    "video_draft": {
+      "representative": "GB10",
+      "workflow": "ltx25_draft.api.json",
+      "baselineSeconds": 56.24969750503078,
+      "computeRatio": 1.0,
+      "bandwidthRatio": 1.0,
+      "kernelPressureMargin": 1.0,
+      "computeFraction": 0.7,
+      "weightReadRatio": 1.0,
+      "streamedGbPerStep": 0,
+      "transferSeconds": 0,
+      "initialCopySeconds": 0,
+      "seconds": 60,
+      "stored": {
+        "peakGb": 43.9,
+        "seconds": 56.24969750503078,
+        "measured": true
+      }
+    },
+    "video_final_same_take": {
+      "representative": "GB10",
+      "workflow": "ltx25_same_take.api.json",
+      "baselineSeconds": 121.59279858903028,
+      "computeRatio": 1.0,
+      "bandwidthRatio": 1.0,
+      "kernelPressureMargin": 1.0,
+      "computeFraction": 0.7,
+      "weightReadRatio": 1.0,
+      "streamedGbPerStep": 0,
+      "transferSeconds": 0,
+      "initialCopySeconds": 0,
+      "seconds": 125,
+      "stored": {
+        "peakGb": 46.2,
+        "seconds": 121.59279858903028,
+        "measured": true
+      }
+    },
+    "video_final_remaster": {
+      "representative": "GB10",
+      "workflow": "h3_ref2va_final.api.json",
+      "baselineSeconds": 602.5504925739951,
+      "computeRatio": 1.0,
+      "bandwidthRatio": 1.0,
+      "kernelPressureMargin": 1.0,
+      "computeFraction": 0.65,
+      "weightReadRatio": 1.0,
+      "streamedGbPerStep": 0,
+      "transferSeconds": 0,
+      "initialCopySeconds": 0,
+      "seconds": 605,
+      "stored": {
+        "peakGb": 47.0,
+        "seconds": 602.5504925739951,
+        "measured": true
+      }
+    },
+    "voice": {
+      "representative": "GB10",
+      "workflow": "breeze_tts2_eager.api.json",
+      "baselineSeconds": 61.585811525117606,
+      "computeRatio": 1.0,
+      "bandwidthRatio": 1.0,
+      "kernelPressureMargin": 1.0,
+      "computeFraction": 0.3,
+      "weightReadRatio": 1.0,
+      "streamedGbPerStep": 0,
+      "transferSeconds": 0,
+      "initialCopySeconds": 0,
+      "seconds": 65,
+      "stored": {
+        "peakGb": 11.9,
+        "seconds": 61.585811525117606,
+        "measured": true
+      }
+    },
+    "music": {
+      "representative": "GB10",
+      "workflow": "minimax_music3.api.json",
+      "baselineSeconds": 51.490641582990065,
+      "computeRatio": 1.0,
+      "bandwidthRatio": 1.0,
+      "kernelPressureMargin": 1.0,
+      "computeFraction": 0.5,
+      "weightReadRatio": 1.0,
+      "streamedGbPerStep": 0,
+      "transferSeconds": 0,
+      "initialCopySeconds": 0,
+      "seconds": 55,
+      "stored": {
+        "peakGb": 21.3,
+        "seconds": 51.490641582990065,
+        "measured": true
+      }
+    },
+    "text": {
+      "representative": "GB10",
+      "workflow": "text_shot_list.api.json",
+      "baselineSeconds": 10.417180504882708,
+      "computeRatio": 1.0,
+      "bandwidthRatio": 1.0,
+      "kernelPressureMargin": 1.0,
+      "computeFraction": 0.2,
+      "weightReadRatio": 1.0,
+      "streamedGbPerStep": 0,
+      "transferSeconds": 0,
+      "initialCopySeconds": 0,
+      "seconds": 15,
+      "stored": {
+        "peakGb": 6.8,
+        "seconds": 10.417180504882708,
+        "measured": true
+      }
+    }
+  },
+  "apple-64": {
+    "still": {
+      "representative": "M4 Max, 40 GPU cores",
+      "workflow": "krea2_turbo_mps.api.json",
+      "baselineSeconds": 31.39965441916138,
+      "computeRatio": 0.8,
+      "bandwidthRatio": 2.0,
+      "kernelPressureMargin": 1.6,
+      "computeFraction": 0.7,
+      "weightReadRatio": 1.0,
+      "streamedGbPerStep": 0,
+      "transferSeconds": 0,
+      "initialCopySeconds": 0,
+      "seconds": 50,
+      "stored": {
+        "peakGb": 38,
+        "seconds": 50,
+        "measured": false
+      }
+    },
+    "video_draft": {
+      "representative": "M4 Max, 40 GPU cores",
+      "workflow": "ltx25_draft_bf16.api.json",
+      "baselineSeconds": 56.24969750503078,
+      "computeRatio": 0.8,
+      "bandwidthRatio": 2.0,
+      "kernelPressureMargin": 1.6,
+      "computeFraction": 0.7,
+      "weightReadRatio": 2.046130952380952,
+      "streamedGbPerStep": 0,
+      "transferSeconds": 0,
+      "initialCopySeconds": 0,
+      "seconds": 105,
+      "stored": {
+        "peakGb": 54,
+        "seconds": 105,
+        "measured": false
+      }
+    },
+    "video_final_same_take": {
+      "representative": "M4 Max, 40 GPU cores",
+      "workflow": "ltx25_same_take_bf16.api.json",
+      "baselineSeconds": 121.59279858903028,
+      "computeRatio": 0.8,
+      "bandwidthRatio": 2.0,
+      "kernelPressureMargin": 1.6,
+      "computeFraction": 0.7,
+      "weightReadRatio": 2.046130952380952,
+      "streamedGbPerStep": 0,
+      "transferSeconds": 0,
+      "initialCopySeconds": 0,
+      "seconds": 230,
+      "stored": {
+        "peakGb": 58,
+        "seconds": 230,
+        "measured": false
+      }
+    },
+    "voice": {
+      "representative": "M4 Max, 40 GPU cores",
+      "workflow": "breeze_tts2_eager.api.json",
+      "baselineSeconds": 61.585811525117606,
+      "computeRatio": 0.8,
+      "bandwidthRatio": 2.0,
+      "kernelPressureMargin": 1.6,
+      "computeFraction": 0.3,
+      "weightReadRatio": 1.0,
+      "streamedGbPerStep": 0,
+      "transferSeconds": 0,
+      "initialCopySeconds": 0,
+      "seconds": 75,
+      "stored": {
+        "peakGb": 10,
+        "seconds": 75,
+        "measured": false
+      }
+    },
+    "music": {
+      "representative": "M4 Max, 40 GPU cores",
+      "workflow": "ace15_turbo.api.json",
+      "baselineSeconds": 15.422430706210434,
+      "computeRatio": 0.8,
+      "bandwidthRatio": 2.0,
+      "kernelPressureMargin": 1.6,
+      "computeFraction": 0.6,
+      "weightReadRatio": 1.0,
+      "streamedGbPerStep": 0,
+      "transferSeconds": 0,
+      "initialCopySeconds": 0,
+      "seconds": 25,
+      "stored": {
+        "peakGb": 12,
+        "seconds": 25,
+        "measured": false
+      }
+    },
+    "text": {
+      "representative": "M4 Max, 40 GPU cores",
+      "workflow": "text_shot_list_bf16.api.json",
+      "baselineSeconds": 10.417180504882708,
+      "computeRatio": 0.8,
+      "bandwidthRatio": 2.0,
+      "kernelPressureMargin": 1.6,
+      "computeFraction": 0.2,
+      "weightReadRatio": 1.5833651278138117,
+      "streamedGbPerStep": 0,
+      "transferSeconds": 0,
+      "initialCopySeconds": 0,
+      "seconds": 15,
+      "stored": {
+        "peakGb": 12,
+        "seconds": 15,
+        "measured": false
+      }
+    }
+  },
+  "nvidia-32": {
+    "still": {
+      "representative": "RTX 5090",
+      "workflow": "krea2_turbo_nvfp4.api.json",
+      "baselineSeconds": 31.39965441916138,
+      "computeRatio": 3.0,
+      "bandwidthRatio": 6.564102564102564,
+      "kernelPressureMargin": 1.2,
+      "computeFraction": 0.7,
+      "weightReadRatio": 0.291975801849104,
+      "streamedGbPerStep": 0,
+      "transferSeconds": 0.0,
+      "initialCopySeconds": 0.30696,
+      "seconds": 15,
+      "stored": {
+        "peakGb": 16,
+        "seconds": 15,
+        "measured": false
+      }
+    },
+    "video_draft": {
+      "representative": "RTX 5090",
+      "workflow": "ltx25_draft.api.json",
+      "baselineSeconds": 56.24969750503078,
+      "computeRatio": 3.0,
+      "bandwidthRatio": 6.564102564102564,
+      "kernelPressureMargin": 1.2,
+      "computeFraction": 0.7,
+      "weightReadRatio": 1.0,
+      "streamedGbPerStep": 0,
+      "transferSeconds": 0.0,
+      "initialCopySeconds": 0.86016,
+      "seconds": 25,
+      "stored": {
+        "peakGb": 28,
+        "seconds": 25,
+        "measured": false
+      }
+    },
+    "video_final_same_take": {
+      "representative": "RTX 5090",
+      "workflow": "ltx25_same_take.api.json",
+      "baselineSeconds": 121.59279858903028,
+      "computeRatio": 3.0,
+      "bandwidthRatio": 6.564102564102564,
+      "kernelPressureMargin": 1.2,
+      "computeFraction": 0.7,
+      "weightReadRatio": 1.0,
+      "streamedGbPerStep": 0,
+      "transferSeconds": 0.0,
+      "initialCopySeconds": 0.86016,
+      "seconds": 45,
+      "stored": {
+        "peakGb": 29,
+        "seconds": 45,
+        "measured": false
+      }
+    },
+    "video_final_remaster": {
+      "representative": "RTX 5090",
+      "workflow": "h3_ref2va_final.api.json",
+      "baselineSeconds": 602.5504925739951,
+      "computeRatio": 3.0,
+      "bandwidthRatio": 6.564102564102564,
+      "kernelPressureMargin": 1.2,
+      "computeFraction": 0.65,
+      "weightReadRatio": 1.0,
+      "streamedGbPerStep": 2.9259999999999984,
+      "transferSeconds": 0.9363199999999995,
+      "initialCopySeconds": 0.91704,
+      "seconds": 205,
+      "stored": {
+        "peakGb": 29,
+        "seconds": 205,
+        "measured": false
+      }
+    },
+    "voice": {
+      "representative": "RTX 5090",
+      "workflow": "breeze_tts2_eager.api.json",
+      "baselineSeconds": 61.585811525117606,
+      "computeRatio": 3.0,
+      "bandwidthRatio": 6.564102564102564,
+      "kernelPressureMargin": 1.2,
+      "computeFraction": 0.3,
+      "weightReadRatio": 1.0,
+      "streamedGbPerStep": 0,
+      "transferSeconds": 0.0,
+      "initialCopySeconds": 0.218,
+      "seconds": 20,
+      "stored": {
+        "peakGb": 9,
+        "seconds": 20,
+        "measured": false
+      }
+    },
+    "music": {
+      "representative": "RTX 5090",
+      "workflow": "minimax_music3.api.json",
+      "baselineSeconds": 51.490641582990065,
+      "computeRatio": 3.0,
+      "bandwidthRatio": 6.564102564102564,
+      "kernelPressureMargin": 1.2,
+      "computeFraction": 0.5,
+      "weightReadRatio": 1.0,
+      "streamedGbPerStep": 0,
+      "transferSeconds": 0.0,
+      "initialCopySeconds": 0.19655999999999998,
+      "seconds": 20,
+      "stored": {
+        "peakGb": 16,
+        "seconds": 20,
+        "measured": false
+      }
+    },
+    "text": {
+      "representative": "RTX 5090",
+      "workflow": "text_shot_list.api.json",
+      "baselineSeconds": 10.417180504882708,
+      "computeRatio": 3.0,
+      "bandwidthRatio": 6.564102564102564,
+      "kernelPressureMargin": 1.2,
+      "computeFraction": 0.2,
+      "weightReadRatio": 1.0,
+      "streamedGbPerStep": 0,
+      "transferSeconds": 0.0,
+      "initialCopySeconds": 0.20968,
+      "seconds": 10,
+      "stored": {
+        "peakGb": 8,
+        "seconds": 10,
+        "measured": false
+      }
+    }
+  },
+  "nvidia-24-offload": {
+    "still": {
+      "representative": "RTX 4090",
+      "workflow": "krea2_turbo_int8.api.json",
+      "baselineSeconds": 31.39965441916138,
+      "computeRatio": 2.0,
+      "bandwidthRatio": 3.6923076923076925,
+      "kernelPressureMargin": 1.4,
+      "computeFraction": 0.7,
+      "weightReadRatio": 0.5132595213636191,
+      "streamedGbPerStep": 0,
+      "transferSeconds": 0.0,
+      "initialCopySeconds": 0.5396,
+      "seconds": 25,
+      "stored": {
+        "peakGb": 20,
+        "seconds": 25,
+        "measured": false
+      }
+    },
+    "video_draft": {
+      "representative": "RTX 4090",
+      "workflow": "ltx25_draft.api.json",
+      "baselineSeconds": 56.24969750503078,
+      "computeRatio": 2.0,
+      "bandwidthRatio": 3.6923076923076925,
+      "kernelPressureMargin": 1.4,
+      "computeFraction": 0.7,
+      "weightReadRatio": 1.0,
+      "streamedGbPerStep": 4.504000000000001,
+      "transferSeconds": 2.8825600000000007,
+      "initialCopySeconds": 0.86016,
+      "seconds": 40,
+      "stored": {
+        "peakGb": 22,
+        "seconds": 40,
+        "measured": false
+      }
+    },
+    "video_final_same_take": {
+      "representative": "RTX 4090",
+      "workflow": "ltx25_same_take.api.json",
+      "baselineSeconds": 121.59279858903028,
+      "computeRatio": 2.0,
+      "bandwidthRatio": 3.6923076923076925,
+      "kernelPressureMargin": 1.4,
+      "computeFraction": 0.7,
+      "weightReadRatio": 1.0,
+      "streamedGbPerStep": 7.504000000000001,
+      "transferSeconds": 1.8009600000000003,
+      "initialCopySeconds": 0.86016,
+      "seconds": 80,
+      "stored": {
+        "peakGb": 22,
+        "seconds": 80,
+        "measured": false
+      }
+    },
+    "video_final_remaster": {
+      "representative": "RTX 4090",
+      "workflow": "h3_ref2va_int8_encoder.api.json",
+      "baselineSeconds": 602.5504925739951,
+      "computeRatio": 2.0,
+      "bandwidthRatio": 3.6923076923076925,
+      "kernelPressureMargin": 1.4,
+      "computeFraction": 0.65,
+      "weightReadRatio": 1.0,
+      "streamedGbPerStep": 10.925999999999998,
+      "transferSeconds": 3.4963199999999994,
+      "initialCopySeconds": 0.91704,
+      "seconds": 365,
+      "stored": {
+        "peakGb": 22,
+        "seconds": 365,
+        "measured": false
+      }
+    },
+    "voice": {
+      "representative": "RTX 4090",
+      "workflow": "breeze_tts2_eager.api.json",
+      "baselineSeconds": 61.585811525117606,
+      "computeRatio": 2.0,
+      "bandwidthRatio": 3.6923076923076925,
+      "kernelPressureMargin": 1.4,
+      "computeFraction": 0.3,
+      "weightReadRatio": 1.0,
+      "streamedGbPerStep": 0,
+      "transferSeconds": 0.0,
+      "initialCopySeconds": 0.218,
+      "seconds": 35,
+      "stored": {
+        "peakGb": 9,
+        "seconds": 35,
+        "measured": false
+      }
+    },
+    "music": {
+      "representative": "RTX 4090",
+      "workflow": "ace15_turbo.api.json",
+      "baselineSeconds": 15.422430706210434,
+      "computeRatio": 2.0,
+      "bandwidthRatio": 3.6923076923076925,
+      "kernelPressureMargin": 1.4,
+      "computeFraction": 0.6,
+      "weightReadRatio": 1.0,
+      "streamedGbPerStep": 0,
+      "transferSeconds": 0.0,
+      "initialCopySeconds": 0.19152000000000002,
+      "seconds": 15,
+      "stored": {
+        "peakGb": 12,
+        "seconds": 15,
+        "measured": false
+      }
+    },
+    "text": {
+      "representative": "RTX 4090",
+      "workflow": "text_shot_list.api.json",
+      "baselineSeconds": 10.417180504882708,
+      "computeRatio": 2.0,
+      "bandwidthRatio": 3.6923076923076925,
+      "kernelPressureMargin": 1.4,
+      "computeFraction": 0.2,
+      "weightReadRatio": 1.0,
+      "streamedGbPerStep": 0,
+      "transferSeconds": 0.0,
+      "initialCopySeconds": 0.20968,
+      "seconds": 10,
+      "stored": {
+        "peakGb": 8,
+        "seconds": 10,
+        "measured": false
+      }
+    }
+  },
+  "nvidia-12-offload": {
+    "still": {
+      "representative": "RTX 4070 Ti",
+      "workflow": "moss_image_int8_encoder.api.json",
+      "baselineSeconds": 80.54087117104791,
+      "computeRatio": 1.0,
+      "bandwidthRatio": 1.8461538461538463,
+      "kernelPressureMargin": 1.8,
+      "computeFraction": 0.7,
+      "weightReadRatio": 1.0,
+      "streamedGbPerStep": 0,
+      "transferSeconds": 0.0,
+      "initialCopySeconds": 0.43311999999999995,
+      "seconds": 125,
+      "stored": {
+        "peakGb": 11,
+        "seconds": 125,
+        "measured": false
+      }
+    },
+    "video_draft": {
+      "representative": "RTX 4070 Ti",
+      "workflow": "ltx25_draft.api.json",
+      "baselineSeconds": 56.24969750503078,
+      "computeRatio": 1.0,
+      "bandwidthRatio": 1.8461538461538463,
+      "kernelPressureMargin": 1.8,
+      "computeFraction": 0.7,
+      "weightReadRatio": 1.0,
+      "streamedGbPerStep": 16.504,
+      "transferSeconds": 21.125120000000003,
+      "initialCopySeconds": 1.72032,
+      "seconds": 110,
+      "stored": {
+        "peakGb": 11,
+        "seconds": 110,
+        "measured": false
+      }
+    },
+    "video_final_same_take": {
+      "representative": "RTX 4070 Ti",
+      "workflow": "ltx25_same_take.api.json",
+      "baselineSeconds": 121.59279858903028,
+      "computeRatio": 1.0,
+      "bandwidthRatio": 1.8461538461538463,
+      "kernelPressureMargin": 1.8,
+      "computeFraction": 0.7,
+      "weightReadRatio": 1.0,
+      "streamedGbPerStep": 19.504,
+      "transferSeconds": 9.36192,
+      "initialCopySeconds": 1.72032,
+      "seconds": 200,
+      "stored": {
+        "peakGb": 11,
+        "seconds": 200,
+        "measured": false
+      }
+    },
+    "voice": {
+      "representative": "RTX 4070 Ti",
+      "workflow": "breeze_tts2_eager.api.json",
+      "baselineSeconds": 61.585811525117606,
+      "computeRatio": 1.0,
+      "bandwidthRatio": 1.8461538461538463,
+      "kernelPressureMargin": 1.8,
+      "computeFraction": 0.3,
+      "weightReadRatio": 1.0,
+      "streamedGbPerStep": 0,
+      "transferSeconds": 0.0,
+      "initialCopySeconds": 0.436,
+      "seconds": 75,
+      "stored": {
+        "peakGb": 8,
+        "seconds": 75,
+        "measured": false
+      }
+    },
+    "music": {
+      "representative": "RTX 4070 Ti",
+      "workflow": "ace15_turbo.api.json",
+      "baselineSeconds": 15.422430706210434,
+      "computeRatio": 1.0,
+      "bandwidthRatio": 1.8461538461538463,
+      "kernelPressureMargin": 1.8,
+      "computeFraction": 0.6,
+      "weightReadRatio": 1.0,
+      "streamedGbPerStep": 0,
+      "transferSeconds": 0.0,
+      "initialCopySeconds": 0.38304000000000005,
+      "seconds": 25,
+      "stored": {
+        "peakGb": 10,
+        "seconds": 25,
+        "measured": false
+      }
+    },
+    "text": {
+      "representative": "RTX 4070 Ti",
+      "workflow": "text_shot_list.api.json",
+      "baselineSeconds": 10.417180504882708,
+      "computeRatio": 1.0,
+      "bandwidthRatio": 1.8461538461538463,
+      "kernelPressureMargin": 1.8,
+      "computeFraction": 0.2,
+      "weightReadRatio": 1.0,
+      "streamedGbPerStep": 0,
+      "transferSeconds": 0.0,
+      "initialCopySeconds": 0.41936,
+      "seconds": 15,
+      "stored": {
+        "peakGb": 8,
+        "seconds": 15,
+        "measured": false
+      }
+    }
+  },
+  "nvidia-8": {
+    "still": {
+      "representative": "RTX 2070",
+      "workflow": "moss_image_gptq_encoder.api.json",
+      "baselineSeconds": 55.474867718992755,
+      "computeRatio": 0.35,
+      "bandwidthRatio": 1.641025641025641,
+      "kernelPressureMargin": 2.5,
+      "computeFraction": 0.7,
+      "weightReadRatio": 1.0,
+      "streamedGbPerStep": 2.4139999999999997,
+      "transferSeconds": 40.23333333333333,
+      "initialCopySeconds": 0.9023333333333333,
+      "seconds": 325,
+      "stored": {
+        "peakGb": 6.8,
+        "seconds": 150,
+        "measured": true
+      }
+    },
+    "video_draft": {
+      "representative": "RTX 2070",
+      "workflow": "kandinsky6_lite_draft.api.json",
+      "baselineSeconds": 140.55800223513506,
+      "computeRatio": 0.35,
+      "bandwidthRatio": 1.641025641025641,
+      "kernelPressureMargin": 2.5,
+      "computeFraction": 0.7,
+      "weightReadRatio": 1.0,
+      "streamedGbPerStep": 3.3819999999999997,
+      "transferSeconds": 11.273333333333332,
+      "initialCopySeconds": 1.0636666666666665,
+      "seconds": 760,
+      "stored": {
+        "peakGb": 7.2,
+        "seconds": 60,
+        "measured": true
+      }
+    },
+    "video_final_same_take": {
+      "representative": "RTX 2070",
+      "workflow": "video_pixel_upscale.api.json",
+      "baselineSeconds": 1.269846895011142,
+      "computeRatio": 0.35,
+      "bandwidthRatio": 1.641025641025641,
+      "kernelPressureMargin": 2.5,
+      "computeFraction": 0.5,
+      "weightReadRatio": 1.0,
+      "streamedGbPerStep": 0,
+      "transferSeconds": 0.0,
+      "initialCopySeconds": 0.0,
+      "seconds": 5,
+      "stored": {
+        "peakGb": 0.3,
+        "seconds": 5,
+        "measured": true
+      }
+    },
+    "voice": {
+      "representative": "RTX 2070",
+      "workflow": "breeze_tts2_eager.api.json",
+      "baselineSeconds": 61.585811525117606,
+      "computeRatio": 0.35,
+      "bandwidthRatio": 1.641025641025641,
+      "kernelPressureMargin": 2.5,
+      "computeFraction": 0.3,
+      "weightReadRatio": 1.0,
+      "streamedGbPerStep": 0.4500000000000002,
+      "transferSeconds": 8.250000000000004,
+      "initialCopySeconds": 0.9083333333333333,
+      "seconds": 200,
+      "stored": {
+        "peakGb": 4.5,
+        "seconds": 30,
+        "measured": true
+      }
+    },
+    "music": {
+      "representative": "RTX 2070",
+      "workflow": "ace15_turbo.api.json",
+      "baselineSeconds": 15.422430706210434,
+      "computeRatio": 0.35,
+      "bandwidthRatio": 1.641025641025641,
+      "kernelPressureMargin": 2.5,
+      "computeFraction": 0.6,
+      "weightReadRatio": 1.0,
+      "streamedGbPerStep": 0.7880000000000003,
+      "transferSeconds": 2.101333333333334,
+      "initialCopySeconds": 0.798,
+      "seconds": 60,
+      "stored": {
+        "peakGb": 6.7,
+        "seconds": 45,
+        "measured": true
+      }
+    },
+    "text": {
+      "representative": "RTX 2070",
+      "workflow": "text_shot_list_bf16.api.json",
+      "baselineSeconds": 10.417180504882708,
+      "computeRatio": 0.35,
+      "bandwidthRatio": 1.641025641025641,
+      "kernelPressureMargin": 2.5,
+      "computeFraction": 0.2,
+      "weightReadRatio": 1.5833651278138117,
+      "streamedGbPerStep": 3.3000000000000007,
+      "transferSeconds": 222.20000000000005,
+      "initialCopySeconds": 1.3833333333333335,
+      "seconds": 250,
+      "stored": {
+        "peakGb": 5.4,
+        "seconds": 480,
+        "measured": true
+      }
+    }
+  },
+  "apple-16": {
+    "still": {
+      "representative": "M4 Air, 10 GPU cores",
+      "workflow": "moss_image_gptq_encoder.api.json",
+      "baselineSeconds": 55.474867718992755,
+      "computeRatio": 0.2,
+      "bandwidthRatio": 0.43956043956043955,
+      "kernelPressureMargin": 2.5,
+      "computeFraction": 0.7,
+      "weightReadRatio": 1.0,
+      "streamedGbPerStep": 0,
+      "transferSeconds": 0,
+      "initialCopySeconds": 0,
+      "seconds": 535,
+      "stored": {
+        "peakGb": 15,
+        "seconds": 535,
+        "measured": false
+      }
+    },
+    "video_draft": {
+      "representative": "M4 Air, 10 GPU cores",
+      "workflow": "kandinsky6_lite_fp16.api.json",
+      "baselineSeconds": 140.55800223513506,
+      "computeRatio": 0.2,
+      "bandwidthRatio": 0.43956043956043955,
+      "kernelPressureMargin": 2.5,
+      "computeFraction": 0.7,
+      "weightReadRatio": 1.0,
+      "streamedGbPerStep": 0,
+      "transferSeconds": 0,
+      "initialCopySeconds": 0,
+      "seconds": 1425,
+      "stored": {
+        "peakGb": 15,
+        "seconds": 1425,
+        "measured": false
+      }
+    },
+    "video_final_same_take": {
+      "representative": "M4 Air, 10 GPU cores",
+      "workflow": "video_pixel_upscale.api.json",
+      "baselineSeconds": 1.269846895011142,
+      "computeRatio": 0.2,
+      "bandwidthRatio": 0.43956043956043955,
+      "kernelPressureMargin": 2.5,
+      "computeFraction": 0.5,
+      "weightReadRatio": 1.0,
+      "streamedGbPerStep": 0,
+      "transferSeconds": 0,
+      "initialCopySeconds": 0,
+      "seconds": 5,
+      "stored": {
+        "peakGb": 2,
+        "seconds": 5,
+        "measured": false
+      }
+    },
+    "voice": {
+      "representative": "M4 Air, 10 GPU cores",
+      "workflow": "breeze_tts2_eager.api.json",
+      "baselineSeconds": 61.585811525117606,
+      "computeRatio": 0.2,
+      "bandwidthRatio": 0.43956043956043955,
+      "kernelPressureMargin": 2.5,
+      "computeFraction": 0.3,
+      "weightReadRatio": 1.0,
+      "streamedGbPerStep": 0,
+      "transferSeconds": 0,
+      "initialCopySeconds": 0,
+      "seconds": 445,
+      "stored": {
+        "peakGb": 10,
+        "seconds": 445,
+        "measured": false
+      }
+    },
+    "music": {
+      "representative": "M4 Air, 10 GPU cores",
+      "workflow": "ace15_turbo.api.json",
+      "baselineSeconds": 15.422430706210434,
+      "computeRatio": 0.2,
+      "bandwidthRatio": 0.43956043956043955,
+      "kernelPressureMargin": 2.5,
+      "computeFraction": 0.6,
+      "weightReadRatio": 1.0,
+      "streamedGbPerStep": 0,
+      "transferSeconds": 0,
+      "initialCopySeconds": 0,
+      "seconds": 110,
+      "stored": {
+        "peakGb": 12,
+        "seconds": 110,
+        "measured": false
+      }
+    },
+    "text": {
+      "representative": "M4 Air, 10 GPU cores",
+      "workflow": "text_shot_list_bf16.api.json",
+      "baselineSeconds": 10.417180504882708,
+      "computeRatio": 0.2,
+      "bandwidthRatio": 0.43956043956043955,
+      "kernelPressureMargin": 2.5,
+      "computeFraction": 0.2,
+      "weightReadRatio": 1.5833651278138117,
+      "streamedGbPerStep": 0,
+      "transferSeconds": 0,
+      "initialCopySeconds": 0,
+      "seconds": 60,
+      "stored": {
+        "peakGb": 12,
+        "seconds": 60,
+        "measured": false
+      }
+    }
+  }
+}

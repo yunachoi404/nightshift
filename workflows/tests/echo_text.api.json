@@ -1,0 +1,9 @@
+{
+  "1": {
+    "class_type": "NightshiftSaveText",
+    "inputs": {
+      "text": "{\"shots\":[{\"prompt\":\"A red cup\",\"cameraMove\":\"dolly in\",\"durationSec\":4}]}",
+      "filename_prefix": "nightshift/sdk_text_echo"
+    }
+  }
+}

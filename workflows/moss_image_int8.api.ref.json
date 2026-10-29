@@ -1,0 +1,29 @@
+{
+  "workflow": "moss_image_int8.api.json",
+  "inputs": {
+    "prompt": {
+      "node": "4",
+      "field": "text"
+    },
+    "negative": {
+      "node": "5",
+      "field": "text"
+    },
+    "seed": {
+      "node": "9",
+      "field": "seed"
+    },
+    "width": {
+      "node": "6",
+      "field": "width"
+    },
+    "height": {
+      "node": "6",
+      "field": "height"
+    }
+  },
+  "params": {},
+  "outputNodes": [
+    "11"
+  ]
+}

@@ -1,0 +1,15 @@
+[
+  {
+    "case": "breeze_tts2",
+    "path": "outputs/model_lab/breeze_tts2/3/breeze_00001.flac",
+    "durationSec": 4.4,
+    "sampleRate": 24000,
+    "channels": 1,
+    "peakAmplitude": 0.5830078125,
+    "rms": 0.06413790583610535,
+    "nearFullScaleFraction": 0.0,
+    "overFullScaleFraction": 0.0,
+    "transcript": "Draft a little faster, keep the take you love, night shift finishes while you sleep.",
+    "asrModel": "OpenAI Whisper base.en, CPU"
+  }
+]

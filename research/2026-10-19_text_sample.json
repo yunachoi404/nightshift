@@ -1,0 +1,19 @@
+{
+  "shots": [
+    {
+      "prompt": "A close-up of a glossy red ceramic coffee cup, steam rising gently, raindrops sliding down the window behind it, soft ambient light reflecting off the cup's surface.",
+      "cameraMove": "Slow push-in",
+      "durationSec": 4
+    },
+    {
+      "prompt": "The cup sits on a wooden table, rain streaking the glass pane above, a single coffee bean drops into the cup, creating a small ripple, warm glow from a nearby lamp.",
+      "cameraMove": "Dolly left",
+      "durationSec": 4
+    },
+    {
+      "prompt": "Wide shot of the cup on the table, rain falling softly outside, a hand reaches in to lift the cup, steam curling upward, the cup glows warmly against the gray evening sky.",
+      "cameraMove": "Pull back and tilt up",
+      "durationSec": 4
+    }
+  ]
+}

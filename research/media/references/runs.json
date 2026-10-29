@@ -1,0 +1,196 @@
+[
+  {
+    "name": "character",
+    "prompt": "An original fictional woman in a hand-painted animated adventure film, short curly dark blue bob, large round amber glasses, warm brown skin, orange scarf, teal raincoat with brass toggles. Full body standing on a plain pale beige studio background, friendly expressive angular face, crisp detailed gouache illustration. No text.",
+    "seed": 82101,
+    "jobId": "cefedf20-2b02-4792-a401-1531bc68337c",
+    "seconds": 28.25,
+    "references": []
+  },
+  {
+    "name": "place",
+    "prompt": "A hand-painted animated adventure film harbor. A crooked red lighthouse with white diagonal stripe on left, turquoise wooden boathouse on right, curved cobblestone quay and two tiny yellow boats, violet mountains beyond, pale blue mist. Wide establishing shot, crisp gouache illustration. No people, no text.",
+    "seed": 82102,
+    "jobId": "d76a9dfd-c610-4bcc-8c2c-2723cae84c54",
+    "seconds": 35.11,
+    "references": []
+  },
+  {
+    "name": "product-before-1",
+    "prompt": "Low angle hero view of the Solenne bottle on a black marble pedestal, dramatic narrow side lighting, black background.",
+    "seed": 82200,
+    "jobId": "d7078ffd-b0d5-4886-b5db-df7d77e7c351",
+    "seconds": 107.94,
+    "references": []
+  },
+  {
+    "name": "product-after-1",
+    "prompt": "Image 1 shows the Solenne bottle. Keep its exact amber glass shape and brass cap. Create a new composition: Low angle hero view of the Solenne bottle on a black marble pedestal, dramatic narrow side lighting, black background.",
+    "seed": 82200,
+    "jobId": "da5a1b52-c84d-4e0c-887b-940a327ebb5c",
+    "seconds": 33.23,
+    "references": [
+      "product.png"
+    ]
+  },
+  {
+    "name": "product-before-2",
+    "prompt": "Overhead flat lay of the Solenne bottle on pale linen with a small olive branch to the side, soft morning sunlight.",
+    "seed": 82201,
+    "jobId": "27a933fd-bd0f-489c-91fb-33ffd13a731d",
+    "seconds": 28.0,
+    "references": []
+  },
+  {
+    "name": "product-after-2",
+    "prompt": "Image 1 shows the Solenne bottle. Keep its exact amber glass shape and brass cap. Create a new composition: Overhead flat lay of the Solenne bottle on pale linen with a small olive branch to the side, soft morning sunlight.",
+    "seed": 82201,
+    "jobId": "33e8a1d4-d94a-484a-931d-51a539f6dc3d",
+    "seconds": 23.09,
+    "references": [
+      "product.png"
+    ]
+  },
+  {
+    "name": "product-before-3",
+    "prompt": "Extreme close-up of the Solenne bottle brass cap and amber glass shoulder, sparkling rain droplets, cool blue background.",
+    "seed": 82202,
+    "jobId": "8af3343f-a4cc-442e-b996-20f63bc47789",
+    "seconds": 23.33,
+    "references": []
+  },
+  {
+    "name": "product-after-3",
+    "prompt": "Image 1 shows the Solenne bottle. Keep its exact amber glass shape and brass cap. Create a new composition: Extreme close-up of the Solenne bottle brass cap and amber glass shoulder, sparkling rain droplets, cool blue background.",
+    "seed": 82202,
+    "jobId": "9d10454f-3b88-43b9-9e92-7aa5c5f9bc2a",
+    "seconds": 103.3,
+    "references": [
+      "product.png"
+    ]
+  },
+  {
+    "name": "product-before-4",
+    "prompt": "Wide scene of the Solenne bottle standing on a dune at sunset, full bottle visible, small in frame with generous negative space.",
+    "seed": 82203,
+    "jobId": "c92b2447-235d-412c-b6b5-ea6ebaa51950",
+    "seconds": 43.58,
+    "references": []
+  },
+  {
+    "name": "product-after-4",
+    "prompt": "Image 1 shows the Solenne bottle. Keep its exact amber glass shape and brass cap. Create a new composition: Wide scene of the Solenne bottle standing on a dune at sunset, full bottle visible, small in frame with generous negative space.",
+    "seed": 82203,
+    "jobId": "45736b26-9e64-47e4-8aae-498255467ba9",
+    "seconds": 142.4,
+    "references": [
+      "product.png"
+    ]
+  },
+  {
+    "name": "character-before-1",
+    "prompt": "Mara riding a bicycle in a rainy city, side view, dynamic action, hand-painted animated film. Mara has short curly dark blue hair, amber glasses, an orange scarf and teal raincoat.",
+    "seed": 82300,
+    "jobId": "f4b39249-5c75-4b3e-bf0b-5b71c8bbf77c",
+    "seconds": 177.91,
+    "references": []
+  },
+  {
+    "name": "character-after-1",
+    "prompt": "Image 1 shows Mara. Preserve her face, hair, glasses and outfit. Create a new composition: Mara riding a bicycle in a rainy city, side view, dynamic action, hand-painted animated film.",
+    "seed": 82300,
+    "jobId": "52cb37a4-cba9-4526-8907-b00312852415",
+    "seconds": 82.1,
+    "references": [
+      "character.png"
+    ]
+  },
+  {
+    "name": "character-before-2",
+    "prompt": "Close-up portrait of Mara laughing, warm sunset side light, garden background, hand-painted animated film. Mara has short curly dark blue hair, amber glasses, an orange scarf and teal raincoat.",
+    "seed": 82301,
+    "jobId": "12b3821e-d7e8-4a72-9217-55ee18c3d5ed",
+    "seconds": 24.83,
+    "references": []
+  },
+  {
+    "name": "character-after-2",
+    "prompt": "Image 1 shows Mara. Preserve her face, hair, glasses and outfit. Create a new composition: Close-up portrait of Mara laughing, warm sunset side light, garden background, hand-painted animated film.",
+    "seed": 82301,
+    "jobId": "3e334cdf-1a24-4468-9be1-9d611e9ecbc3",
+    "seconds": 77.81,
+    "references": [
+      "character.png"
+    ]
+  },
+  {
+    "name": "character-before-3",
+    "prompt": "Mara reading a map while seated at an outdoor cafe, overhead three-quarter view, hand-painted animated film. Mara has short curly dark blue hair, amber glasses, an orange scarf and teal raincoat.",
+    "seed": 82302,
+    "jobId": "4e99858b-a1a5-40ee-9245-62e036d2c3cf",
+    "seconds": 97.52,
+    "references": []
+  },
+  {
+    "name": "character-after-3",
+    "prompt": "Image 1 shows Mara. Preserve her face, hair, glasses and outfit. Create a new composition: Mara reading a map while seated at an outdoor cafe, overhead three-quarter view, hand-painted animated film.",
+    "seed": 82302,
+    "jobId": "431572a3-f8b6-40a4-9096-8a041376dd49",
+    "seconds": 120.69,
+    "references": [
+      "character.png"
+    ]
+  },
+  {
+    "name": "character-before-4",
+    "prompt": "Wide shot of Mara walking across a windy stone bridge at dawn, full body small in the frame, hand-painted animated film. Mara has short curly dark blue hair, amber glasses, an orange scarf and teal raincoat.",
+    "seed": 82303,
+    "jobId": "408dc9c4-cc48-4c01-9563-53c1291ae20f",
+    "seconds": 148.89,
+    "references": []
+  },
+  {
+    "name": "character-after-4",
+    "prompt": "Image 1 shows Mara. Preserve her face, hair, glasses and outfit. Create a new composition: Wide shot of Mara walking across a windy stone bridge at dawn, full body small in the frame, hand-painted animated film.",
+    "seed": 82303,
+    "jobId": "fafd3213-1d37-4415-96e1-290f771e3d2a",
+    "seconds": 224.14,
+    "references": [
+      "character.png"
+    ]
+  },
+  {
+    "name": "together-1",
+    "prompt": "Image 1 shows Mara. Image 2 shows the harbor. Keep Mara and the harbor recognizable in a new composition. Wide shot of Mara waving from the end of the harbor quay, lighthouse and boathouse visible.",
+    "seed": 82400,
+    "jobId": "71ba1ae2-3a77-4ab0-b638-f2f49fe9d127",
+    "seconds": 49.61,
+    "references": [
+      "character.png",
+      "place.png"
+    ]
+  },
+  {
+    "name": "together-2",
+    "prompt": "Image 1 shows Mara. Image 2 shows the harbor. Keep Mara and the harbor recognizable in a new composition. Close view of Mara leaning on the harbor railing looking toward the crooked red lighthouse.",
+    "seed": 82401,
+    "jobId": "1fa6187c-a365-4fd6-bf8d-edd20dc5e135",
+    "seconds": 117.92,
+    "references": [
+      "character.png",
+      "place.png"
+    ]
+  },
+  {
+    "name": "three",
+    "prompt": "Image 1 shows Mara. Image 2 shows the harbor. Image 3 shows the Solenne bottle. Mara stands at the harbor, holding the Solenne bottle up in one hand. Preserve each reference identity. Medium view, hand-painted animated film.",
+    "seed": 82500,
+    "jobId": "01af76f2-1fcd-4d8c-8a30-e07b589b9a0f",
+    "seconds": 115.81,
+    "references": [
+      "character.png",
+      "place.png",
+      "product.png"
+    ]
+  }
+]

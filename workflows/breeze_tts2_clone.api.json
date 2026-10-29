@@ -1,0 +1,54 @@
+{
+  "1": {
+    "class_type": "BreezeTTS2LoadModel",
+    "inputs": {
+      "model": "int8 hybrid (recommended)",
+      "dtype": "auto",
+      "device": "auto",
+      "attention": "sdpa",
+      "decode_mode": "eager",
+      "download_if_missing": false
+    }
+  },
+  "2": {
+    "class_type": "BreezeTTS2VoiceClone",
+    "inputs": {
+      "breeze_model": [
+        "1",
+        0
+      ],
+      "text": "Draft a little faster. Keep the take you love. Nightshift finishes while you sleep.",
+      "cfg_scale": 1,
+      "max_new_tokens": 256,
+      "temperature": 0.9,
+      "top_k": 50,
+      "top_p": 1,
+      "repetition_penalty": 1.1,
+      "depth_temperature": 0.9,
+      "depth_top_k": 50,
+      "depth_top_p": 1,
+      "seed": 42,
+      "reference_audio": [
+        "4",
+        0
+      ],
+      "reference_text": "Exact reference transcript"
+    }
+  },
+  "3": {
+    "class_type": "SaveAudio",
+    "inputs": {
+      "audio": [
+        "2",
+        0
+      ],
+      "filename_prefix": "nightshift/breeze"
+    }
+  },
+  "4": {
+    "class_type": "LoadAudio",
+    "inputs": {
+      "audio": "reference.wav"
+    }
+  }
+}

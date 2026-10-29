@@ -1,0 +1,18 @@
+/comfyui/
+outputs/
+.DS_Store
+__pycache__/
+.venv/
+node_modules/
+.venv-proxy/
+state/
+*.log
+node_modules/
+dist/
+out/
+*.tsbuildinfo
+
+# Private, machine-specific files. Never tracked.
+AGENTS.local.md
+scripts/spark/local.env
+.publish-denylist

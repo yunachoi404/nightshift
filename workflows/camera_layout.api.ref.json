@@ -1,0 +1,39 @@
+{
+  "workflow": "camera_layout.api.json",
+  "inputs": {
+    "image": {
+      "node": "photo",
+      "field": "image"
+    },
+    "move": {
+      "node": "move",
+      "field": "value"
+    },
+    "width": {
+      "node": "resize",
+      "field": "width"
+    },
+    "height": {
+      "node": "resize",
+      "field": "height"
+    },
+    "frames": {
+      "node": "frames",
+      "field": "value"
+    },
+    "fps": {
+      "node": "fps",
+      "field": "value"
+    }
+  },
+  "params": {
+    "width": 640,
+    "height": 384,
+    "fps": 24,
+    "maxFrames": 97
+  },
+  "outputNodes": [
+    "save_depth",
+    "save_photo"
+  ]
+}

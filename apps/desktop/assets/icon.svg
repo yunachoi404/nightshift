@@ -1,0 +1,8 @@
+<svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+<g transform="translate(100 100) scale(12.875)">
+<rect width="64" height="64" rx="15" fill="#0b0b0c"/><rect x="0.5" y="0.5" width="63" height="63" rx="14.5" fill="none" stroke="rgba(255,255,255,0.12)"/>
+<g transform="translate(10.4 10.4) scale(1.8)">
+<path class="mark__frame" fill="#f5f5f7" fill-rule="evenodd" d="M4 4.5 H20 Q22 4.5 22 6.5 V17.5 Q22 19.5 20 19.5 H4 Q2 19.5 2 17.5 V6.5 Q2 4.5 4 4.5 Z M 11.50975 6.76452 A 5.25 5.25 0 1 0 15.97093 15.31512 A 4.85 4.85 0 0 1 11.50975 6.76452 Z"/>
+</g>
+</g>
+</svg>

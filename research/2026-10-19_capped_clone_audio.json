@@ -1,0 +1,30 @@
+[
+  {
+    "case": "breeze_clone_synthetic",
+    "path": "outputs/model_lab/breeze_clone_synthetic/3/breeze_00006.flac",
+    "durationSec": 5.12,
+    "sampleRate": 24000,
+    "channels": 1,
+    "peakAmplitude": 0.366668701171875,
+    "rms": 0.0568733811378479,
+    "nearFullScaleFraction": 0.0,
+    "overFullScaleFraction": 0.0,
+    "transcript": "Keep the camera moving slowly. The final render keeps the same take, with sharper detail.",
+    "asrGain": 1.0,
+    "asrModel": "OpenAI Whisper base.en, CPU"
+  },
+  {
+    "case": "kandinsky6_lite_capped8",
+    "path": "outputs/model_lab/kandinsky6_lite_capped8/17/kandinsky6_lite_00002_.mp4",
+    "durationSec": 2.043356009070295,
+    "sampleRate": 44100,
+    "channels": 1,
+    "peakAmplitude": 0.029281528666615486,
+    "rms": 0.006615408696234226,
+    "nearFullScaleFraction": 0.0,
+    "overFullScaleFraction": 0.0,
+    "transcript": "I'm going to go ahead and get a little bit of a look at the video. I'm going to go ahead and get a little bit of a look at the video. I'm going to go ahead and get a little bit of a look at the video. I'm going to go ahead and get a little bit of a look at the video. I'm going to go ahead and get a little bit of a look at the video. I'm going to go ahead and get a little bit of a look at the video. I'm going to go ahead and get a little bit of a look at the",
+    "asrGain": 1.0,
+    "asrModel": "OpenAI Whisper base.en, CPU"
+  }
+]

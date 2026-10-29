@@ -1,0 +1,32 @@
+{
+  "workflow": "moss_image_gptq_encoder.api.json",
+  "inputs": {
+    "prompt": {
+      "node": "4",
+      "field": "text"
+    },
+    "negative": {
+      "node": "5",
+      "field": "text"
+    },
+    "seed": {
+      "node": "9",
+      "field": "seed"
+    },
+    "width": {
+      "node": "6",
+      "field": "width"
+    },
+    "height": {
+      "node": "6",
+      "field": "height"
+    }
+  },
+  "params": {
+    "width": 768,
+    "height": 768
+  },
+  "outputNodes": [
+    "11"
+  ]
+}

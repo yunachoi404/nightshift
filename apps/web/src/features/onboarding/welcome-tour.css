@@ -1,0 +1,811 @@
+/*
+ * The welcome's app window: the app at its real size, walking one project through its four stages. Its top
+ * peeks up under Get started and the welcome scrolls to the rest, so every stage keeps its point in the top
+ * 200 px of its body and fits whole in the window.
+ */
+.ob__floor-rise {
+  flex: none;
+  width: min(1080px, calc(100% - 96px));
+}
+.ob__window {
+  position: relative;
+  width: 100%;
+  height: 540px;
+  container: pwwin / inline-size;
+}
+
+/* The handmade note: a strip of white camera tape on the window, relabeled at each stage. */
+.ob__tape {
+  position: absolute;
+  top: -17px;
+  right: 22px;
+  z-index: 2;
+  padding: 8px 20px 6px;
+  font-family: var(--font-hand);
+  font-size: 19px;
+  line-height: 22px;
+  color: #18181b;
+  background: #f1f1f3;
+  transform: rotate(2.4deg);
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.12), 0 0 0 0.5px rgba(0, 0, 0, 0.06);
+  clip-path: polygon(0 6%, 2% 0, 5% 5%, 8% 0, 92% 2%, 95% 0, 98% 6%, 100% 2%, 99% 48%, 100% 96%, 97% 100%, 94% 95%, 91% 100%, 6% 98%, 3% 100%, 1% 94%, 0 98%, 1% 50%);
+  white-space: nowrap;
+  user-select: none;
+  pointer-events: none;
+  animation: tape-on 420ms var(--ease-out) both;
+  transition: opacity 160ms var(--ease);
+}
+.ob__tape--off {
+  opacity: 0;
+}
+@keyframes tape-on {
+  from {
+    opacity: 0;
+    transform: rotate(5deg) translateY(-4px) scale(0.97);
+  }
+}
+
+/* ---------- The window ---------- */
+.pw {
+  height: 100%;
+  display: grid;
+  grid-template-columns: 216px minmax(0, 1fr);
+  background: var(--content);
+  border-radius: 14px;
+  overflow: hidden;
+  text-align: left;
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+  box-shadow:
+    0 0 0 1px rgba(24, 24, 27, 0.08),
+    0 1px 3px rgba(24, 24, 27, 0.05),
+    0 40px 90px -36px rgba(24, 24, 27, 0.28);
+}
+:root[data-theme="dark"] .pw {
+  box-shadow:
+    0 0 0 1px #ffffff1f,
+    0 40px 100px -30px rgba(0, 0, 0, 0.9);
+}
+.pw__side {
+  background: var(--sidebar);
+  border-right: 1px solid var(--line);
+  padding: 16px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.pw__lights {
+  display: flex;
+  gap: 8px;
+  padding: 2px 6px 22px;
+}
+.pw__lights i {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #ff5f57;
+  box-shadow: inset 0 0 0 0.5px rgba(0, 0, 0, 0.12);
+}
+.pw__lights i:nth-child(2) {
+  background: #febc2e;
+}
+.pw__lights i:nth-child(3) {
+  background: #28c840;
+}
+.pw__head {
+  font-size: var(--fs-micro);
+  line-height: var(--lh-micro);
+  font-weight: 600;
+  color: var(--text-3);
+  padding: 0 9px 6px;
+}
+.pw__item {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  height: 30px;
+  padding: 0 9px;
+  border-radius: var(--r-s);
+  min-width: 0;
+}
+.pw__item img {
+  width: 22px;
+  height: 22px;
+  border-radius: 5px;
+  flex: none;
+  object-fit: cover;
+}
+.pw__item span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pw__item--on {
+  background: var(--raised);
+  box-shadow: 0 1px 2px rgba(24, 24, 27, 0.08), 0 0 0 0.5px rgba(24, 24, 27, 0.08);
+}
+:root[data-theme="dark"] .pw__item--on {
+  background: var(--select);
+  box-shadow: none;
+}
+.pw__main {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  container: pwmain / inline-size;
+}
+.pw__bar {
+  height: var(--toolbar-h);
+  flex: none;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+  padding: 0 20px;
+  border-bottom: 1px solid var(--line);
+}
+.pw__title {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.pw__title b,
+.pw__title small {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.pw__title b {
+  font-weight: 600;
+}
+.pw__title small {
+  font-size: var(--fs-micro);
+  line-height: var(--lh-micro);
+  color: var(--text-3);
+}
+
+/* The stage switch: the toolbar's segmented control, with a knob that slides between stages. */
+.pw__seg {
+  position: relative;
+  display: inline-flex;
+  padding: 3px;
+  border-radius: var(--r-pill);
+  background: var(--seg-track);
+}
+.pw__knob {
+  position: absolute;
+  top: 3px;
+  bottom: 3px;
+  left: 3px;
+  border-radius: var(--r-pill);
+  background: var(--seg-knob);
+  box-shadow: var(--seg-knob-shadow);
+  transition:
+    transform 520ms var(--ease-out),
+    width 520ms var(--ease-out);
+}
+.pw__stage-btn {
+  position: relative;
+  z-index: 1;
+  white-space: nowrap;
+  height: 26px;
+  padding: 0 13px;
+  border-radius: var(--r-pill);
+  font-weight: 500;
+  color: var(--text-2);
+  transition: color 300ms var(--ease);
+  cursor: pointer;
+}
+.pw__stage-btn:hover {
+  color: var(--text);
+}
+.pw__stage-btn--on {
+  color: var(--text);
+}
+
+/* Stages sit on top of each other. The outgoing one fades out completely before the next fades in (the timing
+   lives in WelcomeTour.tsx), so no frame ever shows two stages at once. */
+.pw__stages {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr);
+  pointer-events: none;
+}
+.pw__stage {
+  grid-area: 1 / 1;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 160ms var(--ease),
+    visibility 0s linear 160ms;
+}
+.pw__stage--on {
+  opacity: 1;
+  visibility: visible;
+  transition: none;
+  animation: pw-stage-in 440ms var(--ease-out) both;
+}
+@keyframes pw-stage-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+/* ---------- Pieces of the app, at its size ---------- */
+.pw-page {
+  padding: 18px 22px 0;
+  min-width: 0;
+}
+.pw-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+.pw-head > div:first-child {
+  flex: 1;
+  min-width: 0;
+}
+.pw-h {
+  font-family: var(--font-display);
+  font-size: 22px;
+  line-height: 27px;
+  letter-spacing: -0.01em;
+}
+.pw-sub {
+  margin-top: 3px;
+  color: var(--text-3);
+  font-size: var(--fs-small);
+  line-height: var(--lh-small);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pw-actions {
+  display: flex;
+  gap: 6px;
+  flex: none;
+}
+.pw-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 28px;
+  padding: 0 12px;
+  border-radius: var(--r-pill);
+  background: var(--btn-bg);
+  border: 1px solid var(--btn-line);
+  box-shadow: var(--btn-shadow);
+  font-weight: 500;
+  white-space: nowrap;
+  transition:
+    background-color 260ms var(--ease),
+    color 260ms var(--ease),
+    border-color 260ms var(--ease);
+}
+.pw-btn svg {
+  width: 14px;
+  height: 14px;
+  flex: none;
+}
+.pw-btn--quiet {
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+  color: var(--text-2);
+}
+.pw-btn--ink {
+  background: var(--accent);
+  border-color: transparent;
+  color: var(--on-accent);
+}
+.pw-btn--s {
+  height: 24px;
+  padding: 0 10px;
+  font-size: var(--fs-small);
+}
+.pw-btn--s svg {
+  width: 12px;
+  height: 12px;
+}
+.pw-frame {
+  position: relative;
+  aspect-ratio: 16 / 9.6;
+  border-radius: var(--r-frame);
+  overflow: hidden;
+  background: var(--media);
+  box-shadow: inset 0 0 0 1px var(--line);
+  transition: box-shadow 320ms var(--ease);
+}
+.pw-frame img,
+.pw-frame video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.pw-frame--picked {
+  box-shadow:
+    0 0 0 2px var(--content),
+    0 0 0 4px var(--accent);
+}
+.pw-frame__tag {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+}
+
+/* Storyboard: the shots as stills, three across. */
+.pw-sb {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px 14px;
+}
+.pw-shot {
+  min-width: 0;
+}
+.pw__stage--on .pw-shot {
+  animation: pw-shot-in 520ms var(--ease-out) both;
+  animation-delay: calc(var(--i, 0) * 70ms + 140ms);
+}
+@keyframes pw-shot-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+.pw-shot__meta {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin-top: 8px;
+  font-size: var(--fs-small);
+  white-space: nowrap;
+}
+.pw-shot__meta b {
+  font-weight: 600;
+}
+.pw-shot__meta span {
+  color: var(--text-3);
+}
+.pw-shot__move {
+  margin-left: auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.pw-shot__prompt {
+  margin-top: 4px;
+  font-size: var(--fs-small);
+  line-height: var(--lh-small);
+  color: var(--text-2);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Takes: the shot rail and two takes side by side. */
+.pw-tk {
+  height: 100%;
+  display: grid;
+  grid-template-columns: 176px minmax(0, 1fr);
+}
+.pw-tk__rail {
+  border-right: 1px solid var(--line);
+  background: var(--inset);
+  padding: 14px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.pw-tk__item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 8px;
+  border-radius: var(--r-s);
+  font-size: var(--fs-small);
+  line-height: 15px;
+}
+.pw-tk__item img {
+  width: 38px;
+  height: 23px;
+  border-radius: 4px;
+  object-fit: cover;
+  flex: none;
+}
+.pw-tk__item span {
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.pw-tk__item b {
+  display: block;
+  font-weight: 500;
+}
+.pw-tk__item small {
+  display: block;
+  color: var(--text-3);
+  font-size: var(--fs-micro);
+}
+.pw-tk__item svg {
+  width: 13px;
+  height: 13px;
+  color: var(--ok);
+  flex: none;
+}
+.pw-tk__item--on {
+  background: var(--raised);
+  box-shadow: 0 1px 2px rgba(24, 24, 27, 0.08), 0 0 0 0.5px rgba(24, 24, 27, 0.08);
+}
+:root[data-theme="dark"] .pw-tk__item--on {
+  background: var(--select);
+  box-shadow: none;
+}
+.pw-tk__main {
+  overflow: hidden;
+}
+.pw-tk__takes {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  padding: 4px 4px 0;
+}
+.pw-take {
+  min-width: 0;
+}
+.pw-take__meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+  font-size: var(--fs-small);
+  white-space: nowrap;
+}
+.pw-take__meta > * {
+  flex: none;
+}
+.pw-take__meta b {
+  font-weight: 600;
+}
+.pw-take__meta > span:nth-child(2) {
+  color: var(--text-3);
+}
+.pw-take__meta .pw-btn {
+  margin-left: auto;
+}
+
+/* Finals: the same-take final and tonight's queue. */
+.pw-fn {
+  height: 100%;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 232px;
+}
+.pw__viewer {
+  position: relative;
+  margin: 20px;
+  align-self: start;
+  aspect-ratio: 1024 / 614;
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--media);
+}
+.pw__viewer video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.pw__tag {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+}
+.pw__insp {
+  border-left: 1px solid var(--line);
+  background: var(--inset);
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+.pw__insp-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  color: var(--amber);
+  margin-bottom: 4px;
+}
+.pw__insp-title svg {
+  width: 15px;
+  height: 15px;
+}
+.pw__kv {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: var(--fs-small);
+}
+.pw__kv span {
+  color: var(--text-3);
+}
+.pw__kv b {
+  font-weight: 500;
+}
+.pw__night {
+  margin-top: 8px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--r-pill);
+  background: var(--amber-fill);
+  color: var(--on-amber);
+  font-weight: 500;
+}
+
+/* Editor: the viewer, the transport, and the timeline's four lanes. */
+.pw-ed {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+.pw-ed__top {
+  flex: none;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 232px;
+  height: 140px;
+}
+.pw-ed__viewer {
+  background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  overflow: hidden;
+}
+.pw-ed__picture {
+  position: relative;
+  height: 116px;
+  width: 194px;
+  border-radius: 3px;
+  overflow: hidden;
+}
+.pw-ed__picture video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.pw-ed__insp {
+  border-left: 1px solid var(--line);
+  background: var(--inset);
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.pw-ed__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.pw-ed__row b {
+  font-weight: 600;
+}
+.pw-switch {
+  width: 30px;
+  height: 18px;
+  border-radius: 9px;
+  background: var(--accent);
+  position: relative;
+}
+.pw-switch::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--on-accent);
+}
+.pw-ed__seg {
+  display: inline-flex;
+  padding: 2px;
+  border-radius: var(--r-pill);
+  background: var(--seg-track);
+  font-size: var(--fs-micro);
+  font-weight: 500;
+  color: var(--text-2);
+}
+.pw-ed__seg span {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  height: 20px;
+  padding: 0 7px;
+  border-radius: var(--r-pill);
+}
+.pw-ed__seg svg {
+  width: 11px;
+  height: 11px;
+}
+.pw-ed__seg .pw-ed__seg-on {
+  background: var(--seg-knob);
+  box-shadow: var(--seg-knob-shadow);
+  color: var(--text);
+}
+.pw-ed__export {
+  align-self: flex-end;
+}
+.pw-ed__transport {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 34px;
+  padding: 0 14px;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  font-size: var(--fs-small);
+}
+.pw-ed__transport svg {
+  width: 14px;
+  height: 14px;
+  color: var(--text-2);
+}
+.pw-ed__time {
+  font-variant-numeric: tabular-nums;
+}
+.pw-ed__time span {
+  color: var(--text-3);
+}
+.pw-tl {
+  display: grid;
+  grid-template-columns: 76px minmax(0, 1fr);
+  background: var(--inset);
+  flex: 1;
+}
+.pw-tl__labels {
+  display: grid;
+  grid-auto-rows: 26px;
+  align-content: start;
+  padding-top: 6px;
+  border-right: 1px solid var(--line);
+}
+.pw-tl__labels span {
+  display: flex;
+  align-items: center;
+  padding-left: 14px;
+  font-size: var(--fs-micro);
+  color: var(--text-3);
+}
+.pw-tl__lanes {
+  position: relative;
+  align-self: start;
+  display: grid;
+  grid-auto-rows: 26px;
+  padding: 6px 14px 4px 10px;
+}
+.pw-tl__lane {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.pw-tl__lane--shots .pw-tl__clip {
+  position: absolute;
+  top: 2px;
+  bottom: 2px;
+  border-radius: 4px;
+  overflow: hidden;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.25);
+}
+.pw-tl__clip + .pw-tl__clip {
+  margin-left: 1px;
+}
+.pw-tl__clip img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.pw-tl__clip span {
+  position: absolute;
+  left: 4px;
+  bottom: 2px;
+  font-size: 9px;
+  line-height: 10px;
+  font-weight: 600;
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7);
+}
+.pw-tl__lane--music svg {
+  width: 100%;
+  height: 20px;
+  fill: var(--text-3);
+}
+.pw-tl__empty {
+  font-size: var(--fs-micro);
+  color: var(--text-4);
+}
+.pw-tl__head {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 10px;
+  width: 1.5px;
+  background: var(--accent);
+}
+.pw-tl__lanes--playing .pw-tl__head {
+  transition: left 100ms linear;
+}
+
+/* Narrow windows keep every stage whole: the window's sidebar narrows, then goes; secondary buttons go first. */
+@container pwwin (max-width: 900px) {
+  .pw {
+    grid-template-columns: 172px minmax(0, 1fr);
+  }
+}
+@container pwwin (max-width: 760px) {
+  .pw {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .pw__side {
+    display: none;
+  }
+}
+@container pwmain (max-width: 760px) {
+  .pw-btn--extra {
+    display: none;
+  }
+  .pw-tk {
+    grid-template-columns: 148px minmax(0, 1fr);
+  }
+  .pw-fn,
+  .pw-ed__top {
+    grid-template-columns: minmax(0, 1fr) 196px;
+  }
+}
+@container pwmain (max-width: 560px) {
+  .pw__title {
+    display: none;
+  }
+  .pw__bar {
+    grid-template-columns: minmax(0, 1fr);
+    justify-items: center;
+  }
+  .pw-sb {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .pw-tk {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .pw-tk__rail {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pw__stage--on,
+  .ob__tape,
+  .pw__stage--on .pw-shot {
+    animation: none;
+  }
+  .pw__knob,
+  .pw__stage,
+  .pw__stage--on {
+    transition: none;
+  }
+}

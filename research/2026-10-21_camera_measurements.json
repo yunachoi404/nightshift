@@ -1,0 +1,16 @@
+{
+  "estimates": {
+    "camera_layout": {
+      "peakGb": 2.5,
+      "seconds": 8.8,
+      "measured": true
+    },
+    "video_camera_move": {
+      "peakGb": 40.8,
+      "seconds": 61.4,
+      "measured": true
+    }
+  },
+  "method": "DGX Spark, 640x384, 97 frames at 24 fps, through the app. video_camera_move: median LTX execution of the first ten completed runs, excluding queue wait, and the largest sampled GPU process footprint (40.76 GB, rounded up). camera_layout: median of the whole layout stage (MoGe depth, its download, local CPU projection, layout encoding and upload preparation), and the largest sampled depth-step footprint (2.42 GB, rounded up). Warm shared-process measurements, not a cold-start guarantee.",
+  "source": "research/2026-10-21_camera_moves.md; per-job samples in research/media/camera-moves/measurements.json"
+}

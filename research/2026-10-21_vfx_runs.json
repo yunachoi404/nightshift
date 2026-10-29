@@ -1,0 +1,612 @@
+[
+  {
+    "case": "person-bloom-video",
+    "jobId": "bbc761e9-4113-495a-a85f-6700e3e152ec",
+    "projectId": null,
+    "seed": "7355",
+    "elapsedSeconds": 82.62255187507253,
+    "outputs": [
+      {
+        "node": "20",
+        "path": "outputs/vfx-spike/person-bloom-video/20/effect_00031_.latent"
+      },
+      {
+        "node": "25",
+        "path": "outputs/vfx-spike/person-bloom-video/25/effect_00032_.mp4"
+      }
+    ],
+    "prompt": "Locked-off shot. Green vines climb the subject, leaves unfurl, and pink and white flowers rapidly bloom all over its surface. Keep the scene, subject identity and lighting consistent. The first frame is exactly the supplied photo. One continuous physical action, no cuts, no crossfade, no text. Cinematic visual effects.",
+    "via": "Comfy SDK"
+  },
+  {
+    "case": "person-crystal-video",
+    "jobId": "933b9ed1-104a-4679-94bc-be8c3fb73e92",
+    "projectId": null,
+    "seed": "7357",
+    "elapsedSeconds": 83.41043899999931,
+    "outputs": [
+      {
+        "node": "20",
+        "path": "outputs/vfx-spike/person-crystal-video/20/effect_00037_.latent"
+      },
+      {
+        "node": "25",
+        "path": "outputs/vfx-spike/person-crystal-video/25/effect_00038_.mp4"
+      }
+    ],
+    "prompt": "Locked-off shot. Translucent prismatic crystals grow across the subject from bottom to top, with sparkling reflections and rainbow refractions. Keep the scene, subject identity and lighting consistent. The first frame is exactly the supplied photo. One continuous physical action, no cuts, no crossfade, no text. Cinematic visual effects.",
+    "via": "Comfy SDK"
+  },
+  {
+    "case": "person-disintegrate-video",
+    "jobId": "b2e34af0-8d83-432a-bff2-e2c864251f20",
+    "projectId": null,
+    "seed": "7352",
+    "elapsedSeconds": 99.96873858303297,
+    "outputs": [
+      {
+        "node": "20",
+        "path": "outputs/vfx-spike/person-disintegrate-video/20/effect_00023_.latent"
+      },
+      {
+        "node": "25",
+        "path": "outputs/vfx-spike/person-disintegrate-video/25/effect_00024_.mp4"
+      }
+    ],
+    "prompt": "Locked-off shot. The subject crumbles from the top down into thousands of fine dust particles that blow sideways and disperse. Keep the scene, subject identity and lighting consistent. The first frame is exactly the supplied photo. One continuous physical action, no cuts, no crossfade, no text. Cinematic visual effects.",
+    "via": "Comfy SDK"
+  },
+  {
+    "case": "person-earth_zoom-video",
+    "jobId": "ff4a21e6-1a53-41d3-b438-bf235fe05fe6",
+    "projectId": null,
+    "seed": "7359",
+    "elapsedSeconds": 81.14754541695584,
+    "outputs": [
+      {
+        "node": "20",
+        "path": "outputs/vfx-spike/person-earth_zoom-video/20/ltx_draft_00155_.latent"
+      },
+      {
+        "node": "25",
+        "path": "outputs/vfx-spike/person-earth_zoom-video/25/ltx_draft_00156_.mp4"
+      }
+    ],
+    "prompt": "The camera rockets backwards and upwards, rapidly zooming out from the subject, through clouds above a city, then revealing the curved blue Earth from space. One continuous accelerating zoom out. Keep the scene, subject identity and lighting consistent. The first frame is exactly the supplied photo. One continuous physical action, no cuts, no crossfade, no text. Cinematic visual effects.",
+    "via": "Comfy SDK"
+  },
+  {
+    "case": "person-explode-video",
+    "jobId": "3a428249-0aee-45ee-b44f-18b38b8589ee",
+    "projectId": null,
+    "seed": "7354",
+    "elapsedSeconds": 51.39893270796165,
+    "outputs": [
+      {
+        "node": "20",
+        "path": "outputs/vfx-spike/person-explode-video/20/effect_00027_.latent"
+      },
+      {
+        "node": "25",
+        "path": "outputs/vfx-spike/person-explode-video/25/effect_00028_.mp4"
+      }
+    ],
+    "prompt": "Locked-off shot. The subject bursts outward in a sudden explosive impact. Fragments fly radially outward with a shockwave of dust. Keep the scene, subject identity and lighting consistent. The first frame is exactly the supplied photo. One continuous physical action, no cuts, no crossfade, no text. Cinematic visual effects.",
+    "via": "Comfy SDK"
+  },
+  {
+    "case": "person-freeze-video",
+    "jobId": "9322f08e-cc1b-47b8-95e0-c8fb3acc73a0",
+    "projectId": null,
+    "seed": "7350",
+    "elapsedSeconds": 109.9553398329299,
+    "outputs": [
+      {
+        "node": "20",
+        "path": "outputs/vfx-spike/person-freeze-video/20/effect_00019_.latent"
+      },
+      {
+        "node": "25",
+        "path": "outputs/vfx-spike/person-freeze-video/25/effect_00020_.mp4"
+      }
+    ],
+    "prompt": "Locked-off shot. White frost spreads across the subject, then jagged translucent ice crystals grow outward, with drifting cold mist. Keep the scene, subject identity and lighting consistent. The first frame is exactly the supplied photo. One continuous physical action, no cuts, no crossfade, no text. Cinematic visual effects.",
+    "via": "Comfy SDK"
+  },
+  {
+    "case": "person-glitch-video",
+    "jobId": "f8356d69-7185-4db3-b85f-e627cc76107d",
+    "projectId": null,
+    "seed": "7360",
+    "elapsedSeconds": 49.8468330410542,
+    "outputs": [
+      {
+        "node": "20",
+        "path": "outputs/vfx-spike/person-glitch-video/20/ltx_draft_00157_.latent"
+      },
+      {
+        "node": "25",
+        "path": "outputs/vfx-spike/person-glitch-video/25/ltx_draft_00158_.mp4"
+      }
+    ],
+    "prompt": "Locked-off shot. The subject flickers with horizontal digital glitch slices and RGB color channel offsets, briefly dissolves into pixels, then reassembles exactly in place. Keep the scene, subject identity and lighting consistent. The first frame is exactly the supplied photo. One continuous physical action, no cuts, no crossfade, no text. Cinematic visual effects.",
+    "via": "Comfy SDK"
+  },
+  {
+    "case": "person-gold-video",
+    "jobId": "11e03641-fda1-4f6d-adb0-b976dd57c482",
+    "projectId": null,
+    "seed": "7356",
+    "elapsedSeconds": 45.546820000046864,
+    "outputs": [
+      {
+        "node": "20",
+        "path": "outputs/vfx-spike/person-gold-video/20/effect_00033_.latent"
+      },
+      {
+        "node": "25",
+        "path": "outputs/vfx-spike/person-gold-video/25/effect_00034_.mp4"
+      }
+    ],
+    "prompt": "Locked-off shot. A wave of liquid gold spreads across the subject from bottom to top, replacing every surface with polished reflective gold. Keep the scene, subject identity and lighting consistent. The first frame is exactly the supplied photo. One continuous physical action, no cuts, no crossfade, no text. Cinematic visual effects.",
+    "via": "Comfy SDK"
+  },
+  {
+    "case": "person-ignite-video",
+    "jobId": "b006ab21-b191-402f-bb1c-a908db651da9",
+    "projectId": null,
+    "seed": "7351",
+    "elapsedSeconds": 51.54364845796954,
+    "outputs": [
+      {
+        "node": "20",
+        "path": "outputs/vfx-spike/person-ignite-video/20/effect_00021_.latent"
+      },
+      {
+        "node": "25",
+        "path": "outputs/vfx-spike/person-ignite-video/25/effect_00022_.mp4"
+      }
+    ],
+    "prompt": "Locked-off shot. Orange flames ignite at the base and spread upward around the subject, flickering and throwing sparks into the air. Keep the scene, subject identity and lighting consistent. The first frame is exactly the supplied photo. One continuous physical action, no cuts, no crossfade, no text. Cinematic visual effects.",
+    "via": "Comfy SDK"
+  },
+  {
+    "case": "person-levitate-video",
+    "jobId": "7229946b-94d5-40e2-8e13-5cddafa4e378",
+    "projectId": null,
+    "seed": "7358",
+    "elapsedSeconds": 51.86825741699431,
+    "outputs": [
+      {
+        "node": "20",
+        "path": "outputs/vfx-spike/person-levitate-video/20/ltx_draft_00153_.latent"
+      },
+      {
+        "node": "25",
+        "path": "outputs/vfx-spike/person-levitate-video/25/ltx_draft_00154_.mp4"
+      }
+    ],
+    "prompt": "Locked-off shot. The subject gently lifts off the ground and levitates, floating upward a short distance, slowly rotating. Its detached shadow remains visible below. Keep the scene, subject identity and lighting consistent. The first frame is exactly the supplied photo. One continuous physical action, no cuts, no crossfade, no text. Cinematic visual effects.",
+    "via": "Comfy SDK"
+  },
+  {
+    "case": "person-melt-video",
+    "jobId": "ffb9491a-f4f2-4c19-a58f-b284d77f2e8f",
+    "projectId": null,
+    "seed": "7353",
+    "elapsedSeconds": 23.336105874972418,
+    "outputs": [
+      {
+        "node": "20",
+        "path": "outputs/vfx-spike/person-melt-video/20/effect_00025_.latent"
+      },
+      {
+        "node": "25",
+        "path": "outputs/vfx-spike/person-melt-video/25/effect_00026_.mp4"
+      }
+    ],
+    "prompt": "Locked-off shot. The subject softens, sags downward and melts into a glossy puddle, with thick liquid flowing under gravity. Keep the scene, subject identity and lighting consistent. The first frame is exactly the supplied photo. One continuous physical action, no cuts, no crossfade, no text. Cinematic visual effects.",
+    "via": "Comfy SDK"
+  },
+  {
+    "case": "product-bloom-video",
+    "jobId": "53f02d89-9804-42a6-b0fd-74881a81f739",
+    "projectId": null,
+    "seed": "7355",
+    "elapsedSeconds": 113.59198687504977,
+    "outputs": [
+      {
+        "node": "20",
+        "path": "outputs/vfx-spike/product-bloom-video/20/effect_00013_.latent"
+      },
+      {
+        "node": "25",
+        "path": "outputs/vfx-spike/product-bloom-video/25/effect_00014_.mp4"
+      }
+    ],
+    "prompt": "Locked-off shot. Green vines climb the subject, leaves unfurl, and pink and white flowers rapidly bloom all over its surface. Keep the scene, subject identity and lighting consistent. The first frame is exactly the supplied photo. One continuous physical action, no cuts, no crossfade, no text. Cinematic visual effects.",
+    "via": "Comfy SDK"
+  },
+  {
+    "case": "product-crystal-video",
+    "jobId": "cf97c1cf-a9d7-4a47-8824-abc5230d7957",
+    "projectId": null,
+    "seed": "7357",
+    "elapsedSeconds": 113.94315691594966,
+    "outputs": [
+      {
+        "node": "20",
+        "path": "outputs/vfx-spike/product-crystal-video/20/effect_00017_.latent"
+      },
+      {
+        "node": "25",
+        "path": "outputs/vfx-spike/product-crystal-video/25/effect_00018_.mp4"
+      }
+    ],
+    "prompt": "Locked-off shot. Translucent prismatic crystals grow across the subject from bottom to top, with sparkling reflections and rainbow refractions. Keep the scene, subject identity and lighting consistent. The first frame is exactly the supplied photo. One continuous physical action, no cuts, no crossfade, no text. Cinematic visual effects.",
+    "via": "Comfy SDK"
+  },
+  {
+    "case": "product-disintegrate-video",
+    "jobId": "24388933-c84b-4924-bb57-2a71763499ba",
+    "projectId": null,
+    "seed": "7352",
+    "elapsedSeconds": 130.01927024999168,
+    "outputs": [
+      {
+        "node": "20",
+        "path": "outputs/vfx-spike/product-disintegrate-video/20/effect_00007_.latent"
+      },
+      {
+        "node": "25",
+        "path": "outputs/vfx-spike/product-disintegrate-video/25/effect_00008_.mp4"
+      }
+    ],
+    "prompt": "Locked-off shot. The subject crumbles from the top down into thousands of fine dust particles that blow sideways and disperse. Keep the scene, subject identity and lighting consistent. The first frame is exactly the supplied photo. One continuous physical action, no cuts, no crossfade, no text. Cinematic visual effects.",
+    "via": "Comfy SDK"
+  },
+  {
+    "case": "product-earth_zoom-video",
+    "jobId": "c3d31bf0-f936-4a2f-b4b2-f903872f736e",
+    "projectId": null,
+    "seed": "7359",
+    "elapsedSeconds": 55.57760895800311,
+    "outputs": [
+      {
+        "node": "20",
+        "path": "outputs/vfx-spike/product-earth_zoom-video/20/ltx_draft_00147_.latent"
+      },
+      {
+        "node": "25",
+        "path": "outputs/vfx-spike/product-earth_zoom-video/25/ltx_draft_00148_.mp4"
+      }
+    ],
+    "prompt": "The camera rockets backwards and upwards, rapidly zooming out from the subject, through clouds above a city, then revealing the curved blue Earth from space. One continuous accelerating zoom out. Keep the scene, subject identity and lighting consistent. The first frame is exactly the supplied photo. One continuous physical action, no cuts, no crossfade, no text. Cinematic visual effects.",
+    "via": "Comfy SDK"
+  },
+  {
+    "case": "product-explode-video",
+    "jobId": "adce34c7-44c6-459b-a993-4131d03a39b3",
+    "projectId": null,
+    "seed": "7354",
+    "elapsedSeconds": 45.58516508399043,
+    "outputs": [
+      {
+        "node": "20",
+        "path": "outputs/vfx-spike/product-explode-video/20/effect_00011_.latent"
+      },
+      {
+        "node": "25",
+        "path": "outputs/vfx-spike/product-explode-video/25/effect_00012_.mp4"
+      }
+    ],
+    "prompt": "Locked-off shot. The subject bursts outward in a sudden explosive impact. Fragments fly radially outward with a shockwave of dust. Keep the scene, subject identity and lighting consistent. The first frame is exactly the supplied photo. One continuous physical action, no cuts, no crossfade, no text. Cinematic visual effects.",
+    "via": "Comfy SDK"
+  },
+  {
+    "case": "product-freeze-video",
+    "jobId": "91aa4afa-88e2-499c-893e-de93efdf38c9",
+    "projectId": null,
+    "seed": null,
+    "elapsedSeconds": 78.56873599998653,
+    "outputs": [
+      {
+        "node": "20",
+        "path": "outputs/vfx-spike/product-freeze-video/20/effect_00001_.latent",
+        "bytes": 1701532
+      },
+      {
+        "node": "25",
+        "path": "outputs/vfx-spike/product-freeze-video/25/effect_00002_.mp4",
+        "bytes": 655607
+      }
+    ],
+    "prompt": null,
+    "via": "Comfy SDK"
+  },
+  {
+    "case": "product-glitch-video",
+    "jobId": "c539cf9e-f3a4-47d6-9b12-c7d2e8fec215",
+    "projectId": null,
+    "seed": "7360",
+    "elapsedSeconds": 104.77197329199407,
+    "outputs": [
+      {
+        "node": "20",
+        "path": "outputs/vfx-spike/product-glitch-video/20/ltx_draft_00149_.latent"
+      },
+      {
+        "node": "25",
+        "path": "outputs/vfx-spike/product-glitch-video/25/ltx_draft_00150_.mp4"
+      }
+    ],
+    "prompt": "Locked-off shot. The subject flickers with horizontal digital glitch slices and RGB color channel offsets, briefly dissolves into pixels, then reassembles exactly in place. Keep the scene, subject identity and lighting consistent. The first frame is exactly the supplied photo. One continuous physical action, no cuts, no crossfade, no text. Cinematic visual effects.",
+    "via": "Comfy SDK"
+  },
+  {
+    "case": "product-gold-video",
+    "jobId": "cd1a681f-5543-447e-aa94-1f62a4c177cf",
+    "projectId": null,
+    "seed": "7356",
+    "elapsedSeconds": 56.26899004203733,
+    "outputs": [
+      {
+        "node": "20",
+        "path": "outputs/vfx-spike/product-gold-video/20/effect_00015_.latent"
+      },
+      {
+        "node": "25",
+        "path": "outputs/vfx-spike/product-gold-video/25/effect_00016_.mp4"
+      }
+    ],
+    "prompt": "Locked-off shot. A wave of liquid gold spreads across the subject from bottom to top, replacing every surface with polished reflective gold. Keep the scene, subject identity and lighting consistent. The first frame is exactly the supplied photo. One continuous physical action, no cuts, no crossfade, no text. Cinematic visual effects.",
+    "via": "Comfy SDK"
+  },
+  {
+    "case": "product-ignite-video",
+    "jobId": "beeae64f-3b26-4224-a30d-ad1e671fe3cc",
+    "projectId": null,
+    "seed": "7351",
+    "elapsedSeconds": 134.46413016598672,
+    "outputs": [
+      {
+        "node": "20",
+        "path": "outputs/vfx-spike/product-ignite-video/20/effect_00005_.latent"
+      },
+      {
+        "node": "25",
+        "path": "outputs/vfx-spike/product-ignite-video/25/effect_00006_.mp4"
+      }
+    ],
+    "prompt": "Locked-off shot. Orange flames ignite at the base and spread upward around the subject, flickering and throwing sparks into the air. Keep the scene, subject identity and lighting consistent. The first frame is exactly the supplied photo. One continuous physical action, no cuts, no crossfade, no text. Cinematic visual effects.",
+    "via": "Comfy SDK"
+  },
+  {
+    "case": "product-levitate-video",
+    "jobId": "3bc39754-8922-4d9d-a8e2-c7a6d004537e",
+    "projectId": null,
+    "seed": "7358",
+    "elapsedSeconds": 108.45088491705246,
+    "outputs": [
+      {
+        "node": "20",
+        "path": "outputs/vfx-spike/product-levitate-video/20/ltx_draft_00145_.latent"
+      },
+      {
+        "node": "25",
+        "path": "outputs/vfx-spike/product-levitate-video/25/ltx_draft_00146_.mp4"
+      }
+    ],
+    "prompt": "Locked-off shot. The subject gently lifts off the ground and levitates, floating upward a short distance, slowly rotating. Its detached shadow remains visible below. Keep the scene, subject identity and lighting consistent. The first frame is exactly the supplied photo. One continuous physical action, no cuts, no crossfade, no text. Cinematic visual effects.",
+    "via": "Comfy SDK"
+  },
+  {
+    "case": "product-melt-video",
+    "jobId": "83c5be8b-31c0-4f29-89a3-6d0c8db580a1",
+    "projectId": null,
+    "seed": "7353",
+    "elapsedSeconds": 243.99865495797712,
+    "outputs": [
+      {
+        "node": "20",
+        "path": "outputs/vfx-spike/product-melt-video/20/effect_00009_.latent"
+      },
+      {
+        "node": "25",
+        "path": "outputs/vfx-spike/product-melt-video/25/effect_00010_.mp4"
+      }
+    ],
+    "prompt": "Locked-off shot. The subject softens, sags downward and melts into a glossy puddle, with thick liquid flowing under gravity. Keep the scene, subject identity and lighting consistent. The first frame is exactly the supplied photo. One continuous physical action, no cuts, no crossfade, no text. Cinematic visual effects.",
+    "via": "Comfy SDK"
+  },
+  {
+    "case": "statue-bloom-video",
+    "jobId": "job_mvhosv967fe2fab7ce",
+    "projectId": "prj_mvhop5hz98c8b430c0",
+    "seed": 1076025272,
+    "elapsedSeconds": 231.72052774999997,
+    "outputs": [
+      {
+        "node": "25",
+        "path": "outputs/vfx-spike/statue-bloom-video/25/ast_mvhou2ch70ba419c24.mp4"
+      },
+      {
+        "node": "20",
+        "path": "outputs/vfx-spike/statue-bloom-video/20/ast_mvhou2dl27023aa309.latent"
+      }
+    ],
+    "prompt": "Locked-off shot. Green vines climb the subject, leaves unfurl, and pink and white flowers rapidly bloom all over its surface. Keep the scene, subject identity and lighting consistent. The first frame is exactly the supplied photo. One continuous physical action, no cuts, no crossfade, no text. Cinematic visual effects.",
+    "via": "Nightshift HTTP API"
+  },
+  {
+    "case": "statue-crystal-video",
+    "jobId": "job_mvhovae1e4992a3cbe",
+    "projectId": "prj_mvhova7q5bed0fadfe",
+    "seed": 1851989430,
+    "elapsedSeconds": 57.214044291999926,
+    "outputs": [
+      {
+        "node": "25",
+        "path": "outputs/vfx-spike/statue-crystal-video/25/ast_mvhowhlu4ec233d4bb.mp4"
+      },
+      {
+        "node": "20",
+        "path": "outputs/vfx-spike/statue-crystal-video/20/ast_mvhowhmneddccede23.latent"
+      }
+    ],
+    "prompt": "Locked-off shot. Translucent prismatic crystals grow across the subject from bottom to top, with sparkling reflections and rainbow refractions. Keep the scene, subject identity and lighting consistent. The first frame is exactly the supplied photo. One continuous physical action, no cuts, no crossfade, no text. Cinematic visual effects.",
+    "via": "Nightshift HTTP API"
+  },
+  {
+    "case": "statue-disintegrate-video",
+    "jobId": "job_mvhoibhp4d3aa5afdf",
+    "projectId": "prj_mvhoibb0e4662ff0ae",
+    "seed": 1238052503,
+    "elapsedSeconds": 138.41387404199997,
+    "outputs": [
+      {
+        "node": "25",
+        "path": "outputs/vfx-spike/statue-disintegrate-video/25/ast_mvhol8qme7beac3a50.mp4"
+      },
+      {
+        "node": "20",
+        "path": "outputs/vfx-spike/statue-disintegrate-video/20/ast_mvhol8s9e2695194ff.latent"
+      }
+    ],
+    "prompt": "Locked-off shot. The subject crumbles from the top down into thousands of fine dust particles that blow sideways and disperse. Keep the scene, subject identity and lighting consistent. The first frame is exactly the supplied photo. One continuous physical action, no cuts, no crossfade, no text. Cinematic visual effects.",
+    "via": "Nightshift HTTP API"
+  },
+  {
+    "case": "statue-earth_zoom-video",
+    "jobId": "job_mvhoxhbe9403e494ef",
+    "projectId": "prj_mvhoxh79e231321877",
+    "seed": 1119453795,
+    "elapsedSeconds": 45.16617633399994,
+    "outputs": [
+      {
+        "node": "25",
+        "path": "outputs/vfx-spike/statue-earth_zoom-video/25/ast_mvhoyflad0336fa8ca.mp4"
+      },
+      {
+        "node": "20",
+        "path": "outputs/vfx-spike/statue-earth_zoom-video/20/ast_mvhoyfn268b89c9018.latent"
+      }
+    ],
+    "prompt": "The camera rockets backwards and upwards, rapidly zooming out from the subject, through clouds above a city, then revealing the curved blue Earth from space. One continuous accelerating zoom out. Keep the scene, subject identity and lighting consistent. The first frame is exactly the supplied photo. One continuous physical action, no cuts, no crossfade, no text. Cinematic visual effects.",
+    "via": "Nightshift HTTP API"
+  },
+  {
+    "case": "statue-explode-video",
+    "jobId": "job_mvhonxg9309c451280",
+    "projectId": "prj_mvhonxbx24722c1711",
+    "seed": 2112666355,
+    "elapsedSeconds": 57.23990016700003,
+    "outputs": [
+      {
+        "node": "25",
+        "path": "outputs/vfx-spike/statue-explode-video/25/ast_mvhop596793f51e951.mp4"
+      },
+      {
+        "node": "20",
+        "path": "outputs/vfx-spike/statue-explode-video/20/ast_mvhop5a3a5f0c9fb1b.latent"
+      }
+    ],
+    "prompt": "Locked-off shot. The subject bursts outward in a sudden explosive impact. Fragments fly radially outward with a shockwave of dust. Keep the scene, subject identity and lighting consistent. The first frame is exactly the supplied photo. One continuous physical action, no cuts, no crossfade, no text. Cinematic visual effects.",
+    "via": "Nightshift HTTP API"
+  },
+  {
+    "case": "statue-freeze-video",
+    "jobId": "job_mvhoda6nbc960533ba",
+    "projectId": "prj_mvhoda51c2087d0a48",
+    "seed": 2014838877,
+    "elapsedSeconds": 99.37229387500001,
+    "outputs": [
+      {
+        "node": "25",
+        "path": "outputs/vfx-spike/statue-freeze-video/25/ast_mvhofegyb2ae4c6aaf.mp4"
+      },
+      {
+        "node": "20",
+        "path": "outputs/vfx-spike/statue-freeze-video/20/ast_mvhofel4b7a22a3d1e.latent"
+      }
+    ],
+    "prompt": "Locked-off shot. White frost spreads across the subject, then jagged translucent ice crystals grow outward, with drifting cold mist. Keep the scene, subject identity and lighting consistent. The first frame is exactly the supplied photo. One continuous physical action, no cuts, no crossfade, no text. Cinematic visual effects.",
+    "via": "Nightshift HTTP API"
+  },
+  {
+    "case": "statue-gold-video",
+    "jobId": "job_mvhou4ch4919889bc2",
+    "projectId": "prj_mvhou4as01a5ff975b",
+    "seed": 175036332,
+    "elapsedSeconds": 54.320040167,
+    "outputs": [
+      {
+        "node": "25",
+        "path": "outputs/vfx-spike/statue-gold-video/25/ast_mvhov9og6264fcb0eb.mp4"
+      },
+      {
+        "node": "20",
+        "path": "outputs/vfx-spike/statue-gold-video/20/ast_mvhov9pred7cd52e50.latent"
+      }
+    ],
+    "prompt": "Locked-off shot. A wave of liquid gold spreads across the subject from bottom to top, replacing every surface with polished reflective gold. Keep the scene, subject identity and lighting consistent. The first frame is exactly the supplied photo. One continuous physical action, no cuts, no crossfade, no text. Cinematic visual effects.",
+    "via": "Nightshift HTTP API"
+  },
+  {
+    "case": "statue-ignite-video",
+    "jobId": "job_mvhofevsfa2e6d3ab8",
+    "projectId": "prj_mvhofesve018795725",
+    "seed": 2093839482,
+    "elapsedSeconds": 135.432631458,
+    "outputs": [
+      {
+        "node": "25",
+        "path": "outputs/vfx-spike/statue-ignite-video/25/ast_mvhoi9h0279572526d.mp4"
+      },
+      {
+        "node": "20",
+        "path": "outputs/vfx-spike/statue-ignite-video/20/ast_mvhoi9jfaf3ab849f7.latent"
+      }
+    ],
+    "prompt": "Locked-off shot. Orange flames ignite at the base and spread upward around the subject, flickering and throwing sparks into the air. Keep the scene, subject identity and lighting consistent. The first frame is exactly the supplied photo. One continuous physical action, no cuts, no crossfade, no text. Cinematic visual effects.",
+    "via": "Nightshift HTTP API"
+  },
+  {
+    "case": "statue-levitate-video",
+    "jobId": "job_mvhowie73a803497c9",
+    "projectId": "prj_mvhowid1568ca7360f",
+    "seed": 1936194576,
+    "elapsedSeconds": 45.14945754200005,
+    "outputs": [
+      {
+        "node": "25",
+        "path": "outputs/vfx-spike/statue-levitate-video/25/ast_mvhoxg56b12f9c525e.mp4"
+      },
+      {
+        "node": "20",
+        "path": "outputs/vfx-spike/statue-levitate-video/20/ast_mvhoxg6b6ab9912e92.latent"
+      }
+    ],
+    "prompt": "Locked-off shot. The subject gently lifts off the ground and levitates, floating upward a short distance, slowly rotating. Its detached shadow remains visible below. Keep the scene, subject identity and lighting consistent. The first frame is exactly the supplied photo. One continuous physical action, no cuts, no crossfade, no text. Cinematic visual effects.",
+    "via": "Nightshift HTTP API"
+  },
+  {
+    "case": "statue-melt-video",
+    "jobId": "job_mvhola6t42ab1b61fd",
+    "projectId": "prj_mvhola41a6ac79ae98",
+    "seed": 595183881,
+    "elapsedSeconds": 123.40263570800005,
+    "outputs": [
+      {
+        "node": "25",
+        "path": "outputs/vfx-spike/statue-melt-video/25/ast_mvhonuxo2b8a667eea.mp4"
+      },
+      {
+        "node": "20",
+        "path": "outputs/vfx-spike/statue-melt-video/20/ast_mvhonv0t378747dfe2.latent"
+      }
+    ],
+    "prompt": "Locked-off shot. The subject softens, sags downward and melts into a glossy puddle, with thick liquid flowing under gravity. Keep the scene, subject identity and lighting consistent. The first frame is exactly the supplied photo. One continuous physical action, no cuts, no crossfade, no text. Cinematic visual effects.",
+    "via": "Nightshift HTTP API"
+  }
+]

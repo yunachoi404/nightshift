@@ -1,0 +1,307 @@
+{
+  "tier": "unified-96-cuda",
+  "label": "Sample: DGX Spark and other 96 GB+ unified-memory NVIDIA machines",
+  "match": {
+    "vendor": "nvidia",
+    "unifiedMemory": true,
+    "minVramGb": 90,
+    "minRamGb": 90
+  },
+  "models": [
+    {
+      "id": "ltx-2.5-int8",
+      "folder": "diffusion_models",
+      "filename": "sample-ltx-2.5-22b-int8.safetensors",
+      "url": "https://example.com/nightshift/sample/sample-ltx-2.5-22b-int8.safetensors",
+      "sizeGb": 20.0,
+      "license": {
+        "name": "Sample entry (not a real download)",
+        "url": "https://example.com/nightshift/sample-license"
+      }
+    },
+    {
+      "id": "gemma-4-12b-int8",
+      "folder": "text_encoders",
+      "filename": "sample-gemma4-12b-int8.safetensors",
+      "url": "https://example.com/nightshift/sample/sample-gemma4-12b-int8.safetensors",
+      "sizeGb": 14.3,
+      "license": {
+        "name": "Sample entry (not a real download)",
+        "url": "https://example.com/nightshift/sample-license"
+      }
+    },
+    {
+      "id": "ltx-vae",
+      "folder": "vae",
+      "filename": "sample-ltx-2.5-vae.safetensors",
+      "url": "https://example.com/nightshift/sample/sample-ltx-2.5-vae.safetensors",
+      "sizeGb": 1.7,
+      "license": {
+        "name": "Sample entry (not a real download)",
+        "url": "https://example.com/nightshift/sample-license"
+      }
+    },
+    {
+      "id": "krea-2-bf16",
+      "folder": "diffusion_models",
+      "filename": "sample-krea-2-bf16.safetensors",
+      "url": "https://example.com/nightshift/sample/sample-krea-2-bf16.safetensors",
+      "sizeGb": 24.5,
+      "license": {
+        "name": "Sample entry (not a real download)",
+        "url": "https://example.com/nightshift/sample-license"
+      }
+    },
+    {
+      "id": "minimax-h3-int8",
+      "folder": "diffusion_models",
+      "filename": "sample-minimax-h3-int8.safetensors",
+      "url": "https://example.com/nightshift/sample/sample-minimax-h3-int8.safetensors",
+      "sizeGb": 19.5,
+      "license": {
+        "name": "Sample entry (not a real download)",
+        "url": "https://example.com/nightshift/sample-license"
+      }
+    },
+    {
+      "id": "breeze-tts-2",
+      "folder": "checkpoints",
+      "filename": "sample-breeze-tts-2-int8.safetensors",
+      "url": "https://example.com/nightshift/sample/sample-breeze-tts-2-int8.safetensors",
+      "sizeGb": 4.5,
+      "license": {
+        "name": "Sample entry (not a real download)",
+        "url": "https://example.com/nightshift/sample-license"
+      }
+    },
+    {
+      "id": "minimax-music-3",
+      "folder": "checkpoints",
+      "filename": "sample-minimax-music-3.safetensors",
+      "url": "https://example.com/nightshift/sample/sample-minimax-music-3.safetensors",
+      "sizeGb": 13.2,
+      "license": {
+        "name": "Sample entry (not a real download)",
+        "url": "https://example.com/nightshift/sample-license"
+      }
+    }
+  ],
+  "launch": {
+    "args": [
+      "--disable-pinned-memory",
+      "--disable-cuda-malloc"
+    ],
+    "env": {}
+  },
+  "defaultMemoryLimitGb": 100,
+  "steps": {
+    "still": {
+      "workflow": "tests/echo_image.api.json",
+      "inputs": {
+        "prompt": {
+          "node": "3",
+          "field": "filename_prefix"
+        },
+        "seed": {
+          "node": "3",
+          "field": "filename_prefix"
+        },
+        "image": {
+          "node": "1",
+          "field": "image"
+        }
+      },
+      "params": {
+        "width": 1344,
+        "height": 768
+      },
+      "outputNodes": [
+        "3"
+      ]
+    },
+    "video_draft": {
+      "workflow": "tests/echo_image.api.json",
+      "inputs": {
+        "prompt": {
+          "node": "3",
+          "field": "filename_prefix"
+        },
+        "seed": {
+          "node": "3",
+          "field": "filename_prefix"
+        },
+        "image": {
+          "node": "1",
+          "field": "image"
+        }
+      },
+      "params": {
+        "width": 960,
+        "height": 544,
+        "fps": 24,
+        "maxFrames": 121
+      },
+      "outputNodes": [
+        "3"
+      ]
+    },
+    "video_final_same_take": {
+      "workflow": "tests/echo_image.api.json",
+      "inputs": {
+        "prompt": {
+          "node": "3",
+          "field": "filename_prefix"
+        },
+        "seed": {
+          "node": "3",
+          "field": "filename_prefix"
+        },
+        "video": {
+          "node": "1",
+          "field": "image"
+        },
+        "latent": {
+          "node": "1",
+          "field": "image"
+        }
+      },
+      "params": {
+        "width": 1920,
+        "height": 1088,
+        "fps": 24
+      },
+      "outputNodes": [
+        "3"
+      ]
+    },
+    "voice": {
+      "workflow": "tests/echo_image.api.json",
+      "inputs": {
+        "text": {
+          "node": "3",
+          "field": "filename_prefix"
+        },
+        "seed": {
+          "node": "3",
+          "field": "filename_prefix"
+        }
+      },
+      "params": {},
+      "outputNodes": [
+        "3"
+      ]
+    },
+    "music": {
+      "workflow": "tests/echo_image.api.json",
+      "inputs": {
+        "prompt": {
+          "node": "3",
+          "field": "filename_prefix"
+        },
+        "lyrics": {
+          "node": "3",
+          "field": "filename_prefix"
+        },
+        "durationSec": {
+          "node": "3",
+          "field": "filename_prefix"
+        },
+        "seed": {
+          "node": "3",
+          "field": "filename_prefix"
+        }
+      },
+      "params": {},
+      "outputNodes": [
+        "3"
+      ]
+    },
+    "video_final_remaster": {
+      "workflow": "tests/echo_image.api.json",
+      "inputs": {
+        "prompt": {
+          "node": "3",
+          "field": "filename_prefix"
+        },
+        "seed": {
+          "node": "3",
+          "field": "filename_prefix"
+        },
+        "video": {
+          "node": "1",
+          "field": "image"
+        },
+        "image": {
+          "node": "1",
+          "field": "image"
+        }
+      },
+      "params": {
+        "width": 1920,
+        "height": 1088,
+        "fps": 24
+      },
+      "outputNodes": [
+        "3"
+      ]
+    },
+    "text": {
+      "workflow": "tests/echo_image.api.json",
+      "inputs": {
+        "system": {
+          "node": "3",
+          "field": "filename_prefix"
+        },
+        "text": {
+          "node": "3",
+          "field": "filename_prefix"
+        },
+        "seed": {
+          "node": "3",
+          "field": "filename_prefix"
+        }
+      },
+      "params": {},
+      "outputNodes": [
+        "3"
+      ]
+    }
+  },
+  "estimates": {
+    "still": {
+      "peakGb": 28,
+      "seconds": 8,
+      "measured": false
+    },
+    "video_draft": {
+      "peakGb": 42,
+      "seconds": 60,
+      "measured": false
+    },
+    "video_final_same_take": {
+      "peakGb": 46,
+      "seconds": 240,
+      "measured": false
+    },
+    "video_final_remaster": {
+      "peakGb": 46,
+      "seconds": 600,
+      "measured": false
+    },
+    "voice": {
+      "peakGb": 6,
+      "seconds": 8,
+      "measured": false
+    },
+    "music": {
+      "peakGb": 14,
+      "seconds": 40,
+      "measured": false
+    },
+    "text": {
+      "peakGb": 16,
+      "seconds": 20,
+      "measured": false
+    }
+  }
+}

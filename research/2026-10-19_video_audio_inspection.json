@@ -1,0 +1,67 @@
+[
+  {
+    "case": "ltx_draft_ok",
+    "path": "outputs/model_lab/ltx_draft_ok/25/ltx_draft_00002_.mp4",
+    "durationSec": 4.010666666666666,
+    "sampleRate": 48000,
+    "channels": 2,
+    "peakAmplitude": 0.021990612149238586,
+    "rms": 0.0012461476726457477,
+    "nearFullScaleFraction": 0.0,
+    "overFullScaleFraction": 0.0,
+    "transcript": null,
+    "asrModel": null
+  },
+  {
+    "case": "ltx_final",
+    "path": "outputs/model_lab/ltx_final/25/ltx_final_00001_.mp4",
+    "durationSec": 4.010666666666666,
+    "sampleRate": 48000,
+    "channels": 2,
+    "peakAmplitude": 0.11562664806842804,
+    "rms": 0.003365763695910573,
+    "nearFullScaleFraction": 0.0,
+    "overFullScaleFraction": 0.0,
+    "transcript": null,
+    "asrModel": null
+  },
+  {
+    "case": "h3_ref2va_4step",
+    "path": "outputs/model_lab/h3_ref2va_4step/17/h3_ref4_00001_.mp4",
+    "durationSec": 5.184,
+    "sampleRate": 32000,
+    "channels": 2,
+    "peakAmplitude": 0.5263794660568237,
+    "rms": 0.02284182421863079,
+    "nearFullScaleFraction": 0.0,
+    "overFullScaleFraction": 0.0,
+    "transcript": null,
+    "asrModel": null
+  },
+  {
+    "case": "h3_fl2va_4step",
+    "path": "outputs/model_lab/h3_fl2va_4step/17/h3_fl4_00001_.mp4",
+    "durationSec": 5.184,
+    "sampleRate": 32000,
+    "channels": 2,
+    "peakAmplitude": 0.9245384335517883,
+    "rms": 0.04599211737513542,
+    "nearFullScaleFraction": 0.0,
+    "overFullScaleFraction": 0.0,
+    "transcript": null,
+    "asrModel": null
+  },
+  {
+    "case": "h3_fl2va_8step",
+    "path": "outputs/model_lab/h3_fl2va_8step/17/h3_fl8_00001_.mp4",
+    "durationSec": 5.184,
+    "sampleRate": 32000,
+    "channels": 2,
+    "peakAmplitude": 1.0183082818984985,
+    "rms": 0.032266661524772644,
+    "nearFullScaleFraction": 1.2056327160493826e-05,
+    "overFullScaleFraction": 1.2056327160493826e-05,
+    "transcript": null,
+    "asrModel": null
+  }
+]

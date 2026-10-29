@@ -1,0 +1,88 @@
+{
+  "method": "CPU OpenCV LK background features and per-frame RANSAC affine fit, resized to 640x384; central 192-pixel strip masked below row 48",
+  "limits": "Image-space proxies only. Subject motion, parallax and reflections can affect the fit. Not camera-pose ground truth or a reliability score.",
+  "cases": [
+    {
+      "case": "camera_dolly_in",
+      "path": "outputs/model_lab/camera_dolly_in/25/ltx_draft_00004_.mp4",
+      "sha256": "662600f8e7e9f3b002d7658f0877433472dba3cc77b9f5cd070b080679491f65",
+      "summary": {
+        "frames": 97,
+        "fps": 24.0,
+        "validPairs": 96,
+        "totalPairs": 96,
+        "medianScalePerFrame": 1.0013072893208457,
+        "summedRotationDeg": 0.2771738262643261,
+        "medianInlierFraction": 1.0,
+        "medianTranslationJitterPx": 0.03221526520091676,
+        "medianRotationJitterDeg": 0.0037734297803946335
+      }
+    },
+    {
+      "case": "camera_crash_zoom",
+      "path": "outputs/model_lab/camera_crash_zoom/25/ltx_draft_00006_.mp4",
+      "sha256": "c2cd2a9a478be5335a5d82a71308b5cb8d8c80deccd6ec41e598dc635d5a6c5a",
+      "summary": {
+        "frames": 97,
+        "fps": 24.0,
+        "validPairs": 96,
+        "totalPairs": 96,
+        "medianScalePerFrame": 1.0008804113617837,
+        "summedRotationDeg": -0.019963433806741347,
+        "medianInlierFraction": 1.0,
+        "medianTranslationJitterPx": 0.02156989651982271,
+        "medianRotationJitterDeg": 0.0020205332431376026
+      }
+    },
+    {
+      "case": "camera_orbit",
+      "path": "outputs/model_lab/camera_orbit/25/ltx_draft_00008_.mp4",
+      "sha256": "7a310f9f206be8d1e1b26d0661ba31fcec593213fb8c3ea73c4a0f1d35922326",
+      "summary": {
+        "frames": 97,
+        "fps": 24.0,
+        "validPairs": 95,
+        "totalPairs": 96,
+        "medianScalePerFrame": 1.0030458482889015,
+        "summedRotationDeg": -20.834181008013058,
+        "medianInlierFraction": 0.6944444444444444,
+        "medianTranslationJitterPx": 0.40815441820472126,
+        "medianRotationJitterDeg": 0.06172337071771963
+      }
+    },
+    {
+      "case": "camera_crane_up",
+      "path": "outputs/model_lab/camera_crane_up/25/ltx_draft_00010_.mp4",
+      "sha256": "2c0a523fcd3d3e6211386e0bad753b38c0df6368f6e030e8934e5f100c40735e",
+      "summary": {
+        "frames": 97,
+        "fps": 24.0,
+        "validPairs": 96,
+        "totalPairs": 96,
+        "medianScalePerFrame": 1.0003025646207222,
+        "summedRotationDeg": -1.2310289196534487,
+        "medianInlierFraction": 0.9723539864596948,
+        "medianTranslationJitterPx": 0.051635781370589245,
+        "medianRotationJitterDeg": 0.010010129233111396
+      }
+    },
+    {
+      "case": "camera_handheld_rescued",
+      "path": "outputs/model_lab/camera_handheld_rescued/8/checkpoint_decode_00001_.mp4",
+      "sha256": "952936588942e0983b66717eda74f4e80f64bf3e82c49f3fdd01184ced27c2f2",
+      "summary": {
+        "frames": 97,
+        "fps": 24.0,
+        "validPairs": 96,
+        "totalPairs": 96,
+        "medianScalePerFrame": 1.0021296798998263,
+        "summedRotationDeg": -0.11262866234031585,
+        "medianInlierFraction": 0.9978835765540595,
+        "medianTranslationJitterPx": 0.027973378176279953,
+        "medianRotationJitterDeg": 0.0027691972758408885
+      }
+    }
+  ],
+  "rawEvidence": "outputs/model_lab/camera_motion_seed42.json",
+  "rawSha256": "cfc7e1a11b9987f3df5b2f5612ceb0993491d76691b829b5fe8641610b0b3350"
+}

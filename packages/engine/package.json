@@ -1,0 +1,41 @@
+{
+  "name": "@nightshift/engine",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "bin": {
+    "nightshift-engine": "./dist/cli.js"
+  },
+  "scripts": {
+    "build": "node scripts/build-deps.mjs && tsc -p .",
+    "typecheck": "tsc -p ../contract && tsc -p ../editor && tsc -p . --noEmit && tsc -p tsconfig.scripts.json --noEmit",
+    "test": "vitest run",
+    "dev": "tsx src/cli.ts",
+    "e2e:templates": "tsx scripts/e2e-templates.ts",
+    "verify-install": "tsx scripts/verify-install.ts"
+  },
+  "dependencies": {
+    "@comfyorg/sdk": "^0.5.0",
+    "@nightshift/contract": "workspace:*",
+    "@nightshift/editor": "workspace:*",
+    "busboy": "^1.6.0",
+    "yaml": "^2.8.0",
+    "zod": "^4.6.0"
+  },
+  "devDependencies": {
+    "@types/busboy": "^1.5.5",
+    "@types/node": "^22.15.0",
+    "tsx": "^4.20.0",
+    "typescript": "^5.9.0",
+    "vitest": "^3.2.0"
+  },
+  "license": "Apache-2.0"
+}

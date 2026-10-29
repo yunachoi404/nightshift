@@ -1,0 +1,9 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "module": "ESNext", "moduleResolution": "Bundler", "noEmit": true,
+    "types": ["node"], "lib": ["ES2023", "DOM", "DOM.Iterable"],
+    "baseUrl": ".", "paths": { "@nightshift/contract": ["../../packages/contract/src/index.ts"], "zod": ["node_modules/zod"] }
+  },
+  "include": ["src/**/*.ts", "test/**/*.ts"]
+}

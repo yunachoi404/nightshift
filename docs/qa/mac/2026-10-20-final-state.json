@@ -1,0 +1,63 @@
+{
+  "codeCommits": [
+    "8795151",
+    "e7cc990"
+  ],
+  "mode": "installed --mock",
+  "tests": {
+    "engine": 230,
+    "editor": 92,
+    "desktop": 8
+  },
+  "typecheck": "passed",
+  "build": "passed",
+  "dmg": "passed",
+  "codesign": "passed",
+  "runtime": {
+    "runtime": "/Applications/Nightshift.app/Contents/Resources/runtime",
+    "node": "24.19.0",
+    "sqlite": true,
+    "ui": "served",
+    "sampleTiers": 7,
+    "fonts": "all three families copied",
+    "editor": "loaded",
+    "browser": "executable",
+    "tools": "ffmpeg, ffprobe, uv run with bare PATH"
+  },
+  "wallpaperRestored": "55 image SelectedDesktop: Tahoe\n\t\t\t\t\t58 pop up button Tahoe, Value: Automatic\n\t\t\t\t\t59 switch Show on all Spaces, Value: on",
+  "demoTheme": {
+    "theme": "system"
+  },
+  "demoSettings": {
+    "tier": "apple-64",
+    "memoryLimitGb": 94,
+    "overnight": {
+      "enabled": true,
+      "startAt": "23:00",
+      "endAt": "07:00"
+    },
+    "remote": null
+  },
+  "processes": {
+    "pid": {
+      "value": 80630,
+      "stopped": true
+    },
+    "enginePid": {
+      "value": 80688,
+      "stopped": true
+    }
+  },
+  "nativePointerReorder": "unverified; pickup observed, no completed drop or changed saved order",
+  "exports": {
+    "before": "ast_mvg8h2fr30d98ea82e",
+    "after": "ast_mvg8l85b15747c1656",
+    "dimensions": [
+      960,
+      540
+    ],
+    "durationSec": 10.5,
+    "fullDecode": "passed for both",
+    "savedReframe": "fit_blur"
+  }
+}

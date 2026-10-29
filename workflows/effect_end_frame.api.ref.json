@@ -1,0 +1,21 @@
+{
+  "workflow": "look_edit_klein4b.api.json",
+  "inputs": {
+    "image": {
+      "node": "10",
+      "field": "image"
+    },
+    "prompt": {
+      "node": "20",
+      "field": "text"
+    },
+    "seed": {
+      "node": "34",
+      "field": "noise_seed"
+    }
+  },
+  "params": {},
+  "outputNodes": [
+    "40"
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "source": "outputs/model_lab/stacks_2458710.log",
+  "sha256": "85397ddfcbd415a0d289ab9a1d281df16f95099fd15b69c3152ae9210fdb8227",
+  "capturedPath": [
+    "Breeze loader.py:743 unload_breeze_bundle",
+    "Breeze loader.py:432 _unregister_from_comfy",
+    "comfy/model_patcher.py:1319 detach",
+    "comfy/model_patcher.py:1176 unpatch_model",
+    "torch/nn/modules/module.py:1374 convert"
+  ],
+  "interpretation": "Hard unload transfers quantized weights to CPU before discarding the bundle. In-place unpatch/discard patch installed; handoff regression pending."
+}

@@ -1,0 +1,58 @@
+[
+  {
+    "case": "voice",
+    "path": "outputs/real_project/assets/ast_mvf2bviv430c4b43eb.flac",
+    "durationSec": 4.72,
+    "sampleRate": 24000,
+    "channels": 1,
+    "peakAmplitude": 0.72509765625,
+    "rms": 0.09040335565805435,
+    "nearFullScaleFraction": 0.0,
+    "overFullScaleFraction": 0.0,
+    "transcript": "After the rain, the city slows. A little warmth, a quiet moment. Tomorrow can wait.",
+    "asrGain": 1.0,
+    "asrModel": "OpenAI Whisper base.en, CPU"
+  },
+  {
+    "case": "music",
+    "path": "outputs/real_project/assets/ast_mvf2ct0j38a22ffa87.flac",
+    "durationSec": 11.993106575963719,
+    "sampleRate": 44100,
+    "channels": 2,
+    "peakAmplitude": 0.832000732421875,
+    "rms": 0.12887483835220337,
+    "nearFullScaleFraction": 0.0,
+    "overFullScaleFraction": 0.0,
+    "transcript": "I'm sorry.",
+    "asrGain": 1.0,
+    "asrModel": "OpenAI Whisper base.en, CPU"
+  },
+  {
+    "case": "export_16x9",
+    "path": "outputs/real_project/assets/ast_mvf2d4ie082099603e.mp4",
+    "durationSec": 10.389333333333333,
+    "sampleRate": 48000,
+    "channels": 2,
+    "peakAmplitude": 0.8010135889053345,
+    "rms": 0.09976642578840256,
+    "nearFullScaleFraction": 0.0,
+    "overFullScaleFraction": 0.0,
+    "transcript": "After the rain the city slows, a little warmth, a quiet moment, tomorrow can wait.",
+    "asrGain": 1.0,
+    "asrModel": "OpenAI Whisper base.en, CPU"
+  },
+  {
+    "case": "export_9x16",
+    "path": "outputs/real_project/assets/ast_mvf2dg5lbb1edbdce5.mp4",
+    "durationSec": 10.389333333333333,
+    "sampleRate": 48000,
+    "channels": 2,
+    "peakAmplitude": 0.8010135889053345,
+    "rms": 0.09976642578840256,
+    "nearFullScaleFraction": 0.0,
+    "overFullScaleFraction": 0.0,
+    "transcript": "After the rain the city slows, a little warmth, a quiet moment, tomorrow can wait.",
+    "asrGain": 1.0,
+    "asrModel": "OpenAI Whisper base.en, CPU"
+  }
+]

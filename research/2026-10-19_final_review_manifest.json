@@ -1,0 +1,59 @@
+{
+  "output": "outputs/model_lab/video_final_comparison.mp4",
+  "sha256": "399139203e02a082d4a9406c4554ec636791dc8f2ffd27ceb782ae10ce75d582",
+  "sources": [
+    {
+      "case": "ltx_draft_ok",
+      "path": "outputs/model_lab/ltx_draft_ok/25/ltx_draft_00002_.mp4",
+      "jobId": "14ff74c5-8c69-473d-877e-4b3c93484e5f",
+      "durationSec": 4.041666666666667,
+      "frames": 97,
+      "width": 640,
+      "height": 384,
+      "sha256": "fa9ade26c780047d07f7566b1e7c2a5a9c569f2641e6b91af702552d810de369"
+    },
+    {
+      "case": "ltx_final_v2",
+      "path": "outputs/model_lab/ltx_final_v2/25/ltx_final_00002_.mp4",
+      "jobId": "ea64c411-eaa9-4804-85b1-89919120065b",
+      "durationSec": 4.041666666666667,
+      "frames": 97,
+      "width": 1280,
+      "height": 768,
+      "sha256": "1bbe285cd0f81961f9b17fe8ca099e5139ac8214b37ea3bcbf44f602d8296267"
+    },
+    {
+      "case": "h3_ref2va_final",
+      "path": "outputs/model_lab/h3_ref2va_final/17/h3_ref_final_00001_.mp4",
+      "jobId": "cb7c5e60-3a79-4960-9d29-3b80fd5c82d8",
+      "durationSec": 5.166666666666667,
+      "frames": 124,
+      "width": 1280,
+      "height": 768,
+      "sha256": "f18a34c1726fbff0502e6513bab451d57e3a2807ad115e1960f2b688cd9282d1"
+    }
+  ],
+  "note": "Render completed lab clips side by side for motion review, without a GPU.\n\nH3's duration is normalized to LTX and each source resolution is disclosed.\nThe scaled panels help review motion. Inspect native frames to judge detail.",
+  "nativeDetail": {
+    "path": "outputs/model_lab/video_final_comparison_native_detail.png",
+    "boxes": [
+      [
+        400,
+        250,
+        880,
+        730
+      ],
+      [
+        800,
+        0,
+        1280,
+        480
+      ]
+    ],
+    "frames": [
+      48,
+      62
+    ],
+    "sha256": "f565b9f27fcc731ea74e457bcad2269e987e056a5edd3ce3504167f4ecb1971b"
+  }
+}

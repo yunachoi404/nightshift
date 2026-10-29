@@ -1,0 +1,25 @@
+{
+  "workflow": "minimax_music3.api.json",
+  "inputs": {
+    "prompt": {
+      "node": "4",
+      "field": "caption"
+    },
+    "lyrics": {
+      "node": "4",
+      "field": "lyrics"
+    },
+    "seed": {
+      "node": "11",
+      "field": "value"
+    },
+    "durationSec": {
+      "node": "10",
+      "field": "value"
+    }
+  },
+  "params": {},
+  "outputNodes": [
+    "9"
+  ]
+}

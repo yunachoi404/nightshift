@@ -1,0 +1,74 @@
+[
+  {
+    "id": "ast_mvfib6d78c674b63d7",
+    "path": "~/Library/Application Support/Nightshift/projects/prj_mvfi1bap41a8b5355d/assets/ast_mvfib6d78c674b63d7.mp4",
+    "bytes": 1368049,
+    "duration": "11.000000",
+    "streams": [
+      {
+        "codec_name": "h264",
+        "codec_type": "video",
+        "width": 960,
+        "height": 540,
+        "sample_rate": null
+      },
+      {
+        "codec_name": "aac",
+        "codec_type": "audio",
+        "width": null,
+        "height": null,
+        "sample_rate": "48000"
+      }
+    ],
+    "decodeExit": 0,
+    "decodeErrors": ""
+  },
+  {
+    "id": "ast_mvfiinyo84212513bf",
+    "path": "~/Library/Application Support/Nightshift/projects/prj_mvfi1bap41a8b5355d/assets/ast_mvfiinyo84212513bf.mp4",
+    "bytes": 12651135,
+    "duration": "11.000000",
+    "streams": [
+      {
+        "codec_name": "h264",
+        "codec_type": "video",
+        "width": 1920,
+        "height": 1080,
+        "sample_rate": null
+      },
+      {
+        "codec_name": "aac",
+        "codec_type": "audio",
+        "width": null,
+        "height": null,
+        "sample_rate": "48000"
+      }
+    ],
+    "decodeExit": 0,
+    "decodeErrors": ""
+  },
+  {
+    "id": "ast_mvfijfu978fb3fe4b6",
+    "path": "~/Library/Application Support/Nightshift/projects/prj_mvfi1bap41a8b5355d/assets/ast_mvfijfu978fb3fe4b6.mp4",
+    "bytes": 18039132,
+    "duration": "11.000000",
+    "streams": [
+      {
+        "codec_name": "h264",
+        "codec_type": "video",
+        "width": 1080,
+        "height": 1920,
+        "sample_rate": null
+      },
+      {
+        "codec_name": "aac",
+        "codec_type": "audio",
+        "width": null,
+        "height": null,
+        "sample_rate": "48000"
+      }
+    ],
+    "decodeExit": 0,
+    "decodeErrors": ""
+  }
+]

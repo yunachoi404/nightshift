@@ -1,0 +1,468 @@
+[
+  {
+    "id": "job_mvhpdu4u7996a421f5",
+    "projectId": "prj_mvhpdu4r70c25f9352",
+    "step": "text",
+    "status": "done",
+    "message": "Shot list drafted.",
+    "outputAssetIds": [],
+    "createdAt": "2026-10-21T06:00:23.502Z",
+    "startedAt": "2026-10-21T06:00:23.503Z",
+    "finishedAt": "2026-10-21T06:00:57.607Z"
+  },
+  {
+    "id": "job_mvhpekg60544ab7954",
+    "projectId": "prj_mvhpdu4r70c25f9352",
+    "step": "still",
+    "status": "done",
+    "message": "Still ready",
+    "outputAssetIds": [
+      "ast_mvhpexrnb2e6e16147"
+    ],
+    "createdAt": "2026-10-21T06:00:57.607Z",
+    "startedAt": "2026-10-21T06:00:57.607Z",
+    "finishedAt": "2026-10-21T06:01:15.014Z"
+  },
+  {
+    "id": "job_mvhpes8xc67d0ca79d",
+    "projectId": "prj_mvhpes7hd504811a2b",
+    "step": "text",
+    "status": "done",
+    "message": "Photo ready. Rendering the effect.",
+    "outputAssetIds": [
+      "ast_mvhpes8a0e9c304ed4"
+    ],
+    "createdAt": "2026-10-21T06:01:07.713Z",
+    "startedAt": "2026-10-21T06:01:15.014Z",
+    "finishedAt": "2026-10-21T06:01:15.104Z"
+  },
+  {
+    "id": "job_mvhpexy7439ac25fdf",
+    "projectId": "prj_mvhpes7hd504811a2b",
+    "step": "video_effect",
+    "status": "done",
+    "message": "Effect ready",
+    "outputAssetIds": [
+      "ast_mvhpf5nw6434454433",
+      "ast_mvhphel2ac4f4ff2ac",
+      "ast_mvhphensc03e32160f"
+    ],
+    "createdAt": "2026-10-21T06:01:15.103Z",
+    "startedAt": "2026-10-21T06:01:15.104Z",
+    "finishedAt": "2026-10-21T06:03:10.169Z"
+  },
+  {
+    "id": "job_mvhph0jga19a9c0877",
+    "projectId": "prj_mvhph0hid78ba5d513",
+    "step": "video_camera_move",
+    "status": "done",
+    "message": "Draft ready",
+    "outputAssetIds": [
+      "ast_mvhpkbvea193c30bd1",
+      "ast_mvhpkc27be322a09e2"
+    ],
+    "createdAt": "2026-10-21T06:02:51.772Z",
+    "startedAt": "2026-10-21T06:03:10.169Z",
+    "finishedAt": "2026-10-21T06:05:26.773Z"
+  },
+  {
+    "id": "job_mvhphplja2637f5fda",
+    "projectId": "prj_mvhphpku9e812888b9",
+    "step": "text",
+    "status": "done",
+    "message": "Shot list drafted.",
+    "outputAssetIds": [],
+    "createdAt": "2026-10-21T06:03:24.247Z",
+    "startedAt": "2026-10-21T06:05:26.773Z",
+    "finishedAt": "2026-10-21T06:06:22.620Z"
+  },
+  {
+    "id": "job_mvhpj42k15922cd562",
+    "projectId": "prj_mvhpes7hd504811a2b",
+    "step": "video_final_same_take",
+    "status": "done",
+    "message": "Same-take final ready",
+    "outputAssetIds": [
+      "ast_mvhq25sm23217c330e"
+    ],
+    "createdAt": "2026-10-21T06:04:29.660Z",
+    "startedAt": "2026-10-21T06:18:00.863Z",
+    "finishedAt": "2026-10-21T06:19:18.426Z"
+  },
+  {
+    "id": "job_mvhpjtsi2c863a6db3",
+    "projectId": "prj_mvhpjtrzde9c9aba6e",
+    "step": "text",
+    "status": "done",
+    "message": "The language model's answer did not match this template, so the template's shot list was used.",
+    "outputAssetIds": [],
+    "createdAt": "2026-10-21T06:05:02.994Z",
+    "startedAt": "2026-10-21T06:06:22.620Z",
+    "finishedAt": "2026-10-21T06:07:47.369Z"
+  },
+  {
+    "id": "job_mvhpkuypb87eaa7842",
+    "projectId": "prj_mvhph0hid78ba5d513",
+    "step": "video_final_same_take",
+    "status": "done",
+    "message": "Same-take final ready",
+    "outputAssetIds": [
+      "ast_mvhq50bi81844ed1a1"
+    ],
+    "createdAt": "2026-10-21T06:05:51.169Z",
+    "startedAt": "2026-10-21T06:20:12.145Z",
+    "finishedAt": "2026-10-21T06:21:31.450Z"
+  },
+  {
+    "id": "job_mvhplj8b7162af3aaf",
+    "projectId": "prj_mvhphpku9e812888b9",
+    "step": "still",
+    "status": "done",
+    "message": "Still ready",
+    "outputAssetIds": [
+      "ast_mvhpnk58883eca1471"
+    ],
+    "createdAt": "2026-10-21T06:06:22.619Z",
+    "startedAt": "2026-10-21T06:07:47.369Z",
+    "finishedAt": "2026-10-21T06:07:57.345Z"
+  },
+  {
+    "id": "job_mvhpncmgadb22587bf",
+    "projectId": "prj_mvhpjtrzde9c9aba6e",
+    "step": "still",
+    "status": "done",
+    "message": "Still ready",
+    "outputAssetIds": [
+      "ast_mvhpozxa4dd4cd2653"
+    ],
+    "createdAt": "2026-10-21T06:07:47.368Z",
+    "startedAt": "2026-10-21T06:07:57.346Z",
+    "finishedAt": "2026-10-21T06:09:04.380Z"
+  },
+  {
+    "id": "job_mvhpncmg8bac689a39",
+    "projectId": "prj_mvhpjtrzde9c9aba6e",
+    "step": "still",
+    "status": "done",
+    "message": "Still ready",
+    "outputAssetIds": [
+      "ast_mvhpp4ve2901eb786f"
+    ],
+    "createdAt": "2026-10-21T06:07:47.368Z",
+    "startedAt": "2026-10-21T06:09:04.380Z",
+    "finishedAt": "2026-10-21T06:09:10.667Z"
+  },
+  {
+    "id": "job_mvhpncmh81d7e695bc",
+    "projectId": "prj_mvhpjtrzde9c9aba6e",
+    "step": "still",
+    "status": "done",
+    "message": "Still ready",
+    "outputAssetIds": [
+      "ast_mvhpp9mt5302bcedda"
+    ],
+    "createdAt": "2026-10-21T06:07:47.369Z",
+    "startedAt": "2026-10-21T06:09:10.667Z",
+    "finishedAt": "2026-10-21T06:09:16.845Z"
+  },
+  {
+    "id": "job_mvhpncmh40ce72b12d",
+    "projectId": "prj_mvhpjtrzde9c9aba6e",
+    "step": "still",
+    "status": "done",
+    "message": "Still ready",
+    "outputAssetIds": [
+      "ast_mvhppena360606fabe"
+    ],
+    "createdAt": "2026-10-21T06:07:47.369Z",
+    "startedAt": "2026-10-21T06:09:16.846Z",
+    "finishedAt": "2026-10-21T06:09:23.364Z"
+  },
+  {
+    "id": "job_mvhpncmhe53ee38baa",
+    "projectId": "prj_mvhpjtrzde9c9aba6e",
+    "step": "still",
+    "status": "done",
+    "message": "Still ready",
+    "outputAssetIds": [
+      "ast_mvhppjce43cc2ffcaf"
+    ],
+    "createdAt": "2026-10-21T06:07:47.369Z",
+    "startedAt": "2026-10-21T06:09:23.364Z",
+    "finishedAt": "2026-10-21T06:09:29.451Z"
+  },
+  {
+    "id": "job_mvhpogok46b7691fa1",
+    "projectId": "prj_mvhphpku9e812888b9",
+    "step": "video_draft",
+    "status": "done",
+    "message": "Draft ready",
+    "outputAssetIds": [
+      "ast_mvhpr5gq5ed605c453",
+      "ast_mvhpr5hpb6ec22eb71"
+    ],
+    "createdAt": "2026-10-21T06:08:39.284Z",
+    "startedAt": "2026-10-21T06:10:43.212Z",
+    "finishedAt": "2026-10-21T06:10:44.823Z"
+  },
+  {
+    "id": "job_mvhpqcsoac3b4ec99d",
+    "projectId": "prj_mvhpjtrzde9c9aba6e",
+    "step": "video_draft",
+    "status": "done",
+    "message": "Draft ready",
+    "outputAssetIds": [
+      "ast_mvhpt2j62ae2b57023",
+      "ast_mvhpt2n3a4b5dba8d6"
+    ],
+    "createdAt": "2026-10-21T06:10:07.560Z",
+    "startedAt": "2026-10-21T06:11:39.297Z",
+    "finishedAt": "2026-10-21T06:12:14.434Z"
+  },
+  {
+    "id": "job_mvhpqcss6af1096ecd",
+    "projectId": "prj_mvhpjtrzde9c9aba6e",
+    "step": "video_draft",
+    "status": "done",
+    "message": "Draft ready",
+    "outputAssetIds": [
+      "ast_mvhpu2ok9d684a30a0",
+      "ast_mvhpu2pc48af58c3a4"
+    ],
+    "createdAt": "2026-10-21T06:10:07.564Z",
+    "startedAt": "2026-10-21T06:12:14.434Z",
+    "finishedAt": "2026-10-21T06:13:01.167Z"
+  },
+  {
+    "id": "job_mvhpqcsvf67b0430a8",
+    "projectId": "prj_mvhpjtrzde9c9aba6e",
+    "step": "video_draft",
+    "status": "done",
+    "message": "Draft ready",
+    "outputAssetIds": [
+      "ast_mvhpuyzbbec226b26a",
+      "ast_mvhpuz02aa6cc48800"
+    ],
+    "createdAt": "2026-10-21T06:10:07.567Z",
+    "startedAt": "2026-10-21T06:13:01.168Z",
+    "finishedAt": "2026-10-21T06:13:43.061Z"
+  },
+  {
+    "id": "job_mvhpqcsx4789f7b2e3",
+    "projectId": "prj_mvhpjtrzde9c9aba6e",
+    "step": "video_draft",
+    "status": "done",
+    "message": "Draft ready",
+    "outputAssetIds": [
+      "ast_mvhpx7kbbc6991f78e",
+      "ast_mvhpx7ql54c19f77b5"
+    ],
+    "createdAt": "2026-10-21T06:10:07.570Z",
+    "startedAt": "2026-10-21T06:13:43.061Z",
+    "finishedAt": "2026-10-21T06:15:27.753Z"
+  },
+  {
+    "id": "job_mvhpqct20b9d97eab6",
+    "projectId": "prj_mvhpjtrzde9c9aba6e",
+    "step": "video_draft",
+    "status": "done",
+    "message": "Draft ready",
+    "outputAssetIds": [
+      "ast_mvhpy65wc32c14711e",
+      "ast_mvhpy66y9fcf5f34c3"
+    ],
+    "createdAt": "2026-10-21T06:10:07.574Z",
+    "startedAt": "2026-10-21T06:15:27.753Z",
+    "finishedAt": "2026-10-21T06:16:12.436Z"
+  },
+  {
+    "id": "job_mvhpr4b617eb75e6e2",
+    "projectId": "prj_mvhpdu4r70c25f9352",
+    "step": "video_draft",
+    "status": "cancelled",
+    "message": "Cancelled",
+    "outputAssetIds": [],
+    "createdAt": "2026-10-21T06:10:43.218Z",
+    "finishedAt": "2026-10-21T06:11:06.104Z"
+  },
+  {
+    "id": "job_mvhpswo01c8802859d",
+    "projectId": "prj_mvhphpku9e812888b9",
+    "step": "video_final_same_take",
+    "status": "done",
+    "message": "Same-take final ready",
+    "outputAssetIds": [
+      "ast_mvhq9hqfcce17ad258"
+    ],
+    "createdAt": "2026-10-21T06:12:06.624Z",
+    "startedAt": "2026-10-21T06:24:58.943Z",
+    "finishedAt": "2026-10-21T06:25:00.838Z"
+  },
+  {
+    "id": "job_mvhpt4aq0bbc5a2fab",
+    "projectId": "prj_mvhpjtrzde9c9aba6e",
+    "step": "voice",
+    "status": "done",
+    "message": "Voiceover ready",
+    "outputAssetIds": [
+      "ast_mvhq0hrv420a8847a3"
+    ],
+    "createdAt": "2026-10-21T06:12:16.514Z",
+    "startedAt": "2026-10-21T06:16:12.437Z",
+    "finishedAt": "2026-10-21T06:18:00.863Z"
+  },
+  {
+    "id": "job_mvhpyvrw6d6013f3de",
+    "projectId": "prj_mvhpjtrzde9c9aba6e",
+    "step": "video_final_same_take",
+    "status": "done",
+    "message": "Same-take final ready",
+    "outputAssetIds": [
+      "ast_mvhqaz6ta99dac3498"
+    ],
+    "createdAt": "2026-10-21T06:16:45.404Z",
+    "startedAt": "2026-10-21T06:25:00.839Z",
+    "finishedAt": "2026-10-21T06:26:10.591Z"
+  },
+  {
+    "id": "job_mvhpyvs46e33e3e1fc",
+    "projectId": "prj_mvhpjtrzde9c9aba6e",
+    "step": "video_final_same_take",
+    "status": "done",
+    "message": "Same-take final ready",
+    "outputAssetIds": [
+      "ast_mvhqcc3vff6e4cebb2"
+    ],
+    "createdAt": "2026-10-21T06:16:45.412Z",
+    "startedAt": "2026-10-21T06:26:10.592Z",
+    "finishedAt": "2026-10-21T06:27:13.302Z"
+  },
+  {
+    "id": "job_mvhpyvs6227916d6d4",
+    "projectId": "prj_mvhpjtrzde9c9aba6e",
+    "step": "video_final_same_take",
+    "status": "done",
+    "message": "Same-take final ready",
+    "outputAssetIds": [
+      "ast_mvhqf7crc54db3c382"
+    ],
+    "createdAt": "2026-10-21T06:16:45.414Z",
+    "startedAt": "2026-10-21T06:27:13.303Z",
+    "finishedAt": "2026-10-21T06:29:27.071Z"
+  },
+  {
+    "id": "job_mvhpyvsa105e23e431",
+    "projectId": "prj_mvhpjtrzde9c9aba6e",
+    "step": "video_final_same_take",
+    "status": "done",
+    "message": "Same-take final ready",
+    "outputAssetIds": [
+      "ast_mvhqglreb2395aef31"
+    ],
+    "createdAt": "2026-10-21T06:16:45.418Z",
+    "startedAt": "2026-10-21T06:29:27.071Z",
+    "finishedAt": "2026-10-21T06:30:32.359Z"
+  },
+  {
+    "id": "job_mvhpyvsd7b0f7e680d",
+    "projectId": "prj_mvhpjtrzde9c9aba6e",
+    "step": "video_final_same_take",
+    "status": "done",
+    "message": "Same-take final ready",
+    "outputAssetIds": [
+      "ast_mvhqj2pbed8337319a"
+    ],
+    "createdAt": "2026-10-21T06:16:45.421Z",
+    "startedAt": "2026-10-21T06:30:32.359Z",
+    "finishedAt": "2026-10-21T06:32:27.710Z"
+  },
+  {
+    "id": "job_mvhq0hzo6f8d9a13d6",
+    "projectId": "prj_mvhpjtrzde9c9aba6e",
+    "step": "voice",
+    "status": "done",
+    "message": "Voiceover measured: words timed",
+    "outputAssetIds": [],
+    "createdAt": "2026-10-21T06:18:00.852Z",
+    "startedAt": "2026-10-21T06:18:00.853Z",
+    "finishedAt": "2026-10-21T06:18:03.845Z"
+  },
+  {
+    "id": "job_mvhq3p0v5a8feb39ed",
+    "projectId": "prj_mvhpes7hd504811a2b",
+    "step": "export",
+    "status": "done",
+    "message": "Exported 1080x1920, 4.0 s, 6.2 MB, no captions",
+    "outputAssetIds": [
+      "ast_mvhq41dr839e52da1d"
+    ],
+    "createdAt": "2026-10-21T06:20:29.935Z",
+    "startedAt": "2026-10-21T06:20:29.935Z",
+    "finishedAt": "2026-10-21T06:20:45.990Z"
+  },
+  {
+    "id": "job_mvhqa6bg5589d348e8",
+    "projectId": "prj_mvhpes7hd504811a2b",
+    "step": "export",
+    "status": "done",
+    "message": "Exported 1080x1920, 4.0 s, 4.2 MB, no captions",
+    "outputAssetIds": [
+      "ast_mvhqaoqhe9e5487e79"
+    ],
+    "createdAt": "2026-10-21T06:25:32.284Z",
+    "startedAt": "2026-10-21T06:25:32.285Z",
+    "finishedAt": "2026-10-21T06:25:56.305Z"
+  },
+  {
+    "id": "job_mvhqaju715dbe58953",
+    "projectId": "prj_mvhph0hid78ba5d513",
+    "step": "export",
+    "status": "done",
+    "message": "Exported 1920x1080, 4.0 s, 2.5 MB, no captions",
+    "outputAssetIds": [
+      "ast_mvhqb6h8fe435e7f83"
+    ],
+    "createdAt": "2026-10-21T06:25:49.807Z",
+    "startedAt": "2026-10-21T06:25:56.306Z",
+    "finishedAt": "2026-10-21T06:26:19.215Z"
+  },
+  {
+    "id": "job_mvhqap80bafe8ccfd0",
+    "projectId": "prj_mvhphpku9e812888b9",
+    "step": "export",
+    "status": "done",
+    "message": "Exported 1920x1080, 4.0 s, 3.1 MB, no captions",
+    "outputAssetIds": [
+      "ast_mvhqbk1s9b3af695c6"
+    ],
+    "createdAt": "2026-10-21T06:25:56.784Z",
+    "startedAt": "2026-10-21T06:26:19.216Z",
+    "finishedAt": "2026-10-21T06:26:36.772Z"
+  },
+  {
+    "id": "job_mvhqjsg1b4c8d0f36a",
+    "projectId": "prj_mvhpjtrzde9c9aba6e",
+    "step": "export",
+    "status": "done",
+    "message": "Exported 1080x1920, 15.0 s, 7.1 MB, captions timed to the words",
+    "outputAssetIds": [
+      "ast_mvhqkgd5a40c910c22"
+    ],
+    "createdAt": "2026-10-21T06:33:00.865Z",
+    "startedAt": "2026-10-21T06:33:00.865Z",
+    "finishedAt": "2026-10-21T06:33:31.928Z"
+  },
+  {
+    "id": "job_mvhqpl5rea9f7605aa",
+    "projectId": "prj_mvhpjtrzde9c9aba6e",
+    "step": "export",
+    "status": "done",
+    "message": "Exported 1080x1920, 15.0 s, 7.1 MB, captions timed to the words",
+    "outputAssetIds": [
+      "ast_mvhqq9721ba1b1b580"
+    ],
+    "createdAt": "2026-10-21T06:37:31.359Z",
+    "startedAt": "2026-10-21T06:37:31.360Z",
+    "finishedAt": "2026-10-21T06:38:02.548Z"
+  }
+]

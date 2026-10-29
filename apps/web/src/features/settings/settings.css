@@ -1,0 +1,39 @@
+.settings {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  max-width: 640px;
+  padding-bottom: 24px;
+}
+.settings__actions {
+  display: flex;
+  gap: 6px;
+  flex: none;
+}
+.settings__memhead {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+}
+.settings__memvalue {
+  font-weight: 500;
+  flex: none;
+  padding-top: 1px;
+}
+.settings__scale {
+  display: flex;
+  justify-content: space-between;
+  font-size: var(--fs-micro);
+  color: var(--text-4);
+  margin-top: -6px;
+}
+.settings__foot {
+  color: var(--text-3);
+  font-size: var(--fs-small);
+  line-height: var(--lh-small);
+  padding: 6px 2px 0;
+}
+.settings__time {
+  width: 112px;
+}

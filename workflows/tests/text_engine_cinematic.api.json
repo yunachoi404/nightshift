@@ -1,0 +1,35 @@
+{
+  "1": {
+    "class_type": "CLIPLoader",
+    "inputs": {
+      "clip_name": "qwen3vl_4b_fp8_scaled.safetensors",
+      "type": "krea2",
+      "device": "default"
+    }
+  },
+  "2": {
+    "class_type": "TextGenerate",
+    "inputs": {
+      "clip": [
+        "1",
+        0
+      ],
+      "prompt": "Template: Cinematic shot\nProject: Rainy cup\nidea: A red ceramic coffee cup on a wooden table beside a rainy evening window\nlook: soft blue shadows, warm highlights, muted colors, fine film grain\ncameraMove: dolly_in\nsequence: three",
+      "system_prompt": "You plan a single cinematic shot, or a three-shot sequence when asked, from a short idea. Describe the subject, setting, light and lens in concrete visual terms. Avoid close-ups of faces. Answer with JSON only: {\"shots\":[{\"prompt\":\"what the camera sees, one or two sentences\",\"cameraMove\":\"one of static, dolly_in, dolly_out, pan_left, pan_right, tilt_up, tilt_down, crane_up, orbit_left, orbit_right, handheld, crash_zoom\",\"durationSec\":4,\"line\":\"optional voiceover line\"}]}",
+      "max_length": 384,
+      "sampling_mode": "off",
+      "thinking": false,
+      "use_default_template": true
+    }
+  },
+  "3": {
+    "class_type": "NightshiftSaveText",
+    "inputs": {
+      "text": [
+        "2",
+        0
+      ],
+      "filename_prefix": "nightshift/engine_storyboard_probe"
+    }
+  }
+}

@@ -1,0 +1,46 @@
+{
+  "freeze": [
+    "covered in thick translucent blue ice and fine white frost crystals",
+    "White frost spreads across the subject, then jagged translucent ice crystals grow outward, with drifting cold mist"
+  ],
+  "ignite": [
+    "engulfed in tall orange flames, with glowing embers and dark smoke rising",
+    "Orange flames ignite at the base and spread upward around the subject, flickering and throwing sparks into the air"
+  ],
+  "disintegrate": [
+    "completely absent, replaced by a thin cloud of fine dust and a small pile of powder on the ground. No solid subject or upright silhouette remains",
+    "The subject crumbles from the top down into thousands of fine dust particles that blow sideways and disperse"
+  ],
+  "melt": [
+    "completely collapsed into a wide low glossy puddle on the ground. No upright subject remains; only flowing liquid and a few low folds",
+    "The subject softens, sags downward and melts into a glossy puddle, with thick liquid flowing under gravity"
+  ],
+  "explode": [
+    "completely absent, replaced by dozens of broken fragments of its material scattered on the ground and flying through the air. The center is empty. No solid subject or upright silhouette remains",
+    "The subject bursts outward in a sudden explosive impact. Fragments fly radially outward with a shockwave of dust"
+  ],
+  "bloom": [
+    "covered in abundant small colorful wildflowers and curling green vines, same original silhouette",
+    "Green vines climb the subject, leaves unfurl, and pink and white flowers rapidly bloom all over its surface"
+  ],
+  "gold": [
+    "made entirely of polished reflective gold metal, same shape and silhouette",
+    "A wave of liquid gold spreads across the subject from bottom to top, replacing every surface with polished reflective gold"
+  ],
+  "crystal": [
+    "made entirely from translucent iridescent faceted crystal, same silhouette",
+    "Translucent prismatic crystals grow across the subject from bottom to top, with sparkling reflections and rainbow refractions"
+  ],
+  "levitate": [
+    null,
+    "The subject gently lifts off the ground and levitates, floating upward a short distance, slowly rotating. Its detached shadow remains visible below"
+  ],
+  "earth_zoom": [
+    null,
+    "The camera rockets backwards and upwards, rapidly zooming out from the subject, through clouds above a city, then revealing the curved blue Earth from space. One continuous accelerating zoom out"
+  ],
+  "glitch": [
+    null,
+    "The subject flickers with horizontal digital glitch slices and RGB color channel offsets, briefly dissolves into pixels, then reassembles exactly in place"
+  ]
+}

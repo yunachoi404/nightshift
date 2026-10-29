@@ -1,0 +1,370 @@
+[
+  {
+    "template": "cinematic",
+    "projectId": "prj_mvfcp2qj02a4051a8c",
+    "assetId": "ast_mvff0d9cc04abcd283",
+    "path": "outputs/system/cinematic/Lake-at-Dawn-16x9.mp4",
+    "width": 1920,
+    "height": 1080,
+    "durationSec": 11,
+    "bytes": 11816615,
+    "sha256": "9b49fc0171c01c7a53a045f2fd8743f25d0e9200fa67f7f312a83ce492168b6e",
+    "audio": {
+      "pcmSha256": "7f2c8e1ca8622bf8e74ed32cbedd1491ae45af2d4a633fd149c9ccdc50b8738e",
+      "samplesAcrossChannels": 1054464,
+      "peak": 0.6587694883346558,
+      "rms": 0.11530018597841263,
+      "nearFullScaleFraction": 0.0
+    },
+    "probe": {
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "h264",
+          "codec_type": "video",
+          "width": 1920,
+          "height": 1080,
+          "avg_frame_rate": "24/1",
+          "duration": "11.000000",
+          "nb_frames": "264"
+        },
+        {
+          "codec_name": "aac",
+          "codec_type": "audio",
+          "sample_rate": "48000",
+          "channels": 2,
+          "avg_frame_rate": "0/0",
+          "duration": "10.984000",
+          "nb_frames": "516"
+        }
+      ],
+      "format": {
+        "duration": "11.000000"
+      }
+    },
+    "visuallyReviewed": true
+  },
+  {
+    "template": "cinematic",
+    "projectId": "prj_mvfcp2qj02a4051a8c",
+    "assetId": "ast_mvff1ji5d2905dcd1f",
+    "path": "outputs/system/cinematic/Lake-at-Dawn-9x16.mp4",
+    "width": 1080,
+    "height": 1920,
+    "durationSec": 11,
+    "bytes": 16474951,
+    "sha256": "e19c421b42cbb4ced57df0c1897c18f1ce083d8fd37ddc3db83b0a73596aa83e",
+    "audio": {
+      "pcmSha256": "7f2c8e1ca8622bf8e74ed32cbedd1491ae45af2d4a633fd149c9ccdc50b8738e",
+      "samplesAcrossChannels": 1054464,
+      "peak": 0.6587694883346558,
+      "rms": 0.11530018597841263,
+      "nearFullScaleFraction": 0.0
+    },
+    "probe": {
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "h264",
+          "codec_type": "video",
+          "width": 1080,
+          "height": 1920,
+          "avg_frame_rate": "24/1",
+          "duration": "11.000000",
+          "nb_frames": "264"
+        },
+        {
+          "codec_name": "aac",
+          "codec_type": "audio",
+          "sample_rate": "48000",
+          "channels": 2,
+          "avg_frame_rate": "0/0",
+          "duration": "10.984000",
+          "nb_frames": "516"
+        }
+      ],
+      "format": {
+        "duration": "11.000000"
+      }
+    },
+    "visuallyReviewed": true
+  },
+  {
+    "template": "music",
+    "projectId": "prj_mvfcpnh825242cb7f5",
+    "assetId": "ast_mvferift85f5fabe55",
+    "path": "outputs/system/music/Morning-Ride-16x9.mp4",
+    "width": 1920,
+    "height": 1080,
+    "durationSec": 30,
+    "bytes": 25922567,
+    "sha256": "26169cd7c4d540335833c33e18bb6d5c0d3c0fb81397110dc73dbec5beb71df3",
+    "audio": {
+      "pcmSha256": "ef0b4bd57f1fe81784f7063172f3a21d4faf75e19e7e9f2c35267b257497c4fc",
+      "samplesAcrossChannels": 2878944,
+      "peak": 0.8256176710128784,
+      "rms": 0.14123734831809998,
+      "nearFullScaleFraction": 0.0
+    },
+    "probe": {
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "h264",
+          "codec_type": "video",
+          "width": 1920,
+          "height": 1080,
+          "avg_frame_rate": "24/1",
+          "duration": "30.000000",
+          "nb_frames": "720"
+        },
+        {
+          "codec_name": "aac",
+          "codec_type": "audio",
+          "sample_rate": "48000",
+          "channels": 2,
+          "avg_frame_rate": "0/0",
+          "duration": "29.989000",
+          "nb_frames": "1407"
+        }
+      ],
+      "format": {
+        "duration": "30.000000"
+      }
+    },
+    "visuallyReviewed": true
+  },
+  {
+    "template": "music",
+    "projectId": "prj_mvfcpnh825242cb7f5",
+    "assetId": "ast_mvfevv9icd543ffbae",
+    "path": "outputs/system/music/Morning-Ride-9x16.mp4",
+    "width": 1080,
+    "height": 1920,
+    "durationSec": 30,
+    "bytes": 19210366,
+    "sha256": "dd1496bd6137442d33c2baa7e15f078d5b011da15ebe5a77abe157b702323efa",
+    "audio": {
+      "pcmSha256": "ef0b4bd57f1fe81784f7063172f3a21d4faf75e19e7e9f2c35267b257497c4fc",
+      "samplesAcrossChannels": 2878944,
+      "peak": 0.8256176710128784,
+      "rms": 0.14123734831809998,
+      "nearFullScaleFraction": 0.0
+    },
+    "probe": {
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "h264",
+          "codec_type": "video",
+          "width": 1080,
+          "height": 1920,
+          "avg_frame_rate": "24/1",
+          "duration": "30.000000",
+          "nb_frames": "720"
+        },
+        {
+          "codec_name": "aac",
+          "codec_type": "audio",
+          "sample_rate": "48000",
+          "channels": 2,
+          "avg_frame_rate": "0/0",
+          "duration": "29.989000",
+          "nb_frames": "1407"
+        }
+      ],
+      "format": {
+        "duration": "30.000000"
+      }
+    },
+    "visuallyReviewed": true
+  },
+  {
+    "template": "product",
+    "projectId": "prj_mvfcq2h1cf5c5886f3",
+    "assetId": "ast_mvfenqt333355bf0dd",
+    "path": "outputs/system/product/Daybreak-Mug-16x9.mp4",
+    "width": 1920,
+    "height": 1080,
+    "durationSec": 15,
+    "bytes": 7575333,
+    "sha256": "347b8ff4a8643b27dcb2b48ad2a549001336d85f31839082f3bcf97bc2fc3029",
+    "audio": {
+      "pcmSha256": "2f1aa7964f5961eff0bb2632d30a0e5c21be8a495d567056f7b71aeb767d4ddd",
+      "samplesAcrossChannels": 1440000,
+      "peak": 0.8014419674873352,
+      "rms": 0.11527317017316818,
+      "nearFullScaleFraction": 0.0
+    },
+    "probe": {
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "h264",
+          "codec_type": "video",
+          "width": 1920,
+          "height": 1080,
+          "avg_frame_rate": "24/1",
+          "duration": "15.000000",
+          "nb_frames": "360"
+        },
+        {
+          "codec_name": "aac",
+          "codec_type": "audio",
+          "sample_rate": "48000",
+          "channels": 2,
+          "avg_frame_rate": "0/0",
+          "duration": "15.000000",
+          "nb_frames": "705"
+        }
+      ],
+      "format": {
+        "duration": "15.000000"
+      }
+    },
+    "visuallyReviewed": true
+  },
+  {
+    "template": "product",
+    "projectId": "prj_mvfcq2h1cf5c5886f3",
+    "assetId": "ast_mvfemj8zdc16537b5c",
+    "path": "outputs/system/product/Daybreak-Mug-9x16.mp4",
+    "width": 1080,
+    "height": 1920,
+    "durationSec": 15,
+    "bytes": 8373455,
+    "sha256": "a491995b9314e2981ce48e4f2c21767e374ceb8f48257458c00a74eba184e077",
+    "audio": {
+      "pcmSha256": "2f1aa7964f5961eff0bb2632d30a0e5c21be8a495d567056f7b71aeb767d4ddd",
+      "samplesAcrossChannels": 1440000,
+      "peak": 0.8014419674873352,
+      "rms": 0.11527317017316818,
+      "nearFullScaleFraction": 0.0
+    },
+    "probe": {
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "h264",
+          "codec_type": "video",
+          "width": 1080,
+          "height": 1920,
+          "avg_frame_rate": "24/1",
+          "duration": "15.000000",
+          "nb_frames": "360"
+        },
+        {
+          "codec_name": "aac",
+          "codec_type": "audio",
+          "sample_rate": "48000",
+          "channels": 2,
+          "avg_frame_rate": "0/0",
+          "duration": "15.000000",
+          "nb_frames": "705"
+        }
+      ],
+      "format": {
+        "duration": "15.000000"
+      }
+    },
+    "visuallyReviewed": true
+  },
+  {
+    "template": "intro",
+    "projectId": "prj_mvfcqdiq06dcf5fa65",
+    "assetId": "ast_mvfexaor1277322fed",
+    "path": "outputs/system/intro/Quiet-Workshop-16x9.mp4",
+    "width": 1920,
+    "height": 1080,
+    "durationSec": 5.5,
+    "bytes": 4461350,
+    "sha256": "28968b02b7476c00266009bbd06f659308cb1a4fe21336608649081814031044",
+    "audio": {
+      "pcmSha256": "8febaa0481d9aa7c46312f8c72cd0baec9b25e3e25af6f32c51ff7c5ab8241c2",
+      "samplesAcrossChannels": 525120,
+      "peak": 0.7997012138366699,
+      "rms": 0.1144438162446022,
+      "nearFullScaleFraction": 0.0
+    },
+    "probe": {
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "h264",
+          "codec_type": "video",
+          "width": 1920,
+          "height": 1080,
+          "avg_frame_rate": "24/1",
+          "duration": "5.500000",
+          "nb_frames": "132"
+        },
+        {
+          "codec_name": "aac",
+          "codec_type": "audio",
+          "sample_rate": "48000",
+          "channels": 2,
+          "avg_frame_rate": "0/0",
+          "duration": "5.470000",
+          "nb_frames": "258"
+        }
+      ],
+      "format": {
+        "duration": "5.500000"
+      }
+    },
+    "visuallyReviewed": true
+  },
+  {
+    "template": "intro",
+    "projectId": "prj_mvfcqdiq06dcf5fa65",
+    "assetId": "ast_mvfey2vxe8f7e8bc0a",
+    "path": "outputs/system/intro/Quiet-Workshop-9x16.mp4",
+    "width": 1080,
+    "height": 1920,
+    "durationSec": 5.5,
+    "bytes": 2936611,
+    "sha256": "9996e9262a03d525d0ee41d9f6356c3111b4da306573ddbc9a295694968c36cf",
+    "audio": {
+      "pcmSha256": "8febaa0481d9aa7c46312f8c72cd0baec9b25e3e25af6f32c51ff7c5ab8241c2",
+      "samplesAcrossChannels": 525120,
+      "peak": 0.7997012138366699,
+      "rms": 0.1144438162446022,
+      "nearFullScaleFraction": 0.0
+    },
+    "probe": {
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "h264",
+          "codec_type": "video",
+          "width": 1080,
+          "height": 1920,
+          "avg_frame_rate": "24/1",
+          "duration": "5.500000",
+          "nb_frames": "132"
+        },
+        {
+          "codec_name": "aac",
+          "codec_type": "audio",
+          "sample_rate": "48000",
+          "channels": 2,
+          "avg_frame_rate": "0/0",
+          "duration": "5.470000",
+          "nb_frames": "258"
+        }
+      ],
+      "format": {
+        "duration": "5.500000"
+      }
+    },
+    "visuallyReviewed": true
+  }
+]

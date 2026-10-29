@@ -1,0 +1,2661 @@
+{
+  "baselineMeasurements": {
+    "crane_up": {
+      "width": 640,
+      "height": 384,
+      "frames": 97,
+      "fps": 24.0,
+      "roi": [
+        220,
+        130,
+        160,
+        165
+      ],
+      "sourceKeypoints": 46,
+      "middle": {
+        "method": "feature_match",
+        "matches": 15,
+        "inliers": 14,
+        "scale": 1.0177153661667646,
+        "medianResidualPx": 0.5191922187805176,
+        "translationPx": [
+          -3.5853920877492875,
+          -6.434437668225619
+        ],
+        "rotationDeg": 0.5570742512763676
+      },
+      "last": {
+        "method": "feature_match",
+        "matches": 10,
+        "inliers": 10,
+        "scale": 0.9882950328630389,
+        "medianResidualPx": 0.5118868350982666,
+        "translationPx": [
+          1.9933153875483607,
+          5.81840384162082
+        ],
+        "rotationDeg": -0.46391472396253647
+      },
+      "featureMatches": {
+        "middle": {
+          "method": "feature_match",
+          "matches": 15,
+          "inliers": 14,
+          "scale": 1.0177153661667646,
+          "medianResidualPx": 0.5191922187805176,
+          "translationPx": [
+            -3.5853920877492875,
+            -6.434437668225619
+          ],
+          "rotationDeg": 0.5570742512763676
+        },
+        "last": {
+          "method": "feature_match",
+          "matches": 10,
+          "inliers": 10,
+          "scale": 0.9882950328630389,
+          "medianResidualPx": 0.5118868350982666,
+          "translationPx": [
+            1.9933153875483607,
+            5.81840384162082
+          ],
+          "rotationDeg": -0.46391472396253647
+        }
+      },
+      "opticalFlow": {
+        "middle": {
+          "method": "optical_flow",
+          "matches": 57,
+          "inliers": 57,
+          "scale": 1.001136919539769,
+          "medianResidualPx": 0.11343055218458176,
+          "translationPx": [
+            -0.9003764617359536,
+            0.7190202445559474
+          ],
+          "rotationDeg": -0.12212576186639279
+        },
+        "last": {
+          "method": "optical_flow",
+          "matches": 57,
+          "inliers": 56,
+          "scale": 0.9952936371023263,
+          "medianResidualPx": 0.17342503368854523,
+          "translationPx": [
+            2.7563323070908172,
+            -0.33133683172425704
+          ],
+          "rotationDeg": 0.38347494368536417
+        }
+      },
+      "sourceProjectId": "prj_mvhnjefr4b236b372e"
+    },
+    "pull_back": {
+      "width": 640,
+      "height": 384,
+      "frames": 97,
+      "fps": 24.0,
+      "roi": [
+        450,
+        195,
+        105,
+        50
+      ],
+      "sourceKeypoints": 87,
+      "middle": {
+        "method": "feature_match",
+        "matches": 26,
+        "inliers": 26,
+        "scale": 0.9286446249583381,
+        "medianResidualPx": 0.5807450413703918,
+        "translationPx": [
+          28.848529596179226,
+          6.241611124071549
+        ],
+        "rotationDeg": 0.9482927926277223
+      },
+      "last": {
+        "method": "feature_match",
+        "matches": 19,
+        "inliers": 16,
+        "scale": 0.860311309991616,
+        "medianResidualPx": 0.7435510754585266,
+        "translationPx": [
+          50.74057651650817,
+          25.47749702800254
+        ],
+        "rotationDeg": 0.30199334350029405
+      },
+      "featureMatches": {
+        "middle": {
+          "method": "feature_match",
+          "matches": 26,
+          "inliers": 26,
+          "scale": 0.9286446249583381,
+          "medianResidualPx": 0.5807450413703918,
+          "translationPx": [
+            28.848529596179226,
+            6.241611124071549
+          ],
+          "rotationDeg": 0.9482927926277223
+        },
+        "last": {
+          "method": "feature_match",
+          "matches": 19,
+          "inliers": 16,
+          "scale": 0.860311309991616,
+          "medianResidualPx": 0.7435510754585266,
+          "translationPx": [
+            50.74057651650817,
+            25.47749702800254
+          ],
+          "rotationDeg": 0.30199334350029405
+        }
+      },
+      "opticalFlow": {
+        "middle": {
+          "method": "optical_flow",
+          "matches": 48,
+          "inliers": 48,
+          "scale": 0.9234300379877793,
+          "medianResidualPx": 0.5428236126899719,
+          "translationPx": [
+            27.679068646532055,
+            15.28788663329038
+          ],
+          "rotationDeg": -0.03246839385062111
+        },
+        "last": {
+          "method": "optical_flow",
+          "matches": 48,
+          "inliers": 48,
+          "scale": 0.8604884775551735,
+          "medianResidualPx": 0.9137333631515503,
+          "translationPx": [
+            49.85527471669632,
+            26.92004067422838
+          ],
+          "rotationDeg": 0.04177415381852253
+        }
+      },
+      "sourceProjectId": "prj_mvhn1cqpb036e7e184"
+    },
+    "orbit_right": {
+      "width": 640,
+      "height": 384,
+      "frames": 97,
+      "fps": 24.0,
+      "roi": [
+        240,
+        50,
+        140,
+        275
+      ],
+      "sourceKeypoints": 13,
+      "middle": {
+        "method": "optical_flow",
+        "matches": 25,
+        "inliers": 18,
+        "scale": 1.0017033603049101,
+        "medianResidualPx": 0.48033368587493896,
+        "translationPx": [
+          0.6320329283983853,
+          2.297607471106816
+        ],
+        "rotationDeg": -0.46581009426325176
+      },
+      "last": {
+        "method": "optical_flow",
+        "matches": 25,
+        "inliers": 17,
+        "scale": 0.9945389254691662,
+        "medianResidualPx": 0.49735042452812195,
+        "translationPx": [
+          3.5765038075407256,
+          7.967724343168113
+        ],
+        "rotationDeg": -1.416236611762579
+      },
+      "featureMatches": {
+        "middle": {
+          "method": "feature_match",
+          "matches": 5,
+          "inliers": 2,
+          "scale": null,
+          "medianResidualPx": null
+        },
+        "last": {
+          "method": "feature_match",
+          "matches": 1,
+          "inliers": 0,
+          "scale": null,
+          "medianResidualPx": null
+        }
+      },
+      "opticalFlow": {
+        "middle": {
+          "method": "optical_flow",
+          "matches": 25,
+          "inliers": 18,
+          "scale": 1.0017033603049101,
+          "medianResidualPx": 0.48033368587493896,
+          "translationPx": [
+            0.6320329283983853,
+            2.297607471106816
+          ],
+          "rotationDeg": -0.46581009426325176
+        },
+        "last": {
+          "method": "optical_flow",
+          "matches": 25,
+          "inliers": 17,
+          "scale": 0.9945389254691662,
+          "medianResidualPx": 0.49735042452812195,
+          "translationPx": [
+            3.5765038075407256,
+            7.967724343168113
+          ],
+          "rotationDeg": -1.416236611762579
+        }
+      },
+      "sourceProjectId": "prj_mvhn1cqc91ac2f53cf"
+    },
+    "crane_down": {
+      "width": 640,
+      "height": 384,
+      "frames": 97,
+      "fps": 24.0,
+      "roi": [
+        155,
+        150,
+        250,
+        175
+      ],
+      "sourceKeypoints": 237,
+      "middle": {
+        "method": "optical_flow",
+        "matches": 126,
+        "inliers": 20,
+        "scale": 0.7770473459328254,
+        "medianResidualPx": 1.5635712146759033,
+        "translationPx": [
+          42.9206654123839,
+          51.226824699758325
+        ],
+        "rotationDeg": -5.7855617664507
+      },
+      "last": {
+        "method": "optical_flow",
+        "matches": 122,
+        "inliers": 12,
+        "scale": 0.3232445516090315,
+        "medianResidualPx": 1.2376658916473389,
+        "translationPx": [
+          157.42056739892956,
+          126.38981113968099
+        ],
+        "rotationDeg": -25.374458202580268
+      },
+      "featureMatches": {
+        "middle": {
+          "method": "feature_match",
+          "matches": 16,
+          "inliers": 6,
+          "scale": null,
+          "medianResidualPx": null
+        },
+        "last": {
+          "method": "feature_match",
+          "matches": 4,
+          "inliers": 2,
+          "scale": null,
+          "medianResidualPx": null
+        }
+      },
+      "opticalFlow": {
+        "middle": {
+          "method": "optical_flow",
+          "matches": 126,
+          "inliers": 20,
+          "scale": 0.7770473459328254,
+          "medianResidualPx": 1.5635712146759033,
+          "translationPx": [
+            42.9206654123839,
+            51.226824699758325
+          ],
+          "rotationDeg": -5.7855617664507
+        },
+        "last": {
+          "method": "optical_flow",
+          "matches": 122,
+          "inliers": 12,
+          "scale": 0.3232445516090315,
+          "medianResidualPx": 1.2376658916473389,
+          "translationPx": [
+            157.42056739892956,
+            126.38981113968099
+          ],
+          "rotationDeg": -25.374458202580268
+        }
+      },
+      "sourceProjectId": "prj_mvhn1cs3bee8df63d7"
+    },
+    "handheld_drift": {
+      "width": 640,
+      "height": 384,
+      "frames": 97,
+      "fps": 24.0,
+      "roi": [
+        450,
+        195,
+        105,
+        50
+      ],
+      "sourceKeypoints": 86,
+      "middle": {
+        "method": "feature_match",
+        "matches": 28,
+        "inliers": 28,
+        "scale": 1.0251137815730003,
+        "medianResidualPx": 0.8880575895309448,
+        "translationPx": [
+          -11.79602296655439,
+          2.218954387104606
+        ],
+        "rotationDeg": -0.907038827597253
+      },
+      "last": {
+        "method": "feature_match",
+        "matches": 26,
+        "inliers": 25,
+        "scale": 1.048550117088047,
+        "medianResidualPx": 0.4133646488189697,
+        "translationPx": [
+          -17.017144371561464,
+          -4.872421365319626
+        ],
+        "rotationDeg": -0.49639563242662704
+      },
+      "featureMatches": {
+        "middle": {
+          "method": "feature_match",
+          "matches": 28,
+          "inliers": 28,
+          "scale": 1.0251137815730003,
+          "medianResidualPx": 0.8880575895309448,
+          "translationPx": [
+            -11.79602296655439,
+            2.218954387104606
+          ],
+          "rotationDeg": -0.907038827597253
+        },
+        "last": {
+          "method": "feature_match",
+          "matches": 26,
+          "inliers": 25,
+          "scale": 1.048550117088047,
+          "medianResidualPx": 0.4133646488189697,
+          "translationPx": [
+            -17.017144371561464,
+            -4.872421365319626
+          ],
+          "rotationDeg": -0.49639563242662704
+        }
+      },
+      "opticalFlow": {
+        "middle": {
+          "method": "optical_flow",
+          "matches": 33,
+          "inliers": 33,
+          "scale": 1.0239840264047166,
+          "medianResidualPx": 0.4966115355491638,
+          "translationPx": [
+            -11.850675204048862,
+            4.1012638881557955
+          ],
+          "rotationDeg": -1.0719169365915364
+        },
+        "last": {
+          "method": "optical_flow",
+          "matches": 33,
+          "inliers": 33,
+          "scale": 1.060564074416192,
+          "medianResidualPx": 0.7041178345680237,
+          "translationPx": [
+            -22.255079296564666,
+            -10.33782647547699
+          ],
+          "rotationDeg": -0.2064192159470121
+        }
+      },
+      "sourceProjectId": "prj_mvhn1crrf04140ad49"
+    },
+    "push_in": {
+      "width": 640,
+      "height": 384,
+      "frames": 97,
+      "fps": 24.0,
+      "roi": [
+        240,
+        50,
+        140,
+        275
+      ],
+      "sourceKeypoints": 13,
+      "middle": {
+        "method": "feature_match",
+        "matches": 10,
+        "inliers": 10,
+        "scale": 1.08197925892988,
+        "medianResidualPx": 0.6607446670532227,
+        "translationPx": [
+          -27.074471558641864,
+          -14.860474490914324
+        ],
+        "rotationDeg": -0.2527750255315095
+      },
+      "last": {
+        "method": "optical_flow",
+        "matches": 20,
+        "inliers": 17,
+        "scale": 1.1999594544621783,
+        "medianResidualPx": 1.000222086906433,
+        "translationPx": [
+          -63.6218636566284,
+          -36.964791358351945
+        ],
+        "rotationDeg": -0.18484743265961628
+      },
+      "featureMatches": {
+        "middle": {
+          "method": "feature_match",
+          "matches": 10,
+          "inliers": 10,
+          "scale": 1.08197925892988,
+          "medianResidualPx": 0.6607446670532227,
+          "translationPx": [
+            -27.074471558641864,
+            -14.860474490914324
+          ],
+          "rotationDeg": -0.2527750255315095
+        },
+        "last": {
+          "method": "feature_match",
+          "matches": 7,
+          "inliers": 7,
+          "scale": null,
+          "medianResidualPx": null
+        }
+      },
+      "opticalFlow": {
+        "middle": {
+          "method": "optical_flow",
+          "matches": 20,
+          "inliers": 20,
+          "scale": 1.0952077371673494,
+          "medianResidualPx": 0.581061840057373,
+          "translationPx": [
+            -29.791403735338985,
+            -19.11626648957676
+          ],
+          "rotationDeg": 0.17733454874601848
+        },
+        "last": {
+          "method": "optical_flow",
+          "matches": 20,
+          "inliers": 17,
+          "scale": 1.1999594544621783,
+          "medianResidualPx": 1.000222086906433,
+          "translationPx": [
+            -63.6218636566284,
+            -36.964791358351945
+          ],
+          "rotationDeg": -0.18484743265961628
+        }
+      },
+      "sourceProjectId": "prj_mvhn1cv4826f3dee57"
+    },
+    "dolly_in": {
+      "width": 640,
+      "height": 384,
+      "frames": 97,
+      "fps": 24.0,
+      "roi": [
+        225,
+        100,
+        220,
+        175
+      ],
+      "sourceKeypoints": 160,
+      "middle": {
+        "method": "feature_match",
+        "matches": 72,
+        "inliers": 68,
+        "scale": 1.0564946591672542,
+        "medianResidualPx": 0.6754819750785828,
+        "translationPx": [
+          -18.138580342430313,
+          -12.061154595928514
+        ],
+        "rotationDeg": 0.11341149662345605
+      },
+      "last": {
+        "method": "feature_match",
+        "matches": 59,
+        "inliers": 50,
+        "scale": 1.1179154896589143,
+        "medianResidualPx": 1.2630939483642578,
+        "translationPx": [
+          -37.92000466570541,
+          -23.990888183347877
+        ],
+        "rotationDeg": 0.03730960051463228
+      },
+      "featureMatches": {
+        "middle": {
+          "method": "feature_match",
+          "matches": 72,
+          "inliers": 68,
+          "scale": 1.0564946591672542,
+          "medianResidualPx": 0.6754819750785828,
+          "translationPx": [
+            -18.138580342430313,
+            -12.061154595928514
+          ],
+          "rotationDeg": 0.11341149662345605
+        },
+        "last": {
+          "method": "feature_match",
+          "matches": 59,
+          "inliers": 50,
+          "scale": 1.1179154896589143,
+          "medianResidualPx": 1.2630939483642578,
+          "translationPx": [
+            -37.92000466570541,
+            -23.990888183347877
+          ],
+          "rotationDeg": 0.03730960051463228
+        }
+      },
+      "opticalFlow": {
+        "middle": {
+          "method": "optical_flow",
+          "matches": 173,
+          "inliers": 171,
+          "scale": 1.058860618383813,
+          "medianResidualPx": 0.5195982456207275,
+          "translationPx": [
+            -19.267141344987866,
+            -11.750651792465531
+          ],
+          "rotationDeg": 0.03515335862074445
+        },
+        "last": {
+          "method": "optical_flow",
+          "matches": 173,
+          "inliers": 153,
+          "scale": 1.1205242369228496,
+          "medianResidualPx": 1.0683369636535645,
+          "translationPx": [
+            -38.8878710117149,
+            -23.889817673262773
+          ],
+          "rotationDeg": 0.04510530398582889
+        }
+      },
+      "sourceProjectId": "prj_mvhnknra8eb027738e"
+    },
+    "crash_zoom": {
+      "width": 640,
+      "height": 384,
+      "frames": 97,
+      "fps": 24.0,
+      "roi": [
+        240,
+        50,
+        140,
+        275
+      ],
+      "sourceKeypoints": 12,
+      "middle": {
+        "method": "feature_match",
+        "matches": 3,
+        "inliers": 0,
+        "scale": null,
+        "medianResidualPx": null
+      },
+      "last": {
+        "method": "feature_match",
+        "matches": 2,
+        "inliers": 0,
+        "scale": null,
+        "medianResidualPx": null
+      },
+      "featureMatches": {
+        "middle": {
+          "method": "feature_match",
+          "matches": 3,
+          "inliers": 0,
+          "scale": null,
+          "medianResidualPx": null
+        },
+        "last": {
+          "method": "feature_match",
+          "matches": 2,
+          "inliers": 0,
+          "scale": null,
+          "medianResidualPx": null
+        }
+      },
+      "opticalFlow": {
+        "middle": {
+          "method": "optical_flow",
+          "matches": 15,
+          "inliers": 6,
+          "scale": null,
+          "medianResidualPx": null
+        },
+        "last": {
+          "method": "optical_flow",
+          "matches": 15,
+          "inliers": 6,
+          "scale": null,
+          "medianResidualPx": null
+        }
+      },
+      "sourceProjectId": "prj_mvhn1cr0bc9788cdf6"
+    },
+    "orbit_left": {
+      "width": 640,
+      "height": 384,
+      "frames": 97,
+      "fps": 24.0,
+      "roi": [
+        155,
+        150,
+        250,
+        175
+      ],
+      "sourceKeypoints": 253,
+      "middle": {
+        "method": "feature_match",
+        "matches": 55,
+        "inliers": 13,
+        "scale": 1.0283224173397318,
+        "medianResidualPx": 0.8196380138397217,
+        "translationPx": [
+          -8.479089822133721,
+          -6.054133554590403
+        ],
+        "rotationDeg": 0.18978067609603494
+      },
+      "last": {
+        "method": "optical_flow",
+        "matches": 125,
+        "inliers": 22,
+        "scale": 1.0148437001451094,
+        "medianResidualPx": 1.4251009225845337,
+        "translationPx": [
+          80.25795511494431,
+          -6.944438595283036
+        ],
+        "rotationDeg": 0.39736613807826526
+      },
+      "featureMatches": {
+        "middle": {
+          "method": "feature_match",
+          "matches": 55,
+          "inliers": 13,
+          "scale": 1.0283224173397318,
+          "medianResidualPx": 0.8196380138397217,
+          "translationPx": [
+            -8.479089822133721,
+            -6.054133554590403
+          ],
+          "rotationDeg": 0.18978067609603494
+        },
+        "last": {
+          "method": "feature_match",
+          "matches": 31,
+          "inliers": 7,
+          "scale": null,
+          "medianResidualPx": null
+        }
+      },
+      "opticalFlow": {
+        "middle": {
+          "method": "optical_flow",
+          "matches": 125,
+          "inliers": 42,
+          "scale": 1.027871446830439,
+          "medianResidualPx": 1.470741868019104,
+          "translationPx": [
+            29.411732942164114,
+            -2.8100068150730007
+          ],
+          "rotationDeg": -1.036017722106564
+        },
+        "last": {
+          "method": "optical_flow",
+          "matches": 125,
+          "inliers": 22,
+          "scale": 1.0148437001451094,
+          "medianResidualPx": 1.4251009225845337,
+          "translationPx": [
+            80.25795511494431,
+            -6.944438595283036
+          ],
+          "rotationDeg": 0.39736613807826526
+        }
+      },
+      "sourceProjectId": "prj_mvhn1cpr7725b3e4d4"
+    },
+    "dolly_zoom": {
+      "width": 640,
+      "height": 384,
+      "frames": 97,
+      "fps": 24.0,
+      "roi": [
+        155,
+        150,
+        250,
+        175
+      ],
+      "sourceKeypoints": 238,
+      "middle": {
+        "method": "feature_match",
+        "matches": 80,
+        "inliers": 48,
+        "scale": 0.9027699762775211,
+        "medianResidualPx": 0.9152011871337891,
+        "translationPx": [
+          33.33532253059301,
+          16.218365689131215
+        ],
+        "rotationDeg": 0.4803161873967257
+      },
+      "last": {
+        "method": "feature_match",
+        "matches": 65,
+        "inliers": 40,
+        "scale": 0.805340086501009,
+        "medianResidualPx": 1.2405953407287598,
+        "translationPx": [
+          58.785004139957785,
+          40.31729888886977
+        ],
+        "rotationDeg": -0.7717137938060188
+      },
+      "featureMatches": {
+        "middle": {
+          "method": "feature_match",
+          "matches": 80,
+          "inliers": 48,
+          "scale": 0.9027699762775211,
+          "medianResidualPx": 0.9152011871337891,
+          "translationPx": [
+            33.33532253059301,
+            16.218365689131215
+          ],
+          "rotationDeg": 0.4803161873967257
+        },
+        "last": {
+          "method": "feature_match",
+          "matches": 65,
+          "inliers": 40,
+          "scale": 0.805340086501009,
+          "medianResidualPx": 1.2405953407287598,
+          "translationPx": [
+            58.785004139957785,
+            40.31729888886977
+          ],
+          "rotationDeg": -0.7717137938060188
+        }
+      },
+      "opticalFlow": {
+        "middle": {
+          "method": "optical_flow",
+          "matches": 130,
+          "inliers": 83,
+          "scale": 0.8778122020589909,
+          "medianResidualPx": 1.0009599924087524,
+          "translationPx": [
+            35.57311611806499,
+            26.382788232933958
+          ],
+          "rotationDeg": -0.7554753454429635
+        },
+        "last": {
+          "method": "optical_flow",
+          "matches": 130,
+          "inliers": 70,
+          "scale": 0.7940050775048031,
+          "medianResidualPx": 1.466711401939392,
+          "translationPx": [
+            59.777590264506586,
+            44.68270788153886
+          ],
+          "rotationDeg": -1.513126402263868
+        }
+      },
+      "sourceProjectId": "prj_mvhn1crdf8f635e323"
+    }
+  },
+  "manualChecks": {
+    "lake-pullback": {
+      "method": "Manual cabin roof span in decoded first/middle/last frames. At this size SIFT has too few surviving matches.",
+      "first": {
+        "left": 490,
+        "right": 531
+      },
+      "last": {
+        "left": 410,
+        "right": 431
+      },
+      "lastScale": 0.5122,
+      "uncertaintyPxPerEdge": 2
+    }
+  },
+  "retiredQuickMoveIds": [
+    "orbit_left",
+    "orbit_right",
+    "handheld_drift",
+    "crane_down"
+  ],
+  "selectedCases": {
+    "dolly_in": "ferry-dolly",
+    "push_in": "kiln-push",
+    "pull_back": "lake-pullback",
+    "crash_zoom": "cobalt-crash",
+    "dolly_zoom": "bowl-dolly-zoom",
+    "crane_up": "harbor-crane-up"
+  },
+  "cases": [
+    {
+      "name": "ferry-dolly",
+      "move": "dolly_in",
+      "selectedForPicker": true,
+      "review": "Strong forward move; mild window-edge drift.",
+      "projectId": "prj_mvhp0p9268084ad503",
+      "takeId": "take_mvhp2a8mbff41123e1",
+      "jobId": "job_mvhp0pbxafcf36d0e0",
+      "seed": 1468459655,
+      "prompt": "A quiet ferry cabin at blue hour, warm yellow lights in the windows, calm water. The boat stays still. Camera movement: Dolly in. Glide slowly toward the subject. Follow the guide's camera path and preserve the scene, objects, colors and lighting in the first frame. One continuous shot. Natural quiet ambience.",
+      "sourceSha256": "01c4c3cb78cc3efa4c6fd17bf8063589eec0e9a98ce8673f57a7774ba27d7cbf",
+      "videoSha256": "decc13d5c272d83cbda88298b8cf6038b0a7553be518eba1d175bda2ef5d02dd",
+      "measurement": {
+        "width": 640,
+        "height": 384,
+        "frames": 97,
+        "fps": 24.0,
+        "roi": [
+          225,
+          100,
+          220,
+          175
+        ],
+        "sourceKeypoints": 154,
+        "middle": {
+          "method": "feature_match",
+          "matches": 43,
+          "inliers": 28,
+          "scale": 1.2737561529938248,
+          "medianResidualPx": 1.0942679643630981,
+          "translationPx": [
+            -87.0732919406226,
+            -53.415653577494794
+          ],
+          "rotationDeg": 0.02620058013687018
+        },
+        "last": {
+          "method": "feature_match",
+          "matches": 22,
+          "inliers": 8,
+          "scale": 1.7347669531695495,
+          "medianResidualPx": 1.246509075164795,
+          "translationPx": [
+            -234.74213871506456,
+            -140.7244886636746
+          ],
+          "rotationDeg": -0.018453312065297548
+        },
+        "featureMatches": {
+          "middle": {
+            "method": "feature_match",
+            "matches": 43,
+            "inliers": 28,
+            "scale": 1.2737561529938248,
+            "medianResidualPx": 1.0942679643630981,
+            "translationPx": [
+              -87.0732919406226,
+              -53.415653577494794
+            ],
+            "rotationDeg": 0.02620058013687018
+          },
+          "last": {
+            "method": "feature_match",
+            "matches": 22,
+            "inliers": 8,
+            "scale": 1.7347669531695495,
+            "medianResidualPx": 1.246509075164795,
+            "translationPx": [
+              -234.74213871506456,
+              -140.7244886636746
+            ],
+            "rotationDeg": -0.018453312065297548
+          }
+        },
+        "opticalFlow": {
+          "middle": {
+            "method": "optical_flow",
+            "matches": 162,
+            "inliers": 100,
+            "scale": 1.2806116363330056,
+            "medianResidualPx": 1.5459563732147217,
+            "translationPx": [
+              -90.46763993543796,
+              -52.79112410271594
+            ],
+            "rotationDeg": -0.17653489725706734
+          },
+          "last": {
+            "method": "optical_flow",
+            "matches": 161,
+            "inliers": 23,
+            "scale": 1.7542926374535739,
+            "medianResidualPx": 1.7943718433380127,
+            "translationPx": [
+              -239.88680989259902,
+              -134.54534365868415
+            ],
+            "rotationDeg": -0.9848061519275745
+          }
+        }
+      }
+    },
+    {
+      "name": "lake-pullback",
+      "move": "pull_back",
+      "selectedForPicker": true,
+      "review": "Cabin becomes about half as large; shoreline holds and aurora evolves.",
+      "projectId": "prj_mvhp2hobf7046ee9f1",
+      "takeId": "take_mvhp4l2wb5c204c36d",
+      "jobId": "job_mvhp2hvmbc9b613306",
+      "seed": 647721036,
+      "prompt": "A snowy lake under the northern lights, a cabin on the shore. Still water, quiet night. Camera movement: Pull back. Back away to reveal more of the scene. Follow the guide's camera path and preserve the scene, objects, colors and lighting in the first frame. One continuous shot. Natural quiet ambience.",
+      "sourceSha256": "075cde79f5554b2a17aef73c2ff5620376d0c27e537c144021208e2878b4706e",
+      "videoSha256": "94ab98e066cebe600379749b7c8140182e1a2771363529428fad1760dabad03d",
+      "measurement": {
+        "width": 640,
+        "height": 384,
+        "frames": 97,
+        "fps": 24.0,
+        "roi": [
+          450,
+          195,
+          105,
+          50
+        ],
+        "sourceKeypoints": 82,
+        "middle": {
+          "method": "optical_flow",
+          "matches": 35,
+          "inliers": 24,
+          "scale": 0.630386973582884,
+          "medianResidualPx": 1.5311436653137207,
+          "translationPx": [
+            126.6018606901929,
+            81.00700276835094
+          ],
+          "rotationDeg": -1.6262569915927938
+        },
+        "last": {
+          "method": "optical_flow",
+          "matches": 35,
+          "inliers": 21,
+          "scale": 0.47536490968178285,
+          "medianResidualPx": 1.6484650373458862,
+          "translationPx": [
+            175.45029685323072,
+            107.22150496185941
+          ],
+          "rotationDeg": -1.5663141374982126
+        },
+        "featureMatches": {
+          "middle": {
+            "method": "feature_match",
+            "matches": 8,
+            "inliers": 6,
+            "scale": null,
+            "medianResidualPx": null
+          },
+          "last": {
+            "method": "feature_match",
+            "matches": 4,
+            "inliers": 3,
+            "scale": null,
+            "medianResidualPx": null
+          }
+        },
+        "opticalFlow": {
+          "middle": {
+            "method": "optical_flow",
+            "matches": 35,
+            "inliers": 24,
+            "scale": 0.630386973582884,
+            "medianResidualPx": 1.5311436653137207,
+            "translationPx": [
+              126.6018606901929,
+              81.00700276835094
+            ],
+            "rotationDeg": -1.6262569915927938
+          },
+          "last": {
+            "method": "optical_flow",
+            "matches": 35,
+            "inliers": 21,
+            "scale": 0.47536490968178285,
+            "medianResidualPx": 1.6484650373458862,
+            "translationPx": [
+              175.45029685323072,
+              107.22150496185941
+            ],
+            "rotationDeg": -1.5663141374982126
+          }
+        }
+      }
+    },
+    {
+      "name": "harbor-crash",
+      "move": "crash_zoom",
+      "selectedForPicker": false,
+      "review": "Clear 2.8x zoom but the source is too tightly framed for a whole-ferry finish.",
+      "projectId": "prj_mvhp4n3s7dd2da6b3c",
+      "takeId": "take_mvhp65xa39fe6b99f2",
+      "jobId": "job_mvhp4n5x6d7a0ec6f3",
+      "seed": 898988436,
+      "prompt": "A small ferry at anchor in a blue hour harbor, warm lights in the cabin, dark mountains beyond. The ferry stays still. Camera movement: Crash zoom. Punch in quickly with the lens. Follow the guide's camera path and preserve the scene, objects, colors and lighting in the first frame. One continuous shot. Natural quiet ambience.",
+      "sourceSha256": "bcc79ea59256112e54b2866a9daa544f8b5fff1aa5aaa96d5cabc93c5b263226",
+      "videoSha256": "f6bd6b9a2b116913b4f6f9aab4c458e16bbb1a3ed2679b17a18f2dc8872ab28f",
+      "measurement": {
+        "width": 640,
+        "height": 384,
+        "frames": 97,
+        "fps": 24.0,
+        "roi": [
+          190,
+          150,
+          280,
+          140
+        ],
+        "sourceKeypoints": 239,
+        "middle": {
+          "method": "feature_match",
+          "matches": 33,
+          "inliers": 19,
+          "scale": 2.809574741958644,
+          "medianResidualPx": 1.2580715417861938,
+          "translationPx": [
+            -579.6305463856419,
+            -461.2627653260454
+          ],
+          "rotationDeg": -0.1471402352728679
+        },
+        "last": {
+          "method": "feature_match",
+          "matches": 32,
+          "inliers": 20,
+          "scale": 2.797084087794479,
+          "medianResidualPx": 1.4956085681915283,
+          "translationPx": [
+            -576.3352286806133,
+            -458.4821613733586
+          ],
+          "rotationDeg": -0.21163432428115586
+        },
+        "featureMatches": {
+          "middle": {
+            "method": "feature_match",
+            "matches": 33,
+            "inliers": 19,
+            "scale": 2.809574741958644,
+            "medianResidualPx": 1.2580715417861938,
+            "translationPx": [
+              -579.6305463856419,
+              -461.2627653260454
+            ],
+            "rotationDeg": -0.1471402352728679
+          },
+          "last": {
+            "method": "feature_match",
+            "matches": 32,
+            "inliers": 20,
+            "scale": 2.797084087794479,
+            "medianResidualPx": 1.4956085681915283,
+            "translationPx": [
+              -576.3352286806133,
+              -458.4821613733586
+            ],
+            "rotationDeg": -0.21163432428115586
+          }
+        },
+        "opticalFlow": {
+          "middle": {
+            "method": "optical_flow",
+            "matches": 149,
+            "inliers": 34,
+            "scale": 2.754691373251285,
+            "medianResidualPx": 1.8866301774978638,
+            "translationPx": [
+              -556.9963031560967,
+              -456.0086917800952
+            ],
+            "rotationDeg": 0.37272417615118414
+          },
+          "last": {
+            "method": "optical_flow",
+            "matches": 149,
+            "inliers": 33,
+            "scale": 2.752053026843843,
+            "medianResidualPx": 1.8805173635482788,
+            "translationPx": [
+              -556.0768128593112,
+              -454.2661798477103
+            ],
+            "rotationDeg": 0.3617817420477614
+          }
+        }
+      }
+    },
+    {
+      "name": "kiln-orbit-left-20",
+      "move": "orbit_left",
+      "selectedForPicker": false,
+      "review": "Large invented foreground structure obscures the studio.",
+      "projectId": "prj_mvhp6cx5e984708121",
+      "takeId": "take_mvhp7n8kfb74b60316",
+      "jobId": "job_mvhp6cz78782bd032d",
+      "seed": 2015229675,
+      "prompt": "A quiet pottery studio with rows of clay bowls on wooden shelves, warm sunlight from the left window. Everything is still. Camera movement: Orbit left. Arc left around the subject. Follow the guide's camera path and preserve the scene, objects, colors and lighting in the first frame. One continuous shot. Natural quiet ambience.",
+      "sourceSha256": "cfcea7e9bf1b34f858ce920746d998e7abdc03b79e17ad8a09061d22984912e1",
+      "videoSha256": "8e3f046a9ecc0663ccf95f3b83c0b06e673d71f72115647fe2f423312697b4fb",
+      "measurement": {
+        "width": 640,
+        "height": 384,
+        "frames": 97,
+        "fps": 24.0,
+        "roi": [
+          180,
+          70,
+          270,
+          200
+        ],
+        "sourceKeypoints": 384,
+        "middle": {
+          "method": "feature_match",
+          "matches": 40,
+          "inliers": 16,
+          "scale": 0.985696822717382,
+          "medianResidualPx": 1.4140886068344116,
+          "translationPx": [
+            32.52921613207813,
+            4.281960182034414
+          ],
+          "rotationDeg": -0.35627054225160004
+        },
+        "last": {
+          "method": "feature_match",
+          "matches": 8,
+          "inliers": 2,
+          "scale": null,
+          "medianResidualPx": null
+        },
+        "featureMatches": {
+          "middle": {
+            "method": "feature_match",
+            "matches": 40,
+            "inliers": 16,
+            "scale": 0.985696822717382,
+            "medianResidualPx": 1.4140886068344116,
+            "translationPx": [
+              32.52921613207813,
+              4.281960182034414
+            ],
+            "rotationDeg": -0.35627054225160004
+          },
+          "last": {
+            "method": "feature_match",
+            "matches": 8,
+            "inliers": 2,
+            "scale": null,
+            "medianResidualPx": null
+          }
+        },
+        "opticalFlow": {
+          "middle": {
+            "method": "optical_flow",
+            "matches": 294,
+            "inliers": 182,
+            "scale": 0.9910780505116819,
+            "medianResidualPx": 1.281797170639038,
+            "translationPx": [
+              32.8477384145602,
+              -0.5452634330410079
+            ],
+            "rotationDeg": 0.25402244180581046
+          },
+          "last": {
+            "method": "optical_flow",
+            "matches": 2,
+            "inliers": 0,
+            "scale": null,
+            "medianResidualPx": null
+          }
+        }
+      }
+    },
+    {
+      "name": "kiln-push",
+      "move": "push_in",
+      "selectedForPicker": true,
+      "review": "Fast push reaches a close view before settling; bowls and shelf structure hold.",
+      "projectId": "prj_mvhp9v2m25a0def419",
+      "takeId": "take_mvhpbe92d1f4ea572f",
+      "jobId": "job_mvhp9v588d19fd762c",
+      "seed": 40250072,
+      "prompt": "A quiet pottery studio with rows of clay bowls on wooden shelves, warm sunlight from the left window. Everything is still. Camera movement: Push in. Rush toward the subject, then settle. Follow the guide's camera path and preserve the scene, objects, colors and lighting in the first frame. One continuous shot. Natural quiet ambience.",
+      "sourceSha256": "cfcea7e9bf1b34f858ce920746d998e7abdc03b79e17ad8a09061d22984912e1",
+      "videoSha256": "a6ec30b1373b981166dbd8af912740033065e6876cfc49303c62b7799f7b845b",
+      "measurement": {
+        "width": 640,
+        "height": 384,
+        "frames": 97,
+        "fps": 24.0,
+        "roi": [
+          180,
+          70,
+          270,
+          200
+        ],
+        "sourceKeypoints": 368,
+        "middle": {
+          "method": "feature_match",
+          "matches": 43,
+          "inliers": 21,
+          "scale": 2.032421050027139,
+          "medianResidualPx": 1.3609355688095093,
+          "translationPx": [
+            -330.19802334804973,
+            -196.2309235185315
+          ],
+          "rotationDeg": -0.11519383652822088
+        },
+        "last": {
+          "method": "optical_flow",
+          "matches": 163,
+          "inliers": 16,
+          "scale": 3.2849634420267453,
+          "medianResidualPx": 1.7894916534423828,
+          "translationPx": [
+            -733.5647923172361,
+            -427.89819065748685
+          ],
+          "rotationDeg": -0.2437212681051667
+        },
+        "featureMatches": {
+          "middle": {
+            "method": "feature_match",
+            "matches": 43,
+            "inliers": 21,
+            "scale": 2.032421050027139,
+            "medianResidualPx": 1.3609355688095093,
+            "translationPx": [
+              -330.19802334804973,
+              -196.2309235185315
+            ],
+            "rotationDeg": -0.11519383652822088
+          },
+          "last": {
+            "method": "feature_match",
+            "matches": 25,
+            "inliers": 7,
+            "scale": null,
+            "medianResidualPx": null
+          }
+        },
+        "opticalFlow": {
+          "middle": {
+            "method": "optical_flow",
+            "matches": 260,
+            "inliers": 61,
+            "scale": 2.085897254386298,
+            "medianResidualPx": 2.075160264968872,
+            "translationPx": [
+              -346.94466840611375,
+              -205.27451325129277
+            ],
+            "rotationDeg": -0.08651854054899494
+          },
+          "last": {
+            "method": "optical_flow",
+            "matches": 163,
+            "inliers": 16,
+            "scale": 3.2849634420267453,
+            "medianResidualPx": 1.7894916534423828,
+            "translationPx": [
+              -733.5647923172361,
+              -427.89819065748685
+            ],
+            "rotationDeg": -0.2437212681051667
+          }
+        }
+      }
+    },
+    {
+      "name": "kiln-orbit-right-20",
+      "move": "orbit_right",
+      "selectedForPicker": false,
+      "review": "Shelves separate and bowls float.",
+      "projectId": "prj_mvhpbl4n9e2433d9d8",
+      "takeId": "take_mvhpcypwb3f97d49f8",
+      "jobId": "job_mvhpbl6c44bb33e6cf",
+      "seed": 1830261643,
+      "prompt": "A quiet pottery studio with rows of clay bowls on wooden shelves, warm sunlight from the left window. Everything is still. Camera movement: Orbit right. Sweep right around the subject. Follow the guide's camera path and preserve the scene, objects, colors and lighting in the first frame. One continuous shot. Natural quiet ambience.",
+      "sourceSha256": "cfcea7e9bf1b34f858ce920746d998e7abdc03b79e17ad8a09061d22984912e1",
+      "videoSha256": "bf8c3226105435a91c08c6f3f4f5e2b7a9738a10f898d1e71617a41a32eac51a",
+      "measurement": {
+        "width": 640,
+        "height": 384,
+        "frames": 97,
+        "fps": 24.0,
+        "roi": [
+          180,
+          70,
+          270,
+          200
+        ],
+        "sourceKeypoints": 376,
+        "middle": {
+          "method": "optical_flow",
+          "matches": 22,
+          "inliers": 14,
+          "scale": 0.9390325698480692,
+          "medianResidualPx": 1.027367115020752,
+          "translationPx": [
+            -14.778344504322897,
+            18.300093744286897
+          ],
+          "rotationDeg": -2.0282249414366564
+        },
+        "last": {
+          "method": "feature_match",
+          "matches": 10,
+          "inliers": 3,
+          "scale": null,
+          "medianResidualPx": null
+        },
+        "featureMatches": {
+          "middle": {
+            "method": "feature_match",
+            "matches": 18,
+            "inliers": 3,
+            "scale": null,
+            "medianResidualPx": null
+          },
+          "last": {
+            "method": "feature_match",
+            "matches": 10,
+            "inliers": 3,
+            "scale": null,
+            "medianResidualPx": null
+          }
+        },
+        "opticalFlow": {
+          "middle": {
+            "method": "optical_flow",
+            "matches": 22,
+            "inliers": 14,
+            "scale": 0.9390325698480692,
+            "medianResidualPx": 1.027367115020752,
+            "translationPx": [
+              -14.778344504322897,
+              18.300093744286897
+            ],
+            "rotationDeg": -2.0282249414366564
+          },
+          "last": {
+            "method": "optical_flow",
+            "matches": 3,
+            "inliers": 0,
+            "scale": null,
+            "medianResidualPx": null
+          }
+        }
+      }
+    },
+    {
+      "name": "kiln-crane-up",
+      "move": "crane_up",
+      "selectedForPicker": false,
+      "review": "The 1.1-unit rise intersects reconstructed ceiling; dark occlusion dominates.",
+      "projectId": "prj_mvhpd37gda3d07821d",
+      "takeId": "take_mvhpegfcf7e12b4304",
+      "jobId": "job_mvhpd39b80ad0db412",
+      "seed": 1605095769,
+      "prompt": "A quiet pottery studio with rows of clay bowls on wooden shelves, warm sunlight from the left window. Everything is still. Camera movement: Crane up. Rise above the subject and tilt down. Follow the guide's camera path and preserve the scene, objects, colors and lighting in the first frame. One continuous shot. Natural quiet ambience.",
+      "sourceSha256": "cfcea7e9bf1b34f858ce920746d998e7abdc03b79e17ad8a09061d22984912e1",
+      "videoSha256": "debd346e0c59cf5cc95aa2572c169248cb0af883d9c5f1be30f732bb16e8d69e",
+      "measurement": {
+        "width": 640,
+        "height": 384,
+        "frames": 97,
+        "fps": 24.0,
+        "roi": [
+          180,
+          70,
+          270,
+          200
+        ],
+        "sourceKeypoints": 361,
+        "middle": {
+          "method": "optical_flow",
+          "matches": 356,
+          "inliers": 169,
+          "scale": 0.9811874573653807,
+          "medianResidualPx": 1.8345997333526611,
+          "translationPx": [
+            3.5365712100047864,
+            36.81249424830871
+          ],
+          "rotationDeg": -0.7389966283940627
+        },
+        "last": {
+          "method": "optical_flow",
+          "matches": 345,
+          "inliers": 96,
+          "scale": 0.9442268341229478,
+          "medianResidualPx": 1.4999396800994873,
+          "translationPx": [
+            14.50261698896642,
+            75.91597035885734
+          ],
+          "rotationDeg": -1.8307592508534083
+        },
+        "featureMatches": {
+          "middle": {
+            "method": "feature_match",
+            "matches": 11,
+            "inliers": 3,
+            "scale": null,
+            "medianResidualPx": null
+          },
+          "last": {
+            "method": "feature_match",
+            "matches": 4,
+            "inliers": 2,
+            "scale": null,
+            "medianResidualPx": null
+          }
+        },
+        "opticalFlow": {
+          "middle": {
+            "method": "optical_flow",
+            "matches": 356,
+            "inliers": 169,
+            "scale": 0.9811874573653807,
+            "medianResidualPx": 1.8345997333526611,
+            "translationPx": [
+              3.5365712100047864,
+              36.81249424830871
+            ],
+            "rotationDeg": -0.7389966283940627
+          },
+          "last": {
+            "method": "optical_flow",
+            "matches": 345,
+            "inliers": 96,
+            "scale": 0.9442268341229478,
+            "medianResidualPx": 1.4999396800994873,
+            "translationPx": [
+              14.50261698896642,
+              75.91597035885734
+            ],
+            "rotationDeg": -1.8307592508534083
+          }
+        }
+      }
+    },
+    {
+      "name": "kiln-crane-down",
+      "move": "crane_down",
+      "selectedForPicker": false,
+      "review": "The 1.1-unit drop passes behind furniture; dark occlusion dominates.",
+      "projectId": "prj_mvhpelak3ae66a9253",
+      "takeId": "take_mvhpgbnu998eb9dd3e",
+      "jobId": "job_mvhpelcaa2af8833bd",
+      "seed": 1344553378,
+      "prompt": "A quiet pottery studio with rows of clay bowls on wooden shelves, warm sunlight from the left window. Everything is still. Camera movement: Crane down. Lower the camera and tilt up. Follow the guide's camera path and preserve the scene, objects, colors and lighting in the first frame. One continuous shot. Natural quiet ambience.",
+      "sourceSha256": "cfcea7e9bf1b34f858ce920746d998e7abdc03b79e17ad8a09061d22984912e1",
+      "videoSha256": "3b1667797a293742f7986944573b7c734a4a9a34df275207bf5dbd01901d316d",
+      "measurement": {
+        "width": 640,
+        "height": 384,
+        "frames": 97,
+        "fps": 24.0,
+        "roi": [
+          180,
+          70,
+          270,
+          200
+        ],
+        "sourceKeypoints": 358,
+        "middle": {
+          "method": "optical_flow",
+          "matches": 240,
+          "inliers": 128,
+          "scale": 0.967522665086432,
+          "medianResidualPx": 1.6512339115142822,
+          "translationPx": [
+            13.363967695711208,
+            -26.866211706838556
+          ],
+          "rotationDeg": 0.4828156586764657
+        },
+        "last": {
+          "method": "optical_flow",
+          "matches": 194,
+          "inliers": 74,
+          "scale": 0.885053795593349,
+          "medianResidualPx": 1.2933897972106934,
+          "translationPx": [
+            42.93668649823029,
+            -40.441970062557914
+          ],
+          "rotationDeg": 1.597475823024308
+        },
+        "featureMatches": {
+          "middle": {
+            "method": "feature_match",
+            "matches": 15,
+            "inliers": 5,
+            "scale": null,
+            "medianResidualPx": null
+          },
+          "last": {
+            "method": "feature_match",
+            "matches": 6,
+            "inliers": 4,
+            "scale": null,
+            "medianResidualPx": null
+          }
+        },
+        "opticalFlow": {
+          "middle": {
+            "method": "optical_flow",
+            "matches": 240,
+            "inliers": 128,
+            "scale": 0.967522665086432,
+            "medianResidualPx": 1.6512339115142822,
+            "translationPx": [
+              13.363967695711208,
+              -26.866211706838556
+            ],
+            "rotationDeg": 0.4828156586764657
+          },
+          "last": {
+            "method": "optical_flow",
+            "matches": 194,
+            "inliers": 74,
+            "scale": 0.885053795593349,
+            "medianResidualPx": 1.2933897972106934,
+            "translationPx": [
+              42.93668649823029,
+              -40.441970062557914
+            ],
+            "rotationDeg": 1.597475823024308
+          }
+        }
+      }
+    },
+    {
+      "name": "mooring-dolly-zoom",
+      "move": "dolly_zoom",
+      "selectedForPicker": false,
+      "review": "Foreground holds at 1.00x, but distant ferry grows only 1.03x. Not obvious enough.",
+      "projectId": "prj_mvhpgitqfd5861fa34",
+      "takeId": "take_mvhplgtnf486e22298",
+      "jobId": "job_mvhpgivn3c901bd8c3",
+      "seed": 1054348120,
+      "prompt": "A heavy iron mooring bollard and coiled rope on a wooden pier, a ferry in the distant harbor, blue hour mountains beyond. The rope and bollard stay still. Camera movement: Dolly zoom. Hold the subject as the background grows. Follow the guide's camera path and preserve the scene, objects, colors and lighting in the first frame. One continuous shot. Natural quiet ambience.",
+      "sourceSha256": "e86e9130a7207bdae2a22f3a7ee55889def0c4f3488be166ff36da91138e3a89",
+      "videoSha256": "d3927944ae9e0687ba7bb9fff25f338f486afd593c2b1adb2be72530786f77cf",
+      "measurement": {
+        "width": 640,
+        "height": 384,
+        "frames": 97,
+        "fps": 24.0,
+        "roi": [
+          160,
+          205,
+          240,
+          145
+        ],
+        "sourceKeypoints": 371,
+        "middle": {
+          "method": "feature_match",
+          "matches": 152,
+          "inliers": 132,
+          "scale": 1.000202763420246,
+          "medianResidualPx": 0.41315996646881104,
+          "translationPx": [
+            0.1962667082921494,
+            0.08433246252085048
+          ],
+          "rotationDeg": -0.0016408014527688902
+        },
+        "last": {
+          "method": "feature_match",
+          "matches": 120,
+          "inliers": 107,
+          "scale": 1.0017595187632642,
+          "medianResidualPx": 0.4613438546657562,
+          "translationPx": [
+            0.035019587902994385,
+            -0.7266999057828225
+          ],
+          "rotationDeg": 0.06069797295523853
+        },
+        "featureMatches": {
+          "middle": {
+            "method": "feature_match",
+            "matches": 152,
+            "inliers": 132,
+            "scale": 1.000202763420246,
+            "medianResidualPx": 0.41315996646881104,
+            "translationPx": [
+              0.1962667082921494,
+              0.08433246252085048
+            ],
+            "rotationDeg": -0.0016408014527688902
+          },
+          "last": {
+            "method": "feature_match",
+            "matches": 120,
+            "inliers": 107,
+            "scale": 1.0017595187632642,
+            "medianResidualPx": 0.4613438546657562,
+            "translationPx": [
+              0.035019587902994385,
+              -0.7266999057828225
+            ],
+            "rotationDeg": 0.06069797295523853
+          }
+        },
+        "opticalFlow": {
+          "middle": {
+            "method": "optical_flow",
+            "matches": 492,
+            "inliers": 353,
+            "scale": 1.000793725455807,
+            "medianResidualPx": 0.41817501187324524,
+            "translationPx": [
+              1.1021284945676006,
+              -1.1083066061659608
+            ],
+            "rotationDeg": 0.19399934214634498
+          },
+          "last": {
+            "method": "optical_flow",
+            "matches": 492,
+            "inliers": 340,
+            "scale": 1.0010255858769153,
+            "medianResidualPx": 0.4541008472442627,
+            "translationPx": [
+              1.094731352710437,
+              -1.1789546887818814
+            ],
+            "rotationDeg": 0.20878543465780522
+          }
+        }
+      },
+      "backgroundMeasurement": {
+        "width": 640,
+        "height": 384,
+        "frames": 97,
+        "fps": 24.0,
+        "roi": [
+          130,
+          65,
+          240,
+          100
+        ],
+        "sourceKeypoints": 133,
+        "middle": {
+          "matches": 59,
+          "inliers": 54,
+          "scale": 1.0198436105790194,
+          "medianResidualPx": 0.65193772315979,
+          "translationPx": [
+            15.768172543460162,
+            -2.041977453124349
+          ],
+          "rotationDeg": 0.009098952050913307
+        },
+        "last": {
+          "matches": 56,
+          "inliers": 50,
+          "scale": 1.0290283495243793,
+          "medianResidualPx": 0.9692407846450806,
+          "translationPx": [
+            36.486922515120916,
+            -3.3366676028615507
+          ],
+          "rotationDeg": 0.12169400481949615
+        }
+      }
+    },
+    {
+      "name": "lake-handheld",
+      "move": "handheld_drift",
+      "selectedForPicker": false,
+      "review": "Stronger than round 1, but reads as another push with sway. Retired.",
+      "projectId": "prj_mvhplo4u81799b007c",
+      "takeId": "take_mvhpowzfe7b4758d97",
+      "jobId": "job_mvhploae08c733869a",
+      "seed": 671825221,
+      "prompt": "A snowy lake under the northern lights, a cabin on the shore. Still water, quiet night. Camera movement: Handheld drift. Push forward with visible handheld sway. Follow the guide's camera path and preserve the scene, objects, colors and lighting in the first frame. One continuous shot. Natural quiet ambience.",
+      "sourceSha256": "075cde79f5554b2a17aef73c2ff5620376d0c27e537c144021208e2878b4706e",
+      "videoSha256": "4b44b26f71c595fecd642cea2bd8e04be7ecd962475dc60fbbd1cdffa5f39f68",
+      "measurement": {
+        "width": 640,
+        "height": 384,
+        "frames": 97,
+        "fps": 24.0,
+        "roi": [
+          450,
+          195,
+          105,
+          50
+        ],
+        "sourceKeypoints": 84,
+        "middle": {
+          "method": "feature_match",
+          "matches": 15,
+          "inliers": 12,
+          "scale": 1.1920373784235048,
+          "medianResidualPx": 1.1676630973815918,
+          "translationPx": [
+            -81.37287257231631,
+            0.026668699792050495
+          ],
+          "rotationDeg": -3.954535228965957
+        },
+        "last": {
+          "method": "optical_flow",
+          "matches": 35,
+          "inliers": 16,
+          "scale": 1.3693307853375054,
+          "medianResidualPx": 1.211899995803833,
+          "translationPx": [
+            -104.38916764138068,
+            -71.23521368069464
+          ],
+          "rotationDeg": 0.2888936221907386
+        },
+        "featureMatches": {
+          "middle": {
+            "method": "feature_match",
+            "matches": 15,
+            "inliers": 12,
+            "scale": 1.1920373784235048,
+            "medianResidualPx": 1.1676630973815918,
+            "translationPx": [
+              -81.37287257231631,
+              0.026668699792050495
+            ],
+            "rotationDeg": -3.954535228965957
+          },
+          "last": {
+            "method": "feature_match",
+            "matches": 8,
+            "inliers": 4,
+            "scale": null,
+            "medianResidualPx": null
+          }
+        },
+        "opticalFlow": {
+          "middle": {
+            "method": "optical_flow",
+            "matches": 39,
+            "inliers": 25,
+            "scale": 1.1841005445288197,
+            "medianResidualPx": 1.1912283897399902,
+            "translationPx": [
+              -65.4262274939047,
+              -27.381486841314487
+            ],
+            "rotationDeg": -1.2156443577952794
+          },
+          "last": {
+            "method": "optical_flow",
+            "matches": 35,
+            "inliers": 16,
+            "scale": 1.3693307853375054,
+            "medianResidualPx": 1.211899995803833,
+            "translationPx": [
+              -104.38916764138068,
+              -71.23521368069464
+            ],
+            "rotationDeg": 0.2888936221907386
+          }
+        }
+      }
+    },
+    {
+      "name": "kiln-orbit-left-30",
+      "move": "orbit_left",
+      "selectedForPicker": false,
+      "review": "The result becomes a different room.",
+      "projectId": "prj_mvhppuq65deb958217",
+      "takeId": "take_mvhps8jzee4a6b23c2",
+      "jobId": "job_mvhppuri269d40c5fe",
+      "seed": 2015229675,
+      "prompt": "A quiet pottery studio with rows of clay bowls on wooden shelves, warm sunlight from the left window. Everything is still. Camera movement: Orbit left. Sweep left around the subject. Follow the guide's camera path and preserve the scene, objects, colors and lighting in the first frame. One continuous shot. Natural quiet ambience.",
+      "sourceSha256": "cfcea7e9bf1b34f858ce920746d998e7abdc03b79e17ad8a09061d22984912e1",
+      "videoSha256": "af1902ab3036bbc8fde801b2d524c6d1c8c5906d91e3017a75e4b4854899b5e0",
+      "measurement": {
+        "width": 640,
+        "height": 384,
+        "frames": 97,
+        "fps": 24.0,
+        "roi": [
+          180,
+          70,
+          270,
+          200
+        ],
+        "sourceKeypoints": 356,
+        "middle": {
+          "method": "feature_match",
+          "matches": 2,
+          "inliers": 0,
+          "scale": null,
+          "medianResidualPx": null
+        },
+        "last": {
+          "method": "feature_match",
+          "matches": 4,
+          "inliers": 3,
+          "scale": null,
+          "medianResidualPx": null
+        },
+        "featureMatches": {
+          "middle": {
+            "method": "feature_match",
+            "matches": 2,
+            "inliers": 0,
+            "scale": null,
+            "medianResidualPx": null
+          },
+          "last": {
+            "method": "feature_match",
+            "matches": 4,
+            "inliers": 3,
+            "scale": null,
+            "medianResidualPx": null
+          }
+        },
+        "opticalFlow": {
+          "middle": {
+            "method": "optical_flow",
+            "matches": 1,
+            "inliers": 0,
+            "scale": null,
+            "medianResidualPx": null
+          },
+          "last": {
+            "method": "optical_flow",
+            "matches": 1,
+            "inliers": 0,
+            "scale": null,
+            "medianResidualPx": null
+          }
+        }
+      }
+    },
+    {
+      "name": "kiln-orbit-left-12",
+      "move": "orbit_left",
+      "selectedForPicker": false,
+      "review": "A large dark foreground pot blocks the scene.",
+      "projectId": "prj_mvhpt7i0721dd053e3",
+      "takeId": "take_mvhpwehpc7027e9228",
+      "jobId": "job_mvhpt7lyc7b2fcb830",
+      "seed": 2015229675,
+      "prompt": "A quiet pottery studio with rows of clay bowls on wooden shelves, warm sunlight from the left window. Everything is still. Camera movement: Orbit left. Sweep left around the subject. Follow the guide's camera path and preserve the scene, objects, colors and lighting in the first frame. One continuous shot. Natural quiet ambience.",
+      "sourceSha256": "cfcea7e9bf1b34f858ce920746d998e7abdc03b79e17ad8a09061d22984912e1",
+      "videoSha256": "d43fcca71d8afe45f977a5b0a3581d00be29d665794ec41ad643c072bc21a4a3",
+      "measurement": {
+        "width": 640,
+        "height": 384,
+        "frames": 97,
+        "fps": 24.0,
+        "roi": [
+          180,
+          70,
+          270,
+          200
+        ],
+        "sourceKeypoints": 373,
+        "middle": {
+          "method": "feature_match",
+          "matches": 69,
+          "inliers": 32,
+          "scale": 0.9934299424176465,
+          "medianResidualPx": 0.9391850233078003,
+          "translationPx": [
+            16.42507370772873,
+            3.96278686140847
+          ],
+          "rotationDeg": -0.33847909014936933
+        },
+        "last": {
+          "method": "optical_flow",
+          "matches": 223,
+          "inliers": 100,
+          "scale": 0.9212309994226098,
+          "medianResidualPx": 1.65880286693573,
+          "translationPx": [
+            56.09499838633689,
+            20.764861191413587
+          ],
+          "rotationDeg": -1.153288636693773
+        },
+        "featureMatches": {
+          "middle": {
+            "method": "feature_match",
+            "matches": 69,
+            "inliers": 32,
+            "scale": 0.9934299424176465,
+            "medianResidualPx": 0.9391850233078003,
+            "translationPx": [
+              16.42507370772873,
+              3.96278686140847
+            ],
+            "rotationDeg": -0.33847909014936933
+          },
+          "last": {
+            "method": "feature_match",
+            "matches": 16,
+            "inliers": 3,
+            "scale": null,
+            "medianResidualPx": null
+          }
+        },
+        "opticalFlow": {
+          "middle": {
+            "method": "optical_flow",
+            "matches": 382,
+            "inliers": 278,
+            "scale": 1.0048079991168803,
+            "medianResidualPx": 1.1337411403656006,
+            "translationPx": [
+              17.080713976640265,
+              -3.3369419904832736
+            ],
+            "rotationDeg": 0.3754590066742558
+          },
+          "last": {
+            "method": "optical_flow",
+            "matches": 223,
+            "inliers": 100,
+            "scale": 0.9212309994226098,
+            "medianResidualPx": 1.65880286693573,
+            "translationPx": [
+              56.09499838633689,
+              20.764861191413587
+            ],
+            "rotationDeg": -1.153288636693773
+          }
+        }
+      }
+    },
+    {
+      "name": "kiln-orbit-right-12",
+      "move": "orbit_right",
+      "selectedForPicker": false,
+      "review": "Shelves and bowls still separate.",
+      "projectId": "prj_mvhpx602eec722fa42",
+      "takeId": "take_mvhpzkcq87aa6857f6",
+      "jobId": "job_mvhpx660fe10baad2d",
+      "seed": 2015229675,
+      "prompt": "A quiet pottery studio with rows of clay bowls on wooden shelves, warm sunlight from the left window. Everything is still. Camera movement: Orbit right. Sweep right around the subject. Follow the guide's camera path and preserve the scene, objects, colors and lighting in the first frame. One continuous shot. Natural quiet ambience.",
+      "sourceSha256": "cfcea7e9bf1b34f858ce920746d998e7abdc03b79e17ad8a09061d22984912e1",
+      "videoSha256": "e591c7b3675de496a713464b0cb635ef28dc2fb1dfb6e6b591c8d62a3520a248",
+      "measurement": {
+        "width": 640,
+        "height": 384,
+        "frames": 97,
+        "fps": 24.0,
+        "roi": [
+          180,
+          70,
+          270,
+          200
+        ],
+        "sourceKeypoints": 387,
+        "middle": {
+          "method": "feature_match",
+          "matches": 30,
+          "inliers": 17,
+          "scale": 0.9815897504961398,
+          "medianResidualPx": 1.1861203908920288,
+          "translationPx": [
+            -13.360264042334196,
+            6.443269250141165
+          ],
+          "rotationDeg": -0.7308721064540712
+        },
+        "last": {
+          "method": "optical_flow",
+          "matches": 33,
+          "inliers": 9,
+          "scale": 0.16020156963116647,
+          "medianResidualPx": 0.8183878064155579,
+          "translationPx": [
+            118.5644671148156,
+            109.10745238511511
+          ],
+          "rotationDeg": -24.396021321765975
+        },
+        "featureMatches": {
+          "middle": {
+            "method": "feature_match",
+            "matches": 30,
+            "inliers": 17,
+            "scale": 0.9815897504961398,
+            "medianResidualPx": 1.1861203908920288,
+            "translationPx": [
+              -13.360264042334196,
+              6.443269250141165
+            ],
+            "rotationDeg": -0.7308721064540712
+          },
+          "last": {
+            "method": "feature_match",
+            "matches": 4,
+            "inliers": 2,
+            "scale": null,
+            "medianResidualPx": null
+          }
+        },
+        "opticalFlow": {
+          "middle": {
+            "method": "optical_flow",
+            "matches": 260,
+            "inliers": 188,
+            "scale": 0.9888942479217446,
+            "medianResidualPx": 1.1799392700195312,
+            "translationPx": [
+              -14.275552666715257,
+              2.7589484867396217
+            ],
+            "rotationDeg": -0.11519039818799537
+          },
+          "last": {
+            "method": "optical_flow",
+            "matches": 33,
+            "inliers": 9,
+            "scale": 0.16020156963116647,
+            "medianResidualPx": 0.8183878064155579,
+            "translationPx": [
+              118.5644671148156,
+              109.10745238511511
+            ],
+            "rotationDeg": -24.396021321765975
+          }
+        }
+      }
+    },
+    {
+      "name": "cobalt-crash",
+      "move": "crash_zoom",
+      "selectedForPicker": true,
+      "review": "Full vase stays in frame through a fast 2.8x optical punch.",
+      "projectId": "prj_mvhpxblkaddcd21e5b",
+      "takeId": "take_mvhq3ghy63ed0ea459",
+      "jobId": "job_mvhpxboq660d7d7b95",
+      "seed": 1250587120,
+      "prompt": "A single glossy cobalt blue ceramic vase on a pale limestone table, a terracotta plaster wall and soft afternoon sunlight. The vase stays perfectly still. Camera movement: Crash zoom. Snap to a tight close-up of the subject. Follow the guide's camera path and preserve the scene, objects, colors and lighting in the first frame. One continuous shot. Natural quiet ambience.",
+      "sourceSha256": "ef5bd05d9d7c7e57aac9c27faa592a544c441a8cfea131fb2317219eec7c097b",
+      "videoSha256": "0b3dbed227abe55251deee692e59913480dd74f73fa9f814fa946116f051bdef",
+      "measurement": {
+        "width": 640,
+        "height": 384,
+        "frames": 97,
+        "fps": 24.0,
+        "roi": [
+          276,
+          160,
+          90,
+          105
+        ],
+        "sourceKeypoints": 47,
+        "middle": {
+          "method": "feature_match",
+          "matches": 16,
+          "inliers": 9,
+          "scale": 2.9203389637768513,
+          "medianResidualPx": 1.996861219406128,
+          "translationPx": [
+            -601.9787629818919,
+            -384.7965952091048
+          ],
+          "rotationDeg": -0.4591064411288721
+        },
+        "last": {
+          "method": "feature_match",
+          "matches": 20,
+          "inliers": 11,
+          "scale": 2.8738988142379207,
+          "medianResidualPx": 1.1416635513305664,
+          "translationPx": [
+            -584.479202245476,
+            -380.48109464090595
+          ],
+          "rotationDeg": -0.20632892498759467
+        },
+        "featureMatches": {
+          "middle": {
+            "method": "feature_match",
+            "matches": 16,
+            "inliers": 9,
+            "scale": 2.9203389637768513,
+            "medianResidualPx": 1.996861219406128,
+            "translationPx": [
+              -601.9787629818919,
+              -384.7965952091048
+            ],
+            "rotationDeg": -0.4591064411288721
+          },
+          "last": {
+            "method": "feature_match",
+            "matches": 20,
+            "inliers": 11,
+            "scale": 2.8738988142379207,
+            "medianResidualPx": 1.1416635513305664,
+            "translationPx": [
+              -584.479202245476,
+              -380.48109464090595
+            ],
+            "rotationDeg": -0.20632892498759467
+          }
+        },
+        "opticalFlow": {
+          "middle": {
+            "method": "optical_flow",
+            "matches": 29,
+            "inliers": 7,
+            "scale": null,
+            "medianResidualPx": null
+          },
+          "last": {
+            "method": "optical_flow",
+            "matches": 29,
+            "inliers": 7,
+            "scale": null,
+            "medianResidualPx": null
+          }
+        }
+      }
+    },
+    {
+      "name": "bowl-dolly-zoom",
+      "move": "dolly_zoom",
+      "selectedForPicker": true,
+      "review": "Foreground 0.91x and background 1.86x; visible depth compression.",
+      "projectId": "prj_mvhq3jkq953beca679",
+      "takeId": "take_mvhq80mj9cbc203d17",
+      "jobId": "job_mvhq3jlwe075f486ff",
+      "seed": 682662524,
+      "prompt": "A single handmade clay bowl on a potters wheel in a sunlit studio. Rows of clay bowls on wooden shelves behind it. The foreground bowl and wheel are still. Camera movement: Dolly zoom. Strong vertigo dolly zoom. The camera pulls far back while the lens zooms in. The foreground subject stays the same size and position while the background visibly expands behind it. Follow the guide's camera path and preserve the scene, objects, colors and lighting in the first frame. One continuous shot. Natural quiet ambience.",
+      "sourceSha256": "3f7912a23d1334a74c776dd84dead1de0b017b9d7fb14a6d348c1555fcceac5d",
+      "videoSha256": "8c6f718fa8e0d193dd8c06f78cd06dab139f2ce91ebfc91d0473b8527aa24ad7",
+      "measurement": {
+        "width": 640,
+        "height": 384,
+        "frames": 97,
+        "fps": 24.0,
+        "roi": [
+          235,
+          220,
+          200,
+          100
+        ],
+        "sourceKeypoints": 102,
+        "middle": {
+          "method": "optical_flow",
+          "matches": 98,
+          "inliers": 30,
+          "scale": 0.9257954790047033,
+          "medianResidualPx": 1.6845195293426514,
+          "translationPx": [
+            33.20121427327455,
+            5.630011998409535
+          ],
+          "rotationDeg": 1.9990012792931997
+        },
+        "last": {
+          "method": "optical_flow",
+          "matches": 98,
+          "inliers": 24,
+          "scale": 0.906389508174222,
+          "medianResidualPx": 1.5053439140319824,
+          "translationPx": [
+            40.649338598840366,
+            8.934489769175071
+          ],
+          "rotationDeg": 2.363233985629619
+        },
+        "featureMatches": {
+          "middle": {
+            "method": "feature_match",
+            "matches": 8,
+            "inliers": 4,
+            "scale": null,
+            "medianResidualPx": null
+          },
+          "last": {
+            "method": "feature_match",
+            "matches": 7,
+            "inliers": 2,
+            "scale": null,
+            "medianResidualPx": null
+          }
+        },
+        "opticalFlow": {
+          "middle": {
+            "method": "optical_flow",
+            "matches": 98,
+            "inliers": 30,
+            "scale": 0.9257954790047033,
+            "medianResidualPx": 1.6845195293426514,
+            "translationPx": [
+              33.20121427327455,
+              5.630011998409535
+            ],
+            "rotationDeg": 1.9990012792931997
+          },
+          "last": {
+            "method": "optical_flow",
+            "matches": 98,
+            "inliers": 24,
+            "scale": 0.906389508174222,
+            "medianResidualPx": 1.5053439140319824,
+            "translationPx": [
+              40.649338598840366,
+              8.934489769175071
+            ],
+            "rotationDeg": 2.363233985629619
+          }
+        }
+      },
+      "backgroundMeasurement": {
+        "width": 640,
+        "height": 384,
+        "frames": 97,
+        "fps": 24.0,
+        "roi": [
+          270,
+          135,
+          320,
+          80
+        ],
+        "sourceKeypoints": 56,
+        "middle": {
+          "method": "optical_flow",
+          "matches": 57,
+          "inliers": 15,
+          "scale": 1.677609307062864,
+          "medianResidualPx": 1.4034128189086914,
+          "translationPx": [
+            -203.82442643545718,
+            -149.7104982795587
+          ],
+          "rotationDeg": 1.3996140017451149
+        },
+        "last": {
+          "method": "optical_flow",
+          "matches": 52,
+          "inliers": 11,
+          "scale": 1.8644079535928686,
+          "medianResidualPx": 0.9231590628623962,
+          "translationPx": [
+            -258.348827528843,
+            -182.96476744330752
+          ],
+          "rotationDeg": 0.9869834018670668
+        },
+        "featureMatches": {
+          "middle": {
+            "method": "feature_match",
+            "matches": 15,
+            "inliers": 6,
+            "scale": null,
+            "medianResidualPx": null
+          },
+          "last": {
+            "method": "feature_match",
+            "matches": 9,
+            "inliers": 4,
+            "scale": null,
+            "medianResidualPx": null
+          }
+        },
+        "opticalFlow": {
+          "middle": {
+            "method": "optical_flow",
+            "matches": 57,
+            "inliers": 15,
+            "scale": 1.677609307062864,
+            "medianResidualPx": 1.4034128189086914,
+            "translationPx": [
+              -203.82442643545718,
+              -149.7104982795587
+            ],
+            "rotationDeg": 1.3996140017451149
+          },
+          "last": {
+            "method": "optical_flow",
+            "matches": 52,
+            "inliers": 11,
+            "scale": 1.8644079535928686,
+            "medianResidualPx": 0.9231590628623962,
+            "translationPx": [
+              -258.348827528843,
+              -182.96476744330752
+            ],
+            "rotationDeg": 0.9869834018670668
+          }
+        }
+      }
+    },
+    {
+      "name": "harbor-crane-up",
+      "move": "crane_up",
+      "selectedForPicker": true,
+      "review": "0.75-unit rise holds the ferry at 0.97x while the distant horizon rises clearly. Use an open scene.",
+      "projectId": "prj_mvhq81qh045c9ceb48",
+      "takeId": "take_mvhqdo6l9fd6b86338",
+      "jobId": "job_mvhq81sma0f7207305",
+      "seed": 1043444475,
+      "prompt": "A small ferry at anchor in a blue hour harbor, warm lights in the cabin, dark mountains beyond. The ferry stays still. Camera movement: Crane up. Rise above the subject and tilt down. Follow the guide's camera path and preserve the scene, objects, colors and lighting in the first frame. One continuous shot. Natural quiet ambience.",
+      "sourceSha256": "bcc79ea59256112e54b2866a9daa544f8b5fff1aa5aaa96d5cabc93c5b263226",
+      "videoSha256": "4f1167c75b633b6919922e11cb65c06389bf56055007fc27cbe19980b2844b3c",
+      "measurement": {
+        "width": 640,
+        "height": 384,
+        "frames": 97,
+        "fps": 24.0,
+        "roi": [
+          150,
+          110,
+          365,
+          170
+        ],
+        "sourceKeypoints": 320,
+        "middle": {
+          "method": "feature_match",
+          "matches": 98,
+          "inliers": 89,
+          "scale": 0.9927839691073704,
+          "medianResidualPx": 0.8733677864074707,
+          "translationPx": [
+            2.450074151143099,
+            -0.2536216497257701
+          ],
+          "rotationDeg": -0.03176499805795831
+        },
+        "last": {
+          "method": "feature_match",
+          "matches": 39,
+          "inliers": 23,
+          "scale": 0.9681977341331682,
+          "medianResidualPx": 1.0731264352798462,
+          "translationPx": [
+            10.277231713555247,
+            2.769814942741289
+          ],
+          "rotationDeg": 0.08266448845370196
+        },
+        "featureMatches": {
+          "middle": {
+            "method": "feature_match",
+            "matches": 98,
+            "inliers": 89,
+            "scale": 0.9927839691073704,
+            "medianResidualPx": 0.8733677864074707,
+            "translationPx": [
+              2.450074151143099,
+              -0.2536216497257701
+            ],
+            "rotationDeg": -0.03176499805795831
+          },
+          "last": {
+            "method": "feature_match",
+            "matches": 39,
+            "inliers": 23,
+            "scale": 0.9681977341331682,
+            "medianResidualPx": 1.0731264352798462,
+            "translationPx": [
+              10.277231713555247,
+              2.769814942741289
+            ],
+            "rotationDeg": 0.08266448845370196
+          }
+        },
+        "opticalFlow": {
+          "middle": {
+            "method": "optical_flow",
+            "matches": 200,
+            "inliers": 174,
+            "scale": 0.99354673547801,
+            "medianResidualPx": 0.837462306022644,
+            "translationPx": [
+              2.5589964880221583,
+              -1.0604018789278584
+            ],
+            "rotationDeg": 0.08496571356291337
+          },
+          "last": {
+            "method": "optical_flow",
+            "matches": 200,
+            "inliers": 128,
+            "scale": 0.9779664994825084,
+            "medianResidualPx": 1.0192551612854004,
+            "translationPx": [
+              8.20248705236788,
+              0.19742163097130294
+            ],
+            "rotationDeg": 0.30226394028361525
+          }
+        }
+      }
+    },
+    {
+      "name": "harbor-crane-down",
+      "move": "crane_down",
+      "selectedForPicker": false,
+      "review": "The 0.75-unit drop crosses the reconstructed water surface and hides the hull. Rejected.",
+      "projectId": "prj_mvhqduavc3771f720d",
+      "takeId": "take_mvhqhvlh18a349c4a8",
+      "jobId": "job_mvhqduc270adceae71",
+      "seed": 1642917200,
+      "prompt": "A small ferry at anchor in a blue hour harbor, warm lights in the cabin, dark mountains beyond. The ferry stays still. Camera movement: Crane down. Lower the camera and tilt up. Follow the guide's camera path and preserve the scene, objects, colors and lighting in the first frame. One continuous shot. Natural quiet ambience.",
+      "sourceSha256": "bcc79ea59256112e54b2866a9daa544f8b5fff1aa5aaa96d5cabc93c5b263226",
+      "videoSha256": "2214f804f1be34240f4f10ee5da83035e8285b6ccaa22e3adc5752ba0e0d4d0f",
+      "measurement": {
+        "width": 640,
+        "height": 384,
+        "frames": 97,
+        "fps": 24.0,
+        "roi": [
+          150,
+          110,
+          365,
+          170
+        ],
+        "sourceKeypoints": 333,
+        "middle": {
+          "method": "feature_match",
+          "matches": 84,
+          "inliers": 64,
+          "scale": 0.9879381083053055,
+          "medianResidualPx": 1.2569129467010498,
+          "translationPx": [
+            4.348819536937476,
+            1.9956154351295141
+          ],
+          "rotationDeg": 0.2126784956773209
+        },
+        "last": {
+          "method": "optical_flow",
+          "matches": 174,
+          "inliers": 92,
+          "scale": 0.9652622223437382,
+          "medianResidualPx": 1.216430902481079,
+          "translationPx": [
+            9.749056976242318,
+            10.078471684619455
+          ],
+          "rotationDeg": -0.5096136246962146
+        },
+        "featureMatches": {
+          "middle": {
+            "method": "feature_match",
+            "matches": 84,
+            "inliers": 64,
+            "scale": 0.9879381083053055,
+            "medianResidualPx": 1.2569129467010498,
+            "translationPx": [
+              4.348819536937476,
+              1.9956154351295141
+            ],
+            "rotationDeg": 0.2126784956773209
+          },
+          "last": {
+            "method": "feature_match",
+            "matches": 15,
+            "inliers": 7,
+            "scale": null,
+            "medianResidualPx": null
+          }
+        },
+        "opticalFlow": {
+          "middle": {
+            "method": "optical_flow",
+            "matches": 198,
+            "inliers": 159,
+            "scale": 0.9920299091278434,
+            "medianResidualPx": 0.9986786246299744,
+            "translationPx": [
+              2.03536261207041,
+              2.9649780229829537
+            ],
+            "rotationDeg": -0.13060953765345826
+          },
+          "last": {
+            "method": "optical_flow",
+            "matches": 174,
+            "inliers": 92,
+            "scale": 0.9652622223437382,
+            "medianResidualPx": 1.216430902481079,
+            "translationPx": [
+              9.749056976242318,
+              10.078471684619455
+            ],
+            "rotationDeg": -0.5096136246962146
+          }
+        }
+      }
+    }
+  ],
+  "heroFinals": [
+    {
+      "name": "ferry-dolly",
+      "projectId": "prj_mvhp0p9268084ad503",
+      "draftId": "take_mvhp2a8mbff41123e1",
+      "finalId": "take_mvhpiwpj565d00b765",
+      "draftJobId": "job_mvhp0pbxafcf36d0e0",
+      "finalJobId": "job_mvhpeq4w961022e2c6",
+      "seed": 1468459655,
+      "draftFile": "ferry-dolly-draft.mp4",
+      "finalFile": "ferry-dolly-final.mp4",
+      "frames": 97,
+      "fps": "24/1",
+      "draftSize": [
+        640,
+        384
+      ],
+      "finalSize": [
+        1280,
+        768
+      ],
+      "ssim": 0.9537800618556701,
+      "identicalDecodedPcm": true,
+      "draftSha256": "decc13d5c272d83cbda88298b8cf6038b0a7553be518eba1d175bda2ef5d02dd",
+      "finalSha256": "7a42e55c30b5beb1b4216d61f50cde3fe9daea69ed14b491329eb569932b87ff"
+    },
+    {
+      "name": "lake-pullback",
+      "projectId": "prj_mvhp2hobf7046ee9f1",
+      "draftId": "take_mvhp4l2wb5c204c36d",
+      "finalId": "take_mvhpn6w8164dc863cf",
+      "draftJobId": "job_mvhp2hvmbc9b613306",
+      "finalJobId": "job_mvhpeqar71fb59b32f",
+      "seed": 647721036,
+      "draftFile": "lake-pullback-draft.mp4",
+      "finalFile": "lake-pullback-final.mp4",
+      "frames": 97,
+      "fps": "24/1",
+      "draftSize": [
+        640,
+        384
+      ],
+      "finalSize": [
+        1280,
+        768
+      ],
+      "ssim": 0.9428601649484536,
+      "identicalDecodedPcm": true,
+      "draftSha256": "94ab98e066cebe600379749b7c8140182e1a2771363529428fad1760dabad03d",
+      "finalSha256": "730107b4679f9185cb9a2ec4fe25de7fe2e62b140f04f8ca0bd847ee790604f5"
+    },
+    {
+      "name": "cobalt-crash",
+      "projectId": "prj_mvhpxblkaddcd21e5b",
+      "draftId": "take_mvhq3ghy63ed0ea459",
+      "finalId": "take_mvhq9og49cbaa3b227",
+      "draftJobId": "job_mvhpxboq660d7d7b95",
+      "finalJobId": "job_mvhq466552125ac13d",
+      "seed": 1250587120,
+      "draftFile": "cobalt-crash-draft.mp4",
+      "finalFile": "cobalt-crash-final.mp4",
+      "frames": 97,
+      "fps": "24/1",
+      "draftSize": [
+        640,
+        384
+      ],
+      "finalSize": [
+        1280,
+        768
+      ],
+      "ssim": 0.9677520824742268,
+      "identicalDecodedPcm": true,
+      "draftSha256": "0b3dbed227abe55251deee692e59913480dd74f73fa9f814fa946116f051bdef",
+      "finalSha256": "9d960052eaec67475cd88f8edb3ae4d9a12fc51914c476b63dd2389a6bfab48b"
+    }
+  ],
+  "measurementLimits": "Apparent image scale, not physical camera calibration or proof of identity. Feature matches and forward/backward optical flow use RANSAC; manual review determines acceptance."
+}

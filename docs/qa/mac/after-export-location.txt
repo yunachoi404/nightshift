@@ -1,0 +1,6 @@
+Final installed app, real engine, Preview export:
+Toolbar: Export on this Mac
+Sidebar: Export, reading media
+Sidebar help: This work runs on this Mac
+Observed through native accessibility before the export completed.
+The editor screenshot (docs/qa/mac/completed-editor.jpg) was captured after completion.

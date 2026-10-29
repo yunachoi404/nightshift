@@ -1,0 +1,561 @@
+{
+  "tier": "apple-16",
+  "label": "Apple Silicon 16-32 GB, experimental estimate; quantized MPS unverified",
+  "match": {
+    "vendor": "apple",
+    "unifiedMemory": true,
+    "minVramGb": 16,
+    "minRamGb": 16,
+    "maxVramGb": 64
+  },
+  "models": [
+    {
+      "id": "diffusion_models-moss_image_base_int8_convrot",
+      "folder": "diffusion_models",
+      "filename": "moss_image_base_int8_convrot.safetensors",
+      "url": "https://huggingface.co/Comfy-Org/MOSS-Image/resolve/3284a1dbb351e3396d70f39f2a71cbf6ed2ef1bb/diffusion_models/moss_image_base_int8_convrot.safetensors",
+      "sizeGb": 5.413698958,
+      "license": {
+        "name": "Apache-2.0",
+        "url": "https://github.com/OpenMOSS/MOSS-Image/blob/main/LICENSE"
+      },
+      "sha256": "f601c1e1161915fb3fea003da0c1782e374dd960fbb3978bc0e4e3fa1f2d8e6f"
+    },
+    {
+      "id": "text_encoders-qwen3.5_9b_w4a8_gptq",
+      "folder": "text_encoders",
+      "filename": "qwen3.5_9b_w4a8_gptq.safetensors",
+      "url": "https://huggingface.co/Comfy-Org/MOSS-Image/resolve/3284a1dbb351e3396d70f39f2a71cbf6ed2ef1bb/text_encoders/qwen3.5_9b_w4a8_gptq.safetensors",
+      "sizeGb": 7.343591088,
+      "license": {
+        "name": "Apache-2.0",
+        "url": "https://github.com/OpenMOSS/MOSS-Image/blob/main/LICENSE"
+      },
+      "sha256": "4cc6a1543ad2061806da46f35f90cadb4801dcba246c44782cf42ec0feb6407c"
+    },
+    {
+      "id": "vae-flux2-vae",
+      "folder": "vae",
+      "filename": "flux2-vae.safetensors",
+      "url": "https://huggingface.co/Comfy-Org/MOSS-Image/resolve/3284a1dbb351e3396d70f39f2a71cbf6ed2ef1bb/vae/flux2-vae.safetensors",
+      "sizeGb": 0.336211292,
+      "license": {
+        "name": "Apache-2.0",
+        "url": "https://github.com/OpenMOSS/MOSS-Image/blob/main/LICENSE"
+      },
+      "sha256": "868fe7b343cc8f3a19dbcfcafbc3d5f888802be3f89bd81b65b3621a066ce8f3"
+    },
+    {
+      "id": "diffusion_models-Kandinsky-6.0-Lite-distill-5s-Diffusers-transformer-diffusion_pytorch_model",
+      "folder": "diffusion_models/Kandinsky-6.0-Lite-distill-5s-Diffusers/transformer",
+      "filename": "diffusion_pytorch_model.safetensors",
+      "url": "https://huggingface.co/kandinskylab/Kandinsky-6.0-Lite-distill-5s-Diffusers/resolve/4c487e8b4aeeb9059e5a77905aa2ddb59ec28f81/transformer/diffusion_pytorch_model.safetensors",
+      "sizeGb": 6.381599096,
+      "license": {
+        "name": "MIT",
+        "url": "https://huggingface.co/kandinskylab/Kandinsky-6.0-Lite-distill-5s-Diffusers/blob/main/LICENSE"
+      },
+      "sha256": "b1b52668561d9138d93bb4da13c9999e615bf569be9f8cf65732d54652447f53"
+    },
+    {
+      "id": "text_encoders-qwen_2.5_vl_7b",
+      "folder": "text_encoders",
+      "filename": "qwen_2.5_vl_7b.safetensors",
+      "url": "https://huggingface.co/Comfy-Org/Qwen-Image_ComfyUI/resolve/1f12b17be14c89b026c51a91d67c32f84bb047bc/split_files/text_encoders/qwen_2.5_vl_7b.safetensors",
+      "sizeGb": 16.584415576,
+      "license": {
+        "name": "Apache-2.0",
+        "url": "https://huggingface.co/Qwen/Qwen2.5-VL-7B-Instruct/blob/main/LICENSE"
+      },
+      "sha256": "cfafd739459bc86257397259f612a9aee88e5b98e85b5c0d0d1717e898b3463a"
+    },
+    {
+      "id": "text_encoders-clip_l",
+      "folder": "text_encoders",
+      "filename": "clip_l.safetensors",
+      "url": "https://huggingface.co/Comfy-Org/HunyuanVideo_repackaged/resolve/533a43813f01517d9e624f9e824a85bb94094120/split_files/text_encoders/clip_l.safetensors",
+      "sizeGb": 0.246144152,
+      "license": {
+        "name": "MIT",
+        "url": "https://github.com/openai/CLIP/blob/main/LICENSE"
+      },
+      "sha256": "660c6f5b1abae9dc498ac2d21e1347d2abdb0cf6c0c0c8576cd796491d9a6cdd"
+    },
+    {
+      "id": "vae-hunyuan_video_vae_bf16",
+      "folder": "vae",
+      "filename": "hunyuan_video_vae_bf16.safetensors",
+      "url": "https://huggingface.co/Comfy-Org/HunyuanVideo_repackaged/resolve/533a43813f01517d9e624f9e824a85bb94094120/split_files/vae/hunyuan_video_vae_bf16.safetensors",
+      "sizeGb": 0.492984198,
+      "license": {
+        "name": "Tencent Hunyuan Community License, restricted",
+        "url": "https://huggingface.co/tencent/HunyuanVideo/blob/main/LICENSE"
+      },
+      "sha256": "e8f8553275406d84ccf22e7a47601650d8f98bdb8aa9ccfdd6506b57a9701aed"
+    },
+    {
+      "id": "audio_vae-v1-44.pth",
+      "folder": "audio_vae",
+      "filename": "v1-44.pth",
+      "url": "https://huggingface.co/hkchengrex/MMAudio/resolve/eb13a1a98fdbec91753775c57b074ccdfc60587c/ext_weights/v1-44.pth",
+      "sizeGb": 1.221942998,
+      "license": {
+        "name": "CC-BY-NC-4.0",
+        "url": "https://huggingface.co/hkchengrex/MMAudio"
+      },
+      "sha256": "ab6cc15dc31947675f75c950c41f4dcfd0d6d1817555ac871f809ec388e4651a"
+    },
+    {
+      "id": "audio_vae-bigvgan_vocoder-bigvgan_generator.pt",
+      "folder": "audio_vae/bigvgan_vocoder",
+      "filename": "bigvgan_generator.pt",
+      "url": "https://huggingface.co/nvidia/bigvgan_v2_44khz_128band_512x/resolve/95a9d1dcb12906c03edd938d77b9333d6ded7dfb/bigvgan_generator.pt",
+      "sizeGb": 0.489041291,
+      "license": {
+        "name": "MIT",
+        "url": "https://huggingface.co/nvidia/bigvgan_v2_44khz_128band_512x/blob/main/LICENSE"
+      },
+      "sha256": "d9fe7ec6bd0b44ed9d66973d5012d8181c1570b01e5c72df51973e241dccd357"
+    },
+    {
+      "id": "audio_vae-bigvgan_vocoder-config.json",
+      "folder": "audio_vae/bigvgan_vocoder",
+      "filename": "config.json",
+      "url": "https://huggingface.co/nvidia/bigvgan_v2_44khz_128band_512x/resolve/95a9d1dcb12906c03edd938d77b9333d6ded7dfb/config.json",
+      "sizeGb": 1.403e-06,
+      "license": {
+        "name": "MIT",
+        "url": "https://huggingface.co/nvidia/bigvgan_v2_44khz_128band_512x/blob/main/LICENSE"
+      }
+    },
+    {
+      "id": "breezetts2-drbaph_Breeze-TTS-2-comfyui-Breeze-TTS-2-int8-hybrid",
+      "folder": "breezetts2/drbaph_Breeze-TTS-2-comfyui",
+      "filename": "Breeze-TTS-2-int8-hybrid.safetensors",
+      "url": "https://huggingface.co/drbaph/Breeze-TTS-2-comfyui/resolve/a6bfd9d0d4e8b3b61c3a5ed3ecf55468c8ab88e4/Breeze-TTS-2-int8-hybrid.safetensors",
+      "sizeGb": 4.863779632,
+      "license": {
+        "name": "BreezeBlue Research and Non-Commercial License, restricted",
+        "url": "https://huggingface.co/BreezeBlue/Breeze-TTS-2/blob/main/LICENSE",
+        "commercialNote": "Node code is Apache-2.0. Weights and self-hosted outputs have separate restricted terms. This is not a fully open voice stack."
+      },
+      "sha256": "e9f80ab9976caa3b5905e3d87e71d053aad8fae6b0e75caecbca9efdcf1cb2c8"
+    },
+    {
+      "id": "breezetts2-drbaph_Breeze-TTS-2-comfyui-config.json",
+      "folder": "breezetts2/drbaph_Breeze-TTS-2-comfyui",
+      "filename": "config.json",
+      "url": "https://huggingface.co/drbaph/Breeze-TTS-2-comfyui/resolve/a6bfd9d0d4e8b3b61c3a5ed3ecf55468c8ab88e4/config.json",
+      "sizeGb": 1.0161e-05,
+      "license": {
+        "name": "BreezeBlue Research and Non-Commercial License, restricted",
+        "url": "https://huggingface.co/BreezeBlue/Breeze-TTS-2/blob/main/LICENSE",
+        "commercialNote": "Node code is Apache-2.0. Weights and self-hosted outputs have separate restricted terms. This is not a fully open voice stack."
+      }
+    },
+    {
+      "id": "breezetts2-drbaph_Breeze-TTS-2-comfyui-generation_config.json",
+      "folder": "breezetts2/drbaph_Breeze-TTS-2-comfyui",
+      "filename": "generation_config.json",
+      "url": "https://huggingface.co/drbaph/Breeze-TTS-2-comfyui/resolve/a6bfd9d0d4e8b3b61c3a5ed3ecf55468c8ab88e4/generation_config.json",
+      "sizeGb": 2.51e-07,
+      "license": {
+        "name": "BreezeBlue Research and Non-Commercial License, restricted",
+        "url": "https://huggingface.co/BreezeBlue/Breeze-TTS-2/blob/main/LICENSE",
+        "commercialNote": "Node code is Apache-2.0. Weights and self-hosted outputs have separate restricted terms. This is not a fully open voice stack."
+      }
+    },
+    {
+      "id": "breezetts2-drbaph_Breeze-TTS-2-comfyui-tokenizer.json",
+      "folder": "breezetts2/drbaph_Breeze-TTS-2-comfyui",
+      "filename": "tokenizer.json",
+      "url": "https://huggingface.co/drbaph/Breeze-TTS-2-comfyui/resolve/a6bfd9d0d4e8b3b61c3a5ed3ecf55468c8ab88e4/tokenizer.json",
+      "sizeGb": 0.033386945,
+      "license": {
+        "name": "BreezeBlue Research and Non-Commercial License, restricted",
+        "url": "https://huggingface.co/BreezeBlue/Breeze-TTS-2/blob/main/LICENSE",
+        "commercialNote": "Node code is Apache-2.0. Weights and self-hosted outputs have separate restricted terms. This is not a fully open voice stack."
+      },
+      "sha256": "d3ec9ac3eb2392389b9f5112e85d8b43316494addb587ba7b7a9d61eac23af96"
+    },
+    {
+      "id": "breezetts2-drbaph_Breeze-TTS-2-comfyui-tokenizer_config.json",
+      "folder": "breezetts2/drbaph_Breeze-TTS-2-comfyui",
+      "filename": "tokenizer_config.json",
+      "url": "https://huggingface.co/drbaph/Breeze-TTS-2-comfyui/resolve/a6bfd9d0d4e8b3b61c3a5ed3ecf55468c8ab88e4/tokenizer_config.json",
+      "sizeGb": 0.00115796,
+      "license": {
+        "name": "BreezeBlue Research and Non-Commercial License, restricted",
+        "url": "https://huggingface.co/BreezeBlue/Breeze-TTS-2/blob/main/LICENSE",
+        "commercialNote": "Node code is Apache-2.0. Weights and self-hosted outputs have separate restricted terms. This is not a fully open voice stack."
+      }
+    },
+    {
+      "id": "breezetts2-drbaph_Breeze-TTS-2-comfyui-special_tokens_map.json",
+      "folder": "breezetts2/drbaph_Breeze-TTS-2-comfyui",
+      "filename": "special_tokens_map.json",
+      "url": "https://huggingface.co/drbaph/Breeze-TTS-2-comfyui/resolve/a6bfd9d0d4e8b3b61c3a5ed3ecf55468c8ab88e4/special_tokens_map.json",
+      "sizeGb": 8.86e-07,
+      "license": {
+        "name": "BreezeBlue Research and Non-Commercial License, restricted",
+        "url": "https://huggingface.co/BreezeBlue/Breeze-TTS-2/blob/main/LICENSE",
+        "commercialNote": "Node code is Apache-2.0. Weights and self-hosted outputs have separate restricted terms. This is not a fully open voice stack."
+      }
+    },
+    {
+      "id": "breezetts2-drbaph_Breeze-TTS-2-comfyui-audio_tokenizer-model",
+      "folder": "breezetts2/drbaph_Breeze-TTS-2-comfyui/audio_tokenizer",
+      "filename": "model.safetensors",
+      "url": "https://huggingface.co/drbaph/Breeze-TTS-2-comfyui/resolve/a6bfd9d0d4e8b3b61c3a5ed3ecf55468c8ab88e4/audio_tokenizer/model.safetensors",
+      "sizeGb": 0.682293092,
+      "license": {
+        "name": "BreezeBlue Research and Non-Commercial License, restricted",
+        "url": "https://huggingface.co/BreezeBlue/Breeze-TTS-2/blob/main/LICENSE",
+        "commercialNote": "Node code is Apache-2.0. Weights and self-hosted outputs have separate restricted terms. This is not a fully open voice stack."
+      },
+      "sha256": "836b7b357f5ea43e889936a3709af68dfe3751881acefe4ecf0dbd30ba571258"
+    },
+    {
+      "id": "breezetts2-drbaph_Breeze-TTS-2-comfyui-audio_tokenizer-config.json",
+      "folder": "breezetts2/drbaph_Breeze-TTS-2-comfyui/audio_tokenizer",
+      "filename": "config.json",
+      "url": "https://huggingface.co/drbaph/Breeze-TTS-2-comfyui/resolve/a6bfd9d0d4e8b3b61c3a5ed3ecf55468c8ab88e4/audio_tokenizer/config.json",
+      "sizeGb": 2.336e-06,
+      "license": {
+        "name": "BreezeBlue Research and Non-Commercial License, restricted",
+        "url": "https://huggingface.co/BreezeBlue/Breeze-TTS-2/blob/main/LICENSE",
+        "commercialNote": "Node code is Apache-2.0. Weights and self-hosted outputs have separate restricted terms. This is not a fully open voice stack."
+      }
+    },
+    {
+      "id": "breezetts2-drbaph_Breeze-TTS-2-comfyui-audio_tokenizer-configuration.json",
+      "folder": "breezetts2/drbaph_Breeze-TTS-2-comfyui/audio_tokenizer",
+      "filename": "configuration.json",
+      "url": "https://huggingface.co/drbaph/Breeze-TTS-2-comfyui/resolve/a6bfd9d0d4e8b3b61c3a5ed3ecf55468c8ab88e4/audio_tokenizer/configuration.json",
+      "sizeGb": 7.6e-08,
+      "license": {
+        "name": "BreezeBlue Research and Non-Commercial License, restricted",
+        "url": "https://huggingface.co/BreezeBlue/Breeze-TTS-2/blob/main/LICENSE",
+        "commercialNote": "Node code is Apache-2.0. Weights and self-hosted outputs have separate restricted terms. This is not a fully open voice stack."
+      }
+    },
+    {
+      "id": "breezetts2-drbaph_Breeze-TTS-2-comfyui-audio_tokenizer-preprocessor_config.json",
+      "folder": "breezetts2/drbaph_Breeze-TTS-2-comfyui/audio_tokenizer",
+      "filename": "preprocessor_config.json",
+      "url": "https://huggingface.co/drbaph/Breeze-TTS-2-comfyui/resolve/a6bfd9d0d4e8b3b61c3a5ed3ecf55468c8ab88e4/audio_tokenizer/preprocessor_config.json",
+      "sizeGb": 2.34e-07,
+      "license": {
+        "name": "BreezeBlue Research and Non-Commercial License, restricted",
+        "url": "https://huggingface.co/BreezeBlue/Breeze-TTS-2/blob/main/LICENSE",
+        "commercialNote": "Node code is Apache-2.0. Weights and self-hosted outputs have separate restricted terms. This is not a fully open voice stack."
+      }
+    },
+    {
+      "id": "diffusion_models-acestep_v1.5_turbo",
+      "folder": "diffusion_models",
+      "filename": "acestep_v1.5_turbo.safetensors",
+      "url": "https://huggingface.co/Comfy-Org/ace_step_1.5_ComfyUI_files/resolve/6707deb277e9e0907fd9c14ce6b6f1d695c6a3fc/split_files/diffusion_models/acestep_v1.5_turbo.safetensors",
+      "sizeGb": 4.787825604,
+      "license": {
+        "name": "Apache-2.0",
+        "url": "https://huggingface.co/ACE-Step/Ace-Step1.5/blob/main/LICENSE"
+      },
+      "sha256": "3f6e0797fad420a39bd33979eb6e840e30989e34a3794e843d23b60ec6e422d7"
+    },
+    {
+      "id": "text_encoders-qwen_0.6b_ace15",
+      "folder": "text_encoders",
+      "filename": "qwen_0.6b_ace15.safetensors",
+      "url": "https://huggingface.co/Comfy-Org/ace_step_1.5_ComfyUI_files/resolve/6707deb277e9e0907fd9c14ce6b6f1d695c6a3fc/split_files/text_encoders/qwen_0.6b_ace15.safetensors",
+      "sizeGb": 1.191588248,
+      "license": {
+        "name": "Apache-2.0",
+        "url": "https://huggingface.co/ACE-Step/Ace-Step1.5/blob/main/LICENSE"
+      },
+      "sha256": "fd4590c82153b8ddb67e15a2e7aaa8afa8b83a858c8a9b82a4831063156aa7a7"
+    },
+    {
+      "id": "text_encoders-qwen_1.7b_ace15",
+      "folder": "text_encoders",
+      "filename": "qwen_1.7b_ace15.safetensors",
+      "url": "https://huggingface.co/Comfy-Org/ace_step_1.5_ComfyUI_files/resolve/6707deb277e9e0907fd9c14ce6b6f1d695c6a3fc/split_files/text_encoders/qwen_1.7b_ace15.safetensors",
+      "sizeGb": 3.70852336,
+      "license": {
+        "name": "Apache-2.0",
+        "url": "https://huggingface.co/ACE-Step/Ace-Step1.5/blob/main/LICENSE"
+      },
+      "sha256": "ed63e9247d1f55f3ace04fa11e95b085fc82d459c82c5626f0b2e37b91ebd710"
+    },
+    {
+      "id": "vae-ace_1.5_vae",
+      "folder": "vae",
+      "filename": "ace_1.5_vae.safetensors",
+      "url": "https://huggingface.co/Comfy-Org/ace_step_1.5_ComfyUI_files/resolve/6707deb277e9e0907fd9c14ce6b6f1d695c6a3fc/split_files/vae/ace_1.5_vae.safetensors",
+      "sizeGb": 0.337431732,
+      "license": {
+        "name": "Apache-2.0",
+        "url": "https://huggingface.co/ACE-Step/Ace-Step1.5/blob/main/LICENSE"
+      },
+      "sha256": "6de92e3a862acd287e08b024ac90f0783a8635451b728721a33ff03565bcb2bb"
+    },
+    {
+      "id": "text_encoders-qwen3vl_4b_bf16",
+      "folder": "text_encoders",
+      "filename": "qwen3vl_4b_bf16.safetensors",
+      "url": "https://huggingface.co/Comfy-Org/Krea-2/resolve/1171f4dc7e325bf3734586942e737872506c73e1/text_encoders/qwen3vl_4b_bf16.safetensors",
+      "sizeGb": 8.875719384,
+      "license": {
+        "name": "Apache-2.0",
+        "url": "https://huggingface.co/Qwen/Qwen3-VL-4B-Instruct/blob/main/LICENSE"
+      },
+      "sha256": "36f3ff447ef59201722e8f9ce6020c9819fdcfba6aa2608c4e09b1c0ce114e34"
+    }
+  ],
+  "launch": {
+    "args": [
+      "--force-fp16",
+      "--disable-pinned-memory",
+      "--disable-comfy-compiler"
+    ],
+    "env": {
+      "PYTORCH_MPS_HIGH_WATERMARK_RATIO": "1.0",
+      "PYTORCH_MPS_LOW_WATERMARK_RATIO": "0.8"
+    }
+  },
+  "customNodes": [
+    {
+      "name": "ComfyUI-Breeze-TTS-2",
+      "url": "https://github.com/Saganaki22/ComfyUI-Breeze-TTS-2",
+      "ref": "3461ca6011b7e833147b2e7edb779da7a08c6259",
+      "patch": "breeze",
+      "license": {
+        "name": "Apache-2.0",
+        "url": "https://github.com/Saganaki22/ComfyUI-Breeze-TTS-2/blob/3461ca6011b7e833147b2e7edb779da7a08c6259/LICENSE"
+      }
+    },
+    {
+      "name": "MOSS-Image",
+      "url": "https://github.com/OpenMOSS/MOSS-Image",
+      "ref": "608158b568fa2e769d918ceccaaf2461f52b3e38",
+      "dir": "moss-image",
+      "subdir": "comfyui/moss-image",
+      "patch": "moss",
+      "license": {
+        "name": "Apache-2.0",
+        "url": "https://github.com/OpenMOSS/MOSS-Image/blob/608158b568fa2e769d918ceccaaf2461f52b3e38/LICENSE"
+      }
+    },
+    {
+      "name": "kandinsky-6",
+      "url": "https://github.com/kandinskylab/kandinsky-6",
+      "ref": "119d58ee5c5de0157644f09ef20bc9b2ab68a064",
+      "dir": "kandinsky6",
+      "subdir": "comfyui",
+      "license": {
+        "name": "MIT",
+        "url": "https://github.com/kandinskylab/kandinsky-6/blob/119d58ee5c5de0157644f09ef20bc9b2ab68a064/LICENSE"
+      }
+    }
+  ],
+  "steps": {
+    "still": {
+      "workflow": "moss_image_gptq_encoder.api.json",
+      "inputs": {
+        "prompt": {
+          "node": "4",
+          "field": "text"
+        },
+        "negative": {
+          "node": "5",
+          "field": "text"
+        },
+        "seed": {
+          "node": "9",
+          "field": "seed"
+        },
+        "width": {
+          "node": "6",
+          "field": "width"
+        },
+        "height": {
+          "node": "6",
+          "field": "height"
+        }
+      },
+      "params": {
+        "width": 768,
+        "height": 768
+      },
+      "outputNodes": [
+        "11"
+      ]
+    },
+    "video_draft": {
+      "workflow": "kandinsky6_lite_fp16.api.json",
+      "inputs": {
+        "prompt": {
+          "node": "5",
+          "field": "video_caption"
+        },
+        "negative": {
+          "node": "6",
+          "field": "video_caption"
+        },
+        "image": {
+          "node": "8",
+          "field": "image"
+        },
+        "seed": {
+          "node": "12",
+          "field": "seed"
+        },
+        "width": {
+          "node": "20",
+          "field": "value"
+        },
+        "height": {
+          "node": "21",
+          "field": "value"
+        },
+        "frames": {
+          "node": "7",
+          "field": "length"
+        },
+        "fps": {
+          "node": "7",
+          "field": "fps"
+        }
+      },
+      "params": {
+        "width": 384,
+        "height": 256,
+        "fps": 24,
+        "frames": 49,
+        "maxFrames": 49
+      },
+      "outputNodes": [
+        "17",
+        "18"
+      ]
+    },
+    "video_final_same_take": {
+      "workflow": "video_pixel_upscale.api.json",
+      "inputs": {
+        "video": {
+          "node": "1",
+          "field": "file"
+        }
+      },
+      "params": {
+        "width": 768,
+        "height": 512,
+        "fps": 24,
+        "frames": 49,
+        "maxFrames": 49
+      },
+      "outputNodes": [
+        "5"
+      ]
+    },
+    "voice": {
+      "workflow": "breeze_tts2_eager.api.json",
+      "inputs": {
+        "text": {
+          "node": "2",
+          "field": "text"
+        },
+        "seed": {
+          "node": "2",
+          "field": "seed"
+        },
+        "prompt": {
+          "node": "2",
+          "field": "instruction"
+        }
+      },
+      "params": {},
+      "outputNodes": [
+        "3"
+      ]
+    },
+    "music": {
+      "workflow": "ace15_turbo.api.json",
+      "inputs": {
+        "prompt": {
+          "node": "4",
+          "field": "tags"
+        },
+        "lyrics": {
+          "node": "4",
+          "field": "lyrics"
+        },
+        "seed": {
+          "node": "11",
+          "field": "value"
+        },
+        "durationSec": {
+          "node": "10",
+          "field": "value"
+        }
+      },
+      "params": {},
+      "outputNodes": [
+        "9"
+      ]
+    },
+    "text": {
+      "workflow": "text_shot_list_bf16.api.json",
+      "inputs": {
+        "prompt": {
+          "node": "2",
+          "field": "prompt"
+        },
+        "system": {
+          "node": "2",
+          "field": "system_prompt"
+        },
+        "maxTokens": {
+          "node": "2",
+          "field": "max_length"
+        }
+      },
+      "params": {},
+      "outputNodes": [
+        "3"
+      ]
+    }
+  },
+  "estimates": {
+    "still": {
+      "peakGb": 15,
+      "seconds": 535,
+      "measured": false
+    },
+    "video_draft": {
+      "peakGb": 15,
+      "seconds": 1425,
+      "measured": false
+    },
+    "video_final_same_take": {
+      "peakGb": 2,
+      "seconds": 5,
+      "measured": false
+    },
+    "voice": {
+      "peakGb": 10,
+      "seconds": 445,
+      "measured": false
+    },
+    "music": {
+      "peakGb": 12,
+      "seconds": 110,
+      "measured": false
+    },
+    "text": {
+      "peakGb": 12,
+      "seconds": 60,
+      "measured": false
+    }
+  }
+}

@@ -1,0 +1,150 @@
+{
+  "estimates": {
+    "still": {
+      "peakGb": 6.8,
+      "seconds": 150,
+      "measured": true
+    },
+    "video_draft": {
+      "peakGb": 7.2,
+      "seconds": 60,
+      "measured": true
+    },
+    "video_final_same_take": {
+      "peakGb": 0.3,
+      "seconds": 5,
+      "measured": true
+    },
+    "voice": {
+      "peakGb": 4.5,
+      "seconds": 30,
+      "measured": true
+    },
+    "music": {
+      "peakGb": 6.7,
+      "seconds": 45,
+      "measured": true
+    },
+    "text": {
+      "peakGb": 5.4,
+      "seconds": 480,
+      "measured": true
+    }
+  },
+  "machine": "NVIDIA GeForce RTX 2080 SUPER (8 GB, Turing, compute 7.5, PCIe 3.0), Intel Core i7-7700, 30 GB RAM, Ubuntu, PyTorch 2.14.1+cu130, ComfyUI 0.41.3.",
+  "method": "One end-to-end run on 2026-10-29: a fresh install, the First shot sample and a three-shot cinematic project, through the web UI with the real engine in local mode. Seconds are the job's wall time from start to finish. Peak GB is the most graphics memory ComfyUI's process tree held, from nvidia-smi sampled every second over the job; the engine's own peakGb read 1.0 to 4.0 GB for the same jobs, because PyTorch's figure misses what dynamic VRAM holds. A recipe estimate is a planning value: a little above the slowest full-card job, with memory rounded up to 0.1 GB.",
+  "jobs": [
+    {
+      "step": "text",
+      "seconds": 209.0,
+      "peakGb": 5.32,
+      "otherAppsGb": 1.88,
+      "note": "One-shot list, 91 output tokens, about 2.1 s a token."
+    },
+    {
+      "step": "text",
+      "seconds": 482.7,
+      "peakGb": 5.26,
+      "otherAppsGb": 1.72,
+      "note": "Three-shot list, 238 output tokens. Each shot's optional voiceover line repeated the whole brief, about 90 tokens."
+    },
+    {
+      "step": "still",
+      "seconds": 175.4,
+      "peakGb": 4.99,
+      "otherAppsGb": 1.91,
+      "note": "960x640."
+    },
+    {
+      "step": "still",
+      "seconds": 160.6,
+      "peakGb": 5.27,
+      "otherAppsGb": 1.72
+    },
+    {
+      "step": "still",
+      "seconds": 141.2,
+      "peakGb": 6.78,
+      "otherAppsGb": 0.08
+    },
+    {
+      "step": "still",
+      "seconds": 142.4,
+      "peakGb": 6.7,
+      "otherAppsGb": 0.08
+    },
+    {
+      "step": "video_draft",
+      "seconds": 63.2,
+      "peakGb": 5.61,
+      "otherAppsGb": 1.72,
+      "note": "384x256, 49 frames with sound. First draft, models cold."
+    },
+    {
+      "step": "video_draft",
+      "seconds": 54.9,
+      "peakGb": 7.08,
+      "otherAppsGb": 0.08
+    },
+    {
+      "step": "video_draft",
+      "seconds": 46.9,
+      "peakGb": 7.14,
+      "otherAppsGb": 0.08
+    },
+    {
+      "step": "video_draft",
+      "seconds": 47.0,
+      "peakGb": 7.04,
+      "otherAppsGb": 0.08
+    },
+    {
+      "step": "video_draft",
+      "seconds": 47.0,
+      "peakGb": 7.14,
+      "otherAppsGb": 0.08
+    },
+    {
+      "step": "video_final_same_take",
+      "seconds": 1.8,
+      "peakGb": 0.29,
+      "otherAppsGb": 0.08,
+      "note": "768x512, a 2x lanczos resize. SSIM 0.993 against its draft: it adds no detail."
+    },
+    {
+      "step": "video_final_same_take",
+      "seconds": 1.6,
+      "peakGb": 0.29,
+      "otherAppsGb": 0.08
+    },
+    {
+      "step": "video_final_same_take",
+      "seconds": 1.4,
+      "peakGb": 0.29,
+      "otherAppsGb": 0.08
+    },
+    {
+      "step": "music",
+      "seconds": 37.5,
+      "peakGb": 6.67,
+      "otherAppsGb": 0.08,
+      "note": "ACE-Step 1.5 turbo, a 5 s clip."
+    },
+    {
+      "step": "voice",
+      "seconds": 36.4,
+      "peakGb": 3.76,
+      "otherAppsGb": 3.58,
+      "status": "failed",
+      "note": "Ran out of graphics memory while another program held 3.5 GB of the card."
+    },
+    {
+      "step": "voice",
+      "seconds": 22.7,
+      "peakGb": 4.42,
+      "otherAppsGb": 0.08,
+      "note": "4.4 s of speech."
+    }
+  ],
+  "limitations": "One card and one project. The first shot list, the first still and the first draft ran while another program held 1.7 to 1.9 GB of the card, which made them 14 to 24% slower; no shot list ran on the full card. The three-shot list was measured before its template stopped asking for voiceover lines, so 480 s is high for a list written now."
+}

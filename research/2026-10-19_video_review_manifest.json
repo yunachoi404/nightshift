@@ -1,0 +1,28 @@
+{
+  "output": "outputs/model_lab/video_comparison.mp4",
+  "sha256": "d1aefad39ff09468e2e41ed48cc66ef52f98831bd62139c770a10429572a8e23",
+  "sources": [
+    {
+      "case": "ltx_draft_ok",
+      "path": "outputs/model_lab/ltx_draft_ok/25/ltx_draft_00002_.mp4",
+      "jobId": "14ff74c5-8c69-473d-877e-4b3c93484e5f",
+      "durationSec": 4.041666666666667,
+      "sha256": "fa9ade26c780047d07f7566b1e7c2a5a9c569f2641e6b91af702552d810de369"
+    },
+    {
+      "case": "ltx_final",
+      "path": "outputs/model_lab/ltx_final/25/ltx_final_00001_.mp4",
+      "jobId": "eca300a2-5349-4311-926d-bf9da9e1042d",
+      "durationSec": 4.041666666666667,
+      "sha256": "f6531ed7069c843740413fdffcd960930dd86974a23e6e8a7ccf535ca4d050d8"
+    },
+    {
+      "case": "h3_ref2va_4step",
+      "path": "outputs/model_lab/h3_ref2va_4step/17/h3_ref4_00001_.mp4",
+      "jobId": "bcdd2f2f-08ad-467f-8063-bb5bf0a855ed",
+      "durationSec": 5.166666666666667,
+      "sha256": "945f9b46c1c0ad958b192a153668de883c172873a16504be24f498cc756c7a08"
+    }
+  ],
+  "note": "Render completed lab clips side by side for motion review, without a GPU.\n\nH3's duration is normalized to LTX and its preview resolution is disclosed.\nThis is review evidence, not a fair comparison of final image quality."
+}

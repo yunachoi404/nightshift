@@ -1,0 +1,42 @@
+{
+  "disintegrate": {
+    "run": "person-disintegrate",
+    "posterFrame": 24
+  },
+  "freeze": {
+    "run": "product-freeze",
+    "posterFrame": 96
+  },
+  "ignite": {
+    "run": "statue-ignite",
+    "posterFrame": 96
+  },
+  "bloom": {
+    "run": "person-bloom",
+    "posterFrame": 96
+  },
+  "gold": {
+    "run": "product-gold",
+    "posterFrame": 96
+  },
+  "crystal": {
+    "run": "product-crystal",
+    "posterFrame": 96
+  },
+  "levitate": {
+    "run": "product-levitate",
+    "posterFrame": 96
+  },
+  "earth_zoom": {
+    "run": "product-earth_zoom",
+    "posterFrame": 96
+  },
+  "melt": {
+    "run": "statue-melt",
+    "posterFrame": 48
+  },
+  "explode": {
+    "run": "statue-explode",
+    "posterFrame": 24
+  }
+}

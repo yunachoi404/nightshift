@@ -1,0 +1,94 @@
+{
+  "clips": [
+    {
+      "shotId": "shot_mvez5cwh8fd6398db9",
+      "assetId": "ast_mvez65kx715d29b320",
+      "start": 0,
+      "in": 0,
+      "out": 5.992,
+      "gain": 1
+    }
+  ],
+  "audio": [
+    {
+      "assetId": "ast_mvez6k3w56967f6558",
+      "role": "voice",
+      "start": 0.6,
+      "gain": 1
+    }
+  ],
+  "captions": [
+    {
+      "start": 0.6,
+      "end": 1.74,
+      "text": "A light in the mist.",
+      "words": [
+        {
+          "start": 0.6,
+          "end": 0.65,
+          "text": "A"
+        },
+        {
+          "start": 0.65,
+          "end": 0.92,
+          "text": "light"
+        },
+        {
+          "start": 0.92,
+          "end": 1.03,
+          "text": "in"
+        },
+        {
+          "start": 1.03,
+          "end": 1.19,
+          "text": "the"
+        },
+        {
+          "start": 1.19,
+          "end": 1.43,
+          "text": "mist."
+        }
+      ]
+    },
+    {
+      "start": 1.76,
+      "end": 3.19,
+      "text": "The sea carries on.",
+      "words": [
+        {
+          "start": 1.76,
+          "end": 1.87,
+          "text": "The"
+        },
+        {
+          "start": 1.95,
+          "end": 2.16,
+          "text": "sea"
+        },
+        {
+          "start": 2.16,
+          "end": 2.79,
+          "text": "carries"
+        },
+        {
+          "start": 2.8,
+          "end": 2.84,
+          "text": "on."
+        }
+      ]
+    }
+  ],
+  "overlays": [
+    {
+      "id": "title",
+      "kind": "title",
+      "start": 0.599,
+      "end": 4.199,
+      "text": "QA Cinematic"
+    }
+  ],
+  "markers": [],
+  "style": {
+    "look": "cinematic_shot"
+  }
+}

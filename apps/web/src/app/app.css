@@ -1,0 +1,609 @@
+/* ---------- Window: sidebar + content pane ---------- */
+.app {
+  height: 100%;
+  display: grid;
+  grid-template-columns: var(--sidebar-w) minmax(0, 1fr);
+  background: var(--window);
+}
+:root[data-desktop-vibrancy] .app {
+  background: transparent;
+}
+.app--single {
+  grid-template-columns: minmax(0, 1fr);
+}
+/* The engine went away after the app had loaded: this covers the app, which stays as it was underneath. */
+.app--over {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+}
+
+/* The title strip is a drag region; its children are not. */
+.drag {
+  -webkit-app-region: drag;
+  app-region: drag;
+}
+.drag :is(button, a, input, select, textarea, [role="button"], [role="radiogroup"], .seg) {
+  -webkit-app-region: no-drag;
+  app-region: no-drag;
+}
+
+/* ---------- Sidebar: a source list ---------- */
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: var(--sidebar);
+  border-right: 1px solid var(--line);
+}
+.sidebar__top {
+  height: var(--toolbar-h);
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 0 10px 0 var(--traffic);
+}
+.sidebar__list {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: 2px 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.side__head {
+  font-size: var(--fs-micro);
+  line-height: var(--lh-micro);
+  font-weight: 600;
+  color: var(--text-3);
+  padding: 14px 8px 4px;
+}
+.side__head:first-child {
+  padding-top: 6px;
+}
+.side__item {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  height: 30px;
+  padding: 0 9px;
+  border-radius: var(--r-s);
+  color: var(--text);
+  font-size: var(--fs-body);
+  width: 100%;
+  text-align: left;
+  min-width: 0;
+  transition: background-color var(--t-fast) var(--ease);
+}
+.side__item:hover {
+  background: var(--hover);
+}
+.side__item[aria-current="page"],
+.side__item[aria-current="true"] {
+  background: var(--raised);
+  box-shadow: 0 1px 2px rgba(24, 24, 27, 0.08), 0 0 0 0.5px rgba(24, 24, 27, 0.06);
+}
+:root[data-theme="dark"] .side__item[aria-current="page"],
+:root[data-theme="dark"] .side__item[aria-current="true"] {
+  background: var(--select);
+  box-shadow: none;
+}
+.side__item svg {
+  width: 16px;
+  height: 16px;
+  flex: none;
+  color: var(--text-2);
+  stroke-width: 1.8;
+}
+.side__item--project svg {
+  color: var(--text-3);
+}
+.side__label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.side__badge {
+  flex: none;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 6px;
+  border-radius: 9px;
+  background: var(--select);
+  color: var(--text-2);
+  font-size: var(--fs-micro);
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-variant-numeric: tabular-nums;
+}
+.side__badge--night {
+  background: var(--amber-soft);
+  color: var(--amber);
+}
+.side__badge--live {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.side__thumb {
+  width: 22px;
+  height: 22px;
+  flex: none;
+  border-radius: 5px;
+  overflow: hidden;
+  background: var(--media-empty);
+  box-shadow: inset 0 0 0 0.5px var(--line-strong);
+  position: relative;
+}
+.side__thumb .media {
+  position: absolute;
+  inset: 0;
+}
+.side__empty {
+  padding: 6px 8px 10px;
+  color: var(--text-4);
+  font-size: var(--fs-small);
+  line-height: var(--lh-small);
+}
+.sidebar__foot {
+  flex: none;
+  padding: 8px 10px 10px;
+  border-top: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+/* Another app holds part of the GPU during a render: a quiet card above the compute status. */
+.side__notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 6px;
+  padding: 9px 6px 10px 10px;
+  border-radius: var(--r-m);
+  background: var(--raised);
+  background-image: var(--sheen);
+  border: 1px solid var(--line);
+  animation: side-notice-in var(--t-med) var(--ease-out);
+}
+@keyframes side-notice-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+}
+.side__notice > svg {
+  width: 14px;
+  height: 14px;
+  flex: none;
+  margin-top: 1px;
+  color: var(--text-3);
+}
+.side__notice-body {
+  flex: 1;
+  min-width: 0;
+}
+.side__notice-text {
+  margin: 0;
+  font-size: var(--fs-small);
+  line-height: var(--lh-small);
+  color: var(--text-3);
+  overflow-wrap: anywhere;
+}
+.side__notice-lead {
+  color: var(--text);
+}
+.side__notice-close.btn {
+  float: right;
+  --btn-h: 22px;
+  margin: -4px 0 0 4px;
+}
+.side__status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 28px;
+  padding: 0 8px;
+  border-radius: var(--r-s);
+  font-size: var(--fs-small);
+  color: var(--text-2);
+  width: 100%;
+  text-align: left;
+  min-width: 0;
+}
+.side__status:hover {
+  background: var(--hover);
+  color: var(--text);
+}
+.side__status--night {
+  color: var(--amber);
+}
+.side__status > span:nth-child(2) {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.side__status .bar {
+  width: 40px;
+  flex: none;
+}
+
+/* ---------- Content pane ---------- */
+.pane {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  min-width: 0;
+  background: var(--content);
+}
+.toolbar {
+  height: var(--toolbar-h);
+  flex: none;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+  padding: 0 12px 0 20px;
+  border-bottom: 1px solid var(--line);
+  background: var(--content);
+  position: relative;
+  z-index: 5;
+  container-type: inline-size;
+  container-name: toolbar;
+}
+.app--single .toolbar {
+  padding-left: calc(var(--traffic) + 20px);
+}
+.toolbar__left,
+.toolbar__right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+.toolbar__right {
+  justify-content: flex-end;
+}
+.toolbar__center {
+  display: flex;
+  justify-content: center;
+}
+.toolbar__title {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.toolbar__name {
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  letter-spacing: -0.005em;
+}
+.toolbar__sub {
+  font-size: var(--fs-micro);
+  line-height: var(--lh-micro);
+  color: var(--text-3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.toolbar__sub-part--extra::after {
+  content: "  ·  ";
+  white-space: pre;
+}
+/* Laptop widths: the title and the status must both read in full. Drop detail before truncating. */
+@container toolbar (max-width: 880px) {
+  .toolbar__sub-part--extra:first-child,
+  .activity__where {
+    display: none;
+  }
+}
+@container toolbar (max-width: 780px) {
+  .toolbar__sub-part--extra {
+    display: none;
+  }
+  .activity .activity__long {
+    display: none;
+  }
+  .activity .activity__short {
+    display: inline;
+  }
+}
+.toolbar__sep {
+  width: 1px;
+  height: 18px;
+  background: var(--line-strong);
+  margin: 0 4px;
+}
+.toolbar .seg {
+  -webkit-app-region: no-drag;
+  app-region: no-drag;
+}
+.stage-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--ok);
+  flex: none;
+}
+
+/* activity indicator in the toolbar */
+.activity {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 30px;
+  padding: 0 12px 0 10px;
+  border-radius: var(--r-pill);
+  font-size: var(--fs-small);
+  color: var(--text-2);
+  max-width: 260px;
+  min-width: 0;
+  white-space: nowrap;
+  transition: background-color var(--t-fast) var(--ease);
+}
+.activity:hover {
+  background: var(--hover);
+  color: var(--text);
+}
+.activity[aria-current="page"] {
+  background: var(--select);
+  color: var(--text);
+}
+.activity > span:nth-child(2) {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+.activity__short {
+  display: none;
+}
+.activity--night {
+  color: var(--amber);
+}
+.ring {
+  width: 14px;
+  height: 14px;
+  flex: none;
+  border-radius: 50%;
+  background: conic-gradient(var(--ring-color, var(--accent)) calc(var(--pct, 0) * 1%), var(--track) 0);
+  position: relative;
+}
+.ring::after {
+  content: "";
+  position: absolute;
+  inset: 3px;
+  border-radius: 50%;
+  background: var(--content);
+}
+.ring--night {
+  --ring-color: var(--amber-fill);
+}
+
+/* ---------- Pages ---------- */
+.main {
+  flex: 1;
+  min-height: 0;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+.page {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: 0 var(--gutter) 48px;
+  container-type: inline-size;
+  container-name: page;
+}
+.page--narrow > * {
+  max-width: 720px;
+}
+.page__head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 28px 0 18px;
+  position: sticky;
+  top: 0;
+  background: var(--content);
+  z-index: 2;
+}
+.page__title {
+  font-family: var(--font-display);
+  font-size: var(--fs-title-2);
+  line-height: var(--lh-title-2);
+  font-weight: 400;
+  letter-spacing: -0.01em;
+}
+.page__sub {
+  color: var(--text-3);
+  margin-top: 6px;
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+  max-width: 64ch;
+}
+.page__actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex: none;
+}
+
+/* Split: content plus a right inspector */
+.split {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) var(--inspector-w);
+}
+.inspector {
+  border-left: 1px solid var(--line);
+  background: var(--inset);
+  min-height: 0;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+}
+.insp {
+  flex: none;
+  padding: 16px 18px 18px;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.insp__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 20px;
+}
+.insp__title {
+  font-weight: 600;
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+  color: var(--text);
+}
+.insp__text {
+  color: var(--text-3);
+  font-size: var(--fs-small);
+  line-height: var(--lh-small);
+}
+.insp__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: var(--fs-small);
+}
+.insp__row > span:first-child {
+  color: var(--text-3);
+}
+.insp__row .btn {
+  flex: none;
+}
+.insp__kv {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: var(--fs-small);
+  line-height: 18px;
+}
+.insp__kv span:first-child {
+  color: var(--text-3);
+}
+.insp__kv b {
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+.insp__status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--fs-small);
+  color: var(--text-2);
+}
+.insp .textarea {
+  min-height: 56px;
+  font-size: var(--fs-small);
+}
+
+/* ---------- Full-window states ---------- */
+.screen {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+}
+.screen__box {
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 10px;
+}
+.screen__title {
+  font-family: var(--font-display);
+  font-size: var(--fs-title-2);
+  line-height: var(--lh-title-2);
+  font-weight: 400;
+  letter-spacing: -0.01em;
+}
+.screen__text {
+  color: var(--text-2);
+}
+
+/* App mark: the Nightshift tile (see ui/mark-svg.ts). The SVG paints the tile; the span only sizes it and casts the shadow. */
+.mark {
+  width: 40px;
+  height: 40px;
+  border-radius: 23.4%;
+  display: inline-flex;
+  flex: none;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.18), 0 6px 16px -6px rgba(0, 0, 0, 0.35);
+}
+.mark svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* Morning summary: a quiet banner, amber because it is about the night's work. */
+.morning {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px 12px 16px;
+  margin-bottom: 20px;
+  border-radius: var(--r-m);
+  background: var(--amber-soft);
+  border: 1px solid var(--amber-line);
+}
+.morning svg {
+  width: 16px;
+  height: 16px;
+  color: var(--amber);
+  flex: none;
+}
+.morning__body {
+  flex: 1;
+  min-width: 0;
+}
+.morning__title {
+  font-weight: 600;
+}
+.morning__text {
+  color: var(--text-2);
+  font-size: var(--fs-small);
+  line-height: var(--lh-small);
+}
+.morning__actions {
+  display: flex;
+  gap: 6px;
+  flex: none;
+}
+
+/* Desktop shell: traffic lights live in the sidebar's top strip. */
+:root[data-desktop-platform="darwin"] {
+  --traffic: 70px;
+}
+
+/* A bare title strip for windows without a sidebar (splash, unreachable, setup). */
+.titlebar {
+  height: var(--toolbar-h);
+  flex: none;
+}

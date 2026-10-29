@@ -1,0 +1,148 @@
+.media {
+  width: 100%;
+  height: 100%;
+  display: block;
+  background: var(--media);
+}
+.media--canvas {
+  image-rendering: auto;
+}
+
+/* A clip that would not load or decode after a few tries: say so inside the frame instead of showing black. */
+.media__failed {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 8px;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.72);
+  background: var(--media);
+  font-size: var(--fs-micro);
+  line-height: var(--lh-micro);
+  container-type: inline-size;
+}
+.media__failed-title {
+  font-weight: 600;
+  color: #fff;
+}
+.media__failed-text {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
+}
+@container (max-width: 120px) {
+  .media__failed-text {
+    display: none;
+  }
+}
+
+/* A frame around any picture or clip. Near-square corners: this is film, not a card. */
+.frame {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--r-frame);
+  background: var(--media);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.08);
+}
+:root[data-theme="dark"] .frame {
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+}
+.frame--16x9 {
+  aspect-ratio: 16 / 9;
+}
+.frame--9x16 {
+  aspect-ratio: 9 / 16;
+}
+.frame--1x1 {
+  aspect-ratio: 1 / 1;
+}
+.frame > .media {
+  position: absolute;
+  inset: 0;
+}
+.frame__overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+.frame__corner {
+  position: absolute;
+  left: 6px;
+  top: 6px;
+  display: flex;
+  gap: 4px;
+  pointer-events: none;
+}
+.frame__corner--right {
+  left: auto;
+  right: 6px;
+}
+.frame__corner--bottom {
+  top: auto;
+  bottom: 6px;
+}
+.frame__progress {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.18);
+}
+.frame__progress > div {
+  height: 100%;
+  background: var(--accent);
+  transition: width 240ms linear;
+}
+.frame__progress--night > div {
+  background: var(--amber-fill);
+}
+.frame--working .media {
+  filter: saturate(0.5) brightness(0.6);
+}
+.frame--empty,
+.frame.shimmer {
+  background: var(--media-empty);
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+.frame--selected {
+  box-shadow:
+    inset 0 0 0 1px var(--content),
+    0 0 0 2px var(--accent);
+}
+.frame--selectable {
+  transition: box-shadow var(--t-fast) var(--ease);
+}
+.frame--selectable:hover:not(.frame--selected) {
+  box-shadow:
+    inset 0 0 0 1px var(--content),
+    0 0 0 2px var(--line-strong);
+}
+
+/* The template's glyph where a picture will be. */
+.tpl-icon {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-4);
+}
+.tpl-icon svg {
+  width: 12px;
+  height: 12px;
+  stroke-width: 2;
+}
+.tpl-icon--l svg {
+  width: 22px;
+  height: 22px;
+  stroke-width: 1.5;
+}

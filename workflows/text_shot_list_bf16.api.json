@@ -1,0 +1,35 @@
+{
+  "1": {
+    "class_type": "CLIPLoader",
+    "inputs": {
+      "clip_name": "qwen3vl_4b_bf16.safetensors",
+      "type": "krea2",
+      "device": "default"
+    }
+  },
+  "2": {
+    "class_type": "TextGenerate",
+    "inputs": {
+      "clip": [
+        "1",
+        0
+      ],
+      "prompt": "Create a three-shot cinematic ad for a red ceramic coffee cup on a rainy evening. Each shot lasts four seconds.",
+      "system_prompt": "Return only a JSON object with a shots array. Each shot has prompt, cameraMove, durationSec. Use exactly three shots. Keep the same red ceramic cup. No markdown or reasoning.",
+      "max_length": 384,
+      "sampling_mode": "off",
+      "thinking": false,
+      "use_default_template": true
+    }
+  },
+  "3": {
+    "class_type": "NightshiftSaveText",
+    "inputs": {
+      "text": [
+        "2",
+        0
+      ],
+      "filename_prefix": "nightshift/shot_list"
+    }
+  }
+}

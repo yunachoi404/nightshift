@@ -1,0 +1,15 @@
+[
+  {
+    "case": "ace15_turbo",
+    "path": "outputs/model_lab/ace15_turbo/9/ace15_00001.flac",
+    "durationSec": 12.0,
+    "sampleRate": 48000,
+    "channels": 2,
+    "peakAmplitude": 0.98291015625,
+    "rms": 0.11837906390428543,
+    "nearFullScaleFraction": 0.0,
+    "overFullScaleFraction": 0.0,
+    "transcript": "",
+    "asrModel": "OpenAI Whisper base.en, CPU"
+  }
+]

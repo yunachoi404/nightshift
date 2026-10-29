@@ -1,0 +1,247 @@
+{
+  "1": {
+    "class_type": "UNETLoader",
+    "inputs": {
+      "unet_name": "Kandinsky-6.0-Lite-distill-5s-Diffusers/transformer/diffusion_pytorch_model.safetensors",
+      "weight_dtype": "default"
+    }
+  },
+  "2": {
+    "class_type": "DualCLIPLoader",
+    "inputs": {
+      "clip_name1": "qwen_2.5_vl_7b_fp8_scaled.safetensors",
+      "clip_name2": "clip_l.safetensors",
+      "type": "kandinsky5",
+      "device": "default"
+    }
+  },
+  "3": {
+    "class_type": "VAELoader",
+    "inputs": {
+      "vae_name": "hunyuan_video_vae_bf16.safetensors"
+    }
+  },
+  "4": {
+    "class_type": "Kandinsky6AudioVAELoader",
+    "inputs": {
+      "tod_vae": "v1-44.pth",
+      "bigvgan_dir": "bigvgan_vocoder",
+      "mode": "44k",
+      "scaling_factor": 0.417
+    }
+  },
+  "5": {
+    "class_type": "Kandinsky6TextEncode",
+    "inputs": {
+      "clip": [
+        "2",
+        0
+      ],
+      "video_caption": "A woman in a red coat walks away down a wet city street at dusk. The camera follows behind her. Continuous shot.",
+      "audio_caption": "Quiet footsteps and distant city ambience, no music."
+    }
+  },
+  "6": {
+    "class_type": "Kandinsky6TextEncode",
+    "inputs": {
+      "clip": [
+        "2",
+        0
+      ],
+      "video_caption": "cartoon, deformed, static, black frames, cuts",
+      "audio_caption": ""
+    }
+  },
+  "7": {
+    "class_type": "Kandinsky6EmptyLatent",
+    "inputs": {
+      "width": [
+        "20",
+        0
+      ],
+      "height": [
+        "21",
+        0
+      ],
+      "length": 49,
+      "fps": 24,
+      "batch_size": 1
+    }
+  },
+  "8": {
+    "class_type": "LoadImage",
+    "inputs": {
+      "image": "first_frame.png"
+    }
+  },
+  "9": {
+    "class_type": "ImageScale",
+    "inputs": {
+      "image": [
+        "8",
+        0
+      ],
+      "upscale_method": "lanczos",
+      "width": [
+        "20",
+        0
+      ],
+      "height": [
+        "21",
+        0
+      ],
+      "crop": "center"
+    }
+  },
+  "10": {
+    "class_type": "VAEEncode",
+    "inputs": {
+      "pixels": [
+        "9",
+        0
+      ],
+      "vae": [
+        "3",
+        0
+      ]
+    }
+  },
+  "11": {
+    "class_type": "Kandinsky6ImageToVideoAudio",
+    "inputs": {
+      "positive": [
+        "5",
+        0
+      ],
+      "negative": [
+        "6",
+        0
+      ],
+      "empty_latent": [
+        "7",
+        0
+      ],
+      "reference_latent": [
+        "10",
+        0
+      ]
+    }
+  },
+  "12": {
+    "class_type": "Kandinsky6Sampler",
+    "inputs": {
+      "model": [
+        "1",
+        0
+      ],
+      "positive": [
+        "11",
+        0
+      ],
+      "negative": [
+        "11",
+        1
+      ],
+      "latent_image": [
+        "11",
+        2
+      ],
+      "seed": 42,
+      "steps": 10,
+      "cfg": 1,
+      "sampler_name": "euler",
+      "scheduler": "simple",
+      "denoise": 1
+    }
+  },
+  "13": {
+    "class_type": "Kandinsky6RemoveReferenceLatent",
+    "inputs": {
+      "joint_latent": [
+        "12",
+        0
+      ]
+    }
+  },
+  "14": {
+    "class_type": "VAEDecodeTiled",
+    "inputs": {
+      "samples": [
+        "13",
+        0
+      ],
+      "vae": [
+        "3",
+        0
+      ],
+      "tile_size": 256,
+      "overlap": 64,
+      "temporal_size": 32,
+      "temporal_overlap": 8
+    }
+  },
+  "15": {
+    "class_type": "Kandinsky6AudioVAEDecode",
+    "inputs": {
+      "audio_vae": [
+        "4",
+        0
+      ],
+      "joint_latent": [
+        "13",
+        0
+      ]
+    }
+  },
+  "16": {
+    "class_type": "CreateVideo",
+    "inputs": {
+      "images": [
+        "14",
+        0
+      ],
+      "audio": [
+        "15",
+        0
+      ],
+      "fps": [
+        "7",
+        1
+      ]
+    }
+  },
+  "17": {
+    "class_type": "SaveVideo",
+    "inputs": {
+      "video": [
+        "16",
+        0
+      ],
+      "filename_prefix": "nightshift/kandinsky6_lite",
+      "format": "mp4",
+      "codec": "h264"
+    }
+  },
+  "18": {
+    "class_type": "NightshiftSaveAVLatent",
+    "inputs": {
+      "samples": [
+        "13",
+        0
+      ],
+      "filename_prefix": "nightshift/kandinsky6_lite"
+    }
+  },
+  "20": {
+    "class_type": "PrimitiveInt",
+    "inputs": {
+      "value": 384
+    }
+  },
+  "21": {
+    "class_type": "PrimitiveInt",
+    "inputs": {
+      "value": 256
+    }
+  }
+}

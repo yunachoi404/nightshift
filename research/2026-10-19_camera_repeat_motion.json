@@ -1,0 +1,104 @@
+{
+  "method": "CPU OpenCV LK background features and per-frame RANSAC affine fit, resized to 640x384; central 192-pixel strip masked below row 48",
+  "limits": "Image-space proxies only. Subject motion, parallax and reflections can affect the fit. Not camera-pose ground truth or a reliability score.",
+  "cases": [
+    {
+      "case": "camera_dolly_in",
+      "path": "outputs/model_lab/camera_dolly_in/25/ltx_draft_00004_.mp4",
+      "sha256": "662600f8e7e9f3b002d7658f0877433472dba3cc77b9f5cd070b080679491f65",
+      "summary": {
+        "frames": 97,
+        "fps": 24.0,
+        "validPairs": 96,
+        "totalPairs": 96,
+        "medianScalePerFrame": 1.0013072893208457,
+        "summedRotationDeg": 0.2771738262643261,
+        "medianInlierFraction": 1.0,
+        "medianTranslationJitterPx": 0.03221526520091676,
+        "medianRotationJitterDeg": 0.0037734297803946335
+      }
+    },
+    {
+      "case": "camera_dolly_in_seed43",
+      "path": "outputs/model_lab/camera_dolly_in_seed43/25/ltx_draft_00013_.mp4",
+      "sha256": "b31cba145ed02a0422aa140f9f9250fb194604b5e75e54e7fdbaa1b60174c3db",
+      "summary": {
+        "frames": 97,
+        "fps": 24.0,
+        "validPairs": 96,
+        "totalPairs": 96,
+        "medianScalePerFrame": 1.0001298056674903,
+        "summedRotationDeg": -0.028359851311396223,
+        "medianInlierFraction": 1.0,
+        "medianTranslationJitterPx": 0.01782082574083555,
+        "medianRotationJitterDeg": 0.0023861245343156684
+      }
+    },
+    {
+      "case": "camera_dolly_in_seed44",
+      "path": "outputs/model_lab/camera_dolly_in_seed44/25/ltx_draft_00015_.mp4",
+      "sha256": "b2bd85f9850aeb8f96585325dd16e4d8868e0c088e58aba0422f8c8230dd52a3",
+      "summary": {
+        "frames": 97,
+        "fps": 24.0,
+        "validPairs": 96,
+        "totalPairs": 96,
+        "medianScalePerFrame": 1.0014514149972078,
+        "summedRotationDeg": 0.07583725029379292,
+        "medianInlierFraction": 1.0,
+        "medianTranslationJitterPx": 0.01206690660304874,
+        "medianRotationJitterDeg": 0.0011837188174770173
+      }
+    },
+    {
+      "case": "camera_crash_zoom",
+      "path": "outputs/model_lab/camera_crash_zoom/25/ltx_draft_00006_.mp4",
+      "sha256": "c2cd2a9a478be5335a5d82a71308b5cb8d8c80deccd6ec41e598dc635d5a6c5a",
+      "summary": {
+        "frames": 97,
+        "fps": 24.0,
+        "validPairs": 96,
+        "totalPairs": 96,
+        "medianScalePerFrame": 1.0008804113617837,
+        "summedRotationDeg": -0.019963433806741347,
+        "medianInlierFraction": 1.0,
+        "medianTranslationJitterPx": 0.02156989651982271,
+        "medianRotationJitterDeg": 0.0020205332431376026
+      }
+    },
+    {
+      "case": "camera_crash_zoom_seed43",
+      "path": "outputs/model_lab/camera_crash_zoom_seed43/25/ltx_draft_00017_.mp4",
+      "sha256": "681c80a9b60f1ad0feba1e2eb0a9663fe522e022aae7a184627fda9f7ebf9cd2",
+      "summary": {
+        "frames": 97,
+        "fps": 24.0,
+        "validPairs": 96,
+        "totalPairs": 96,
+        "medianScalePerFrame": 1.0004124306353819,
+        "summedRotationDeg": 0.45308457633744065,
+        "medianInlierFraction": 1.0,
+        "medianTranslationJitterPx": 0.0409153848790004,
+        "medianRotationJitterDeg": 0.002383541298478493
+      }
+    },
+    {
+      "case": "camera_crash_zoom_seed44",
+      "path": "outputs/model_lab/camera_crash_zoom_seed44/25/ltx_draft_00019_.mp4",
+      "sha256": "2e6c5fcde71ef5d3a4bfe5bb946d4a063fa79a2569078a780c1e2079d9baa7fe",
+      "summary": {
+        "frames": 97,
+        "fps": 24.0,
+        "validPairs": 96,
+        "totalPairs": 96,
+        "medianScalePerFrame": 1.0012239538885572,
+        "summedRotationDeg": 0.37626545736182776,
+        "medianInlierFraction": 0.9917572156196943,
+        "medianTranslationJitterPx": 0.043470235074256604,
+        "medianRotationJitterDeg": 0.0025493234853019705
+      }
+    }
+  ],
+  "rawEvidence": "outputs/model_lab/camera_motion_dolly_zoom_repeats.json",
+  "rawSha256": "a52213851f057ad42683bf8a804862c9a6f2063fd4d57128851f31880a64ebe8"
+}

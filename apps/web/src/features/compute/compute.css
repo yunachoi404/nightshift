@@ -1,0 +1,104 @@
+.remote {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.remote__form {
+  display: flex;
+  gap: 8px;
+}
+.remote__form .input {
+  flex: 1;
+}
+.remote__result {
+  margin-top: 4px;
+}
+.remote__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex: none;
+  background: var(--text-4);
+}
+.remote__dot--ok {
+  background: var(--ok);
+}
+.remote__dot--warn {
+  background: var(--amber-fill);
+}
+.remote__ok {
+  width: 16px;
+  height: 16px;
+  color: var(--ok);
+  flex: none;
+}
+.remote__warn {
+  width: 16px;
+  height: 16px;
+  color: var(--amber);
+  flex: none;
+}
+.remote__missing b {
+  display: block;
+  font-weight: 500;
+}
+.remote__missing small {
+  display: block;
+  color: var(--text-3);
+  font-size: var(--fs-small);
+  line-height: var(--lh-small);
+}
+.remote__missing ul {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: var(--fs-small);
+  font-variant-numeric: tabular-nums;
+  user-select: text;
+}
+.remote__missing li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.remote__kind {
+  flex: none;
+  width: 40px;
+  color: var(--text-3);
+}
+.remote__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding-top: 4px;
+}
+.remote--compact .remote__actions {
+  justify-content: flex-start;
+}
+
+/* the compute row in settings */
+.compute {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.compute__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex: none;
+  background: var(--ok);
+}
+.compute__dot--off {
+  background: var(--text-4);
+}
+.compute__dot--bad {
+  background: var(--bad);
+}
+.compute__dot--warn {
+  background: var(--amber-fill);
+}

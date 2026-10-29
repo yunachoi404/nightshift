@@ -1,0 +1,20 @@
+{
+  "source": "packages/engine/src/projects/templates.ts",
+  "sourceSha256": "25da9be8409414951ffd3e028463c5b15fc00e9481e30166cad408c07341e56c",
+  "fixture": "workflows/tests/text_engine_cinematic.api.json",
+  "instructions": "You plan a single cinematic shot, or a three-shot sequence when asked, from a short idea. Describe the subject, setting, light and lens in concrete visual terms. Avoid close-ups of faces. Answer with JSON only: {\"shots\":[{\"prompt\":\"what the camera sees, one or two sentences\",\"cameraMove\":\"one of static, dolly_in, dolly_out, pan_left, pan_right, tilt_up, tilt_down, crane_up, orbit_left, orbit_right, handheld, crash_zoom\",\"durationSec\":4,\"line\":\"optional voiceover line\"}]}",
+  "cameraMoves": [
+    "static",
+    "dolly_in",
+    "dolly_out",
+    "pan_left",
+    "pan_right",
+    "tilt_up",
+    "tilt_down",
+    "crane_up",
+    "orbit_left",
+    "orbit_right",
+    "handheld",
+    "crash_zoom"
+  ]
+}

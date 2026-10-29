@@ -1,0 +1,22 @@
+{
+  "shots": [
+    {
+      "prompt": "A red ceramic coffee cup sits on a worn wooden table, its rim catching the soft glow of a rainy window; rain streaks blur the glass, casting cool blue shadows across the scene while warm highlights linger on the cup\u2019s glaze.",
+      "cameraMove": "dolly_in",
+      "durationSec": 4,
+      "line": "The rain whispers outside, but inside, warmth lingers."
+    },
+    {
+      "prompt": "The camera glides closer, revealing the cup\u2019s textured surface and the faint steam curling from its rim, as the wooden table grain and rain-slicked windowpane deepen in muted tones, grain subtly enhancing the nostalgic atmosphere.",
+      "cameraMove": "dolly_in",
+      "durationSec": 4,
+      "line": "A quiet moment, held between cup and rain."
+    },
+    {
+      "prompt": "The cup is now almost centered, the window\u2019s reflection blurring into the background, with soft blue shadows pooling around its base and warm highlights glinting off its curved side \u2014 the grain of the film adds texture to the stillness.",
+      "cameraMove": "dolly_in",
+      "durationSec": 4,
+      "line": "And in this quiet, the world outside fades to gray."
+    }
+  ]
+}

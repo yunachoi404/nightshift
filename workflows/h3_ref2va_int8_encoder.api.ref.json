@@ -1,0 +1,43 @@
+{
+  "workflow": "h3_ref2va_int8_encoder.api.json",
+  "inputs": {
+    "prompt": {
+      "node": "8",
+      "field": "prompt"
+    },
+    "video": {
+      "node": "6",
+      "field": "file"
+    },
+    "width": {
+      "node": "8",
+      "field": "width"
+    },
+    "height": {
+      "node": "8",
+      "field": "height"
+    },
+    "frames": {
+      "node": "8",
+      "field": "length"
+    },
+    "seed": {
+      "node": "10",
+      "field": "noise_seed"
+    },
+    "fps": {
+      "node": "16",
+      "field": "fps"
+    }
+  },
+  "params": {
+    "width": 1280,
+    "height": 768,
+    "fps": 24,
+    "frames": 124,
+    "maxFrames": 124
+  },
+  "outputNodes": [
+    "17"
+  ]
+}

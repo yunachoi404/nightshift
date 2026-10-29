@@ -1,0 +1,2680 @@
+[
+  {
+    "case": "ace15_turbo",
+    "evidenceDirectory": "outputs/model_lab/ace15_turbo",
+    "seconds": 15.422430706210434,
+    "peakGb": 12.2,
+    "measured": true,
+    "method": "scheduler-accounted process GB, 1s samples, includes cache",
+    "samples": 16,
+    "cachePolicy": "release models before job",
+    "exitCode": 0,
+    "runtime": {
+      "comfyui_version": "0.41.3",
+      "python_version": "3.12.13 (main, Mar 24 2026, 22:47:08) [Clang 22.1.1 ]",
+      "pytorch_version": "2.14.1+cu130",
+      "graphCache": "none",
+      "cudaAllocatorCapGb": 0.0
+    },
+    "benchmarkSeconds": 15.985367435961962,
+    "jobId": "a2905bf7-ca56-4520-bfac-5620e5d6e16b",
+    "workflow": "workflows/ace15_turbo.api.json",
+    "outputs": [
+      {
+        "node": "9",
+        "path": "outputs/model_lab/ace15_turbo/9/ace15_00001.flac",
+        "bytes": 652408,
+        "sha256": "c9ba21428c1fdd5d861c9388bf6387654d9f337225643ed9df50f5b33d4e34d6"
+      }
+    ],
+    "sdkSeconds": 15.422430706210434
+  },
+  {
+    "case": "after_breeze_discard_fix_text",
+    "evidenceDirectory": "outputs/model_lab/after_breeze_discard_fix_text",
+    "seconds": 0.004668430890887976,
+    "peakGb": 4.1,
+    "measured": true,
+    "method": "scheduler-accounted process GB, 1s samples, includes cache",
+    "samples": 2,
+    "cachePolicy": "release models before job",
+    "exitCode": 0,
+    "runtime": {
+      "comfyui_version": "0.41.3",
+      "python_version": "3.12.13 (main, Mar 24 2026, 22:47:08) [Clang 22.1.1 ]",
+      "pytorch_version": "2.14.1+cu130",
+      "graphCache": "none",
+      "cudaAllocatorCapGb": 0.0
+    },
+    "benchmarkSeconds": 1.1261809167917818,
+    "jobId": "6fa26ee3-b2a6-4207-ac4b-2193ca41674b",
+    "workflow": "workflows/tests/echo_text.api.json",
+    "outputs": [
+      {
+        "node": "1",
+        "path": "outputs/model_lab/after_breeze_discard_fix_text/1/sdk_text_echo_00004_.json",
+        "bytes": 74,
+        "sha256": "70571bb15f25d4320d1334f8b23769e428fca66adf086ce1d5b7c0d7f83b728e"
+      }
+    ],
+    "sdkSeconds": 0.004668430890887976
+  },
+  {
+    "case": "after_breeze_eager_text",
+    "evidenceDirectory": "outputs/model_lab/after_breeze_eager_text",
+    "seconds": 0.5201974450610578,
+    "peakGb": 6.8,
+    "measured": true,
+    "method": "scheduler-accounted process GB, 1s samples, includes cache",
+    "samples": 2,
+    "cachePolicy": "release models before job",
+    "exitCode": 0,
+    "runtime": {
+      "comfyui_version": "0.41.3",
+      "python_version": "3.12.13 (main, Mar 24 2026, 22:47:08) [Clang 22.1.1 ]",
+      "pytorch_version": "2.14.1+cu130",
+      "graphCache": "none",
+      "cudaAllocatorCapGb": 0.0
+    },
+    "benchmarkSeconds": 1.1551048608962446,
+    "jobId": "1ed7f7ca-dca8-4acc-9f0e-4a2a3486bbe6",
+    "workflow": "workflows/tests/echo_text.api.json",
+    "outputs": [
+      {
+        "node": "1",
+        "path": "outputs/model_lab/after_breeze_eager_text/1/sdk_text_echo_00005_.json",
+        "bytes": 74,
+        "sha256": "70571bb15f25d4320d1334f8b23769e428fca66adf086ce1d5b7c0d7f83b728e"
+      }
+    ],
+    "sdkSeconds": 0.5201974450610578
+  },
+  {
+    "case": "after_breeze_static_text",
+    "evidenceDirectory": "outputs/model_lab/after_breeze_static_text",
+    "seconds": 0.0047045808751136065,
+    "peakGb": 2.9,
+    "measured": true,
+    "method": "scheduler-accounted process GB, 1s samples, includes cache",
+    "samples": 2,
+    "cachePolicy": "release models before job",
+    "exitCode": 0,
+    "runtime": {
+      "comfyui_version": "0.41.3",
+      "python_version": "3.12.13 (main, Mar 24 2026, 22:47:08) [Clang 22.1.1 ]",
+      "pytorch_version": "2.14.1+cu130",
+      "graphCache": "none",
+      "cudaAllocatorCapGb": 12.0
+    },
+    "benchmarkSeconds": 1.1229925299994648,
+    "jobId": "4cbb8e25-6094-4ca3-b17c-b7d253bd2d89",
+    "workflow": "workflows/tests/echo_text.api.json",
+    "outputs": [
+      {
+        "node": "1",
+        "path": "outputs/model_lab/after_breeze_static_text/1/sdk_text_echo_00002_.json",
+        "bytes": 74,
+        "sha256": "70571bb15f25d4320d1334f8b23769e428fca66adf086ce1d5b7c0d7f83b728e"
+      }
+    ],
+    "sdkSeconds": 0.0047045808751136065
+  },
+  {
+    "case": "after_breeze_text",
+    "evidenceDirectory": "outputs/model_lab/after_breeze_text",
+    "seconds": 80.44869875512086,
+    "peakGb": 14.2,
+    "measured": true,
+    "method": "scheduler-accounted process GB, 1s samples, includes cache",
+    "samples": 78,
+    "cachePolicy": "release models before job",
+    "exitCode": 0,
+    "runtime": {
+      "comfyui_version": "0.41.3",
+      "python_version": "3.12.13 (main, Mar 24 2026, 22:47:08) [Clang 22.1.1 ]",
+      "pytorch_version": "2.14.1+cu130",
+      "graphCache": "none",
+      "cudaAllocatorCapGb": 0.0
+    },
+    "benchmarkSeconds": 81.55356212891638,
+    "jobId": "af59af2e-0cd4-437d-a089-e28911a2f76d",
+    "workflow": "workflows/tests/echo_text.api.json",
+    "outputs": [
+      {
+        "node": "1",
+        "path": "outputs/model_lab/after_breeze_text/1/sdk_text_echo_00001_.json",
+        "bytes": 74,
+        "sha256": "70571bb15f25d4320d1334f8b23769e428fca66adf086ce1d5b7c0d7f83b728e"
+      }
+    ],
+    "sdkSeconds": 80.44869875512086
+  },
+  {
+    "case": "ace15_turbo_20261019T071021896295Z",
+    "evidenceDirectory": "outputs/model_lab/attempts/ace15_turbo_20261019T071021896295Z",
+    "seconds": 800.4770222969819,
+    "peakGb": 9.7,
+    "measured": true,
+    "method": "scheduler-accounted process GB, 1s samples, includes cache",
+    "samples": 743,
+    "cachePolicy": "release models before job",
+    "exitCode": -15,
+    "runtime": {
+      "comfyui_version": "0.41.3",
+      "python_version": "3.12.13 (main, Mar 24 2026, 22:47:08) [Clang 22.1.1 ]",
+      "pytorch_version": "2.14.1+cu130",
+      "graphCache": "none",
+      "cudaAllocatorCapGb": 0.0
+    },
+    "benchmarkSeconds": 800.4770222969819
+  },
+  {
+    "case": "breeze_tts2_20261019T065515921707Z",
+    "evidenceDirectory": "outputs/model_lab/attempts/breeze_tts2_20261019T065515921707Z",
+    "seconds": 51.43912883917801,
+    "peakGb": 10.0,
+    "measured": true,
+    "method": "scheduler-accounted process GB, 1s samples, includes cache",
+    "samples": 48,
+    "cachePolicy": "release models before job",
+    "exitCode": 1,
+    "benchmarkSeconds": 51.43912883917801
+  },
+  {
+    "case": "camera_dolly_in_seed43_20261019T073512268102Z",
+    "evidenceDirectory": "outputs/model_lab/attempts/camera_dolly_in_seed43_20261019T073512268102Z",
+    "seconds": 131.67136471602134,
+    "peakGb": 14.4,
+    "measured": true,
+    "method": "scheduler-accounted process GB, 1s samples, includes cache",
+    "samples": 125,
+    "cachePolicy": "warm",
+    "exitCode": 1,
+    "benchmarkSeconds": 131.67136471602134
+  },
+  {
+    "case": "h3_ref2va_final_20261019T072322267427Z",
+    "evidenceDirectory": "outputs/model_lab/attempts/h3_ref2va_final_20261019T072322267427Z",
+    "seconds": 250.77304877410643,
+    "peakGb": 25.8,
+    "measured": true,
+    "method": "scheduler-accounted process GB, 1s samples, includes cache",
+    "samples": 232,
+    "cachePolicy": "release models before job",
+    "exitCode": 1,
+    "benchmarkSeconds": 250.77304877410643
+  },
+  {
+    "case": "minimax_music3_20261019T075642708644Z",
+    "evidenceDirectory": "outputs/model_lab/attempts/minimax_music3_20261019T075642708644Z",
+    "seconds": 163.68678262503818,
+    "peakGb": 19.6,
+    "measured": true,
+    "method": "scheduler-accounted process GB, 1s samples, includes cache",
+    "samples": 152,
+    "cachePolicy": "release models before job",
+    "exitCode": 1,
+    "benchmarkSeconds": 163.68678262503818
+  },
+  {
+    "case": "moss_image_fused_bf16_encoder_20261019T084044818572Z",
+    "evidenceDirectory": "outputs/model_lab/attempts/moss_image_fused_bf16_encoder_20261019T084044818572Z",
+    "seconds": 637.1525603770278,
+    "peakGb": 32.5,
+    "measured": true,
+    "method": "scheduler-accounted process GB, 1s samples, includes cache",
+    "samples": 588,
+    "cachePolicy": "release models before job",
+    "exitCode": 1,
+    "runtime": {
+      "comfyui_version": "0.41.3",
+      "python_version": "3.12.13 (main, Mar 24 2026, 22:47:08) [Clang 22.1.1 ]",
+      "pytorch_version": "2.14.1+cu130",
+      "graphCache": "none",
+      "dynamicVramDisabled": true,
+      "compilerDisabled": true,
+      "cudaAllocatorCapGb": 0.0
+    },
+    "benchmarkSeconds": 637.1525603770278
+  },
+  {
+    "case": "breeze_clone_synthetic",
+    "evidenceDirectory": "outputs/model_lab/breeze_clone_synthetic",
+    "seconds": 45.52558013400994,
+    "peakGb": 10.4,
+    "measured": true,
+    "method": "scheduler-accounted process GB, 1s samples, includes cache",
+    "samples": 44,
+    "cachePolicy": "release models before job",
+    "exitCode": 0,
+    "runtime": {
+      "comfyui_version": "0.41.3",
+      "python_version": "3.12.13 (main, Mar 24 2026, 22:47:08) [Clang 22.1.1 ]",
+      "pytorch_version": "2.14.1+cu130",
+      "graphCache": "none",
+      "dynamicVramDisabled": false,
+      "compilerDisabled": false,
+      "cudaAllocatorCapGb": 0.0
+    },
+    "benchmarkSeconds": 46.40629456890747,
+    "jobId": "ac76afd7-8140-419f-b57d-2a73c18115f6",
+    "workflow": "workflows/tests/breeze_clone_synthetic.api.json",
+    "outputs": [
+      {
+        "node": "3",
+        "path": "outputs/model_lab/breeze_clone_synthetic/3/breeze_00006.flac",
+        "bytes": 115442,
+        "sha256": "388bce0232531d3660b6386fa302ea62efb04f931f5c78a9d70d7a0f3ca159ec"
+      }
+    ],
+    "sdkSeconds": 45.52558013400994
+  },
+  {
+    "case": "breeze_tts2",
+    "evidenceDirectory": "outputs/model_lab/breeze_tts2",
+    "seconds": 50.45040255179629,
+    "peakGb": 10.0,
+    "measured": true,
+    "method": "scheduler-accounted process GB, 1s samples, includes cache",
+    "samples": 49,
+    "cachePolicy": "release models before job",
+    "exitCode": 0,
+    "runtime": {
+      "comfyui_version": "0.41.3",
+      "python_version": "3.12.13 (main, Mar 24 2026, 22:47:08) [Clang 22.1.1 ]",
+      "pytorch_version": "2.14.1+cu130",
+      "graphCache": "none",
+      "cudaAllocatorCapGb": 0.0
+    },
+    "benchmarkSeconds": 51.74012293596752,
+    "jobId": "d84baad9-e85d-47e7-8b03-209d0f4b27f8",
+    "workflow": "workflows/breeze_tts2.api.json",
+    "outputs": [
+      {
+        "node": "3",
+        "path": "outputs/model_lab/breeze_tts2/3/breeze_00001.flac",
+        "bytes": 107253,
+        "sha256": "a482f28ece19bac04a754080b8b0a3d76c4367b08f10084a99f2e9062763acb4"
+      }
+    ],
+    "sdkSeconds": 50.45040255179629
+  },
+  {
+    "case": "breeze_tts2_discard_fix",
+    "evidenceDirectory": "outputs/model_lab/breeze_tts2_discard_fix",
+    "seconds": 56.968744901008904,
+    "peakGb": 12.4,
+    "measured": true,
+    "method": "scheduler-accounted process GB, 1s samples, includes cache",
+    "samples": 54,
+    "cachePolicy": "release models before job",
+    "exitCode": 0,
+    "runtime": {
+      "comfyui_version": "0.41.3",
+      "python_version": "3.12.13 (main, Mar 24 2026, 22:47:08) [Clang 22.1.1 ]",
+      "pytorch_version": "2.14.1+cu130",
+      "graphCache": "none",
+      "cudaAllocatorCapGb": 0.0
+    },
+    "benchmarkSeconds": 57.39018772589043,
+    "jobId": "3b7278fd-f368-4160-96f3-4c9832eb16b6",
+    "workflow": "workflows/breeze_tts2.api.json",
+    "outputs": [
+      {
+        "node": "3",
+        "path": "outputs/model_lab/breeze_tts2_discard_fix/3/breeze_00004.flac",
+        "bytes": 107253,
+        "sha256": "a482f28ece19bac04a754080b8b0a3d76c4367b08f10084a99f2e9062763acb4"
+      }
+    ],
+    "sdkSeconds": 56.968744901008904
+  },
+  {
+    "case": "breeze_tts2_eager",
+    "evidenceDirectory": "outputs/model_lab/breeze_tts2_eager",
+    "seconds": 61.585811525117606,
+    "peakGb": 11.9,
+    "measured": true,
+    "method": "scheduler-accounted process GB, 1s samples, includes cache",
+    "samples": 58,
+    "cachePolicy": "release models before job",
+    "exitCode": 0,
+    "runtime": {
+      "comfyui_version": "0.41.3",
+      "python_version": "3.12.13 (main, Mar 24 2026, 22:47:08) [Clang 22.1.1 ]",
+      "pytorch_version": "2.14.1+cu130",
+      "graphCache": "none",
+      "cudaAllocatorCapGb": 0.0
+    },
+    "benchmarkSeconds": 61.856776885222644,
+    "jobId": "61292ecb-8fa7-4572-9f96-a34434aa5277",
+    "workflow": "workflows/breeze_tts2_eager.api.json",
+    "outputs": [
+      {
+        "node": "3",
+        "path": "outputs/model_lab/breeze_tts2_eager/3/breeze_00005.flac",
+        "bytes": 107247,
+        "sha256": "27ecc62c8c118c0151d4985d31a786246b720b1ce1e8150aedc468ed676926fb"
+      }
+    ],
+    "sdkSeconds": 61.585811525117606
+  },
+  {
+    "case": "breeze_tts2_static12",
+    "evidenceDirectory": "outputs/model_lab/breeze_tts2_static12",
+    "seconds": 71.03228662000038,
+    "peakGb": 9.9,
+    "measured": true,
+    "method": "scheduler-accounted process GB, 1s samples, includes cache",
+    "samples": 68,
+    "cachePolicy": "release models before job",
+    "exitCode": 0,
+    "runtime": {
+      "comfyui_version": "0.41.3",
+      "python_version": "3.12.13 (main, Mar 24 2026, 22:47:08) [Clang 22.1.1 ]",
+      "pytorch_version": "2.14.1+cu130",
+      "graphCache": "none",
+      "cudaAllocatorCapGb": 12.0
+    },
+    "benchmarkSeconds": 71.25748362904415,
+    "jobId": "bb2051bc-f4e1-4ef2-836e-b091ef87bea5",
+    "workflow": "workflows/breeze_tts2.api.json",
+    "outputs": [
+      {
+        "node": "3",
+        "path": "outputs/model_lab/breeze_tts2_static12/3/breeze_00003.flac",
+        "bytes": 107253,
+        "sha256": "a482f28ece19bac04a754080b8b0a3d76c4367b08f10084a99f2e9062763acb4"
+      }
+    ],
+    "sdkSeconds": 71.03228662000038
+  },
+  {
+    "case": "breeze_tts2_transition",
+    "evidenceDirectory": "outputs/model_lab/breeze_tts2_transition",
+    "seconds": 61.171940120868385,
+    "peakGb": 11.4,
+    "measured": true,
+    "method": "scheduler-accounted process GB, 1s samples, includes cache",
+    "samples": 59,
+    "cachePolicy": "release models before job",
+    "exitCode": 0,
+    "runtime": {
+      "comfyui_version": "0.41.3",
+      "python_version": "3.12.13 (main, Mar 24 2026, 22:47:08) [Clang 22.1.1 ]",
+      "pytorch_version": "2.14.1+cu130",
+      "graphCache": "none",
+      "cudaAllocatorCapGb": 0.0
+    },
+    "benchmarkSeconds": 61.9058643670287,
+    "jobId": "dee22c3e-d1e3-4fd0-8eeb-25b505d275f5",
+    "workflow": "workflows/breeze_tts2.api.json",
+    "outputs": [
+      {
+        "node": "3",
+        "path": "outputs/model_lab/breeze_tts2_transition/3/breeze_00002.flac",
+        "bytes": 107253,
+        "sha256": "a482f28ece19bac04a754080b8b0a3d76c4367b08f10084a99f2e9062763acb4"
+      }
+    ],
+    "sdkSeconds": 61.171940120868385
+  },
+  {
+    "case": "camera_crane_up",
+    "evidenceDirectory": "outputs/model_lab/camera_crane_up",
+    "seconds": 71.14146627113223,
+    "peakGb": 44.8,
+    "measured": true,
+    "method": "scheduler-accounted process GB, 1s samples, includes cache",
+    "samples": 68,
+    "exitCode": 0,
+    "benchmarkSeconds": 71.63587729400024,
+    "jobId": "47838331-cb87-487d-be86-39283e773e2b",
+    "workflow": "workflows/ltx25_draft.api.json",
+    "outputs": [
+      {
+        "node": "20",
+        "path": "outputs/model_lab/camera_crane_up/20/ltx_draft_00009_.latent",
+        "bytes": 1701492,
+        "sha256": "d35f4925262821d2c10deef2b0110ff7120e444a92ad802cb3a180211be10673",
+        "tensors": {
+          "noise_mask.0": {
+            "dtype": "F32",
+            "shape": [
+              1,
+              1,
+              13,
+              1,
+              1
+            ]
+          },
+          "noise_mask.1": {
+            "dtype": "F32",
+            "shape": [
+              1,
+              8,
+              101,
+              16
+            ]
+          },
+          "samples.0": {
+            "dtype": "F32",
+            "shape": [
+              1,
+              128,
+              13,
+              12,
+              20
+            ]
+          },
+          "samples.1": {
+            "dtype": "F32",
+            "shape": [
+              1,
+              8,
+              101,
+              16
+            ]
+          }
+        },
+        "format": "1"
+      },
+      {
+        "node": "25",
+        "path": "outputs/model_lab/camera_crane_up/25/ltx_draft_00010_.mp4",
+        "bytes": 703540,
+        "sha256": "2c0a523fcd3d3e6211386e0bad753b38c0df6368f6e030e8934e5f100c40735e"
+      }
+    ],
+    "sdkSeconds": 71.14146627113223
+  },
+  {
+    "case": "camera_crane_up_seed43",
+    "evidenceDirectory": "outputs/model_lab/camera_crane_up_seed43",
+    "seconds": 81.66966781183146,
+    "peakGb": 44.4,
+    "measured": true,
+    "method": "scheduler-accounted process GB, 1s samples, includes cache",
+    "samples": 76,
+    "cachePolicy": "release models before job",
+    "exitCode": 0,
+    "runtime": {
+      "comfyui_version": "0.41.3",
+      "python_version": "3.12.13 (main, Mar 24 2026, 22:47:08) [Clang 22.1.1 ]",
+      "pytorch_version": "2.14.1+cu130",
+      "graphCache": "none",
+      "cudaAllocatorCapGb": 0.0
+    },
+    "benchmarkSeconds": 82.84506380395032,
+    "jobId": "04e893a6-766b-499a-9c34-8dd9cf03cb94",
+    "workflow": "workflows/ltx25_draft.api.json",
+    "outputs": [
+      {
+        "node": "20",
+        "path": "outputs/model_lab/camera_crane_up_seed43/20/ltx_draft_00024_.latent",
+        "bytes": 1701532,
+        "sourcePath": "outputs/model_lab/camera_crane_up_seed43/20/ltx_draft_00024_.latent",
+        "sha256": "10fb16a18a0f2d90b7a85bc2818caf3317c93765584199434a36dd5d80009992",
+        "tensors": {
+          "noise_mask.0": {
+            "dtype": "F32",
+            "shape": [
+              1,
+              1,
+              13,
+              1,
+              1
+            ]
+          },
+          "noise_mask.1": {
+            "dtype": "F32",
+            "shape": [
+              1,
+              8,
+              101,
+              16
+            ]
+          },
+          "samples.0": {
+            "dtype": "F32",
+            "shape": [
+              1,
+              128,
+              13,
+              12,
+              20
+            ]
+          },
+          "samples.1": {
+            "dtype": "F32",
+            "shape": [
+              1,
+              8,
+              101,
+              16
+            ]
+          }
+        },
+        "format": "1"
+      },
+      {
+        "node": "25",
+        "path": "outputs/model_lab/camera_crane_up_seed43/25/ltx_draft_00025_.mp4",
+        "bytes": 733262,
+        "sourcePath": "outputs/model_lab/camera_crane_up_seed43/25/ltx_draft_00025_.mp4",
+        "sha256": "12bc75706f0f623c57a8200156c340e2485ca5ce8c4babc2dbce81ff9e60ad93"
+      }
+    ],
+    "sdkSeconds": 81.66966781183146
+  },
+  {
+    "case": "camera_crane_up_seed44",
+    "evidenceDirectory": "outputs/model_lab/camera_crane_up_seed44",
+    "seconds": 60.582272320985794,
+    "peakGb": 44.4,
+    "measured": true,
+    "method": "scheduler-accounted process GB, 1s samples, includes cache",
+    "samples": 58,
+    "cachePolicy": "release models before job",
+    "exitCode": 0,
+    "runtime": {
+      "comfyui_version": "0.41.3",
+      "python_version": "3.12.13 (main, Mar 24 2026, 22:47:08) [Clang 22.1.1 ]",
+      "pytorch_version": "2.14.1+cu130",
+      "graphCache": "none",
+      "cudaAllocatorCapGb": 0.0
+    },
+    "benchmarkSeconds": 61.5890861779917,
+    "jobId": "0e30fe99-9844-4711-9a90-827e35be4560",
+    "workflow": "workflows/ltx25_draft.api.json",
+    "outputs": [
+      {
+        "node": "20",
+        "path": "outputs/model_lab/camera_crane_up_seed44/20/ltx_draft_00026_.latent",
+        "bytes": 1701532,
+        "sourcePath": "outputs/model_lab/camera_crane_up_seed44/20/ltx_draft_00026_.latent",
+        "sha256": "0166a2fddd33ec470a32c20d478fd4db4ced90b0c46da421b93120fe2c4872fc",
+        "tensors": {
+          "noise_mask.0": {
+            "dtype": "F32",
+            "shape": [
+              1,
+              1,
+              13,
+              1,
+              1
+            ]
+          },
+          "noise_mask.1": {
+            "dtype": "F32",
+            "shape": [
+              1,
+              8,
+              101,
+              16
+            ]
+          },
+          "samples.0": {
+            "dtype": "F32",
+            "shape": [
+              1,
+              128,
+              13,
+              12,
+              20
+            ]
+          },
+          "samples.1": {
+            "dtype": "F32",
+            "shape": [
+              1,
+              8,
+              101,
+              16
+            ]
+          }
+        },
+        "format": "1"
+      },
+      {
+        "node": "25",
+        "path": "outputs/model_lab/camera_crane_up_seed44/25/ltx_draft_00027_.mp4",
+        "bytes": 702505,
+        "sourcePath": "outputs/model_lab/camera_crane_up_seed44/25/ltx_draft_00027_.mp4",
+        "sha256": "ef3fa42a111fa0f67c95392535cb7df1cec95c8c9d5f11a7878fef7c63e15fda"
+      }
+    ],
+    "sdkSeconds": 60.582272320985794
+  },
+  {
+    "case": "camera_crash_zoom",
+    "evidenceDirectory": "outputs/model_lab/camera_crash_zoom",
+    "seconds": 65.48014670191333,
+    "peakGb": 44.8,
+    "measured": true,
+    "method": "scheduler-accounted process GB, 1s samples, includes cache",
+    "samples": 63,
+    "exitCode": 0,
+    "benchmarkSeconds": 66.31710270396434,
+    "jobId": "f0d48255-4558-4eff-a9b9-884a7389cc3d",
+    "workflow": "workflows/ltx25_draft.api.json",
+    "outputs": [
+      {
+        "node": "20",
+        "path": "outputs/model_lab/camera_crash_zoom/20/ltx_draft_00005_.latent",
+        "bytes": 1701492,
+        "sha256": "d9175a9036d3994d1894bccc7154d169637bf688135b5bdeb7a17f4f0bcde2e1",
+        "tensors": {
+          "noise_mask.0": {
+            "dtype": "F32",
+            "shape": [
+              1,
+              1,
+              13,
+              1,
+              1
+            ]
+          },
+          "noise_mask.1": {
+            "dtype": "F32",
+            "shape": [
+              1,
+              8,
+              101,
+              16
+            ]
+          },
+          "samples.0": {
+            "dtype": "F32",
+            "shape": [
+              1,
+              128,
+              13,
+              12,
+              20
+            ]
+          },
+          "samples.1": {
+            "dtype": "F32",
+            "shape": [
+              1,
+              8,
+              101,
+              16
+            ]
+          }
+        },
+        "format": "1"
+      },
+      {
+        "node": "25",
+        "path": "outputs/model_lab/camera_crash_zoom/25/ltx_draft_00006_.mp4",
+        "bytes": 470414,
+        "sha256": "c2cd2a9a478be5335a5d82a71308b5cb8d8c80deccd6ec41e598dc635d5a6c5a"
+      }
+    ],
+    "sdkSeconds": 65.48014670191333
+  },
+  {
+    "case": "camera_crash_zoom_seed43",
+    "evidenceDirectory": "outputs/model_lab/camera_crash_zoom_seed43",
+    "seconds": 91.56856675399467,
+    "peakGb": 44.5,
+    "measured": true,
+    "method": "scheduler-accounted process GB, 1s samples, includes cache",
+    "samples": 81,
+    "cachePolicy": "release models before job",
+    "exitCode": 0,
+    "runtime": {
+      "comfyui_version": "0.41.3",
+      "python_version": "3.12.13 (main, Mar 24 2026, 22:47:08) [Clang 22.1.1 ]",
+      "pytorch_version": "2.14.1+cu130",
+      "graphCache": "none",
+      "cudaAllocatorCapGb": 0.0
+    },
+    "benchmarkSeconds": 91.99819292593747,
+    "jobId": "f8c6c426-a6ec-4e09-9562-ff06f1e421c8",
+    "workflow": "workflows/ltx25_draft.api.json",
+    "outputs": [
+      {
+        "node": "20",
+        "path": "outputs/model_lab/camera_crash_zoom_seed43/20/ltx_draft_00016_.latent",
+        "bytes": 1701532,
+        "sourcePath": "outputs/model_lab/camera_crash_zoom_seed43/20/ltx_draft_00016_.latent",
+        "sha256": "8a175a9c4a673a18dad06855ad9e31f82586393e15099383779611ec07ee8981",
+        "tensors": {
+          "noise_mask.0": {
+            "dtype": "F32",
+            "shape": [
+              1,
+              1,
+              13,
+              1,
+              1
+            ]
+          },
+          "noise_mask.1": {
+            "dtype": "F32",
+            "shape": [
+              1,
+              8,
+              101,
+              16
+            ]
+          },
+          "samples.0": {
+            "dtype": "F32",
+            "shape": [
+              1,
+              128,
+              13,
+              12,
+              20
+            ]
+          },
+          "samples.1": {
+            "dtype": "F32",
+            "shape": [
+              1,
+              8,
+              101,
+              16
+            ]
+          }
+        },
+        "format": "1"
+      },
+      {
+        "node": "25",
+        "path": "outputs/model_lab/camera_crash_zoom_seed43/25/ltx_draft_00017_.mp4",
+        "bytes": 485183,
+        "sourcePath": "outputs/model_lab/camera_crash_zoom_seed43/25/ltx_draft_00017_.mp4",
+        "sha256": "681c80a9b60f1ad0feba1e2eb0a9663fe522e022aae7a184627fda9f7ebf9cd2"
+      }
+    ],
+    "sdkSeconds": 91.56856675399467
+  },
+  {
+    "case": "camera_crash_zoom_seed44",
+    "evidenceDirectory": "outputs/model_lab/camera_crash_zoom_seed44",
+    "seconds": 91.94137276895344,
+    "peakGb": 44.4,
+    "measured": true,
+    "method": "scheduler-accounted process GB, 1s samples, includes cache",
+    "samples": 86,
+    "cachePolicy": "release models before job",
+    "exitCode": 0,
+    "runtime": {
+      "comfyui_version": "0.41.3",
+      "python_version": "3.12.13 (main, Mar 24 2026, 22:47:08) [Clang 22.1.1 ]",
+      "pytorch_version": "2.14.1+cu130",
+      "graphCache": "none",
+      "cudaAllocatorCapGb": 0.0
+    },
+    "benchmarkSeconds": 93.24846916995011,
+    "jobId": "3da33770-475c-4038-bc10-c490cdccf1c6",
+    "workflow": "workflows/ltx25_draft.api.json",
+    "outputs": [
+      {
+        "node": "20",
+        "path": "outputs/model_lab/camera_crash_zoom_seed44/20/ltx_draft_00018_.latent",
+        "bytes": 1701532,
+        "sourcePath": "outputs/model_lab/camera_crash_zoom_seed44/20/ltx_draft_00018_.latent",
+        "sha256": "f1578c47cba8d6490cf56d9a8acf4fa687eaf6f10f28551fc5a936468d841e02",
+        "tensors": {
+          "noise_mask.0": {
+            "dtype": "F32",
+            "shape": [
+              1,
+              1,
+              13,
+              1,
+              1
+            ]
+          },
+          "noise_mask.1": {
+            "dtype": "F32",
+            "shape": [
+              1,
+              8,
+              101,
+              16
+            ]
+          },
+          "samples.0": {
+            "dtype": "F32",
+            "shape": [
+              1,
+              128,
+              13,
+              12,
+              20
+            ]
+          },
+          "samples.1": {
+            "dtype": "F32",
+            "shape": [
+              1,
+              8,
+              101,
+              16
+            ]
+          }
+        },
+        "format": "1"
+      },
+      {
+        "node": "25",
+        "path": "outputs/model_lab/camera_crash_zoom_seed44/25/ltx_draft_00019_.mp4",
+        "bytes": 472056,
+        "sourcePath": "outputs/model_lab/camera_crash_zoom_seed44/25/ltx_draft_00019_.mp4",
+        "sha256": "2e6c5fcde71ef5d3a4bfe5bb946d4a063fa79a2569078a780c1e2079d9baa7fe"
+      }
+    ],
+    "sdkSeconds": 91.94137276895344
+  },
+  {
+    "case": "camera_dolly_in",
+    "evidenceDirectory": "outputs/model_lab/camera_dolly_in",
+    "seconds": 65.51670432486571,
+    "peakGb": 44.8,
+    "measured": true,
+    "method": "scheduler-accounted process GB, 1s samples, includes cache",
+    "samples": 63,
+    "exitCode": 0,
+    "benchmarkSeconds": 66.48669332498685,
+    "jobId": "7cfb73fc-ed5e-4f4f-a859-b9647a48bd97",
+    "workflow": "workflows/ltx25_draft.api.json",
+    "outputs": [
+      {
+        "node": "20",
+        "path": "outputs/model_lab/camera_dolly_in/20/ltx_draft_00003_.latent",
+        "bytes": 1701492,
+        "sha256": "53f6e8cd6580b5a4d94b9d2f8ca4df0a9010dc9d6b4587b613ade34b3e6750c2",
+        "tensors": {
+          "noise_mask.0": {
+            "dtype": "F32",
+            "shape": [
+              1,
+              1,
+              13,
+              1,
+              1
+            ]
+          },
+          "noise_mask.1": {
+            "dtype": "F32",
+            "shape": [
+              1,
+              8,
+              101,
+              16
+            ]
+          },
+          "samples.0": {
+            "dtype": "F32",
+            "shape": [
+              1,
+              128,
+              13,
+              12,
+              20
+            ]
+          },
+          "samples.1": {
+            "dtype": "F32",
+            "shape": [
+              1,
+              8,
+              101,
+              16
+            ]
+          }
+        },
+        "format": "1"
+      },
+      {
+        "node": "25",
+        "path": "outputs/model_lab/camera_dolly_in/25/ltx_draft_00004_.mp4",
+        "bytes": 602415,
+        "sha256": "662600f8e7e9f3b002d7658f0877433472dba3cc77b9f5cd070b080679491f65"
+      }
+    ],
+    "sdkSeconds": 65.51670432486571
+  },
+  {
+    "case": "camera_dolly_in_seed43",
+    "evidenceDirectory": "outputs/model_lab/camera_dolly_in_seed43",
+    "seconds": 111.33753952011466,
+    "peakGb": 43.8,
+    "measured": true,
+    "method": "scheduler-accounted process GB, 1s samples, includes cache",
+    "samples": 103,
+    "cachePolicy": "release models before job",
+    "exitCode": 0,
+    "runtime": {
+      "comfyui_version": "0.41.3",
+      "python_version": "3.12.13 (main, Mar 24 2026, 22:47:08) [Clang 22.1.1 ]",
+      "pytorch_version": "2.14.1+cu130",
+      "graphCache": "none",
+      "cudaAllocatorCapGb": 0.0
+    },
+    "benchmarkSeconds": 112.2006347370334,
+    "jobId": "8e0eac72-88f1-4332-a64d-62a4e09c56a1",
+    "workflow": "workflows/ltx25_draft.api.json",
+    "outputs": [
+      {
+        "node": "20",
+        "path": "outputs/model_lab/camera_dolly_in_seed43/20/ltx_draft_00012_.latent",
+        "bytes": 1701532,
+        "sourcePath": "outputs/model_lab/camera_dolly_in_seed43/20/ltx_draft_00012_.latent",
+        "sha256": "635b8238d5a4432a1204fad7b6f827bf43020ffbc375ad0accf184347ef359b0",
+        "tensors": {
+          "noise_mask.0": {
+            "dtype": "F32",
+            "shape": [
+              1,
+              1,
+              13,
+              1,
+              1
+            ]
+          },
+          "noise_mask.1": {
+            "dtype": "F32",
+            "shape": [
+              1,
+              8,
+              101,
+              16
+            ]
+          },
+          "samples.0": {
+            "dtype": "F32",
+            "shape": [
+              1,
+              128,
+              13,
+              12,
+              20
+            ]
+          },
+          "samples.1": {
+            "dtype": "F32",
+            "shape": [
+              1,
+              8,
+              101,
+              16
+            ]
+          }
+        },
+        "format": "1"
+      },
+      {
+        "node": "25",
+        "path": "outputs/model_lab/camera_dolly_in_seed43/25/ltx_draft_00013_.mp4",
+        "bytes": 554065,
+        "sourcePath": "outputs/model_lab/camera_dolly_in_seed43/25/ltx_draft_00013_.mp4",
+        "sha256": "b31cba145ed02a0422aa140f9f9250fb194604b5e75e54e7fdbaa1b60174c3db"
+      }
+    ],
+    "sdkSeconds": 111.33753952011466
+  },
+  {
+    "case": "camera_dolly_in_seed44",
+    "evidenceDirectory": "outputs/model_lab/camera_dolly_in_seed44",
+    "seconds": 80.63357777101919,
+    "peakGb": 44.3,
+    "measured": true,
+    "method": "scheduler-accounted process GB, 1s samples, includes cache",
+    "samples": 76,
+    "cachePolicy": "release models before job",
+    "exitCode": 0,
+    "runtime": {
+      "comfyui_version": "0.41.3",
+      "python_version": "3.12.13 (main, Mar 24 2026, 22:47:08) [Clang 22.1.1 ]",
+      "pytorch_version": "2.14.1+cu130",
+      "graphCache": "none",
+      "cudaAllocatorCapGb": 0.0
+    },
+    "benchmarkSeconds": 81.26997846900485,
+    "jobId": "92be7799-e596-42bb-a784-f9266cb7ca6b",
+    "workflow": "workflows/ltx25_draft.api.json",
+    "outputs": [
+      {
+        "node": "20",
+        "path": "outputs/model_lab/camera_dolly_in_seed44/20/ltx_draft_00014_.latent",
+        "bytes": 1701532,
+        "sourcePath": "outputs/model_lab/camera_dolly_in_seed44/20/ltx_draft_00014_.latent",
+        "sha256": "25e79c2db475be135faab065c3f98dcdcb64817dc09d795fff626c1963e7c3e2",
+        "tensors": {
+          "noise_mask.0": {
+            "dtype": "F32",
+            "shape": [
+              1,
+              1,
+              13,
+              1,
+              1
+            ]
+          },
+          "noise_mask.1": {
+            "dtype": "F32",
+            "shape": [
+              1,
+              8,
+              101,
+              16
+            ]
+          },
+          "samples.0": {
+            "dtype": "F32",
+            "shape": [
+              1,
+              128,
+              13,
+              12,
+              20
+            ]
+          },
+          "samples.1": {
+            "dtype": "F32",
+            "shape": [
+              1,
+              8,
+              101,
+              16
+            ]
+          }
+        },
+        "format": "1"
+      },
+      {
+        "node": "25",
+        "path": "outputs/model_lab/camera_dolly_in_seed44/25/ltx_draft_00015_.mp4",
+        "bytes": 528776,
+        "sourcePath": "outputs/model_lab/camera_dolly_in_seed44/25/ltx_draft_00015_.mp4",
+        "sha256": "b2bd85f9850aeb8f96585325dd16e4d8868e0c088e58aba0422f8c8230dd52a3"
+      }
+    ],
+    "sdkSeconds": 80.63357777101919
+  },
+  {
+    "case": "camera_handheld",
+    "evidenceDirectory": "outputs/model_lab/camera_handheld",
+    "seconds": 145.63219458120875,
+    "peakGb": 40.6,
+    "measured": true,
+    "method": "scheduler-accounted process GB, 1s samples, includes cache",
+    "samples": 138,
+    "exitCode": 1,
+    "benchmarkSeconds": 145.63219458120875
+  },
+  {
+    "case": "camera_handheld_rescued",
+    "evidenceDirectory": "outputs/model_lab/camera_handheld_rescued",
+    "seconds": 35.450575657887384,
+    "peakGb": 8.8,
+    "measured": true,
+    "method": "scheduler-accounted process GB, 1s samples, includes cache",
+    "samples": 35,
+    "cachePolicy": "release models before job",
+    "exitCode": 0,
+    "benchmarkSeconds": 36.32023637299426,
+    "jobId": "7a115c8a-90b8-48e3-9629-fbcaa48b392d",
+    "workflow": "workflows/ltx25_decode_checkpoint.api.json",
+    "outputs": [
+      {
+        "node": "8",
+        "path": "outputs/model_lab/camera_handheld_rescued/8/checkpoint_decode_00001_.mp4",
+        "bytes": 588029,
+        "sha256": "952936588942e0983b66717eda74f4e80f64bf3e82c49f3fdd01184ced27c2f2"
+      }
+    ],
+    "sdkSeconds": 35.450575657887384
+  },
+  {
+    "case": "camera_handheld_seed43",
+    "evidenceDirectory": "outputs/model_lab/camera_handheld_seed43",
+    "seconds": 55.45897075091489,
+    "peakGb": 44.4,
+    "measured": true,
+    "method": "scheduler-accounted process GB, 1s samples, includes cache",
+    "samples": 53,
+    "cachePolicy": "release models before job",
+    "exitCode": 0,
+    "runtime": {
+      "comfyui_version": "0.41.3",
+      "python_version": "3.12.13 (main, Mar 24 2026, 22:47:08) [Clang 22.1.1 ]",
+      "pytorch_version": "2.14.1+cu130",
+      "graphCache": "none",
+      "cudaAllocatorCapGb": 0.0
+    },
+    "benchmarkSeconds": 56.134400530019775,
+    "jobId": "135b5be2-f3da-44c8-b43a-dd80a06ea785",
+    "workflow": "workflows/ltx25_draft.api.json",
+    "outputs": [
+      {
+        "node": "20",
+        "path": "outputs/model_lab/camera_handheld_seed43/20/ltx_draft_00028_.latent",
+        "bytes": 1701532,
+        "sourcePath": "outputs/model_lab/camera_handheld_seed43/20/ltx_draft_00028_.latent",
+        "sha256": "601fd63f547f6c46f3c364f051c0f013b27bfe1e1660a6aaf7cb71b9e4794718",
+        "tensors": {
+          "noise_mask.0": {
+            "dtype": "F32",
+            "shape": [
+              1,
+              1,
+              13,
+              1,
+              1
+            ]
+          },
+          "noise_mask.1": {
+            "dtype": "F32",
+            "shape": [
+              1,
+              8,
+              101,
+              16
+            ]
+          },
+          "samples.0": {
+            "dtype": "F32",
+            "shape": [
+              1,
+              128,
+              13,
+              12,
+              20
+            ]
+          },
+          "samples.1": {
+            "dtype": "F32",
+            "shape": [
+              1,
+              8,
+              101,
+              16
+            ]
+          }
+        },
+        "format": "1"
+      },
+      {
+        "node": "25",
+        "path": "outputs/model_lab/camera_handheld_seed43/25/ltx_draft_00029_.mp4",
+        "bytes": 525938,
+        "sourcePath": "outputs/model_lab/camera_handheld_seed43/25/ltx_draft_00029_.mp4",
+        "sha256": "c2a7ff8a11bb1103b8202e8dc7cc80805409cdc309d7f0081a72ea812296abdf"
+      }
+    ],
+    "sdkSeconds": 55.45897075091489
+  },
+  {
+    "case": "camera_handheld_seed44",
+    "evidenceDirectory": "outputs/model_lab/camera_handheld_seed44",
+    "seconds": 65.46326794405468,
+    "peakGb": 44.4,
+    "measured": true,
+    "method": "scheduler-accounted process GB, 1s samples, includes cache",
+    "samples": 63,
+    "cachePolicy": "release models before job",
+    "exitCode": 0,
+    "runtime": {
+      "comfyui_version": "0.41.3",
+      "python_version": "3.12.13 (main, Mar 24 2026, 22:47:08) [Clang 22.1.1 ]",
+      "pytorch_version": "2.14.1+cu130",
+      "graphCache": "none",
+      "cudaAllocatorCapGb": 0.0
+    },
+    "benchmarkSeconds": 66.53722246689722,
+    "jobId": "a13aee16-94e0-4c5d-a36b-ad78cad57fc1",
+    "workflow": "workflows/ltx25_draft.api.json",
+    "outputs": [
+      {
+        "node": "20",
+        "path": "outputs/model_lab/camera_handheld_seed44/20/ltx_draft_00030_.latent",
+        "bytes": 1701532,
+        "sourcePath": "outputs/model_lab/camera_handheld_seed44/20/ltx_draft_00030_.latent",
+        "sha256": "09c8ea9e29ee0d7c8f027b05e110db6bc19d7fc33f2b390bf803b305b19d2a56",
+        "tensors": {
+          "noise_mask.0": {
+            "dtype": "F32",
+            "shape": [
+              1,
+              1,
+              13,
+              1,
+              1
+            ]
+          },
+          "noise_mask.1": {
+            "dtype": "F32",
+            "shape": [
+              1,
+              8,
+              101,
+              16
+            ]
+          },
+          "samples.0": {
+            "dtype": "F32",
+            "shape": [
+              1,
+              128,
+              13,
+              12,
+              20
+            ]
+          },
+          "samples.1": {
+            "dtype": "F32",
+            "shape": [
+              1,
+              8,
+              101,
+              16
+            ]
+          }
+        },
+        "format": "1"
+      },
+      {
+        "node": "25",
+        "path": "outputs/model_lab/camera_handheld_seed44/25/ltx_draft_00031_.mp4",
+        "bytes": 523042,
+        "sourcePath": "outputs/model_lab/camera_handheld_seed44/25/ltx_draft_00031_.mp4",
+        "sha256": "c490c0ab560dd5e0619ff7dc103ee6105d3ad70fbd6ec1d51c20ff81bae849a5"
+      }
+    ],
+    "sdkSeconds": 65.46326794405468
+  },
+  {
+    "case": "camera_orbit",
+    "evidenceDirectory": "outputs/model_lab/camera_orbit",
+    "seconds": 61.31913995184004,
+    "peakGb": 44.9,
+    "measured": true,
+    "method": "scheduler-accounted process GB, 1s samples, includes cache",
+    "samples": 59,
+    "exitCode": 0,
+    "benchmarkSeconds": 62.22287234989926,
+    "jobId": "ec0fc11a-2e9b-43e2-b7b1-e407c9969d00",
+    "workflow": "workflows/ltx25_draft.api.json",
+    "outputs": [
+      {
+        "node": "20",
+        "path": "outputs/model_lab/camera_orbit/20/ltx_draft_00007_.latent",
+        "bytes": 1701492,
+        "sha256": "6865334b19fb02adf8e10cd39f19a859ddeba46a1780ee715a2140564d5deb92",
+        "tensors": {
+          "noise_mask.0": {
+            "dtype": "F32",
+            "shape": [
+              1,
+              1,
+              13,
+              1,
+              1
+            ]
+          },
+          "noise_mask.1": {
+            "dtype": "F32",
+            "shape": [
+              1,
+              8,
+              101,
+              16
+            ]
+          },
+          "samples.0": {
+            "dtype": "F32",
+            "shape": [
+              1,
+              128,
+              13,
+              12,
+              20
+            ]
+          },
+          "samples.1": {
+            "dtype": "F32",
+            "shape": [
+              1,
+              8,
+              101,
+              16
+            ]
+          }
+        },
+        "format": "1"
+      },
+      {
+        "node": "25",
+        "path": "outputs/model_lab/camera_orbit/25/ltx_draft_00008_.mp4",
+        "bytes": 971698,
+        "sha256": "7a310f9f206be8d1e1b26d0661ba31fcec593213fb8c3ea73c4a0f1d35922326"
+      }
+    ],
+    "sdkSeconds": 61.31913995184004
+  },
+  {
+    "case": "camera_orbit_seed43",
+    "evidenceDirectory": "outputs/model_lab/camera_orbit_seed43",
+    "seconds": 85.49582456192002,
+    "peakGb": 44.4,
+    "measured": true,
+    "method": "scheduler-accounted process GB, 1s samples, includes cache",
+    "samples": 80,
+    "cachePolicy": "release models before job",
+    "exitCode": 0,
+    "runtime": {
+      "comfyui_version": "0.41.3",
+      "python_version": "3.12.13 (main, Mar 24 2026, 22:47:08) [Clang 22.1.1 ]",
+      "pytorch_version": "2.14.1+cu130",
+      "graphCache": "none",
+      "cudaAllocatorCapGb": 0.0
+    },
+    "benchmarkSeconds": 86.48345153895207,
+    "jobId": "b3e9b66d-a566-4c13-9d60-7937f5a49beb",
+    "workflow": "workflows/ltx25_draft.api.json",
+    "outputs": [
+      {
+        "node": "20",
+        "path": "outputs/model_lab/camera_orbit_seed43/20/ltx_draft_00020_.latent",
+        "bytes": 1701532,
+        "sourcePath": "outputs/model_lab/camera_orbit_seed43/20/ltx_draft_00020_.latent",
+        "sha256": "f53cf891343f04511ffeba4a2cc0d841d3c4b4c0fd5bd790cebb7b941bb95af3",
+        "tensors": {
+          "noise_mask.0": {
+            "dtype": "F32",
+            "shape": [
+              1,
+              1,
+              13,
+              1,
+              1
+            ]
+          },
+          "noise_mask.1": {
+            "dtype": "F32",
+            "shape": [
+              1,
+              8,
+              101,
+              16
+            ]
+          },
+          "samples.0": {
+            "dtype": "F32",
+            "shape": [
+              1,
+              128,
+              13,
+              12,
+              20
+            ]
+          },
+          "samples.1": {
+            "dtype": "F32",
+            "shape": [
+              1,
+              8,
+              101,
+              16
+            ]
+          }
+        },
+        "format": "1"
+      },
+      {
+        "node": "25",
+        "path": "outputs/model_lab/camera_orbit_seed43/25/ltx_draft_00021_.mp4",
+        "bytes": 798689,
+        "sourcePath": "outputs/model_lab/camera_orbit_seed43/25/ltx_draft_00021_.mp4",
+        "sha256": "6ac7363c1dddfa07cd458796166bdac51022bad501e09bfbb921d383ba8751c3"
+      }
+    ],
+    "sdkSeconds": 85.49582456192002
+  },
+  {
+    "case": "camera_orbit_seed44",
+    "evidenceDirectory": "outputs/model_lab/camera_orbit_seed44",
+    "seconds": 56.9389886520803,
+    "peakGb": 44.4,
+    "measured": true,
+    "method": "scheduler-accounted process GB, 1s samples, includes cache",
+    "samples": 54,
+    "cachePolicy": "release models before job",
+    "exitCode": 0,
+    "runtime": {
+      "comfyui_version": "0.41.3",
+      "python_version": "3.12.13 (main, Mar 24 2026, 22:47:08) [Clang 22.1.1 ]",
+      "pytorch_version": "2.14.1+cu130",
+      "graphCache": "none",
+      "cudaAllocatorCapGb": 0.0
+    },
+    "benchmarkSeconds": 57.22943887789734,
+    "jobId": "4bf0b71b-abf7-4c6f-92b5-98decf2be1d8",
+    "workflow": "workflows/ltx25_draft.api.json",
+    "outputs": [
+      {
+        "node": "20",
+        "path": "outputs/model_lab/camera_orbit_seed44/20/ltx_draft_00022_.latent",
+        "bytes": 1701532,
+        "sourcePath": "outputs/model_lab/camera_orbit_seed44/20/ltx_draft_00022_.latent",
+        "sha256": "ae2a268e9fe754c753cd21bd5ba724edc9dec4e34c1a35805189404361baab2d",
+        "tensors": {
+          "noise_mask.0": {
+            "dtype": "F32",
+            "shape": [
+              1,
+              1,
+              13,
+              1,
+              1
+            ]
+          },
+          "noise_mask.1": {
+            "dtype": "F32",
+            "shape": [
+              1,
+              8,
+              101,
+              16
+            ]
+          },
+          "samples.0": {
+            "dtype": "F32",
+            "shape": [
+              1,
+              128,
+              13,
+              12,
+              20
+            ]
+          },
+          "samples.1": {
+            "dtype": "F32",
+            "shape": [
+              1,
+              8,
+              101,
+              16
+            ]
+          }
+        },
+        "format": "1"
+      },
+      {
+        "node": "25",
+        "path": "outputs/model_lab/camera_orbit_seed44/25/ltx_draft_00023_.mp4",
+        "bytes": 952842,
+        "sourcePath": "outputs/model_lab/camera_orbit_seed44/25/ltx_draft_00023_.mp4",
+        "sha256": "6df7fb086730c6ab15b3a0d34b53a9c0096a6ada7206b090820da4e1ef45cc74"
+      }
+    ],
+    "sdkSeconds": 56.9389886520803
+  },
+  {
+    "case": "drama3_no_decode_graphs",
+    "evidenceDirectory": "outputs/model_lab/drama3_no_decode_graphs",
+    "seconds": 387.8502845480107,
+    "peakGb": 47.6,
+    "measured": true,
+    "method": "scheduler-accounted process GB, 1s samples, includes cache",
+    "samples": 363,
+    "cachePolicy": "release models before job",
+    "exitCode": 0,
+    "runtime": {
+      "comfyui_version": "0.41.3",
+      "python_version": "3.12.13 (main, Mar 24 2026, 22:47:08) [Clang 22.1.1 ]",
+      "pytorch_version": "2.14.1+cu130",
+      "graphCache": "none",
+      "dynamicVramDisabled": true,
+      "compilerDisabled": true,
+      "cudaAllocatorCapGb": 0.0
+    },
+    "benchmarkSeconds": 388.7800974030979,
+    "jobId": "c3b3a849-52a9-4e04-9518-6a2ec71ff59f",
+    "workflow": "workflows/drama3_optional.api.json",
+    "outputs": [
+      {
+        "node": "2",
+        "path": "outputs/model_lab/drama3_no_decode_graphs/2/drama3_00002.flac",
+        "bytes": 363369,
+        "sha256": "e8924ab6311efd051ee8c4f3d92bfe5e502059185e6d05e8d5f24e174a022214"
+      }
+    ],
+    "sdkSeconds": 387.8502845480107
+  },
+  {
+    "case": "drama3_optional",
+    "evidenceDirectory": "outputs/model_lab/drama3_optional",
+    "seconds": 391.0998541340232,
+    "peakGb": 49.9,
+    "measured": true,
+    "method": "scheduler-accounted process GB, 1s samples, includes cache",
+    "samples": 371,
+    "cachePolicy": "release models before job",
+    "exitCode": 0,
+    "runtime": {
+      "comfyui_version": "0.41.3",
+      "python_version": "3.12.13 (main, Mar 24 2026, 22:47:08) [Clang 22.1.1 ]",
+      "pytorch_version": "2.14.1+cu130",
+      "graphCache": "none",
+      "cudaAllocatorCapGb": 0.0
+    },
+    "benchmarkSeconds": 392.28510576998815,
+    "jobId": "ea9abc5c-8593-41e2-af5b-d3605a4d02f2",
+    "workflow": "workflows/drama3_optional.api.json",
+    "outputs": [
+      {
+        "node": "2",
+        "path": "outputs/model_lab/drama3_optional/2/drama3_00001.flac",
+        "bytes": 299444,
+        "sourcePath": "outputs/model_lab/drama3_optional/2/drama3_00001.flac",
+        "sha256": "ef50cc20ef29281bd720bc3464d4c1ad550ab1e514f7971c26a4f9cfdc868c40"
+      }
+    ],
+    "sdkSeconds": 391.0998541340232
+  },
+  {
+    "case": "drama_clone_bf16",
+    "evidenceDirectory": "outputs/model_lab/drama_clone_bf16",
+    "seconds": 280.58218820695765,
+    "peakGb": 78.7,
+    "measured": true,
+    "method": "scheduler-accounted process GB, 1s samples, includes cache",
+    "samples": 265,
+    "cachePolicy": "release models before job",
+    "exitCode": 0,
+    "runtime": {
+      "comfyui_version": "0.41.3",
+      "python_version": "3.12.13 (main, Mar 24 2026, 22:47:08) [Clang 22.1.1 ]",
+      "pytorch_version": "2.14.1+cu130",
+      "graphCache": "none",
+      "dynamicVramDisabled": false,
+      "compilerDisabled": false,
+      "cudaAllocatorCapGb": 0.0
+    },
+    "benchmarkSeconds": 281.81320920493454,
+    "jobId": "86c5d4df-8117-43ff-99d1-0d389c472835",
+    "workflow": "workflows/tests/drama_clone_bf16.api.json",
+    "outputs": [
+      {
+        "node": "2",
+        "path": "outputs/model_lab/drama_clone_bf16/2/drama3_00004.flac",
+        "bytes": 321147,
+        "sha256": "8a7c78f90ff30620e4e4748e403d8c8d54364f684bed0b9c2545ff59c69a3acd"
+      }
+    ],
+    "sdkSeconds": 280.58218820695765
+  },
+  {
+    "case": "drama_clone_synthetic",
+    "evidenceDirectory": "outputs/model_lab/drama_clone_synthetic",
+    "seconds": 446.636988356011,
+    "peakGb": 48.6,
+    "measured": true,
+    "method": "scheduler-accounted process GB, 1s samples, includes cache",
+    "samples": 377,
+    "cachePolicy": "release models before job",
+    "exitCode": 0,
+    "runtime": {
+      "comfyui_version": "0.41.3",
+      "python_version": "3.12.13 (main, Mar 24 2026, 22:47:08) [Clang 22.1.1 ]",
+      "pytorch_version": "2.14.1+cu130",
+      "graphCache": "none",
+      "dynamicVramDisabled": false,
+      "compilerDisabled": false,
+      "cudaAllocatorCapGb": 0.0
+    },
+    "benchmarkSeconds": 448.2188408500515,
+    "jobId": "c5851a92-563d-4d29-83a2-b7c220f0ea40",
+    "workflow": "workflows/tests/drama_clone_synthetic.api.json",
+    "outputs": [
+      {
+        "node": "2",
+        "path": "outputs/model_lab/drama_clone_synthetic/2/drama3_00003.flac",
+        "bytes": 198149,
+        "sha256": "1523c6ab96db761d60439b1b94a89a068792ff02f3fdee8b8884c5c6cf78e703"
+      }
+    ],
+    "sdkSeconds": 446.636988356011
+  },
+  {
+    "case": "h3_fl2va_4step",
+    "evidenceDirectory": "outputs/model_lab/h3_fl2va_4step",
+    "seconds": 121.14107178989798,
+    "peakGb": 44.8,
+    "measured": true,
+    "method": "scheduler-accounted process GB, 1s samples, includes cache",
+    "samples": 114,
+    "exitCode": 0,
+    "benchmarkSeconds": 121.42246546107344,
+    "jobId": "23d50325-b46d-46b5-84c8-e16abf9464d7",
+    "workflow": "workflows/h3_fl2va_4step.api.json",
+    "outputs": [
+      {
+        "node": "17",
+        "path": "outputs/model_lab/h3_fl2va_4step/17/h3_fl4_00001_.mp4",
+        "bytes": 621944,
+        "sha256": "6d278f030836cbe70e00cdbbff31bc22093f875386bcd0575551c168d8ac13d0"
+      }
+    ],
+    "sdkSeconds": 121.14107178989798
+  },
+  {
+    "case": "h3_fl2va_4step_euler",
+    "evidenceDirectory": "outputs/model_lab/h3_fl2va_4step_euler",
+    "seconds": 100.52284489804879,
+    "peakGb": 42.5,
+    "measured": true,
+    "method": "scheduler-accounted process GB, 1s samples, includes cache",
+    "samples": 93,
+    "cachePolicy": "release models before job",
+    "exitCode": 0,
+    "runtime": {
+      "comfyui_version": "0.41.3",
+      "python_version": "3.12.13 (main, Mar 24 2026, 22:47:08) [Clang 22.1.1 ]",
+      "pytorch_version": "2.14.1+cu130",
+      "graphCache": "none",
+      "cudaAllocatorCapGb": 0.0
+    },
+    "benchmarkSeconds": 101.49215147504583,
+    "jobId": "0dcec824-b4c6-4e09-a1b3-e82c09cb5a49",
+    "workflow": "workflows/h3_fl2va_4step_euler.api.json",
+    "outputs": [
+      {
+        "node": "17",
+        "path": "outputs/model_lab/h3_fl2va_4step_euler/17/h3_fl4_euler_00001_.mp4",
+        "bytes": 615434,
+        "sourcePath": "outputs/model_lab/h3_fl2va_4step_euler/17/h3_fl4_euler_00001_.mp4",
+        "sha256": "eb56c17a0c895c0249d09cd2bd1085cb71247a0c5577a3fcecb0f73a84eed39f"
+      }
+    ],
+    "sdkSeconds": 100.52284489804879
+  },
+  {
+    "case": "h3_fl2va_8step",
+    "evidenceDirectory": "outputs/model_lab/h3_fl2va_8step",
+    "seconds": 120.49889374198392,
+    "peakGb": 43.5,
+    "measured": true,
+    "method": "scheduler-accounted process GB, 1s samples, includes cache",
+    "samples": 113,
+    "exitCode": 0,
+    "benchmarkSeconds": 120.8187854802236,
+    "jobId": "48003868-2e74-4f5b-bdf2-8a1853ae463d",
+    "workflow": "workflows/h3_fl2va_8step.api.json",
+    "outputs": [
+      {
+        "node": "17",
+        "path": "outputs/model_lab/h3_fl2va_8step/17/h3_fl8_00001_.mp4",
+        "bytes": 647383,
+        "sha256": "e39691ceaa66f185f887cdca820623a67cee24174795d87f07efea703095c5c7"
+      }
+    ],
+    "sdkSeconds": 120.49889374198392
+  },
+  {
+    "case": "h3_ref2va_4step",
+    "evidenceDirectory": "outputs/model_lab/h3_ref2va_4step",
+    "seconds": 152.41773256310262,
+    "peakGb": 43.1,
+    "measured": true,
+    "method": "scheduler-accounted process GB, 1s samples, includes cache",
+    "samples": 143,
+    "exitCode": 0,
+    "benchmarkSeconds": 152.79705441603437,
+    "jobId": "bcdd2f2f-08ad-467f-8063-bb5bf0a855ed",
+    "workflow": "workflows/h3_ref2va_4step.api.json",
+    "outputs": [
+      {
+        "node": "17",
+        "path": "outputs/model_lab/h3_ref2va_4step/17/h3_ref4_00001_.mp4",
+        "bytes": 748952,
+        "sha256": "945f9b46c1c0ad958b192a153668de883c172873a16504be24f498cc756c7a08"
+      }
+    ],
+    "sdkSeconds": 152.41773256310262
+  },
+  {
+    "case": "h3_ref2va_bf16_final",
+    "evidenceDirectory": "outputs/model_lab/h3_ref2va_bf16_final",
+    "seconds": 325.77275396999903,
+    "peakGb": 89.0,
+    "measured": true,
+    "method": "scheduler-accounted process GB, 1s samples, includes cache",
+    "samples": 306,
+    "cachePolicy": "release models before job",
+    "exitCode": 0,
+    "runtime": {
+      "comfyui_version": "0.41.3",
+      "python_version": "3.12.13 (main, Mar 24 2026, 22:47:08) [Clang 22.1.1 ]",
+      "pytorch_version": "2.14.1+cu130",
+      "graphCache": "none",
+      "dynamicVramDisabled": false,
+      "compilerDisabled": false,
+      "cudaAllocatorCapGb": 0.0
+    },
+    "benchmarkSeconds": 326.028903682949,
+    "jobId": "f539ee0d-42f8-4026-9ce7-1de3266b5be8",
+    "workflow": "workflows/h3_ref2va_bf16_final.api.json",
+    "outputs": [
+      {
+        "node": "17",
+        "path": "outputs/model_lab/h3_ref2va_bf16_final/17/h3_ref_bf16_final_00001_.mp4",
+        "bytes": 2684724,
+        "sha256": "a18ffca55a17d29fcc8c0d470ee0c3164195eec73065e3ddaa6f43bc16f8b39f"
+      },
+      {
+        "node": "18",
+        "path": "outputs/model_lab/h3_ref2va_bf16_final/18/h3_bf16_latent_00001_.latent",
+        "bytes": 13693016,
+        "sha256": "9e8657d97e86be501f119db38b6ba8f6981f323547becbee8de03c75845dc45d",
+        "tensors": {
+          "samples.0": {
+            "dtype": "F32",
+            "shape": [
+              1,
+              24,
+              37,
+              48,
+              80
+            ]
+          },
+          "samples.1": {
+            "dtype": "F32",
+            "shape": [
+              1,
+              32,
+              2,
+              207
+            ]
+          }
+        },
+        "format": "1"
+      }
+    ],
+    "sdkSeconds": 325.77275396999903
+  },
+  {
+    "case": "h3_ref2va_final",
+    "evidenceDirectory": "outputs/model_lab/h3_ref2va_final",
+    "seconds": 602.5504925739951,
+    "peakGb": 47.0,
+    "measured": true,
+    "method": "scheduler-accounted process GB, 1s samples, includes cache",
+    "samples": 560,
+    "cachePolicy": "release models before job",
+    "exitCode": 0,
+    "runtime": {
+      "comfyui_version": "0.41.3",
+      "python_version": "3.12.13 (main, Mar 24 2026, 22:47:08) [Clang 22.1.1 ]",
+      "pytorch_version": "2.14.1+cu130",
+      "graphCache": "none",
+      "cudaAllocatorCapGb": 0.0
+    },
+    "benchmarkSeconds": 603.92456618906,
+    "jobId": "cb7c5e60-3a79-4960-9d29-3b80fd5c82d8",
+    "workflow": "workflows/h3_ref2va_final.api.json",
+    "outputs": [
+      {
+        "node": "17",
+        "path": "outputs/model_lab/h3_ref2va_final/17/h3_ref_final_00001_.mp4",
+        "bytes": 2696029,
+        "sourcePath": "outputs/model_lab/h3_ref2va_final/17/h3_ref_final_00001_.mp4",
+        "sha256": "f18a34c1726fbff0502e6513bab451d57e3a2807ad115e1960f2b688cd9282d1"
+      }
+    ],
+    "sdkSeconds": 602.5504925739951
+  },
+  {
+    "case": "kandinsky6_lite_capped8",
+    "evidenceDirectory": "outputs/model_lab/kandinsky6_lite_capped8",
+    "seconds": 140.55800223513506,
+    "peakGb": 14.8,
+    "measured": true,
+    "method": "scheduler-accounted process GB, 1s samples, includes cache",
+    "samples": 130,
+    "cachePolicy": "release models before job",
+    "exitCode": 0,
+    "runtime": {
+      "comfyui_version": "0.41.3",
+      "python_version": "3.12.13 (main, Mar 24 2026, 22:47:08) [Clang 22.1.1 ]",
+      "pytorch_version": "2.14.1+cu130",
+      "graphCache": "none",
+      "dynamicVramDisabled": true,
+      "compilerDisabled": true,
+      "cudaAllocatorCapGb": 8.0
+    },
+    "benchmarkSeconds": 141.00216490402818,
+    "jobId": "a8ce00b1-9aaa-4c47-beb3-d4bebe2cd5df",
+    "workflow": "workflows/kandinsky6_lite_draft.api.json",
+    "outputs": [
+      {
+        "node": "17",
+        "path": "outputs/model_lab/kandinsky6_lite_capped8/17/kandinsky6_lite_00002_.mp4",
+        "bytes": 282977,
+        "sourcePath": "outputs/model_lab/kandinsky6_lite_capped8/17/kandinsky6_lite_00002_.mp4",
+        "sha256": "cb96daa29dd8e70928dc8261fff70f3582c91642101ae3a41d68c8732b4d56b0"
+      },
+      {
+        "node": "18",
+        "path": "outputs/model_lab/kandinsky6_lite_capped8/18/kandinsky6_lite_00001_.latent",
+        "bytes": 1292440,
+        "sourcePath": "outputs/model_lab/kandinsky6_lite_capped8/18/kandinsky6_lite_00001_.latent",
+        "sha256": "113a136408ac3b5033196e17760e9f627aebf3f88b1958af1caf37598d2b2616",
+        "tensors": {
+          "samples.0": {
+            "dtype": "F32",
+            "shape": [
+              1,
+              16,
+              13,
+              32,
+              48
+            ]
+          },
+          "samples.1": {
+            "dtype": "F32",
+            "shape": [
+              1,
+              88,
+              40
+            ]
+          }
+        },
+        "format": "1"
+      }
+    ],
+    "sdkSeconds": 140.55800223513506
+  },
+  {
+    "case": "kandinsky6_pixel_final",
+    "evidenceDirectory": "outputs/model_lab/kandinsky6_pixel_final",
+    "seconds": 1.269846895011142,
+    "peakGb": 0.9,
+    "measured": true,
+    "method": "scheduler-accounted process GB, 1s samples, includes cache",
+    "samples": 3,
+    "cachePolicy": "release models before job",
+    "exitCode": 0,
+    "runtime": {
+      "comfyui_version": "0.41.3",
+      "python_version": "3.12.13 (main, Mar 24 2026, 22:47:08) [Clang 22.1.1 ]",
+      "pytorch_version": "2.14.1+cu130",
+      "graphCache": "none",
+      "dynamicVramDisabled": false,
+      "compilerDisabled": false,
+      "cudaAllocatorCapGb": 0.0
+    },
+    "benchmarkSeconds": 2.2057458620984107,
+    "jobId": "ae949965-228e-4142-b878-f0e14c1d9a40",
+    "workflow": "workflows/video_pixel_upscale.api.json",
+    "outputs": [
+      {
+        "node": "5",
+        "path": "outputs/model_lab/kandinsky6_pixel_final/5/pixel_upscale_00001_.mp4",
+        "bytes": 627012,
+        "sha256": "7ef549c9a97c07f909a74731ca8d6a77339b3c899318b0234d2af9ee4854aa4f"
+      }
+    ],
+    "sdkSeconds": 1.269846895011142
+  },
+  {
+    "case": "krea2_raw_bf16",
+    "evidenceDirectory": "outputs/model_lab/krea2_raw_bf16",
+    "seconds": 131.09416880598292,
+    "peakGb": 33.5,
+    "measured": true,
+    "method": "scheduler-accounted process GB, 1s samples, includes cache",
+    "samples": 121,
+    "cachePolicy": "release models before job",
+    "exitCode": 0,
+    "runtime": {
+      "comfyui_version": "0.41.3",
+      "python_version": "3.12.13 (main, Mar 24 2026, 22:47:08) [Clang 22.1.1 ]",
+      "pytorch_version": "2.14.1+cu130",
+      "graphCache": "none",
+      "cudaAllocatorCapGb": 0.0
+    },
+    "benchmarkSeconds": 131.75072250911035,
+    "jobId": "0936f66d-496d-4fb0-88dc-b4ec690836b9",
+    "workflow": "workflows/krea2_raw_bf16.api.json",
+    "outputs": [
+      {
+        "node": "9",
+        "path": "outputs/model_lab/krea2_raw_bf16/9/krea2_raw_00001_.png",
+        "bytes": 816458,
+        "sourcePath": "outputs/model_lab/krea2_raw_bf16/9/krea2_raw_00001_.png",
+        "sha256": "52fc394fc186aabb6ea7e5953eab8ac82c887a08b4c8df499a79b150cf9646b0"
+      }
+    ],
+    "sdkSeconds": 131.09416880598292
+  },
+  {
+    "case": "krea2_raw_empty_negative52",
+    "evidenceDirectory": "outputs/model_lab/krea2_raw_empty_negative52",
+    "seconds": 307.92886379011907,
+    "peakGb": 31.5,
+    "measured": true,
+    "method": "scheduler-accounted process GB, 1s samples, includes cache",
+    "samples": 288,
+    "cachePolicy": "release models before job",
+    "exitCode": 0,
+    "runtime": {
+      "comfyui_version": "0.41.3",
+      "python_version": "3.12.13 (main, Mar 24 2026, 22:47:08) [Clang 22.1.1 ]",
+      "pytorch_version": "2.14.1+cu130",
+      "graphCache": "none",
+      "cudaAllocatorCapGb": 0.0
+    },
+    "benchmarkSeconds": 308.54002925218083,
+    "jobId": "67dbb61b-cbf0-4d9c-910a-9f20fe8b2e37",
+    "workflow": "workflows/krea2_raw_bf16.api.json",
+    "outputs": [
+      {
+        "node": "9",
+        "path": "outputs/model_lab/krea2_raw_empty_negative52/9/krea2_raw_00002_.png",
+        "bytes": 631148,
+        "sha256": "685dd6aa7fa7ac5a609b2856a2ea951a6822af7a506577b6cce49c586e7d7bde"
+      }
+    ],
+    "sdkSeconds": 307.92886379011907
+  },
+  {
+    "case": "krea2_turbo_bf16",
+    "evidenceDirectory": "outputs/model_lab/krea2_turbo_bf16",
+    "seconds": 31.39965441916138,
+    "peakGb": 32.9,
+    "measured": true,
+    "method": "scheduler-accounted process GB, 1s samples, includes cache",
+    "samples": 30,
+    "cachePolicy": "release models before job",
+    "exitCode": 0,
+    "runtime": {
+      "comfyui_version": "0.41.3",
+      "python_version": "3.12.13 (main, Mar 24 2026, 22:47:08) [Clang 22.1.1 ]",
+      "pytorch_version": "2.14.1+cu130",
+      "graphCache": "none",
+      "cudaAllocatorCapGb": 0.0
+    },
+    "benchmarkSeconds": 31.726383440895006,
+    "jobId": "0762c8da-d6ae-4d18-b90c-03b63ec2e237",
+    "workflow": "workflows/krea2_turbo_bf16.api.json",
+    "outputs": [
+      {
+        "node": "9",
+        "path": "outputs/model_lab/krea2_turbo_bf16/9/krea2_bf16_00001_.png",
+        "bytes": 603366,
+        "sourcePath": "outputs/model_lab/krea2_turbo_bf16/9/krea2_bf16_00001_.png",
+        "sha256": "4f05c56b26a4ec6cf742a983a3b888009f6f853fdfce67d6b50fc6cdb2792667"
+      }
+    ],
+    "sdkSeconds": 31.39965441916138
+  },
+  {
+    "case": "krea2_turbo_int8",
+    "evidenceDirectory": "outputs/model_lab/krea2_turbo_int8",
+    "seconds": 25.801724530989304,
+    "peakGb": 20.6,
+    "measured": true,
+    "method": "scheduler-accounted process GB, 1s samples, includes cache",
+    "samples": 25,
+    "cachePolicy": "release models before job",
+    "exitCode": 0,
+    "runtime": {
+      "comfyui_version": "0.41.3",
+      "python_version": "3.12.13 (main, Mar 24 2026, 22:47:08) [Clang 22.1.1 ]",
+      "pytorch_version": "2.14.1+cu130",
+      "graphCache": "none",
+      "cudaAllocatorCapGb": 0.0
+    },
+    "benchmarkSeconds": 26.360433910042048,
+    "jobId": "d809abea-802b-406d-bac9-c3cfd213de3f",
+    "workflow": "workflows/krea2_turbo_int8.api.json",
+    "outputs": [
+      {
+        "node": "9",
+        "path": "outputs/model_lab/krea2_turbo_int8/9/krea2_bf16_00002_.png",
+        "bytes": 601631,
+        "sourcePath": "outputs/model_lab/krea2_turbo_int8/9/krea2_bf16_00002_.png",
+        "sha256": "6ee1ddf5f6f41b61ba14fe42eedc3ef2f0e5df46124a44a0ab40ad28b8ec12d4"
+      }
+    ],
+    "sdkSeconds": 25.801724530989304
+  },
+  {
+    "case": "krea2_turbo_int8_mix",
+    "evidenceDirectory": "outputs/model_lab/krea2_turbo_int8_mix",
+    "seconds": 35.44185099611059,
+    "peakGb": 20.3,
+    "measured": true,
+    "method": "scheduler-accounted process GB, 1s samples, includes cache",
+    "samples": 34,
+    "cachePolicy": "release models before job",
+    "exitCode": 0,
+    "runtime": {
+      "comfyui_version": "0.41.3",
+      "python_version": "3.12.13 (main, Mar 24 2026, 22:47:08) [Clang 22.1.1 ]",
+      "pytorch_version": "2.14.1+cu130",
+      "graphCache": "none",
+      "cudaAllocatorCapGb": 0.0
+    },
+    "benchmarkSeconds": 36.672610610956326,
+    "jobId": "229f634d-4f22-408c-b369-f7e680896c81",
+    "workflow": "workflows/krea2_turbo_int8_mix.api.json",
+    "outputs": [
+      {
+        "node": "9",
+        "path": "outputs/model_lab/krea2_turbo_int8_mix/9/krea2_int8_mix_00001_.png",
+        "bytes": 782851,
+        "sourcePath": "outputs/model_lab/krea2_turbo_int8_mix/9/krea2_int8_mix_00001_.png",
+        "sha256": "0217e2882aba44657f29f72833e6c4d1a2f758d055d6a2f10c2c58c3753e806a"
+      }
+    ],
+    "sdkSeconds": 35.44185099611059
+  },
+  {
+    "case": "krea2_turbo_nvfp4",
+    "evidenceDirectory": "outputs/model_lab/krea2_turbo_nvfp4",
+    "seconds": 35.44499315088615,
+    "peakGb": 16.1,
+    "measured": true,
+    "method": "scheduler-accounted process GB, 1s samples, includes cache",
+    "samples": 34,
+    "cachePolicy": "release models before job",
+    "exitCode": 0,
+    "runtime": {
+      "comfyui_version": "0.41.3",
+      "python_version": "3.12.13 (main, Mar 24 2026, 22:47:08) [Clang 22.1.1 ]",
+      "pytorch_version": "2.14.1+cu130",
+      "graphCache": "none",
+      "cudaAllocatorCapGb": 0.0
+    },
+    "benchmarkSeconds": 36.661862327950075,
+    "jobId": "f92eb67f-1a8f-4eef-b0a0-58c1a6e27e48",
+    "workflow": "workflows/krea2_turbo_nvfp4.api.json",
+    "outputs": [
+      {
+        "node": "9",
+        "path": "outputs/model_lab/krea2_turbo_nvfp4/9/krea2_nvfp4_00001_.png",
+        "bytes": 600778,
+        "sourcePath": "outputs/model_lab/krea2_turbo_nvfp4/9/krea2_nvfp4_00001_.png",
+        "sha256": "baeef25178c26c5b86eb2618ed19c9013afaad0d9e1857f966c20bdd9abf49f3"
+      }
+    ],
+    "sdkSeconds": 35.44499315088615
+  },
+  {
+    "case": "ltx_draft",
+    "evidenceDirectory": "outputs/model_lab/ltx_draft",
+    "seconds": 97.73778537614271,
+    "peakGb": 40.1,
+    "measured": true,
+    "method": "scheduler-accounted process GB, 1s samples, includes cache",
+    "samples": 90,
+    "exitCode": 1,
+    "benchmarkSeconds": 97.73778537614271
+  },
+  {
+    "case": "ltx_draft_fixed",
+    "evidenceDirectory": "outputs/model_lab/ltx_draft_fixed",
+    "seconds": 1.2109602661803365,
+    "peakGb": null,
+    "measured": false,
+    "method": "scheduler-accounted process GB, 1s samples, includes cache",
+    "samples": 0,
+    "exitCode": 1,
+    "benchmarkSeconds": 1.2109602661803365
+  },
+  {
+    "case": "ltx_draft_fixed2",
+    "evidenceDirectory": "outputs/model_lab/ltx_draft_fixed2",
+    "seconds": 41.86129433801398,
+    "peakGb": 39.3,
+    "measured": true,
+    "method": "scheduler-accounted process GB, 1s samples, includes cache",
+    "samples": 40,
+    "exitCode": 1,
+    "benchmarkSeconds": 41.86129433801398
+  },
+  {
+    "case": "ltx_draft_ok",
+    "evidenceDirectory": "outputs/model_lab/ltx_draft_ok",
+    "seconds": 56.24969750503078,
+    "peakGb": 43.9,
+    "measured": true,
+    "method": "scheduler-accounted process GB, 1s samples, includes cache",
+    "samples": 54,
+    "exitCode": 0,
+    "benchmarkSeconds": 56.960885582026094,
+    "jobId": "14ff74c5-8c69-473d-877e-4b3c93484e5f",
+    "workflow": "workflows/ltx25_draft.api.json",
+    "outputs": [
+      {
+        "node": "20",
+        "path": "outputs/model_lab/ltx_draft_ok/20/ltx_draft_00001_.latent",
+        "bytes": 1701492,
+        "sha256": "759fd2d92fce368158e0b45c8527e4f1816f5e33551b3e6a6568c9f9eb67b62a",
+        "tensors": {
+          "noise_mask.0": {
+            "dtype": "F32",
+            "shape": [
+              1,
+              1,
+              13,
+              1,
+              1
+            ]
+          },
+          "noise_mask.1": {
+            "dtype": "F32",
+            "shape": [
+              1,
+              8,
+              101,
+              16
+            ]
+          },
+          "samples.0": {
+            "dtype": "F32",
+            "shape": [
+              1,
+              128,
+              13,
+              12,
+              20
+            ]
+          },
+          "samples.1": {
+            "dtype": "F32",
+            "shape": [
+              1,
+              8,
+              101,
+              16
+            ]
+          }
+        },
+        "format": "1"
+      },
+      {
+        "node": "25",
+        "path": "outputs/model_lab/ltx_draft_ok/25/ltx_draft_00002_.mp4",
+        "bytes": 603883,
+        "sha256": "fa9ade26c780047d07f7566b1e7c2a5a9c569f2641e6b91af702552d810de369"
+      }
+    ],
+    "sdkSeconds": 56.24969750503078
+  },
+  {
+    "case": "ltx_final",
+    "evidenceDirectory": "outputs/model_lab/ltx_final",
+    "seconds": 87.32750553498045,
+    "peakGb": 47.2,
+    "measured": true,
+    "method": "scheduler-accounted process GB, 1s samples, includes cache",
+    "samples": 83,
+    "exitCode": 0,
+    "benchmarkSeconds": 88.44630196900107,
+    "jobId": "eca300a2-5349-4311-926d-bf9da9e1042d",
+    "workflow": "workflows/ltx25_same_take.api.json",
+    "outputs": [
+      {
+        "node": "25",
+        "path": "outputs/model_lab/ltx_final/25/ltx_final_00001_.mp4",
+        "bytes": 1795559,
+        "sha256": "f6531ed7069c843740413fdffcd960930dd86974a23e6e8a7ccf535ca4d050d8"
+      }
+    ],
+    "sdkSeconds": 87.32750553498045
+  },
+  {
+    "case": "ltx_final_streamcopy",
+    "evidenceDirectory": "outputs/model_lab/ltx_final_streamcopy",
+    "seconds": 81.42706328490749,
+    "peakGb": 47.5,
+    "measured": true,
+    "method": "scheduler-accounted process GB, 1s samples, includes cache",
+    "samples": 77,
+    "cachePolicy": "release models before job",
+    "exitCode": 0,
+    "runtime": {
+      "comfyui_version": "0.41.3",
+      "python_version": "3.12.13 (main, Mar 24 2026, 22:47:08) [Clang 22.1.1 ]",
+      "pytorch_version": "2.14.1+cu130",
+      "graphCache": "none",
+      "dynamicVramDisabled": false,
+      "compilerDisabled": false,
+      "cudaAllocatorCapGb": 0.0
+    },
+    "benchmarkSeconds": 82.24306494183838,
+    "jobId": "250e44b0-25a2-40c0-acb9-b8dea9020a05",
+    "workflow": "workflows/ltx25_same_take.api.json",
+    "outputs": [
+      {
+        "node": "25",
+        "path": "outputs/model_lab/ltx_final_streamcopy/25/ltx_final_00005_.mp4",
+        "bytes": 1791319,
+        "sha256": "f0c6492b16f6c74090a23e20ee6332bf5327bbdb32e48363affad271fbe7e80f"
+      }
+    ],
+    "sdkSeconds": 81.42706328490749
+  },
+  {
+    "case": "ltx_final_v2",
+    "evidenceDirectory": "outputs/model_lab/ltx_final_v2",
+    "seconds": 121.59279858903028,
+    "peakGb": 46.2,
+    "measured": true,
+    "method": "scheduler-accounted process GB, 1s samples, includes cache",
+    "samples": 115,
+    "cachePolicy": "release models before job",
+    "exitCode": 0,
+    "runtime": {
+      "comfyui_version": "0.41.3",
+      "python_version": "3.12.13 (main, Mar 24 2026, 22:47:08) [Clang 22.1.1 ]",
+      "pytorch_version": "2.14.1+cu130",
+      "graphCache": "none",
+      "cudaAllocatorCapGb": 0.0
+    },
+    "benchmarkSeconds": 122.35643556783907,
+    "jobId": "ea64c411-eaa9-4804-85b1-89919120065b",
+    "workflow": "workflows/ltx25_same_take.api.json",
+    "outputs": [
+      {
+        "node": "25",
+        "path": "outputs/model_lab/ltx_final_v2/25/ltx_final_00002_.mp4",
+        "bytes": 1794565,
+        "sourcePath": "outputs/model_lab/ltx_final_v2/25/ltx_final_00002_.mp4",
+        "sha256": "1bbe285cd0f81961f9b17fe8ca099e5139ac8214b37ea3bcbf44f602d8296267"
+      }
+    ],
+    "sdkSeconds": 121.59279858903028
+  },
+  {
+    "case": "minimax_music3",
+    "evidenceDirectory": "outputs/model_lab/minimax_music3",
+    "seconds": 51.490641582990065,
+    "peakGb": 21.3,
+    "measured": true,
+    "method": "scheduler-accounted process GB, 1s samples, includes cache",
+    "samples": 49,
+    "cachePolicy": "release models before job",
+    "exitCode": 0,
+    "runtime": {
+      "comfyui_version": "0.41.3",
+      "python_version": "3.12.13 (main, Mar 24 2026, 22:47:08) [Clang 22.1.1 ]",
+      "pytorch_version": "2.14.1+cu130",
+      "graphCache": "none",
+      "cudaAllocatorCapGb": 0.0
+    },
+    "benchmarkSeconds": 51.813820235896856,
+    "jobId": "4f13e250-0f7f-49bb-a920-d435fb38f01f",
+    "workflow": "workflows/minimax_music3.api.json",
+    "outputs": [
+      {
+        "node": "9",
+        "path": "outputs/model_lab/minimax_music3/9/music3_00001.flac",
+        "bytes": 577472,
+        "sourcePath": "outputs/model_lab/minimax_music3/9/music3_00001.flac",
+        "sha256": "ad08523b42c4c53c1818c703939ad555e0faf4961559b364f78271ee26d30a31"
+      }
+    ],
+    "sdkSeconds": 51.490641582990065
+  },
+  {
+    "case": "moss_image_fused_bf16_encoder",
+    "evidenceDirectory": "outputs/model_lab/moss_image_fused_bf16_encoder",
+    "seconds": 120.85603972314857,
+    "peakGb": 22.3,
+    "measured": true,
+    "method": "scheduler-accounted process GB, 1s samples, includes cache",
+    "samples": 112,
+    "cachePolicy": "release models before job",
+    "exitCode": 0,
+    "runtime": {
+      "comfyui_version": "0.41.3",
+      "python_version": "3.12.13 (main, Mar 24 2026, 22:47:08) [Clang 22.1.1 ]",
+      "pytorch_version": "2.14.1+cu130",
+      "graphCache": "none",
+      "dynamicVramDisabled": false,
+      "compilerDisabled": false,
+      "cudaAllocatorCapGb": 0.0
+    },
+    "benchmarkSeconds": 121.37683626799844,
+    "jobId": "f98a2bac-8f0d-44ad-9009-7a5c20c8d1d1",
+    "workflow": "workflows/moss_image_int8.api.json",
+    "outputs": [
+      {
+        "node": "11",
+        "path": "outputs/model_lab/moss_image_fused_bf16_encoder/11/moss_00001_.png",
+        "bytes": 654088,
+        "sha256": "f9272e292d813b46cf2ff3d350002e0e10524570fcfaf4f6620c61b1339486bd"
+      }
+    ],
+    "sdkSeconds": 120.85603972314857
+  },
+  {
+    "case": "moss_image_fused_gptq_encoder",
+    "evidenceDirectory": "outputs/model_lab/moss_image_fused_gptq_encoder",
+    "seconds": 60.71743704704568,
+    "peakGb": 12.9,
+    "measured": true,
+    "method": "scheduler-accounted process GB, 1s samples, includes cache",
+    "samples": 54,
+    "cachePolicy": "release models before job",
+    "exitCode": 1,
+    "runtime": {
+      "comfyui_version": "0.41.3",
+      "python_version": "3.12.13 (main, Mar 24 2026, 22:47:08) [Clang 22.1.1 ]",
+      "pytorch_version": "2.14.1+cu130",
+      "graphCache": "none",
+      "dynamicVramDisabled": false,
+      "compilerDisabled": false,
+      "cudaAllocatorCapGb": 0.0
+    },
+    "benchmarkSeconds": 60.71743704704568
+  },
+  {
+    "case": "moss_image_fused_int8_encoder",
+    "evidenceDirectory": "outputs/model_lab/moss_image_fused_int8_encoder",
+    "seconds": 80.54087117104791,
+    "peakGb": 15.2,
+    "measured": true,
+    "method": "scheduler-accounted process GB, 1s samples, includes cache",
+    "samples": 76,
+    "cachePolicy": "release models before job",
+    "exitCode": 0,
+    "runtime": {
+      "comfyui_version": "0.41.3",
+      "python_version": "3.12.13 (main, Mar 24 2026, 22:47:08) [Clang 22.1.1 ]",
+      "pytorch_version": "2.14.1+cu130",
+      "graphCache": "none",
+      "dynamicVramDisabled": false,
+      "compilerDisabled": false,
+      "cudaAllocatorCapGb": 0.0
+    },
+    "benchmarkSeconds": 81.46745746396482,
+    "jobId": "69b5aae1-2849-42c1-927c-b710a3477d6f",
+    "workflow": "workflows/moss_image_int8_encoder.api.json",
+    "outputs": [
+      {
+        "node": "11",
+        "path": "outputs/model_lab/moss_image_fused_int8_encoder/11/moss_00002_.png",
+        "bytes": 666239,
+        "sha256": "c443f2bd54ec14731d3abc3a47e73211b59490fb8c22384075e3996573024f04"
+      }
+    ],
+    "sdkSeconds": 80.54087117104791
+  },
+  {
+    "case": "moss_image_gptq_encoder",
+    "evidenceDirectory": "outputs/model_lab/moss_image_gptq_encoder",
+    "seconds": 1.1630186350084841,
+    "peakGb": 3.6,
+    "measured": true,
+    "method": "scheduler-accounted process GB, 1s samples, includes cache",
+    "samples": 2,
+    "cachePolicy": "release models before job",
+    "exitCode": 1,
+    "runtime": {
+      "comfyui_version": "0.41.3",
+      "python_version": "3.12.13 (main, Mar 24 2026, 22:47:08) [Clang 22.1.1 ]",
+      "pytorch_version": "2.14.1+cu130",
+      "graphCache": "none",
+      "cudaAllocatorCapGb": 0.0
+    },
+    "benchmarkSeconds": 1.1630186350084841
+  },
+  {
+    "case": "moss_image_gptq_encoder_static",
+    "evidenceDirectory": "outputs/model_lab/moss_image_gptq_encoder_static",
+    "seconds": 66.24268185300753,
+    "peakGb": 15.8,
+    "measured": true,
+    "method": "scheduler-accounted process GB, 1s samples, includes cache",
+    "samples": 63,
+    "cachePolicy": "release models before job",
+    "exitCode": 1,
+    "runtime": {
+      "comfyui_version": "0.41.3",
+      "python_version": "3.12.13 (main, Mar 24 2026, 22:47:08) [Clang 22.1.1 ]",
+      "pytorch_version": "2.14.1+cu130",
+      "graphCache": "none",
+      "dynamicVramDisabled": true,
+      "compilerDisabled": true,
+      "cudaAllocatorCapGb": 0.0
+    },
+    "benchmarkSeconds": 66.24268185300753
+  },
+  {
+    "case": "moss_image_gptq_no_compiler",
+    "evidenceDirectory": "outputs/model_lab/moss_image_gptq_no_compiler",
+    "seconds": 55.474867718992755,
+    "peakGb": 14.3,
+    "measured": true,
+    "method": "scheduler-accounted process GB, 1s samples, includes cache",
+    "samples": 52,
+    "cachePolicy": "release models before job",
+    "exitCode": 0,
+    "runtime": {
+      "comfyui_version": "0.41.3",
+      "python_version": "3.12.13 (main, Mar 24 2026, 22:47:08) [Clang 22.1.1 ]",
+      "pytorch_version": "2.14.1+cu130",
+      "graphCache": "none",
+      "dynamicVramDisabled": false,
+      "compilerDisabled": true,
+      "cudaAllocatorCapGb": 0.0
+    },
+    "benchmarkSeconds": 55.78230795590207,
+    "jobId": "a722177f-1042-4fa8-951f-fb8d01e6820a",
+    "workflow": "workflows/moss_image_gptq_encoder.api.json",
+    "outputs": [
+      {
+        "node": "11",
+        "path": "outputs/model_lab/moss_image_gptq_no_compiler/11/moss_00003_.png",
+        "bytes": 662783,
+        "sha256": "401b760cf913a92d17163d60a208ee62eaf5de5c358974c0f4f6fd5860cf8398"
+      }
+    ],
+    "sdkSeconds": 55.474867718992755
+  },
+  {
+    "case": "moss_image_int8",
+    "evidenceDirectory": "outputs/model_lab/moss_image_int8",
+    "seconds": 11.78479295107536,
+    "peakGb": 18.4,
+    "measured": true,
+    "method": "scheduler-accounted process GB, 1s samples, includes cache",
+    "samples": 12,
+    "cachePolicy": "release models before job",
+    "exitCode": 1,
+    "runtime": {
+      "comfyui_version": "0.41.3",
+      "python_version": "3.12.13 (main, Mar 24 2026, 22:47:08) [Clang 22.1.1 ]",
+      "pytorch_version": "2.14.1+cu130",
+      "graphCache": "none",
+      "cudaAllocatorCapGb": 0.0
+    },
+    "benchmarkSeconds": 11.78479295107536
+  },
+  {
+    "case": "moss_image_int8_encoder",
+    "evidenceDirectory": "outputs/model_lab/moss_image_int8_encoder",
+    "seconds": 1.1579128131270409,
+    "peakGb": 3.6,
+    "measured": true,
+    "method": "scheduler-accounted process GB, 1s samples, includes cache",
+    "samples": 2,
+    "cachePolicy": "release models before job",
+    "exitCode": 1,
+    "runtime": {
+      "comfyui_version": "0.41.3",
+      "python_version": "3.12.13 (main, Mar 24 2026, 22:47:08) [Clang 22.1.1 ]",
+      "pytorch_version": "2.14.1+cu130",
+      "graphCache": "none",
+      "cudaAllocatorCapGb": 0.0
+    },
+    "benchmarkSeconds": 1.1579128131270409
+  },
+  {
+    "case": "moss_image_int8_encoder_static",
+    "evidenceDirectory": "outputs/model_lab/moss_image_int8_encoder_static",
+    "seconds": 86.53065416705795,
+    "peakGb": 24.8,
+    "measured": true,
+    "method": "scheduler-accounted process GB, 1s samples, includes cache",
+    "samples": 82,
+    "cachePolicy": "release models before job",
+    "exitCode": 1,
+    "runtime": {
+      "comfyui_version": "0.41.3",
+      "python_version": "3.12.13 (main, Mar 24 2026, 22:47:08) [Clang 22.1.1 ]",
+      "pytorch_version": "2.14.1+cu130",
+      "graphCache": "none",
+      "dynamicVramDisabled": true,
+      "compilerDisabled": true,
+      "cudaAllocatorCapGb": 0.0
+    },
+    "benchmarkSeconds": 86.53065416705795
+  },
+  {
+    "case": "moss_image_lazy_weight_fix",
+    "evidenceDirectory": "outputs/model_lab/moss_image_lazy_weight_fix",
+    "seconds": 36.25754122319631,
+    "peakGb": 25.6,
+    "measured": true,
+    "method": "scheduler-accounted process GB, 1s samples, includes cache",
+    "samples": 35,
+    "cachePolicy": "release models before job",
+    "exitCode": 1,
+    "runtime": {
+      "comfyui_version": "0.41.3",
+      "python_version": "3.12.13 (main, Mar 24 2026, 22:47:08) [Clang 22.1.1 ]",
+      "pytorch_version": "2.14.1+cu130",
+      "graphCache": "none",
+      "dynamicVramDisabled": true,
+      "compilerDisabled": true,
+      "cudaAllocatorCapGb": 0.0
+    },
+    "benchmarkSeconds": 36.25754122319631
+  },
+  {
+    "case": "moss_image_static",
+    "evidenceDirectory": "outputs/model_lab/moss_image_static",
+    "seconds": 71.47240939503536,
+    "peakGb": 19.2,
+    "measured": true,
+    "method": "scheduler-accounted process GB, 1s samples, includes cache",
+    "samples": 68,
+    "cachePolicy": "release models before job",
+    "exitCode": 1,
+    "runtime": {
+      "comfyui_version": "0.41.3",
+      "python_version": "3.12.13 (main, Mar 24 2026, 22:47:08) [Clang 22.1.1 ]",
+      "pytorch_version": "2.14.1+cu130",
+      "graphCache": "none",
+      "cudaAllocatorCapGb": 0.0
+    },
+    "benchmarkSeconds": 71.47240939503536
+  },
+  {
+    "case": "runner_text_output",
+    "evidenceDirectory": "outputs/model_lab/runner_text_output",
+    "seconds": 0.005877810996025801,
+    "peakGb": 3.6,
+    "measured": true,
+    "method": "scheduler-accounted process GB, 1s samples, includes cache",
+    "samples": 2,
+    "cachePolicy": "release models before job",
+    "exitCode": 0,
+    "runtime": {
+      "comfyui_version": "0.41.3",
+      "python_version": "3.12.13 (main, Mar 24 2026, 22:47:08) [Clang 22.1.1 ]",
+      "pytorch_version": "2.14.1+cu130",
+      "graphCache": "none",
+      "cudaAllocatorCapGb": 0.0
+    },
+    "benchmarkSeconds": 1.1310278049204499,
+    "jobId": "6adb9add-e377-40b1-90e7-3a46ea2649da",
+    "workflow": "workflows/tests/echo_text.api.json",
+    "outputs": [
+      {
+        "node": "1",
+        "path": "outputs/model_lab/runner_text_output/1/sdk_text_echo_00003_.json",
+        "bytes": 74,
+        "sourcePath": "outputs/model_lab/runner_text_output/1/sdk_text_echo_00003_.json",
+        "sha256": "70571bb15f25d4320d1334f8b23769e428fca66adf086ce1d5b7c0d7f83b728e"
+      }
+    ],
+    "sdkSeconds": 0.005877810996025801
+  },
+  {
+    "case": "text_engine_cinematic",
+    "evidenceDirectory": "outputs/model_lab/text_engine_cinematic",
+    "seconds": 170.51304121897556,
+    "peakGb": 13.8,
+    "measured": true,
+    "method": "scheduler-accounted process GB, 1s samples, includes cache",
+    "samples": 162,
+    "cachePolicy": "release models before job",
+    "exitCode": 0,
+    "runtime": {
+      "comfyui_version": "0.41.3",
+      "python_version": "3.12.13 (main, Mar 24 2026, 22:47:08) [Clang 22.1.1 ]",
+      "pytorch_version": "2.14.1+cu130",
+      "graphCache": "none",
+      "cudaAllocatorCapGb": 12.0
+    },
+    "benchmarkSeconds": 170.93090686690994,
+    "jobId": "224047ee-2949-4073-a53e-84103e366566",
+    "workflow": "workflows/tests/text_engine_cinematic.api.json",
+    "outputs": [
+      {
+        "node": "3",
+        "path": "outputs/model_lab/text_engine_cinematic/3/engine_storyboard_probe_00001_.json",
+        "bytes": 1048,
+        "sha256": "daf22af85170e65d16aa19075b02079b0f2ae3e77816a0a3dcfc253ae7fdc021"
+      }
+    ],
+    "sdkSeconds": 170.51304121897556
+  },
+  {
+    "case": "text_shot_list",
+    "evidenceDirectory": "outputs/model_lab/text_shot_list",
+    "seconds": 10.417180504882708,
+    "peakGb": 6.8,
+    "measured": true,
+    "method": "scheduler-accounted process GB, 1s samples, includes cache",
+    "samples": 11,
+    "cachePolicy": "release models before job",
+    "exitCode": 0,
+    "runtime": {
+      "comfyui_version": "0.41.3",
+      "python_version": "3.12.13 (main, Mar 24 2026, 22:47:08) [Clang 22.1.1 ]",
+      "pytorch_version": "2.14.1+cu130",
+      "graphCache": "none",
+      "cudaAllocatorCapGb": 0.0
+    },
+    "benchmarkSeconds": 10.76592261204496,
+    "jobId": "2308490b-3b9d-4f1e-976b-90c38d643fbf",
+    "workflow": "workflows/text_shot_list.api.json",
+    "outputs": [
+      {
+        "node": "3",
+        "path": "outputs/model_lab/text_shot_list/3/shot_list_00001_.json",
+        "bytes": 802,
+        "sha256": "d412d1a0b07059e26ae82973c44fe192575254dc157db513402f5118093f09f7"
+      }
+    ],
+    "sdkSeconds": 10.417180504882708
+  }
+]

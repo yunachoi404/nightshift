@@ -1,0 +1,84 @@
+.home-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(236px, 1fr));
+  gap: 22px 18px;
+  padding-top: 4px;
+}
+.pcard {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+  text-align: left;
+  border-radius: var(--r-m);
+}
+.pcard__frame {
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--inset);
+  border-radius: var(--r-s);
+  overflow: hidden;
+  position: relative;
+  box-shadow: inset 0 0 0 1px var(--line);
+  transition: box-shadow var(--t-fast) var(--ease);
+}
+.pcard:hover .pcard__frame {
+  box-shadow: inset 0 0 0 1px var(--line-strong);
+}
+.pcard:focus-visible {
+  box-shadow: none;
+}
+.pcard:focus-visible .pcard__frame {
+  box-shadow: inset 0 0 0 1px var(--content), 0 0 0 2px var(--accent);
+}
+.pcard__frame .frame {
+  position: absolute;
+  inset: 0;
+  aspect-ratio: auto;
+  width: 100%;
+  height: 100%;
+  border-radius: 0;
+  box-shadow: none;
+}
+.pcard__frame .frame--empty {
+  background: var(--inset);
+}
+.pcard__text {
+  padding: 0 2px;
+}
+.pcard__name {
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.pcard__meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-3);
+  font-size: var(--fs-small);
+  line-height: var(--lh-small);
+}
+.pcard__tag {
+  padding: 0 2px;
+}
+.pcard--new .pcard__frame {
+  background: var(--inset);
+  box-shadow: inset 0 0 0 1px var(--line);
+  color: var(--text-3);
+  flex-direction: column;
+  gap: 6px;
+}
+.pcard--new:hover .pcard__frame {
+  background: var(--hover);
+  color: var(--text);
+}
+.pcard--new svg {
+  width: 20px;
+  height: 20px;
+}

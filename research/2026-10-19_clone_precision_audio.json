@@ -1,0 +1,44 @@
+[
+  {
+    "case": "breeze_clone_synthetic",
+    "path": "outputs/model_lab/breeze_clone_synthetic/3/breeze_00006.flac",
+    "durationSec": 5.12,
+    "sampleRate": 24000,
+    "channels": 1,
+    "peakAmplitude": 0.366668701171875,
+    "rms": 0.0568733811378479,
+    "nearFullScaleFraction": 0.0,
+    "overFullScaleFraction": 0.0,
+    "transcript": "Keep the camera moving slowly. The final render keeps the same take, with sharper detail.",
+    "asrGain": 2.4545318352059926,
+    "asrModel": "OpenAI Whisper base.en, CPU"
+  },
+  {
+    "case": "drama_clone_synthetic",
+    "path": "outputs/model_lab/drama_clone_synthetic/2/drama3_00003.flac",
+    "durationSec": 5.154829931972789,
+    "sampleRate": 44100,
+    "channels": 1,
+    "peakAmplitude": 0.34765625,
+    "rms": 0.07194513827562332,
+    "nearFullScaleFraction": 0.0,
+    "overFullScaleFraction": 0.0,
+    "transcript": "Keep the camera moving slowly, the final render keeps the same take, with sharper detail.",
+    "asrGain": 2.5887640449438205,
+    "asrModel": "OpenAI Whisper base.en, CPU"
+  },
+  {
+    "case": "drama_clone_bf16",
+    "path": "outputs/model_lab/drama_clone_bf16/2/drama3_00004.flac",
+    "durationSec": 11.888616780045352,
+    "sampleRate": 44100,
+    "channels": 1,
+    "peakAmplitude": 0.296875,
+    "rms": 0.027768049389123917,
+    "nearFullScaleFraction": 0.0,
+    "overFullScaleFraction": 0.0,
+    "transcript": "Keep the camera moving slowly.",
+    "asrGain": 3.031578947368421,
+    "asrModel": "OpenAI Whisper base.en, CPU"
+  }
+]

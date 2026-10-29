@@ -1,0 +1,12 @@
+{
+  "activeJobs": 0,
+  "remote": {
+    "url": "http://gpu-box:8190",
+    "name": "NVIDIA GB10"
+  },
+  "sparkBudgetGb": 56,
+  "sparkPreemptible": true,
+  "sparkRuntimePid": 2740419,
+  "macAppearance": "dark",
+  "appTheme": "system"
+}

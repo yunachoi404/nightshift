@@ -1,0 +1,25 @@
+[
+  {
+    "case": "music",
+    "path": "outputs/real_project/assets/ast_mvf2ct0j38a22ffa87.flac",
+    "durationSec": 11.993106575963719,
+    "sampleRate": 44100,
+    "channels": 2,
+    "peakAmplitude": 0.832000732421875,
+    "rms": 0.12887483835220337,
+    "nearFullScaleFraction": 0.0,
+    "overFullScaleFraction": 0.0,
+    "transcript": "Thank you.",
+    "asrSegments": [
+      {
+        "start": 0.0,
+        "end": 12.0,
+        "text": " Thank you.",
+        "avg_logprob": -1.5152206420898438,
+        "no_speech_prob": 0.49622300267219543
+      }
+    ],
+    "asrGain": 1.0,
+    "asrModel": "OpenAI Whisper tiny.en, CPU"
+  }
+]
