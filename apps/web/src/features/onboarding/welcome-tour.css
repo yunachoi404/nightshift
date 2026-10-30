@@ -1,7 +1,7 @@
 /*
- * The welcome's app window: the app at its real size, walking one project through its four stages. Its top
- * peeks up under Get started and the welcome scrolls to the rest, so every stage keeps its point in the top
- * 200 px of its body and fits whole in the window.
+ * The welcome's app window: the app at its real size, walking one project through Media (the board, then a card
+ * opened over it) and the Editor. Its top peeks up under Get started and the welcome scrolls to the rest, so every
+ * stage keeps its point in the top 200 px of its body and fits whole in the window.
  */
 .ob__floor-rise {
   flex: none;
@@ -166,7 +166,7 @@
   color: var(--text-3);
 }
 
-/* The stage switch: the toolbar's segmented control, with a knob that slides between stages. */
+/* The area switch: the toolbar's segmented control, with a knob that slides between Media and Editor. */
 .pw__seg {
   position: relative;
   display: inline-flex;
@@ -240,41 +240,6 @@
 }
 
 /* ---------- Pieces of the app, at its size ---------- */
-.pw-page {
-  padding: 18px 22px 0;
-  min-width: 0;
-}
-.pw-head {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 16px;
-  margin-bottom: 14px;
-}
-.pw-head > div:first-child {
-  flex: 1;
-  min-width: 0;
-}
-.pw-h {
-  font-family: var(--font-display);
-  font-size: 22px;
-  line-height: 27px;
-  letter-spacing: -0.01em;
-}
-.pw-sub {
-  margin-top: 3px;
-  color: var(--text-3);
-  font-size: var(--fs-small);
-  line-height: var(--lh-small);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.pw-actions {
-  display: flex;
-  gap: 6px;
-  flex: none;
-}
 .pw-btn {
   display: inline-flex;
   align-items: center;
@@ -343,11 +308,124 @@
   left: 8px;
 }
 
-/* Storyboard: the shots as stills, three across. */
+/* Media: the prompt panel that makes new cards, the board of shots, and the timeline strip under the board. */
+.pw-md {
+  position: relative;
+  height: 100%;
+  display: grid;
+  grid-template-columns: 224px minmax(0, 1fr);
+}
+.pw-md__panel {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px 12px 0;
+  border-right: 1px solid var(--line);
+  background: var(--inset);
+}
+/* The tools sized to their words, so Camera move fits whole in the narrow panel. */
+.pw-md__tools {
+  display: grid;
+  grid-template-columns: auto auto;
+  gap: 3px;
+  padding: 3px;
+  margin-bottom: 6px;
+  border-radius: var(--r-m);
+  background: var(--seg-track);
+}
+.pw-md__tool {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+  height: 26px;
+  padding: 0 6px;
+  border-radius: var(--r-s);
+  font-size: var(--fs-small);
+  font-weight: 500;
+  color: var(--text-2);
+  white-space: nowrap;
+  overflow: hidden;
+}
+.pw-md__tool svg {
+  width: 13px;
+  height: 13px;
+  flex: none;
+}
+.pw-md__tool--on {
+  background: var(--seg-knob);
+  color: var(--text);
+  box-shadow: var(--seg-knob-shadow);
+}
+.pw-md__label {
+  font-size: var(--fs-small);
+  font-weight: 600;
+}
+.pw-md__prompt {
+  height: 84px;
+  padding: 7px 9px;
+  border-radius: var(--r-s);
+  border: 1px solid var(--line-strong);
+  background: var(--raised);
+  font-size: var(--fs-small);
+  line-height: var(--lh-small);
+}
+.pw-md__go {
+  margin: auto -12px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  border-top: 1px solid var(--line);
+}
+.pw-md__into {
+  font-size: var(--fs-small);
+  color: var(--text-3);
+}
+.pw-md__into b {
+  margin-left: 4px;
+  font-weight: 500;
+  color: var(--text);
+}
+.pw-md__generate {
+  justify-content: center;
+}
+.pw-md__main {
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+/* The board runs on below the strip, as a board with more cards than fit does. */
+.pw-md__board {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  padding: 0 20px;
+}
+.pw-md__head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 46px;
+  white-space: nowrap;
+}
+.pw-md__head b {
+  font-weight: 600;
+}
+.pw-md__head > span:nth-child(2) {
+  color: var(--text-3);
+  font-size: var(--fs-small);
+}
+.pw-md__new {
+  margin-left: auto;
+  margin-right: -8px;
+}
 .pw-sb {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 18px 14px;
+  gap: 14px 12px;
 }
 .pw-shot {
   min-width: 0;
@@ -362,115 +440,156 @@
     transform: translateY(6px);
   }
 }
+.pw-frame__tag--right {
+  left: auto;
+  right: 8px;
+}
+/* The card about to open gets the board's hover ring a beat before it does. */
+.pw__stage--on .pw-shot--opened .pw-frame {
+  animation: pw-aim 320ms var(--ease) 3000ms both;
+}
+@keyframes pw-aim {
+  to {
+    box-shadow:
+      inset 0 0 0 1px var(--content),
+      0 0 0 2px var(--line-strong);
+  }
+}
 .pw-shot__meta {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: 6px;
-  margin-top: 8px;
-  font-size: var(--fs-small);
-  white-space: nowrap;
+  min-height: 20px;
+  margin-top: 6px;
 }
-.pw-shot__meta b {
-  font-weight: 600;
-}
-.pw-shot__meta span {
-  color: var(--text-3);
-}
-.pw-shot__move {
-  margin-left: auto;
+.pw-shot__label {
+  flex: 1;
+  min-width: 0;
   overflow: hidden;
+  white-space: nowrap;
   text-overflow: ellipsis;
-}
-.pw-shot__prompt {
-  margin-top: 4px;
   font-size: var(--fs-small);
   line-height: var(--lh-small);
   color: var(--text-2);
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
 }
-
-/* Takes: the shot rail and two takes side by side. */
-.pw-tk {
-  height: 100%;
-  display: grid;
-  grid-template-columns: 176px minmax(0, 1fr);
+.pw-shot__ontl {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 18px;
+  border-radius: var(--r-pill);
+  background: var(--hover);
+  color: var(--text-2);
 }
-.pw-tk__rail {
-  border-right: 1px solid var(--line);
-  background: var(--inset);
-  padding: 14px 8px;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
+.pw-shot__ontl svg {
+  width: 11px;
+  height: 11px;
 }
-.pw-tk__item {
+.pw-md__strip {
+  flex: none;
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 5px 8px;
-  border-radius: var(--r-s);
+  height: 40px;
+  padding: 0 12px 0 20px;
+  border-top: 1px solid var(--line);
+  background: var(--content);
   font-size: var(--fs-small);
-  line-height: 15px;
+  white-space: nowrap;
 }
-.pw-tk__item img {
-  width: 38px;
-  height: 23px;
-  border-radius: 4px;
-  object-fit: cover;
+.pw-md__strip > svg {
+  width: 14px;
+  height: 14px;
   flex: none;
+  color: var(--text-3);
 }
-.pw-tk__item span {
+.pw-md__strip b {
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+.pw-md__hint {
   flex: 1;
   min-width: 0;
-  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  text-align: right;
+  color: var(--text-4);
 }
-.pw-tk__item b {
-  display: block;
-  font-weight: 500;
+
+/* The card, opened over the board: its two takes side by side on the dark viewer, and the ways to go on. */
+.pw-cd {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 18px 24px;
+  background: var(--scrim);
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 200ms var(--ease),
+    visibility 0s linear 200ms;
 }
-.pw-tk__item small {
-  display: block;
-  color: var(--text-3);
-  font-size: var(--fs-micro);
+.pw-cd--open {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 260ms var(--ease);
 }
-.pw-tk__item svg {
-  width: 13px;
-  height: 13px;
-  color: var(--ok);
-  flex: none;
-}
-.pw-tk__item--on {
-  background: var(--raised);
-  box-shadow: 0 1px 2px rgba(24, 24, 27, 0.08), 0 0 0 0.5px rgba(24, 24, 27, 0.08);
-}
-:root[data-theme="dark"] .pw-tk__item--on {
-  background: var(--select);
-  box-shadow: none;
-}
-.pw-tk__main {
+.pw-cd__dlg {
+  width: 100%;
+  max-width: 800px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 262px;
+  border-radius: 14px;
   overflow: hidden;
+  background: var(--raised);
+  box-shadow: var(--sheet-shadow);
+  transform: translateY(10px) scale(0.985);
+  transition: transform 360ms var(--ease-out);
 }
-.pw-tk__takes {
+.pw-cd--open .pw-cd__dlg {
+  transform: none;
+}
+.pw-cd__main {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  padding: 20px;
+  background: #1b1b1e;
+}
+:root[data-theme="dark"] .pw-cd__main {
+  background: #09090a;
+}
+.pw-cd__takes {
+  flex: 1;
+  min-width: 0;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 16px;
-  padding: 4px 4px 0;
 }
 .pw-take {
   min-width: 0;
+}
+.pw-cd .pw-frame {
+  border-radius: 4px;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.06);
+}
+.pw-cd .pw-frame--picked {
+  box-shadow: 0 0 0 2px #fff;
 }
 .pw-take__meta {
   display: flex;
   align-items: center;
   gap: 6px;
+  min-height: 24px;
   margin-top: 10px;
   font-size: var(--fs-small);
   white-space: nowrap;
+  color: rgba(255, 255, 255, 0.92);
 }
 .pw-take__meta > * {
   flex: none;
@@ -478,80 +597,86 @@
 .pw-take__meta b {
   font-weight: 600;
 }
-.pw-take__meta > span:nth-child(2) {
-  color: var(--text-3);
+.pw-take__meta > span.pw-extra {
+  color: rgba(255, 255, 255, 0.5);
 }
-.pw-take__meta .pw-btn {
+.pw-take__meta > :last-child {
   margin-left: auto;
 }
-
-/* Finals: the same-take final and tonight's queue. */
-.pw-fn {
-  height: 100%;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 232px;
+.pw-take__pick {
+  color: rgba(255, 255, 255, 0.5);
 }
-.pw__viewer {
-  position: relative;
-  margin: 20px;
-  align-self: start;
-  aspect-ratio: 1024 / 614;
-  border-radius: 8px;
-  overflow: hidden;
-  background: var(--media);
+.pw-take__meta .pw-btn {
+  color: var(--text);
 }
-.pw__viewer video {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-.pw__tag {
-  position: absolute;
-  top: 12px;
-  left: 12px;
-}
-.pw__insp {
-  border-left: 1px solid var(--line);
-  background: var(--inset);
-  padding: 18px;
+.pw-cd__side {
+  min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 9px;
+  background: var(--inset);
+  border-left: 1px solid var(--line);
 }
-.pw__insp-title {
+.pw-cd__head {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 8px;
-  font-weight: 600;
-  color: var(--amber);
-  margin-bottom: 4px;
+  padding: 14px 12px 12px 14px;
+  border-bottom: 1px solid var(--line);
 }
-.pw__insp-title svg {
-  width: 15px;
-  height: 15px;
+.pw-cd__head > div {
+  flex: 1;
+  min-width: 0;
 }
-.pw__kv {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  font-size: var(--fs-small);
-}
-.pw__kv span {
+.pw-cd__head > svg {
+  flex: none;
+  width: 14px;
+  height: 14px;
+  margin-top: 3px;
   color: var(--text-3);
 }
-.pw__kv b {
-  font-weight: 500;
+.pw-cd__title {
+  font-family: var(--font-display);
+  font-size: 16px;
+  line-height: 21px;
+  letter-spacing: -0.01em;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
-.pw__night {
-  margin-top: 8px;
-  height: 30px;
+.pw-cd__sub {
+  margin-top: 3px;
+  font-size: var(--fs-micro);
+  line-height: var(--lh-micro);
+  color: var(--text-3);
+}
+.pw-cd__sec {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: var(--r-pill);
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 14px 14px;
+  border-bottom: 1px solid var(--line);
+}
+.pw-cd__sec:last-child {
+  border-bottom: 0;
+}
+.pw-cd__h {
+  font-weight: 600;
+}
+.pw-cd__row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.pw-cd__text {
+  font-size: var(--fs-small);
+  line-height: var(--lh-small);
+  color: var(--text-3);
+}
+.pw-btn--night {
   background: var(--amber-fill);
+  border-color: transparent;
   color: var(--on-amber);
-  font-weight: 500;
 }
 
 /* Editor: the viewer, the transport, and the timeline's four lanes. */
@@ -752,7 +877,8 @@
   transition: left 100ms linear;
 }
 
-/* Narrow windows keep every stage whole: the window's sidebar narrows, then goes; secondary buttons go first. */
+/* Narrow windows keep every stage whole: the window's sidebar narrows, then goes; the prompt panel and the secondary
+   pieces go next, and the open card stacks its parts. */
 @container pwwin (max-width: 900px) {
   .pw {
     grid-template-columns: 172px minmax(0, 1fr);
@@ -767,15 +893,41 @@
   }
 }
 @container pwmain (max-width: 760px) {
-  .pw-btn--extra {
+  .pw-md {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .pw-md__panel,
+  .pw-md__hint,
+  .pw-extra {
     display: none;
   }
-  .pw-tk {
-    grid-template-columns: 148px minmax(0, 1fr);
+  .pw-md__strip .pw-btn {
+    margin-left: auto;
   }
-  .pw-fn,
+  .pw-cd {
+    padding: 16px;
+  }
+  .pw-cd__dlg {
+    grid-template-columns: minmax(0, 1fr) 216px;
+  }
+  .pw-cd__main {
+    padding: 16px;
+  }
+  .pw-cd__takes {
+    gap: 12px;
+  }
   .pw-ed__top {
     grid-template-columns: minmax(0, 1fr) 196px;
+  }
+}
+/* A narrow window centers its switch under the tape: the tape gets smaller and sits higher, clear of it. */
+@container pwwin (max-width: 560px) {
+  .ob__tape {
+    top: -30px;
+    right: 12px;
+    padding: 6px 14px 4px;
+    font-size: 16px;
+    line-height: 19px;
   }
 }
 @container pwmain (max-width: 560px) {
@@ -789,10 +941,18 @@
   .pw-sb {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-  .pw-tk {
+  .pw-md__strip .tag {
+    display: none;
+  }
+  .pw-cd__dlg {
     grid-template-columns: minmax(0, 1fr);
   }
-  .pw-tk__rail {
+  .pw-cd__side {
+    border-left: 0;
+    border-top: 1px solid var(--line);
+  }
+  .pw-cd__head,
+  .pw-take__meta .pw-btn svg {
     display: none;
   }
 }
@@ -800,12 +960,16 @@
 @media (prefers-reduced-motion: reduce) {
   .pw__stage--on,
   .ob__tape,
-  .pw__stage--on .pw-shot {
+  .pw__stage--on .pw-shot,
+  .pw__stage--on .pw-shot--opened .pw-frame {
     animation: none;
   }
   .pw__knob,
   .pw__stage,
-  .pw__stage--on {
+  .pw__stage--on,
+  .pw-cd,
+  .pw-cd--open,
+  .pw-cd__dlg {
     transition: none;
   }
 }

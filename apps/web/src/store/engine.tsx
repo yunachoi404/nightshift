@@ -1,4 +1,4 @@
-import type { Aspect, ExportRequest, Job, Onboarding, OnboardingSample, Project, RemoteCheck, RuntimeStatus, Settings, StillRequest, TierId, TierSummary } from "@nightshift/contract";
+import type { Aspect, DraftTool, ExportRequest, Job, MakeRequest, Onboarding, OnboardingSample, Project, RemoteCheck, RuntimeStatus, Settings, StillRequest, TierId, TierSummary } from "@nightshift/contract";
 import { createContext, useCallback, useContext, useEffect, useMemo, useReducer, useRef, type ReactNode } from "react";
 import { ApiError, type AudioBody, type CreateProjectBody, type FinalBody, type NightshiftClient, type ProjectPatch } from "@/api/client";
 import { getClient } from "@/api/config";
@@ -110,8 +110,11 @@ export interface EngineActions {
   updateProject(id: string, patch: ProjectPatch): Promise<Project>;
   deleteProject(id: string): Promise<void>;
   storyboard(id: string): Promise<Job>;
+  /** One use of a project tool from the prompt panel: a new card (a shot, job.shotId) on a board and its first job. */
+  make(id: string, body: MakeRequest): Promise<Job>;
   still(id: string, shotId: string, body?: StillRequest): Promise<Job>;
-  draft(id: string, shotId: string, seed?: number): Promise<Job>;
+  /** A new version of a shot: a motion draft, or with `tool` an effect or a camera move on its still. */
+  draft(id: string, shotId: string, seed?: number, tool?: DraftTool): Promise<Job>;
   final(id: string, shotId: string, body: FinalBody): Promise<Job>;
   audio(id: string, body: AudioBody): Promise<Job>;
   exportVideo(id: string, aspect: Aspect, quality?: ExportRequest["quality"], extra?: Pick<ExportRequest, "kind" | "shotId">): Promise<Job>;
@@ -248,13 +251,20 @@ export function EngineProvider({ children, client: given }: { children: ReactNod
         dispatch({ type: "job", job: j });
         return j;
       },
+      make: async (pid, body) => {
+        const j = await client.make(pid, body);
+        dispatch({ type: "job", job: j });
+        // The new shot arrives on the event stream too; fetch it now so the media shows it at once.
+        void client.getProject(pid).then((p) => dispatch({ type: "project", project: p })).catch(() => undefined);
+        return j;
+      },
       still: async (pid, shotId, body) => {
         const j = await client.still(pid, shotId, body);
         dispatch({ type: "job", job: j });
         return j;
       },
-      draft: async (pid, shotId, seed) => {
-        const j = await client.draft(pid, shotId, seed === undefined ? {} : { seed });
+      draft: async (pid, shotId, seed, tool) => {
+        const j = await client.draft(pid, shotId, { ...(seed === undefined ? {} : { seed }), ...(tool ? { tool } : {}) });
         dispatch({ type: "job", job: j });
         return j;
       },

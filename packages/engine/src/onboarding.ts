@@ -82,7 +82,7 @@ export class OnboardingService {
       if (!again && (id !== null || this.state.done)) {
         const project = id ? (this.d.store.get(id) ?? null) : null;
         // A start cut short (the engine stopped before the shot list was queued) picks up where it stopped.
-        if (project && !this.state.done && project.shots.length === 0 && this.d.queue.list({ projectId: project.id }).length === 0) await this.d.service.storyboard(project.id);
+        if (project && !this.state.done && this.cutShort(project)) await this.d.service.storyboard(project.id);
         return { onboarding: this.get(), project };
       }
       const project = await this.d.service.createProject({ ...SAMPLE, brief: { ...SAMPLE.brief } });
@@ -104,6 +104,15 @@ export class OnboardingService {
       const draft = await this.d.service.draft(project.id, shot.id, {});
       await this.save({ ...this.state, draftJobId: draft.id });
     }).catch((err: unknown) => this.d.log(`the sample's draft did not start: ${errorMessage(err)}`));
+  }
+
+  /**
+   * The sample was kept but its start never ran: no still, no take, and nothing queued or running. A new film starts
+   * with its template's shot list, so its shots say nothing here; a sample kept by an older engine has none.
+   */
+  private cutShort(project: Project): boolean {
+    if (project.shots.some((s) => s.stillAssetId) || project.takes.length > 0) return false;
+    return !this.d.queue.list({ projectId: project.id }).some((j) => j.status === "queued" || j.status === "running");
   }
 
   private serial<T>(fn: () => Promise<T>): Promise<T> {

@@ -21,12 +21,12 @@ One setting, `apps/web/src/api/config.ts`:
 ## The browser demo
 
 The same in-browser engine, for people trying Nightshift rather than building it (`api/mock/engine.ts`, flavor
-`demo`). It keeps its own state (`nightshift.demo.state.v1`), has no Mock button or panel, runs at a demo pace (a
+`demo`). It keeps its own state (`nightshift.demo.state.v2`), has no Mock button or panel, runs at a demo pace (a
 setup in about 6 s, stills in 3 s, drafts in 6 s), and starts on the DGX Spark. The machine step offers four sample
 machines, the two tested ones first. Its setups are the real recipes (`api/mock/recipes.ts`), as in dev.
 
 It replays real renders where it has them (`api/mock/samples.ts`, files in `public/demo/`): the First shot's lighthouse
-still and draft, and The Croissant ad, seeded as a finished project with its recorded cut, voice, music, captions and
+still and draft, and the Nocturne ad, seeded as a finished project with its recorded cut, music, title cards and
 export. A recorded take's new drafts and finals are its real takes; the recorded cut exports the real film until the
 user changes a pick. A prompt it has no render of gets a procedural placeholder. Home and Settings say which is which.
 
@@ -69,7 +69,9 @@ For scripts, the engine is on `window.nightshiftMock` (`finishRunningNow()`, `se
 - Install downloads the tier's files in order and emits progress. A failed install keeps the finished
   files; retrying skips them.
 - Jobs run one at a time. Interactive jobs (`now`) go first. Overnight jobs run only inside the window
-  (or when "It's night" is on, or after "Start now instead").
+  (or when "It's night" is on, or after "Start now instead"), grouped by the model they load as the engine
+  groups them. A final's model comes from the real recipe: a same take that renders the latent again loads the
+  draft's video model, a resize loads none, a remaster loads the overnight video model.
 - Storyboard writes a shot list from the brief per template, then queues a still for every shot.
 - Media is procedural: every mock asset is a `mock:` URL that `<Media>` draws on a canvas. Stills are
   scenes (landscape, water, city, interior, product, abstract) picked from the prompt's words; drafts are

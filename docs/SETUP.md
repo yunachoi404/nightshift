@@ -77,7 +77,7 @@ Nothing is downloaded. Use it to walk through onboarding, a project, the overnig
   the lightest one.
 - In a browser on a real engine it switches the page to the in-browser demo, kept in that browser's storage. The
   engine and its data are not touched. That demo is the same one as the [browser demo](#host-the-browser-demo): real
-  renders for the First shot and The Croissant ad, placeholders for anything new, and simulated exports. **Settings >
+  renders for the First shot and the Nocturne ad, placeholders for anything new, and simulated exports. **Settings >
   Set up for real** goes back to the engine.
 
 Tested: both, on the M4 Max Mac, from a fresh data folder there and back. In the Mac app's demo a new project went
@@ -239,6 +239,17 @@ comfy-api-proxy and the models into the data folder (`~/Library/Application Supp
 `--data-dir` folder for the engine), and the editor's tools into `~/.cache/nightshift`. Set `HF_TOKEN` in the
 environment first for recipes with LTX 2.5. Then the first-run sample renders.
 
+**Already run ComfyUI?** Choose **Scan for models** on the setup card before you download. Nightshift looks where
+models usually are: ComfyUI Desktop's folder, `~/ComfyUI` and portable ComfyUI folders, the folders their
+`extra_model_paths.yaml` names, other Nightshift installs and the Hugging Face cache. **Add a folder** (**Choose a
+folder** in the app) searches one more. A file counts when its name and exact size match a file the setup needs, in
+any subfolder and under ComfyUI's old folder names (`clip`, `unet`). When setup starts, it checks each one against the
+recipe's SHA256 and downloads any that do not match. It then links to the good ones from its own models folder (a hard
+link on Windows without Developer Mode). Your files are never copied, moved or changed. If one goes missing later,
+setup says so and downloads it again. On the RTX 2080 Super PC, a second install pointed at the first one's folder
+found all 25 files of `nvidia-8`, checked 56 GB in about 2 minutes and downloaded no models. Setup took 2.5 minutes
+instead of 51, and the First shot sample rendered through the links (a 149 s still and a 60 s draft).
+
 Supported: Apple Silicon Macs with 16 GB or more, and Linux with an NVIDIA GPU (8 GB or more, see the tier table).
 
 Tested: a full local install with real renders on Linux, on a PC with an RTX 2080 Super (8 GB, Turing), 30 GB of
@@ -280,7 +291,7 @@ The engine's README covers every option, environment variable and API route:
 ## Host the browser demo
 
 The browser demo is the web UI on its in-browser engine, built as static files: no server and no GPU. It starts with
-real renders (the First shot and The Croissant ad, about 2.4 MB in `apps/web/public/demo/`) and sample machines to
+real renders (the First shot and the Nocturne ad, about 2.3 MB in `apps/web/public/demo/`) and sample machines to
 pick from. Anything else it makes is a placeholder.
 
 ```sh

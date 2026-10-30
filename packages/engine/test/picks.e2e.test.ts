@@ -4,7 +4,7 @@
  * the Finals page, export and the reveal all use it again.
  */
 import { checkTools } from "@nightshift/editor";
-import { JobSchema, ProjectSchema, type FinalKind, type Job, type Project, type Take } from "@nightshift/contract";
+import { JobSchema, ProjectSchema, SettingsSchema, type FinalKind, type Job, type Project, type Take } from "@nightshift/contract";
 import { mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -53,7 +53,7 @@ beforeAll(async () => {
 });
 afterAll(() => engine?.stop());
 
-/** A one-shot project with two drafts. The first is picked, as the engine does for a shot's first draft. */
+/** A one-shot project with two drafts, Take 1 picked. Each draft is the shot's pick when it lands, so Take 1 is picked again. */
 async function twoTakes(name: string): Promise<{ pid: string; shotId: string; take1: Take; take2: Take }> {
   const created = await api.call("POST", "/api/projects", ProjectSchema, { name, template: "cinematic_shot", aspect: "16:9", brief: { prompt: "A ferry leaves the pier at dusk" } });
   await api.run(`/api/projects/${created.id}/storyboard`);
@@ -63,7 +63,8 @@ async function twoTakes(name: string): Promise<{ pid: string; shotId: string; ta
   await api.run(`/api/projects/${created.id}/shots/${shotId}/draft`, { seed: 2 });
   const p = await api.project(created.id);
   const [take1, take2] = p.takes.filter((t) => t.shotId === shotId && t.rung === "draft");
-  expect(p.shots[0]!.chosenDraftId).toBe(take1!.id);
+  expect(p.shots[0]!.chosenDraftId).toBe(take2!.id);
+  expect(shown(await pick(p.id, shotId, take1!.id), shotId)).toEqual(showsDraft(take1!));
   return { pid: p.id, shotId, take1: take1!, take2: take2! };
 }
 
@@ -210,5 +211,30 @@ describe.skipIf(!hasFfmpeg)("picking takes keeps each draft's final", { timeout:
     expect(shown(await api.project(pid), shotId)).toEqual(showsFinal(take2, third));
     expect(shown(await pick(pid, shotId, take1.id), shotId)).toEqual(showsFinal(take1, second));
     expect(finalsOf(await api.project(pid))).toEqual([first, second, third].map((t) => [t.id, t.parentTakeId]));
+  });
+
+  it("a still redrawn while its draft's overnight final waits is the pick until that final lands, then the final is", async () => {
+    const { pid, shotId, take1 } = await twoTakes("still meanwhile");
+    const { overnight } = await api.call("GET", "/api/settings", SettingsSchema);
+    try {
+      // Overnight mode off: the final waits, and the still is redrawn meanwhile.
+      await api.call("PATCH", "/api/settings", SettingsSchema, { overnight: { ...overnight, enabled: false } });
+      const queued = await api.job(`/api/projects/${pid}/shots/${shotId}/final`, { draftId: take1.id, kind: "same_take", mode: "overnight" });
+      await api.run(`/api/projects/${pid}/shots/${shotId}/still`, { prompt: "the ferry from the pier" });
+      let p = await api.project(pid);
+      const redrawn = p.shots.find((s) => s.id === shotId)!;
+      expect(redrawn).toMatchObject({ useStill: true, chosenDraftId: take1.id });
+      expect(shown(p, shotId)).toEqual({ draft: take1.id, final: undefined, clip: redrawn.stillAssetId });
+
+      // The night comes: the final lands, and the shot and the cut show it.
+      await api.call("PATCH", "/api/settings", SettingsSchema, { overnight: { enabled: true, startAt: "00:00", endAt: "00:00" } });
+      expect((await api.wait(queued.id)).status).toBe("done");
+      p = await api.project(pid);
+      const final = p.takes.find((t) => t.jobId === queued.id)!;
+      expect(shown(p, shotId)).toEqual(showsFinal(take1, final));
+      expect(p.shots.find((s) => s.id === shotId)!.useStill).toBeUndefined();
+    } finally {
+      await api.call("PATCH", "/api/settings", SettingsSchema, { overnight });
+    }
   });
 });

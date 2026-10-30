@@ -111,6 +111,12 @@ export class EditorBridge {
     return { timeline, durationSec: result.durationSec, warnings: result.warnings, captionMethod: hasCaptions ? (measured ?? stored?.method ?? null) : null };
   }
 
+  /** The song or the voiceover the cut plays: the soundtrack's pick, else the newest of its role. */
+  async audioPick(project: Project, role: "music" | "voice"): Promise<Asset | undefined> {
+    const lib = await this.d.lib();
+    return lib.audioAsset(editorProject(project), role, project.template);
+  }
+
   /**
    * Word-timed captions for one voice or song placed on a hand-edited timeline: `start` is where the track sits,
    * `inSec` and `outSec` the part of the file it plays.
@@ -225,7 +231,8 @@ export function editorProject(project: Project): Project {
     const does = str(brief.does);
     if (!str(brief.tagline) && does) brief.tagline = does[0]!.toUpperCase() + does.slice(1);
     if (!str(brief.script)) {
-      const lines = [...project.shots].sort((a, b) => a.index - b.index).flatMap((s) => (s.line?.trim() ? [s.line.trim()] : []));
+      // The lines of the shots in the cut: shots kept on a board out of it say nothing.
+      const lines = [...project.shots].sort((a, b) => a.index - b.index).flatMap((s) => (s.onTimeline !== false && s.line?.trim() ? [s.line.trim()] : []));
       brief.script = (lines.length ? lines : scriptLines("product_ad", project.brief)).join(" ");
     }
   }
@@ -235,7 +242,8 @@ export function editorProject(project: Project): Project {
 
 /**
  * The UI's caption settings in the editor's style (`TimelineStyleSchema` in packages/editor): `captions` on or off,
- * `captionLook` (clean and boxed: the spoken word lights up; serif: film subtitles), `captionPos` (center, or bottom:
+ * `captionLook` (clean: karaoke, the accent sweeps across the spoken word; boxed: chip, an accent block slides along
+ * a plate; serif: film subtitles in the template's own face; lyrics: kinetic), `captionPos` (center, or bottom:
  * in the letterbox bar for the cinematic look, just above the lower edge otherwise) and `captionSize`. Everything
  * else passes through.
  */
@@ -244,12 +252,8 @@ export function editorStyle(template: TemplateId, style: Record<string, unknown>
   const out: Record<string, unknown> = { ...rest };
   const caps: Record<string, unknown> = isRecord(captions) ? { ...captions } : {};
   if (typeof captions === "boolean") caps.enabled = captions;
-  if (captionLook === "serif") {
-    caps.look = "subtitle";
-    out.fonts = { ...(isRecord(rest.fonts) ? rest.fonts : {}), captions: "playfair-display" };
-  } else if (captionLook === "clean" || captionLook === "boxed") {
-    caps.look = "karaoke";
-  }
+  const look = { clean: "karaoke", boxed: "chip", serif: "subtitle", lyrics: "kinetic" }[String(captionLook)];
+  if (look) caps.look = look;
   if (captionPos === "center") caps.position = "middle";
   else if (captionPos === "bottom") caps.position = template === "cinematic_shot" ? "bottom" : "lower";
   if (typeof captionSize === "number" && Number.isFinite(captionSize)) caps.size = Math.min(2, Math.max(0.5, captionSize));

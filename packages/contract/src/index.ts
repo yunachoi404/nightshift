@@ -153,6 +153,11 @@ export const TierSummarySchema = RecipeSchema.pick({ tier: true, label: true, ma
   estimates: RecipeSchema.shape.estimates.optional(),
   /** Steps this tier's recipe provides, so the UI can hide what the machine cannot do (e.g. remaster finals). */
   steps: z.array(StepIdSchema).optional(),
+  /**
+   * The main model each step loads, in plain words ("Krea 2 Turbo", "LTX-2.5"), for notes beside the tools. Absent for
+   * a step whose workflow loads none of the recipe's models.
+   */
+  models: z.partialRecord(StepIdSchema, z.string()).optional(),
   /** How many reference images a still accepts. Zero means this tier cannot use references. */
   referenceImageLimit: z.number().int().min(0).max(3).optional(),
   /** The recipe's default memory cap in GB, shown as the slider's starting point. */
@@ -174,6 +179,43 @@ export const TierSummarySchema = RecipeSchema.pick({ tier: true, label: true, ma
 // ---------------------------------------------------------------- install and runtime
 
 /**
+ * A model file the user already has outside Nightshift (another ComfyUI, the Hugging Face cache, a folder they picked).
+ * The install links to it from Nightshift's models folder instead of downloading it. The file itself stays where it
+ * is and is never changed.
+ */
+export const ReusedModelSchema = z.object({
+  id: z.string(),
+  /** The recipe's plain name for it ("Kandinsky 6 Lite, video model"). */
+  name: z.string().optional(),
+  /** The user's file. */
+  path: z.string(),
+  sizeGb: z.number(),
+  /**
+   * Its sha256 matched the recipe's at its current size and date, or, for a small settings file the recipe gives no
+   * checksum, its exact place matched. Unchecked files are checked when the install starts; a mismatch is downloaded.
+   */
+  checked: z.boolean(),
+});
+
+/**
+ * A file found outside Nightshift that the install does not use, so it is on the download list. missing: it is gone
+ * or changed size since it was found; mismatch: its sha256 differs from the recipe's; unlinkable: this system could not
+ * link to it (on Windows, a file on another drive without Developer Mode).
+ */
+export const ReuseSkippedSchema = z.object({ id: z.string(), name: z.string().optional(), path: z.string(), reason: z.enum(["missing", "mismatch", "unlinkable"]) });
+
+/** The last scan for models already on this computer. */
+export const ModelScanInfoSchema = z.object({
+  at: z.string(),
+  /** Folders the user added. Every scan searches them as well as the usual places. */
+  folders: z.array(z.string()),
+  /** The folders searched that exist on this computer. */
+  searched: z.array(z.string()),
+  /** Folders that exist but could not be read (no permission). */
+  unreadable: z.array(z.string()),
+});
+
+/**
  * `downloads` also lists the editor's one-time downloads (the speech recognition models that time captions, the
  * headless Chrome that renders exports). Their ids start with "editor-" and their folder with "editor/"; they land
  * in the app's cache, not in ComfyUI's models. Attach mode lists only those: the remote runtime has the models.
@@ -192,6 +234,12 @@ export const InstallPlanSchema = z.object({
    * `totalDownloadGb` still show what a real install of the tier would fetch.
    */
   simulated: z.boolean().optional(),
+  /** Files found outside Nightshift that the install uses in place. Their ids are in `alreadyPresent` too. */
+  reused: z.array(ReusedModelSchema).optional(),
+  /** Files found outside Nightshift that the install cannot use; they are in `downloads`. */
+  reuseSkipped: z.array(ReuseSkippedSchema).optional(),
+  /** Set once the user has scanned for models already on this computer. */
+  scan: ModelScanInfoSchema.optional(),
 });
 
 export const SettingsSchema = z.object({
@@ -262,9 +310,12 @@ export const RuntimeStatusSchema = z.object({
 // ---------------------------------------------------------------- projects
 
 /**
- * Films (cinematic_shot, music_video, product_ad, talking_intro) have a storyboard of several shots. Quick shots
- * (camera_move, vfx_effect) turn one photo into one shot: the brief carries the photo's asset id (`photoAssetId`)
- * and the preset (`move` or `effect`, ids from the shared tables in templates.ts).
+ * A project's preset. It seeds the project's flow when it is made: its brief, its default shot list, its look and its
+ * captions. "blank" seeds nothing: the project starts empty and fills from the project's tools (see MakeRequest).
+ * Films (cinematic_shot, music_video, product_ad, talking_intro) start with the shot list their template drafts from
+ * the brief, without the GPU. Quick shots (camera_move, vfx_effect) are older project types, still opened and run:
+ * one photo becomes one shot, the brief carries the photo's asset id (`photoAssetId`) and the preset (`move` or
+ * `effect`, ids from the shared tables in templates.ts). New projects make effects and camera moves with the tools.
  */
 export const TemplateIdSchema = z.enum([
   "cinematic_shot",
@@ -274,6 +325,7 @@ export const TemplateIdSchema = z.enum([
   "camera_move",
   "vfx_effect",
   "what_if",
+  "blank",
 ]);
 export const AspectSchema = z.enum(["16:9", "9:16", "1:1"]);
 export const RungSchema = z.enum(["storyboard", "draft", "final"]);
@@ -298,6 +350,17 @@ export const AssetSchema = z.object({
   createdAt: z.string(),
 });
 
+/**
+ * A tool a draft was made with, when it is not a plain motion draft of the shot's still. "effect": an effect from
+ * `quickEffects` on the still (an edited end frame where the effect has one, then LTX between them). "camera_move": an
+ * explicit camera path from `quickMoves` through the still's estimated depth. The still is the image the tool started
+ * from (a drawn still, an uploaded photo or a reference). Its finals continue the take like any other draft.
+ */
+export const DraftToolSchema = z.discriminatedUnion("kind", [
+  z.object({ kind: z.literal("effect"), effect: z.string().min(1) }),
+  z.object({ kind: z.literal("camera_move"), move: z.string().min(1) }),
+]);
+
 export const TakeSchema = z.object({
   id: z.string(),
   shotId: z.string(),
@@ -318,6 +381,8 @@ export const TakeSchema = z.object({
   imageAssetId: z.string().optional(),
   /** Ordered keyframes used for a continuous What-if take. Kept when its storyboard is redrawn. */
   guideAssetIds: z.array(z.string()).min(3).max(4).optional(),
+  /** The tool a draft was made with (an effect, a camera move). Absent: a plain motion draft. Finals copy it. */
+  tool: DraftToolSchema.optional(),
 });
 
 /** Visual states within one continuous shot, rather than separate shots to cut together. */
@@ -344,6 +409,29 @@ export const ShotSchema = z.object({
   chosenFinalId: z.string().optional(),
   locked: z.boolean(),
   keyframes: z.array(KeyframeSchema).min(3).max(4).optional(),
+  /**
+   * false: the shot is kept on the project's media boards but left out of the cut. Absent or true: it is on the
+   * timeline, in shot order. The tools (POST /make) make shots with false; PATCH it to true to send one to the
+   * timeline, and back to false to take it off again without losing it. The cut and the export use timeline shots only.
+   */
+  onTimeline: z.boolean().optional(),
+  /**
+   * Every still this shot has had, oldest first, with the prompt it was drawn from (absent for an uploaded image). The
+   * engine adds each still that lands. Restore one with a PATCH of `stillAssetId` to it. Absent on older shots: their
+   * history is the current still and their takes.
+   */
+  stillHistory: z.array(z.object({ assetId: z.string().min(1), prompt: z.string().optional(), createdAt: z.string() })).optional(),
+  /**
+   * true: the cut shows the shot's still, not a take (a still restored as the pick). Picking a draft or making a new
+   * one clears it. A new draft becomes the shot's pick when it lands; picking an older version is a PATCH.
+   */
+  useStill: z.boolean().optional(),
+  /**
+   * The shape this shot renders at when it is not the project's (a card made in another shape, for a mood board or a
+   * cut in another format). Its stills, drafts and finals all take it. The export frames it in the export's shape like
+   * any picture of another shape. Absent: the project's aspect.
+   */
+  aspect: AspectSchema.optional(),
 });
 
 // Which final a shot shows for its picked draft. The engine applies it; the UI reads `chosenFinalId`.
@@ -430,6 +518,31 @@ export const ReferenceSchema = z.object({
   label: z.string().trim().min(1).max(80),
 });
 
+/**
+ * A board on the project's canvas: a scene, a section of the film or a mood board. `items` lists what it holds, in
+ * order: shot ids (a shot is one card showing its pick, with its history of stills, drafts, effects and finals) and
+ * asset ids (an uploaded image, a song, a voiceover). An item sits on one board, and the board lays its cards out
+ * itself. What no board lists (projects made before boards, shots a shot list rewrite made) is shown by
+ * `projectBoards`, which every client and the engine use to read the canvas. A project with one board shows just that
+ * board, without the canvas.
+ */
+export const BoardSchema = z.object({
+  id: z.string().min(1),
+  name: z.string().trim().min(1).max(60),
+  items: z.array(z.string().min(1)),
+  /** Where the board sits on the canvas, in canvas units (its top left corner; `w` its width). Absent: laid out in order. */
+  frame: z.object({ x: z.number(), y: z.number(), w: z.number().positive().optional() }).optional(),
+});
+
+/**
+ * The song and the voiceover the cut uses. An asset id picks that one; null leaves the role off the timeline. Absent:
+ * the newest of the role, as before. Making a new song or voiceover clears the role's pick, so the new one is used.
+ */
+export const SoundtrackSchema = z.object({
+  music: z.string().min(1).nullable().optional(),
+  voice: z.string().min(1).nullable().optional(),
+});
+
 export const ProjectSchema = z.object({
   id: z.string(),
   name: z.string(),
@@ -443,6 +556,9 @@ export const ProjectSchema = z.object({
   takes: z.array(TakeSchema),
   assets: z.array(AssetSchema),
   timeline: TimelineSchema.nullable(),
+  /** The boards on the project's canvas. Absent on projects made before boards: `projectBoards` derives them. */
+  boards: z.array(BoardSchema).max(50).optional(),
+  soundtrack: SoundtrackSchema.optional(),
   createdAt: z.string(),
   updatedAt: z.string(),
 });
@@ -472,6 +588,8 @@ export const OnboardingSampleSchema = z.object({ onboarding: OnboardingSchema, p
 export * from "./templates.js";
 export * from "./timeline.js";
 export * from "./what-if.js";
+// The canvas: boards and the items they hold, read the same way by the UI and the engine.
+export * from "./boards.js";
 
 // ---------------------------------------------------------------- jobs
 
@@ -480,7 +598,8 @@ export * from "./what-if.js";
  * CPU beside them, one at a time. An export waits for the stills, drafts, songs and voices of its project queued before
  * it (while the GPU is there to run them) and for the analysis of its songs and voices, never for finals. A queued
  * job's `message` says what it waits for: "Waiting for the GPU" (the runtime is down or busy with other work; the job
- * runs when it is back), the overnight window, or the jobs an export waits for.
+ * runs when it is back), the overnight window, or the jobs an export waits for. Finals for the night run grouped by
+ * the model they load (`nightGroup`).
  */
 export const JobSchema = z.object({
   id: z.string(),
@@ -494,6 +613,18 @@ export const JobSchema = z.object({
    */
   analysis: z.boolean().optional(),
   mode: z.enum(["now", "overnight"]),
+  /**
+   * The main model the job loads, in plain words ("LTX-2.5", "MiniMax H3"), when the engine knows it. Set on finals.
+   */
+  model: z.string().optional(),
+  /**
+   * Finals for the night run in groups that share a model, back to back, so each model loads once a night. Set on
+   * finals for the night only. Groups run in the order of this number (lowest first: the group whose first final was
+   * queued first), the finals inside a group in the order they were queued. A group that has started finishes before the
+   * next one starts. A final for the night joins its model's group while that group has not started; queued after
+   * that, it starts a new group at the back, so no final waits behind an endless run of one model.
+   */
+  nightGroup: z.number().int().optional(),
   status: z.enum(["queued", "running", "done", "failed", "cancelled"]),
   progress: z.number().min(0).max(1),
   message: z.string().optional(), // "Loading video model", "Step 5 of 8", "Waiting for the GPU"
@@ -521,6 +652,11 @@ export const EventSchema = z.discriminatedUnion("type", [
 // ---------------------------------------------------------------- request bodies
 
 export const InstallRequestSchema = z.object({ tier: TierIdSchema, memoryLimitGb: z.number().positive().nullable().default(null) });
+/**
+ * Scan this computer for the models a tier needs. `folders`: the folders the user added, searched as well as the usual
+ * places (ComfyUI installs, their extra_model_paths.yaml, the Hugging Face cache). Absent keeps the ones added before.
+ */
+export const ModelScanRequestSchema = z.object({ tier: TierIdSchema, folders: z.array(z.string().min(1)).max(20).optional() });
 export const RemoteCheckRequestSchema = z.object({ url: z.string().min(1) });
 export const RemoteUseRequestSchema = z.object({ url: z.string().min(1), tier: TierIdSchema });
 
@@ -538,7 +674,7 @@ export const CreateProjectRequestSchema = z.object({
  * another draft gets that draft's final (`finalFor`): the one it names if it belongs to the draft, else the newest.
  */
 export const UpdateProjectRequestSchema = z
-  .object({ name: z.string().min(1), aspect: AspectSchema, brief: z.record(z.string(), z.unknown()), shots: z.array(ShotSchema), references: z.array(ReferenceSchema).max(6), timeline: TimelineSchema.nullable() })
+  .object({ name: z.string().min(1), aspect: AspectSchema, brief: z.record(z.string(), z.unknown()), shots: z.array(ShotSchema), references: z.array(ReferenceSchema).max(6), timeline: TimelineSchema.nullable(), boards: z.array(BoardSchema).max(50), soundtrack: SoundtrackSchema })
   .partial();
 
 /** Optional body for the still route: a seed, or a prompt that replaces the shot's prompt for this render only. */
@@ -547,9 +683,45 @@ export const StillRequestSchema = z.object({
   prompt: z.string().optional(),
   /** What-if: redraw this beat and the beats after it so the image chain stays connected. */
   keyframeIndex: z.number().int().min(0).max(3).optional(),
+  /**
+   * Draw the still as an edit of this image (an image asset of the project), following `prompt` as the instruction:
+   * "make it night", "remove the car". Only on recipes with an image edit step (effect_end_frame, FLUX.2 Klein edit).
+   */
+  editFrom: z.string().min(1).optional(),
 });
 
-export const DraftRequestSchema = z.object({ seed: z.number().int().nonnegative().optional() });
+/** `tool`: make the draft with an effect or a camera move on the shot's still, a new version of the shot. */
+export const DraftRequestSchema = z.object({ seed: z.number().int().nonnegative().optional(), tool: DraftToolSchema.optional() });
+
+/**
+ * One use of a project tool from the prompt panel. Every tool makes a new card: a new shot on a board (`onTimeline:
+ * false`, filed at the end of `boardId`) and queues its first job; the job carries the shot's id. PATCH it onto the
+ * timeline when you like it. To add a version to an existing card instead, use the still and draft routes.
+ * - image: a still from `prompt` (and the project's references, or `referenceIds`).
+ * - video: a motion draft. From `imageAssetId` when given, else from a still drawn from `prompt` first (the draft is
+ *   queued when the still lands). `move` is a prompt-guided camera move from `cameraMoves`.
+ * - effect: `effect` (a `quickEffects` id) on `imageAssetId`. `prompt` optionally names the subject that changes.
+ * - camera_move: `move` (a `quickMoves` id) through `imageAssetId`. `prompt` optionally describes the scene.
+ * - edit: `imageAssetId` changed as `prompt` says (an image edit, StillRequest.editFrom); the result is the new card's
+ *   still. Only on recipes with an image edit step.
+ * `imageAssetId` is any image in the project: a shot's still, an uploaded photo, a reference. The new shot's still is
+ * that image; an effect or camera move is its first draft, made with that tool.
+ */
+export const MakeRequestSchema = z.object({
+  tool: z.enum(["image", "video", "effect", "camera_move", "edit"]),
+  prompt: z.string().max(3000).optional(),
+  imageAssetId: z.string().min(1).optional(),
+  effect: z.string().min(1).optional(),
+  move: z.string().min(1).optional(),
+  referenceIds: z.array(z.string().min(1)).max(3).optional(),
+  /** The board the new card goes on. Defaults to the first board. */
+  boardId: z.string().min(1).optional(),
+  /** The new card's shape (Shot.aspect), when it is not the project's. */
+  aspect: AspectSchema.optional(),
+  /** Seconds. Defaults to 4, and is clamped to the longest clip the video model makes. */
+  durationSec: z.number().positive().max(30).optional(),
+  seed: z.number().int().nonnegative().optional(),
+});
 
 export const FinalRequestSchema = z.object({ draftId: z.string(), kind: FinalKindSchema, mode: z.enum(["now", "overnight"]) });
 
@@ -563,6 +735,8 @@ export const AudioRequestSchema = z.object({
   voiceRefAssetId: z.string().optional(),
   /** A voice id from the UI's voice picker ("mara", "theo", ...), passed to the voice workflow as `voice`. */
   voice: z.string().optional(),
+  /** The board the new song or voiceover goes on. Defaults to the first board. */
+  boardId: z.string().min(1).optional(),
   seed: z.number().int().nonnegative().optional(),
 });
 
@@ -596,6 +770,7 @@ export const routes = {
   tiers: "GET /api/tiers", // -> TierSummary[] (recommended one flagged for the current hardware)
   installPlan: "GET /api/install/plan?tier=", // -> InstallPlan
   install: "POST /api/install", // InstallRequest -> 202 RuntimeStatus, progress on events
+  scanModels: "POST /api/install/scan", // ModelScanRequest -> InstallPlan, with the models found on this computer in `reused`
   remoteCheck: "POST /api/remote/check", // RemoteCheckRequest -> RemoteCheck (host, "host:port" or URL; default port 8190)
   remoteUse: "POST /api/remote", // RemoteUseRequest -> 202 RuntimeStatus; sends all work to that computer, downloads nothing
   remoteForget: "DELETE /api/remote", // -> RuntimeStatus; back to this machine (not_installed if it has no install)
@@ -611,15 +786,16 @@ export const routes = {
   updateProject: "PATCH /api/projects/:id", // UpdateProjectRequest (name, aspect, brief, shots, timeline) -> Project
   deleteProject: "DELETE /api/projects/:id",
   storyboard: "POST /api/projects/:id/storyboard", // drafts the shot list from the brief -> Job
+  make: "POST /api/projects/:id/make", // MakeRequest -> Job. Makes a new card (a shot, job.shotId) on a board and queues its first job
   still: "POST /api/projects/:id/shots/:shotId/still", // StillRequest (optional) -> Job
-  draft: "POST /api/projects/:id/shots/:shotId/draft", // DraftRequest -> Job
+  draft: "POST /api/projects/:id/shots/:shotId/draft", // DraftRequest -> Job. With `tool`, an effect or camera move on the shot's still
   final: "POST /api/projects/:id/shots/:shotId/final", // FinalRequest -> Job
   audio: "POST /api/projects/:id/audio", // AudioRequest -> Job
   exportVideo: "POST /api/projects/:id/export", // ExportRequest -> Job. kind "reveal" makes one shot's share clip (job.shotId set, asset role "reveal")
   listJobs: "GET /api/jobs?projectId=", // -> Job[]: running, then queued in run order, then finished newest first
   cancelJob: "POST /api/jobs/:id/cancel", // -> Job
   deleteAsset: "DELETE /api/projects/:id/assets/:assetId", // Delete an uploaded reference and remove its project and shot links
-  uploadAsset: "POST /api/projects/:id/assets", // multipart, field "file" (reference photo, song, voice sample) -> Asset. Role: ?role= if given, else "music" for audio in a music_video project, else "reference". A song or voiceover queues an analysis job
+  uploadAsset: "POST /api/projects/:id/assets", // multipart, field "file" (reference photo, song, voice sample) -> Asset. Role: ?role= if given, else "music" for audio in a music_video project, else "reference". ?board= puts it on that board. A song or voiceover queues an analysis job
   asset: "GET /api/projects/:id/assets/:assetId", // -> file bytes (supports Range)
   events: "GET /api/events", // SSE stream of Event
 } as const;
@@ -634,6 +810,10 @@ export type NodePack = z.infer<typeof NodePackSchema>;
 export type Recipe = z.infer<typeof RecipeSchema>;
 export type TierSummary = z.infer<typeof TierSummarySchema>;
 export type InstallPlan = z.infer<typeof InstallPlanSchema>;
+export type ReusedModel = z.infer<typeof ReusedModelSchema>;
+export type ReuseSkipped = z.infer<typeof ReuseSkippedSchema>;
+export type ModelScanInfo = z.infer<typeof ModelScanInfoSchema>;
+export type ModelScanRequest = z.input<typeof ModelScanRequestSchema>;
 export type Settings = z.infer<typeof SettingsSchema>;
 export type RuntimeStatus = z.infer<typeof RuntimeStatusSchema>;
 export type OtherGpuUse = z.infer<typeof OtherGpuUseSchema>;
@@ -644,6 +824,7 @@ export type FinalKind = z.infer<typeof FinalKindSchema>;
 export type Asset = z.infer<typeof AssetSchema>;
 export type Take = z.infer<typeof TakeSchema>;
 export type Shot = z.infer<typeof ShotSchema>;
+export type DraftTool = z.infer<typeof DraftToolSchema>;
 export type Keyframe = z.infer<typeof KeyframeSchema>;
 export type AudioRole = z.infer<typeof AudioRoleSchema>;
 export type Caption = z.infer<typeof CaptionSchema>;
@@ -651,6 +832,8 @@ export type Overlay = z.infer<typeof OverlaySchema>;
 export type Marker = z.infer<typeof MarkerSchema>;
 export type Timeline = z.infer<typeof TimelineSchema>;
 export type Project = z.infer<typeof ProjectSchema>;
+export type Board = z.infer<typeof BoardSchema>;
+export type Soundtrack = z.infer<typeof SoundtrackSchema>;
 export type Onboarding = z.infer<typeof OnboardingSchema>;
 export type OnboardingSampleRequest = z.infer<typeof OnboardingSampleRequestSchema>;
 export type OnboardingSample = z.infer<typeof OnboardingSampleSchema>;
@@ -665,6 +848,7 @@ export type CreateProjectRequest = z.input<typeof CreateProjectRequestSchema>;
 export type UpdateProjectRequest = z.infer<typeof UpdateProjectRequestSchema>;
 export type StillRequest = z.infer<typeof StillRequestSchema>;
 export type DraftRequest = z.infer<typeof DraftRequestSchema>;
+export type MakeRequest = z.infer<typeof MakeRequestSchema>;
 export type FinalRequest = z.infer<typeof FinalRequestSchema>;
 export type AudioRequest = z.infer<typeof AudioRequestSchema>;
 export type ExportRequest = z.infer<typeof ExportRequestSchema>;

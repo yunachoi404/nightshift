@@ -1,8 +1,9 @@
 import type { TemplateId } from "@nightshift/contract";
-import { Camera, Clapperboard, Mic, Music2, Package, Sparkles } from "lucide-react";
+import { Camera, Clapperboard, Mic, Music2, Package, Sparkles, SquareDashed } from "lucide-react";
 import { cx } from "@/ui/primitives";
 
 const icons: Record<TemplateId, typeof Clapperboard> = {
+  blank: SquareDashed,
   what_if: Sparkles,
   cinematic_shot: Clapperboard,
   music_video: Music2,

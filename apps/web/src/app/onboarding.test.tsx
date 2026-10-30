@@ -50,6 +50,8 @@ class FakeEngine {
   plan: InstallPlan = { tier: "apple-64", downloads: [], alreadyPresent: [], totalDownloadGb: 20, freeDiskGb: 900, fits: true };
   /** Install plans by tier. */
   plans: Record<string, InstallPlan> = {};
+  /** What a scan for models on this computer answers: the plan with what it found, or an error. */
+  scan: (body: { tier: string; folders?: string[] }) => InstallPlan | Error = (body) => ({ ...this.plan, tier: body.tier, scan: { at: iso(), folders: body.folders ?? [], searched: [], unreadable: [] } });
   projects: Project[] = [];
   jobs: Job[] = [];
   samplesMade = 0;
@@ -110,6 +112,13 @@ class FakeEngine {
           return p;
         }),
       installPlan: (tier) => answer("installPlan", [tier], () => this.plans[tier] ?? { ...this.plan, tier }),
+      scanModels: (body) =>
+        answer("scanModels", [body], () => {
+          const result = this.scan(body);
+          if (result instanceof Error) throw result;
+          this.plans[body.tier] = result;
+          return result;
+        }),
       // Like the engine: the tier is saved only once it is installed, so a first install has none in settings.
       install: (body) => answer("install", [body], () => this.setStatus({ phase: "installing", tier: body.tier, comfyui: DOWN, error: undefined })),
       startSample: (body) => answer("startSample", [body], () => this.sample(body?.again === true)),
@@ -333,6 +342,17 @@ describe("the First shot step", () => {
       expect(await screen.findByText("About 2 minutes left")).toBeTruthy();
       expect(current()).toBe("Still");
       expect(screen.getByText(/Shot list/).closest("li")!.className).toContain("ob__stp--done");
+    });
+
+    it("a sample that starts with its template's shot list still shows the shot list under way until its job is done", async () => {
+      const engine = new FakeEngine();
+      const shot = { id: "shot_1", index: 0, prompt: "A lighthouse in a storm", durationSec: 4, locked: false };
+      engine.projects = [project("prj_sample", "First shot", { shots: [shot] })];
+      engine.onboarding = { done: false, sampleProjectId: "prj_sample" };
+      engine.jobs = [job("job_text", "prj_sample", "text", "running")];
+      open(engine, "#/setup");
+      await screen.findByText(/Writing the shot/);
+      expect(current()).toBe("Shot list");
     });
 
     it("says no time where the setup has none", async () => {
@@ -825,5 +845,131 @@ describe("the demo", () => {
     expect(screen.getByText(/The demo can still show you around/)).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "Continue with sample renders" }));
     await waitFor(() => expect(engine.called("install").map((c) => c.args[0])).toEqual([{ tier: "apple-big", memoryLimitGb: null }]));
+  });
+});
+
+describe("models already on this computer", () => {
+  const lic = { name: "MIT", url: "https://example.com/l" };
+  const file = (id: string, name: string, sizeGb: number) => ({ id, name, folder: "diffusion_models", filename: `${id}.safetensors`, url: "https://example.com/m", sizeGb, license: lic });
+  const tier: TierSummary = { tier: "nvidia-8", label: "NVIDIA 8 GB", match: { vendor: "apple", unifiedMemory: true, minVramGb: 16, minRamGb: 16 }, downloadGb: 56, recommended: true };
+  const before: InstallPlan = { tier: "nvidia-8", downloads: [file("still", "MOSS-Image, image model", 5.4), file("video", "Kandinsky 6 Lite, video model", 6.4), file("voice", "Breeze TTS 2, voice model", 4.9)], alreadyPresent: [], totalDownloadGb: 16.7, freeDiskGb: 900, fits: true };
+  const found: InstallPlan = {
+    ...before,
+    downloads: [file("voice", "Breeze TTS 2, voice model", 4.9)],
+    alreadyPresent: ["still", "video"],
+    totalDownloadGb: 4.9,
+    reused: [
+      { id: "still", name: "MOSS-Image, image model", path: "/home/me/ComfyUI/models/diffusion_models/still.safetensors", sizeGb: 5.4, checked: false },
+      { id: "video", name: "Kandinsky 6 Lite, video model", path: "/home/me/.cache/huggingface/hub/models--k--k6/snapshots/4c48/transformer/video.safetensors", sizeGb: 6.4, checked: false },
+    ],
+    scan: { at: new Date().toISOString(), folders: [], searched: ["/home/me/ComfyUI/models", "/home/me/.cache/huggingface/hub"], unreadable: ["/home/me/locked"] },
+  };
+
+  function setup() {
+    const engine = new FakeEngine();
+    engine.status = { ...engine.status, phase: "not_installed", tier: null, comfyui: DOWN };
+    engine.settings = { ...engine.settings, tier: null };
+    engine.tiers = [tier];
+    engine.plans = { "nvidia-8": before };
+    return engine;
+  }
+  const toCard = async () => {
+    fireEvent.click(await screen.findByRole("button", { name: /Get started/ }));
+    fireEvent.click(await screen.findByRole("button", { name: "Continue" }, { timeout: 3000 }));
+    await screen.findByText("Models you already have");
+  };
+
+  it("a scan says what it found in plain words, lists the files, and the download shrinks to the rest", async () => {
+    const engine = setup();
+    engine.scan = () => found;
+    open(engine, "#/setup");
+    await toCard();
+    expect(await screen.findByRole("button", { name: "Download 17 GB" })).toBeTruthy();
+    expect(screen.getByText(/Already use ComfyUI\?/)).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Scan for models" }));
+    expect(await screen.findByText("Found 2 of 3 model files on this computer.")).toBeTruthy();
+    expect(screen.getByText(/12 GB less to download/)).toBeTruthy();
+    expect(screen.getByText(/checks each file against its checksum before it uses it/)).toBeTruthy();
+    expect(screen.getByText("Looked in 2 folders")).toBeTruthy();
+    expect(screen.getByText(/Couldn't read 1 folder, \/home\/me\/locked/)).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Download 5 GB" })).toBeTruthy();
+    expect(engine.called("scanModels").map((c) => c.args[0])).toEqual([{ tier: "nvidia-8" }]);
+
+    fireEvent.click(screen.getByRole("button", { name: "Show the 2 files" }));
+    expect(screen.getByText("Kandinsky 6 Lite, video model")).toBeTruthy();
+    // A long folder keeps its first and last folders, cut between two of them; the whole path is the tooltip.
+    const where = screen.getByTitle(found.reused![1]!.path);
+    expect(where.textContent).toBe("/home/me/.cache/huggingface/hub/…/snapshots/4c48/transformer");
+  });
+
+  it("adds a folder the user types, says when there is no such folder, and remembers the folders added", async () => {
+    const engine = setup();
+    engine.scan = (body) => (body.folders?.[0] === "/nope" ? new ApiError("There is no folder at /nope", 400) : { ...found, scan: { ...found.scan!, folders: body.folders ?? [] } });
+    open(engine, "#/setup");
+    await toCard();
+    fireEvent.click(screen.getByRole("button", { name: "Add a folder" }));
+    const field = screen.getByRole("textbox", { name: "Folder with models" });
+    fireEvent.change(field, { target: { value: "/nope" } });
+    fireEvent.click(screen.getByRole("button", { name: "Scan" }));
+    expect(await screen.findByText("There is no folder at /nope")).toBeTruthy();
+    fireEvent.change(field, { target: { value: "/mnt/big/ComfyUI" } });
+    fireEvent.click(screen.getByRole("button", { name: "Scan" }));
+    expect(await screen.findByText("Found 2 of 3 model files on this computer.")).toBeTruthy();
+    expect(screen.queryByRole("textbox", { name: "Folder with models" })).toBeNull();
+    expect(screen.queryByText("There is no folder at /nope")).toBeNull();
+    expect(screen.getByText("Also looks in /mnt/big/ComfyUI")).toBeTruthy();
+    expect(engine.called("scanModels").at(-1)!.args[0]).toEqual({ tier: "nvidia-8", folders: ["/mnt/big/ComfyUI"] });
+    // Scan again searches the same folders: the engine keeps them.
+    fireEvent.click(screen.getByRole("button", { name: "Scan again" }));
+    await waitFor(() => expect(engine.called("scanModels").at(-1)!.args[0]).toEqual({ tier: "nvidia-8" }));
+  });
+
+  it("in the Mac app, the system's folder picker chooses the folder", async () => {
+    const engine = setup();
+    const pickFolder = vi.fn(async () => "/Volumes/Models/ComfyUI");
+    window.nightshiftDesktop = { platform: "darwin", titlebarHeight: 52, getStatus: async () => ({ engineUrl: "" }), revealProject: async () => undefined, revealExport: async () => undefined, openExternal: async () => undefined, pickFolder };
+    try {
+      open(engine, "#/setup");
+      await toCard();
+      fireEvent.click(screen.getByRole("button", { name: "Choose a folder" }));
+      await waitFor(() => expect(engine.called("scanModels").at(-1)?.args[0]).toEqual({ tier: "nvidia-8", folders: ["/Volumes/Models/ComfyUI"] }));
+      expect(pickFolder).toHaveBeenCalledTimes(1);
+      expect(screen.queryByRole("textbox", { name: "Folder with models" })).toBeNull();
+    } finally {
+      delete window.nightshiftDesktop;
+    }
+  });
+
+  it("says when a file used from another folder is gone, or did not match its checksum", async () => {
+    const engine = setup();
+    engine.plans = {
+      "nvidia-8": {
+        ...found,
+        downloads: [file("still", "MOSS-Image, image model", 5.4), file("voice", "Breeze TTS 2, voice model", 4.9)],
+        alreadyPresent: ["video"],
+        reused: [found.reused![1]!],
+        reuseSkipped: [
+          { id: "still", name: "MOSS-Image, image model", path: "/home/me/ComfyUI/models/diffusion_models/still.safetensors", reason: "missing" },
+          { id: "voice", name: "Breeze TTS 2, voice model", path: "/home/me/ComfyUI/models/tts/voice.safetensors", reason: "mismatch" },
+        ],
+      },
+    };
+    open(engine, "#/setup");
+    await toCard();
+    expect(await screen.findByText("A model found in another folder is gone")).toBeTruthy();
+    expect(screen.getByText(/MOSS-Image, image model is on the download list again. Scan again if you moved it./)).toBeTruthy();
+    expect(screen.getByText("Breeze TTS 2, voice model: the file on this computer did not match its checksum, so it is downloaded.")).toBeTruthy();
+    expect(screen.getByText("Found 1 of 3 model files on this computer.")).toBeTruthy();
+  });
+
+  it("the download line says how many files come from this computer", async () => {
+    const engine = setup();
+    engine.status = { ...engine.status, phase: "installing", tier: "nvidia-8", comfyui: DOWN };
+    engine.plans = { "nvidia-8": found };
+    open(engine, "#/setup");
+    await screen.findByRole("heading", { name: "Downloading your setup" });
+    act(() => engine.progress({ modelId: null, doneGb: 0, totalGb: 4.9, message: "Checking MOSS-Image, image model, already on this computer (1 of 2), 40%" }));
+    expect(await screen.findByText("Checking MOSS-Image, image model, already on this computer (1 of 2), 40%")).toBeTruthy();
+    expect(await screen.findByText("Using 2 model files already on this computer, 12 GB less to download.")).toBeTruthy();
   });
 });

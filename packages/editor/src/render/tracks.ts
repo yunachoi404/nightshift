@@ -11,8 +11,20 @@ export const EASE = {
   inOut: "cubic-bezier(0.65, 0, 0.35, 1)",
   in: "cubic-bezier(0.55, 0, 1, 0.45)",
   outBack: "cubic-bezier(0.34, 1.56, 0.64, 1)",
+  /** Slow start, hard finish: things leaving. */
+  inStrong: "cubic-bezier(0.7, 0, 0.84, 0)",
+  /** Even and gentle at both ends: a fill sweeping across a word. */
+  sine: "cubic-bezier(0.37, 0, 0.63, 1)",
   step: "step-end",
 } as const;
+
+/**
+ * A measured length for a keyframe value: the element's layout box (left, top, width or height, in px, relative to
+ * its offset parent). The page fills it in once the fonts are in, so a highlight can move from word to word.
+ */
+export function measure(id: string, side: "x" | "y" | "w" | "h"): string {
+  return `{${side}:${id}}`;
+}
 
 /** [time in seconds, CSS value, easing towards the next keyframe]. */
 export type Keyframe = [number, string | number, string?];
@@ -75,32 +87,59 @@ export class Tracks {
 /**
  * The in-page animator. Plain ES5 so it runs in any Chrome. Each track becomes one animation over the whole
  * composition with fill both, created paused at 0 so HyperFrames' WAAPI adapter maps composition time 1:1.
+ * Values with measured lengths ({x:id} and so on) are filled in from the layout, and again once every font has
+ * loaded; until then HyperFrames is told the timelines are still building, so no frame is taken early.
  */
 export const PAGE_ANIMATOR = `(function () {
   var data = window.__NIGHTSHIFT__;
   var total = data.durationMs;
+  var MEASURE = /\\{([xywh]):([A-Za-z0-9_-]+)\\}/g;
+  var measured = [];
   function prop(name) { return name.replace(/-([a-z])/g, function (_, c) { return c.toUpperCase(); }); }
   function make(el, frames, options) {
     var anim = el.animate(frames, options);
     anim.pause();
     anim.currentTime = 0;
+    return anim;
+  }
+  function value(v) {
+    if (typeof v !== "string" || v.indexOf("{") < 0) return v;
+    return v.replace(MEASURE, function (_, side, id) {
+      var el = document.getElementById(id);
+      if (!el) return "0";
+      return String(side === "x" ? el.offsetLeft : side === "y" ? el.offsetTop : side === "w" ? el.offsetWidth : el.offsetHeight);
+    });
+  }
+  function framesOf(key, kf) {
+    var frames = [];
+    if (kf[0][0] > 0) { var f0 = { offset: 0, easing: "linear" }; f0[key] = value(kf[0][1]); frames.push(f0); }
+    for (var j = 0; j < kf.length; j++) {
+      var f = { offset: Math.min(1, Math.max(0, kf[j][0] / total)), easing: kf[j][2] || "linear" };
+      f[key] = value(kf[j][1]);
+      frames.push(f);
+    }
+    var last = kf[kf.length - 1];
+    if (last[0] < total) { var fl = { offset: 1 }; fl[key] = value(last[1]); frames.push(fl); }
+    return frames;
   }
   for (var i = 0; i < data.tracks.length; i++) {
     var track = data.tracks[i];
     var el = document.getElementById(track[0]);
     if (!el) continue;
     var key = prop(track[1]);
-    var kf = track[2];
-    var frames = [];
-    if (kf[0][0] > 0) { var f0 = { offset: 0, easing: "linear" }; f0[key] = kf[0][1]; frames.push(f0); }
-    for (var j = 0; j < kf.length; j++) {
-      var f = { offset: Math.min(1, Math.max(0, kf[j][0] / total)), easing: kf[j][2] || "linear" };
-      f[key] = kf[j][1];
-      frames.push(f);
-    }
-    var last = kf[kf.length - 1];
-    if (last[0] < total) { var fl = { offset: 1 }; fl[key] = last[1]; frames.push(fl); }
-    make(el, frames, { duration: total, fill: "both" });
+    var anim = make(el, framesOf(key, track[2]), { duration: total, fill: "both" });
+    if (JSON.stringify(track[2]).indexOf("{") >= 0) measured.push({ anim: anim, key: key, kf: track[2] });
+  }
+  if (measured.length && document.fonts) {
+    window.__hfTimelinesBuilding = true;
+    var done = function () {
+      for (var m = 0; m < measured.length; m++) measured[m].anim.effect.setKeyframes(framesOf(measured[m].key, measured[m].kf));
+      window.__hfTimelinesBuilding = false;
+      window.dispatchEvent(new Event("hf-timelines-built"));
+    };
+    var loads = [];
+    document.fonts.forEach(function (face) { loads.push(face.load().catch(function () {})); });
+    Promise.all(loads).then(function () { return document.fonts.ready; }).then(done, done);
   }
   for (var l = 0; l < data.loops.length; l++) {
     var loop = data.loops[l];

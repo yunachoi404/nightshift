@@ -5,7 +5,7 @@ import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 import { RuntimeLostError } from "../src/errors.js";
 import { EventBus } from "../src/events.js";
-import { awaitedBy, isEligible, JobQueue, jobPriority, laneOf, pickNext, WAITING_FOR_GPU, type ExecContext, type QueueHooks, type QueueOptions } from "../src/queue/queue.js";
+import { awaitedBy, isEligible, JobQueue, jobPriority, laneOf, modelKey, nightGroupFor, pickNext, runOrder, WAITING_FOR_GPU, type ExecContext, type QueueHooks, type QueueOptions } from "../src/queue/queue.js";
 import { JobStore, type StoredJob } from "../src/queue/store.js";
 import { DEFAULT_SETTINGS, inWindow } from "../src/settings.js";
 import { sleep } from "../src/util.js";
@@ -550,6 +550,216 @@ describe("waiting for the GPU", () => {
     await until(() => q.get(b.id)?.status === "running");
     finish();
     await until(() => q.get(b.id)?.status === "done");
+  });
+});
+
+describe("finals for the night, grouped by model", () => {
+  const dir = mkdtempSync(join(tmpdir(), "ns-night-"));
+  let queue: JobQueue | undefined;
+  afterEach(async () => {
+    await queue?.stop();
+    queue = undefined;
+  });
+
+  const until = async (cond: () => boolean, ms = 3000) => {
+    const end = Date.now() + ms;
+    while (!cond()) {
+      if (Date.now() > end) throw new Error("timed out");
+      await sleep(5);
+    }
+  };
+
+  /** A final for the night that loads LTX-2.5 (same take) or MiniMax H3 (remaster). */
+  const ltx = (extra: Partial<Job> = {}) => job("video_final_same_take", "overnight", { model: "LTX-2.5", ...extra });
+  const h3 = (extra: Partial<Job> = {}) => job("video_final_remaster", "overnight", { model: "MiniMax H3", ...extra });
+
+  /** A queue on a clock the test moves, whose jobs run until released. `order` lists the jobs in the order they started. */
+  function night(dbName: string, start: string) {
+    const w = { now: at(start) };
+    const store = new JobStore(join(dir, dbName));
+    const gates = new Map<string, () => void>();
+    const order: string[] = [];
+    queue = new JobQueue(store, new EventBus(), { settings: () => settings({ enabled: true }), clock: () => w.now, tickMs: 10, retryDelayMs: 10 });
+    const q = queue;
+    const begin = () =>
+      q.start({
+        execute: (j, _p, ctx) =>
+          new Promise((resolve, reject) => {
+            ctx.signal.addEventListener("abort", () => reject(Object.assign(new Error("aborted"), { name: "AbortError" })));
+            order.push(j.id);
+            gates.set(j.id, () => resolve({ outputAssetIds: [] }));
+          }),
+      });
+    /** Let a running job finish and wait until it is done. */
+    const release = async (id: string) => {
+      await until(() => gates.has(id));
+      gates.get(id)!();
+      gates.delete(id);
+      await until(() => q.get(id)?.status === "done");
+    };
+    /** Release the jobs one by one as they start, until `count` have run. */
+    const drain = async (count: number) => {
+      for (let i = 0; i < count; i++) {
+        await until(() => order.length > i);
+        if (q.get(order[i]!)?.status !== "done") await release(order[i]!);
+      }
+    };
+    const waitingOrder = () => q.list().filter((j) => j.status === "queued").map((j) => j.id);
+    return { w, q, store, order, release, drain, start: begin, waitingOrder };
+  }
+
+  it("mixed models: each model's finals run back to back, groups in the order their first final was queued", async () => {
+    const n = night("night-mixed.sqlite", "21:00");
+    n.start();
+    const [l1, h1, l2, h2, l3] = [ltx(), h3(), ltx(), h3(), ltx()].map((j) => n.q.enqueue(j, {})) as [Job, Job, Job, Job, Job];
+    // The LTX-2.5 group was started first (l1), so it runs first; inside a group, the order queued.
+    expect([l2.nightGroup, l3.nightGroup]).toEqual([l1.nightGroup, l1.nightGroup]);
+    expect(h2.nightGroup).toBe(h1.nightGroup);
+    expect(h1.nightGroup).toBeGreaterThan(l1.nightGroup!);
+    expect(n.waitingOrder()).toEqual([l1, l2, l3, h1, h2].map((j) => j.id));
+    await until(() => n.q.get(l1.id)?.message === "Runs tonight, 23:00 to 07:00");
+    await sleep(40);
+    expect(n.order).toEqual([]);
+    // The window opens: one model, then the other.
+    n.w.now = at("23:01");
+    n.q.kick();
+    await n.drain(5);
+    expect(n.order).toEqual([l1, l2, l3, h1, h2].map((j) => j.id));
+  });
+
+  it("same model: one group, in the order queued", async () => {
+    const n = night("night-same.sqlite", "23:30");
+    const jobs = [ltx(), ltx(), ltx()].map((j) => n.q.enqueue(j, {}));
+    expect(new Set(jobs.map((j) => j.nightGroup)).size).toBe(1);
+    n.start();
+    await n.drain(3);
+    expect(n.order).toEqual(jobs.map((j) => j.id));
+  });
+
+  it("interactive work and finals to run now still go first; exports run beside on the CPU", async () => {
+    const n = night("night-classes.sqlite", "23:30");
+    const l1 = n.q.enqueue(ltx(), {});
+    const h1 = n.q.enqueue(h3(), {});
+    const l2 = n.q.enqueue(ltx(), {});
+    const now = n.q.enqueue(job("video_final_remaster", "now", { model: "MiniMax H3" }), {});
+    const draft = n.q.enqueue(job("video_draft"), {});
+    const exp = n.q.enqueue(job("export", "now", { projectId: "prj_other" }), {});
+    expect(now.nightGroup).toBeUndefined();
+    expect(draft.nightGroup).toBeUndefined();
+    n.start();
+    await until(() => n.order.length === 2);
+    expect(n.order.sort()).toEqual([draft.id, exp.id].sort());
+    await n.release(exp.id);
+    await n.release(draft.id);
+    for (const id of [now.id, l1.id, l2.id, h1.id]) {
+      await until(() => n.order.length > 0 && n.order.at(-1) === id);
+      await n.release(id);
+    }
+    expect(n.order.slice(2)).toEqual([now.id, l1.id, l2.id, h1.id]);
+  });
+
+  it("interleaved queueing: a final joins its model's group until that group starts, then waits for the next turn", async () => {
+    const n = night("night-interleaved.sqlite", "23:30");
+    n.start();
+    const l1 = n.q.enqueue(ltx(), {});
+    await until(() => n.order.includes(l1.id));
+    // l1 runs, so its group is closed. A later LTX final starts a new group, behind the MiniMax one queued before it.
+    const h1 = n.q.enqueue(h3(), {});
+    const l2 = n.q.enqueue(ltx(), {});
+    const h2 = n.q.enqueue(h3(), {});
+    expect(l2.nightGroup).not.toBe(l1.nightGroup);
+    expect(h2.nightGroup).toBe(h1.nightGroup);
+    expect(n.waitingOrder()).toEqual([h1.id, h2.id, l2.id]);
+    await n.release(l1.id);
+    await until(() => n.order.includes(h1.id));
+    // While MiniMax runs, another LTX final joins the waiting LTX group, which has not started.
+    const l3 = n.q.enqueue(ltx(), {});
+    expect(l3.nightGroup).toBe(l2.nightGroup);
+    await n.drain(5);
+    expect(n.order).toEqual([l1, h1, h2, l2, l3].map((j) => j.id));
+  });
+
+  it("never starves: a model that keeps getting finals does not hold the other model back", async () => {
+    const n = night("night-starve.sqlite", "23:30");
+    n.start();
+    const first = n.q.enqueue(ltx(), {});
+    await until(() => n.order.includes(first.id));
+    const remaster = n.q.enqueue(h3(), {});
+    // A new LTX final arrives while each one runs.
+    let running = first;
+    for (let i = 0; i < 4 && running.id !== remaster.id; i++) {
+      const next = n.q.enqueue(ltx(), {});
+      await n.release(running.id);
+      await until(() => n.order.length === i + 2);
+      running = n.q.get(n.order.at(-1)!)!;
+      expect([next.id, remaster.id]).toContain(running.id);
+    }
+    // The remaster went second: right after the LTX group that was running when it was queued.
+    expect(n.order.slice(0, 2)).toEqual([first.id, remaster.id]);
+  });
+
+  it("a group that has started finishes first, even when a final of an earlier group comes back from a pause", () => {
+    const [a1, b1, b2] = entries(ltx({ nightGroup: 1 }), h3({ nightGroup: 2 }), h3({ nightGroup: 2 })) as [StoredJob, StoredJob, StoredJob];
+    const t = at("23:30");
+    const s = settings({ enabled: true });
+    // a1 lost the GPU and pauses before its next try, so the MiniMax group goes ahead.
+    const paused = [{ ...a1, payload: { _notBefore: t.getTime() + 60_000 } }, b1, b2];
+    expect(pickNext(paused, s, t, () => true)?.job.id).toBe(b1.job.id);
+    // Its pause is over while b1 runs: the MiniMax group, on the GPU now, still goes first.
+    const back = [a1, b2];
+    expect(pickNext(back, s, t, () => true, 2)?.job.id).toBe(b2.job.id);
+    expect(pickNext(back, s, t, () => true)?.job.id).toBe(a1.job.id);
+    expect([...back].sort(runOrder(2)).map((e) => e.job.id)).toEqual([b2.job.id, a1.job.id]);
+  });
+
+  it("survives a restart: the groups are kept, and so is the group whose turn it was", async () => {
+    const n1 = night("night-restart.sqlite", "21:00");
+    const l1 = n1.q.enqueue(ltx(), {});
+    const h1 = n1.q.enqueue(h3(), {});
+    const l2 = n1.q.enqueue(ltx(), {});
+    n1.w.now = at("23:30");
+    n1.start();
+    await until(() => n1.order.includes(l1.id));
+    // A crash while l1 runs: no stop(), just drop the queue and reopen the database.
+    queue = undefined;
+    n1.store.close();
+
+    const n2 = night("night-restart.sqlite", "23:31");
+    expect(n2.q.list().map((j) => [j.id, j.status, j.nightGroup])).toEqual([
+      [l1.id, "queued", l1.nightGroup],
+      [l2.id, "queued", l1.nightGroup],
+      [h1.id, "queued", h1.nightGroup],
+    ]);
+    // l1 had started, so its group stays closed: an LTX final queued now waits for the next turn.
+    const l3 = n2.q.enqueue(ltx(), {});
+    expect(l3.nightGroup).not.toBe(l1.nightGroup);
+    n2.start();
+    await n2.drain(4);
+    expect(n2.order).toEqual([l1, l2, h1, l3].map((j) => j.id));
+  });
+
+  it("finals for the night queued before the queue grouped them are grouped when it starts", () => {
+    const store = new JobStore(join(dir, "night-legacy.sqlite"));
+    // As an older engine saved them: no model, no group. The step stands in for the model.
+    const old = [job("video_final_same_take", "overnight"), job("video_final_remaster", "overnight"), job("still"), job("video_final_same_take", "overnight")];
+    for (const j of old) store.put({ job: j, payload: {}, seq: store.nextSeq() });
+    queue = new JobQueue(store, new EventBus(), { settings: () => settings({ enabled: true }), clock: () => at("23:30") });
+    const [same1, remaster, still, same2] = old.map((j) => j.id);
+    expect(queue.list().map((j) => j.id)).toEqual([still, same1, same2, remaster]);
+    expect(store.all().map((e) => e.job.nightGroup)).toEqual([1, 2, undefined, 1]);
+  });
+
+  it("groups by the model when it is known, else by the step", () => {
+    expect(modelKey(ltx())).toBe("LTX-2.5");
+    expect(modelKey(job("video_final_remaster", "overnight"))).toBe("video_final_remaster");
+    const list = entries(ltx(), h3(), job("video_final_same_take", "overnight", { model: "MiniMax H3" }));
+    const groups: number[] = [];
+    for (const e of list) {
+      e.job.nightGroup = nightGroupFor(e.job, e.seq, list.slice(0, e.seq - 1));
+      groups.push(e.job.nightGroup);
+    }
+    // A same-take final whose workflow loads MiniMax H3 joins the remasters' group.
+    expect(groups).toEqual([1, 2, 2]);
   });
 });
 

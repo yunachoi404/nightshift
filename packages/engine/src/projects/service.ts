@@ -9,24 +9,29 @@
  * is uploaded or made, so it shows in the queue, can be cancelled, and never runs beside the GPU unseen.
  */
 import type {
+  Aspect,
   Asset,
   AudioRequest,
+  Board,
   CreateProjectRequest,
   DraftRequest,
+  DraftTool,
   ExportRequest,
   FinalRequest,
   Job,
+  MakeRequest,
   Project,
   Recipe,
   Shot,
   StepId,
   StillRequest,
   Take,
+  TemplateId,
   Timeline,
   UpdateProjectRequest,
   WorkflowRef,
 } from "@nightshift/contract";
-import { finalFor } from "@nightshift/contract";
+import { boardOf, cameraMoves, finalFor, isBoardAsset, MAIN_BOARD_ID, mainBoardName, placeItem, projectBoards } from "@nightshift/contract";
 import { randomInt } from "node:crypto";
 import { mkdir, readFile, rm, stat } from "node:fs/promises";
 import { join } from "node:path";
@@ -35,7 +40,7 @@ import { ApiError, badRequest, conflict, notFound } from "../errors.js";
 import type { DataPaths } from "../paths.js";
 import { WAITING_FOR_GPU, type ExecContext, type ExecResult, type JobQueue } from "../queue/queue.js";
 import type { JobPayload } from "../queue/store.js";
-import type { RecipeSet } from "../recipes.js";
+import { readGraph, workflowModel, type RecipeSet } from "../recipes.js";
 import type { StepOutput, StepRequest, StepRunner } from "../runner/types.js";
 import type { Runtime } from "../runtime/runtime.js";
 import type { SettingsStore } from "../settings.js";
@@ -43,10 +48,11 @@ import { errorMessage, exists, isAbortError, newId, nowIso, round1, type Logger 
 import type { Assembled, EditorBridge } from "./editor.js";
 import type { ProjectStore } from "./store.js";
 import { effectDirection, effectPhoto, runEffect, runEffectFrame } from "./effects.js";
-import { briefForLlm, conformsToTemplate, parseStoryboard, stylePrompt, TEMPLATES, VOICE_INSTRUCTIONS, type ShotPlan } from "./templates.js";
+import { briefForLlm, CAMERA_MOVES, conformsToTemplate, parseStoryboard, stylePrompt, TEMPLATES, VOICE_INSTRUCTIONS, type ShotPlan } from "./templates.js";
 import { cameraSource, cameraMove, cameraPrompt, cameraLayout, prepareCameraProject } from "./camera-move.js";
 import { applyReferences, projectReferences, referenceInstructions, referencePrompt, referencesForShot, requireReferenceSupport, validateReferences } from "./references.js";
 import { contentKey, patchedTimeline, replaceTrack, stableJson } from "./timeline.js";
+import { addStill, draftTool, onTimeline, pickDraft, stillHistory, toolEffect, toolMove } from "./versions.js";
 import { drawWhatIf, fitWhatIfVoice, renderWhatIf, validateWhatIfBrief, validateWhatIfProject, whatIfDraftSnapshot, writeWhatIf } from "./what-if.js";
 
 export interface ProjectServiceDeps {
@@ -78,6 +84,13 @@ const DEFAULT_SIZE: Partial<Record<StepId, Size>> = {
 export const REMASTER_REFERENCE = "Use <Video 1> as the exact composition, camera motion, subject and timing reference.";
 
 const randomSeed = () => randomInt(0, 2 ** 31 - 1);
+/**
+ * The shape a shot renders at: its own (a card made in another shape), else the project's. Stills, drafts, finals,
+ * effects and camera moves all take it; a What if? film keeps the project's.
+ */
+const shapeOf = (project: Pick<Project, "aspect">, shot: Pick<Shot, "aspect"> | undefined): Aspect => shot?.aspect ?? project.aspect;
+/** Templates that start with a shot list drafted from their brief. */
+const FILMS = new Set<TemplateId>(["cinematic_shot", "music_video", "product_ad", "talking_intro"]);
 const num = (v: unknown, fallback: number) => (typeof v === "number" && Number.isFinite(v) ? v : fallback);
 const str = (v: unknown) => (typeof v === "string" && v.trim() ? v.trim() : undefined);
 /** Seconds as people read them: 4.04, 6. */
@@ -95,7 +108,6 @@ class SameTakeError extends Error {
 }
 
 export class ProjectService {
-  private graphs = new Map<string, { mtimeMs: number; graph: Graph }>();
   private recuts = new Map<string, Recut>();
   private stopping = false;
 
@@ -135,10 +147,19 @@ export class ProjectService {
 
   // ---------------------------------------------------------------- projects
 
+  /**
+   * A new project only creates: nothing is queued. A film starts with its template's shot list for the brief (each
+   * shot at most one clip of the draft model), on one board. Blank and What if? projects start empty; a quick shot
+   * gets its shot from its photo when it is started.
+   */
   async createProject(req: CreateProjectRequest & { brief: Record<string, unknown> }): Promise<Project> {
     if (req.references?.length) throw badRequest("Create the project, upload its reference images, then add references with PATCH.");
     if (req.template === "what_if") validateWhatIfBrief(req.brief);
-    return this.d.store.create({ name: req.name.trim(), template: req.template, aspect: req.aspect, brief: req.brief, ...(req.references !== undefined ? { references: req.references } : {}) });
+    const plans = FILMS.has(req.template) ? TEMPLATES[req.template].fallback(req.brief) : [];
+    await this.clampPlans(plans);
+    const shots = mergeShots([], plans);
+    const boards: Board[] = [{ id: MAIN_BOARD_ID, name: mainBoardName(req.template), items: shots.map((s) => s.id) }];
+    return this.d.store.create({ name: req.name.trim(), template: req.template, aspect: req.aspect, brief: req.brief, shots, boards, ...(req.references !== undefined ? { references: req.references } : {}) });
   }
 
   async updateProject(id: string, patch: UpdateProjectRequest): Promise<Project> {
@@ -158,12 +179,24 @@ export class ProjectService {
           for (const key of ["stillAssetId", "chosenDraftId", "chosenFinalId"] as const) {
             if (merged[key] === undefined && now[key] !== undefined) merged[key] = now[key];
           }
+          for (const key of ["useStill", "onTimeline"] as const) {
+            if (merged[key] === undefined && now[key] !== undefined) merged[key] = now[key];
+          }
           // A new pick shows that draft's final, or none yet. A copy that still names the old draft's final cannot keep
-          // it, and a draft picked again gets back the final it had.
+          // it, and a draft picked again gets back the final it had. The cut shows the draft, not the still, unless the
+          // patch says otherwise.
           if (merged.chosenDraftId !== now.chosenDraftId) {
             const final = finalFor(p.takes, merged.chosenDraftId, merged.chosenFinalId);
             if (final) merged.chosenFinalId = final.id;
             else delete merged.chosenFinalId;
+            if (incoming.useStill === undefined) delete merged.useStill;
+          }
+          // The still history is the engine's record. A still set by hand (an image from the project) joins it.
+          const history = now.stillHistory ?? incoming.stillHistory;
+          if (history) merged.stillHistory = history;
+          else delete merged.stillHistory;
+          if (merged.stillAssetId && merged.stillAssetId !== now.stillAssetId && !stillHistory(p, now).some((h) => h.assetId === merged.stillAssetId)) {
+            merged.stillHistory = [...stillHistory(p, now), { assetId: merged.stillAssetId, createdAt: nowIso() }];
           }
           return merged;
         });
@@ -171,6 +204,10 @@ export class ProjectService {
           if (ids.has(shot.id)) throw badRequest(`Duplicate shot id ${shot.id}`);
           ids.add(shot.id);
           if (shot.stillAssetId && !p.assets.some((a) => a.id === shot.stillAssetId)) throw badRequest(`Shot ${shot.id}: no asset ${shot.stillAssetId}`);
+          const before = p.shots.find((s) => s.id === shot.id);
+          if (shot.stillAssetId && shot.stillAssetId !== before?.stillAssetId && !p.assets.some((a) => a.id === shot.stillAssetId && a.kind === "image")) {
+            throw badRequest(`Shot ${shot.id}: the still must be an image from this project.`);
+          }
           for (const [field, takeId] of [
             ["chosenDraftId", shot.chosenDraftId],
             ["chosenFinalId", shot.chosenFinalId],
@@ -181,18 +218,62 @@ export class ProjectService {
         // The array order is the storyboard order.
         p.shots = shots.map((s, i) => ({ ...s, index: i }));
       }
+      if (patch.boards !== undefined) {
+        const ids = new Set<string>();
+        for (const board of patch.boards) {
+          if (ids.has(board.id)) throw badRequest(`Two boards have the id ${board.id}. Give each board its own id.`);
+          ids.add(board.id);
+        }
+        p.boards = patch.boards;
+      }
+      if (patch.soundtrack !== undefined) {
+        const soundtrack: NonNullable<Project["soundtrack"]> = {};
+        for (const role of ["music", "voice"] as const) {
+          const pick = patch.soundtrack[role];
+          if (pick === undefined) continue;
+          if (pick !== null && !p.assets.some((a) => a.id === pick && a.kind === "audio" && a.role === role)) {
+            throw badRequest(`No ${role === "music" ? "song" : "voiceover"} ${pick} in this project.`);
+          }
+          soundtrack[role] = pick;
+        }
+        p.soundtrack = soundtrack;
+      }
       applyReferences(p, patch, before);
       validateWhatIfProject(p);
     });
     // What the cut is made of changed, or the timeline was handed back: cut it again. A PATCH that only carries a
     // timeline does not, so a UI that mirrors the cut it was sent never ping-pongs with the engine.
-    const changed = (k: "shots" | "brief" | "aspect") => stableJson(before[k]) !== stableJson(updated[k]);
+    const changed = (k: "shots" | "brief" | "aspect" | "soundtrack") => stableJson(before[k] ?? null) !== stableJson(updated[k] ?? null);
     const handedBack = patch.timeline === null || (patch.timeline && patch.timeline.edited === false);
-    if (changed("shots") || changed("brief") || changed("aspect") || handedBack) {
+    // A hand-edited cut keeps its clips, but plays the song and the voiceover picked for it.
+    if (changed("soundtrack") && updated.timeline?.edited) await this.soundtrackOnEdited(id);
+    if (changed("shots") || changed("brief") || changed("aspect") || changed("soundtrack") || handedBack) {
       await this.recutSoon(id);
       return this.d.store.require(id);
     }
-    return updated;
+    return this.d.store.require(id);
+  }
+
+  /** The soundtrack's picks on a hand-edited timeline: each role's track is the picked one, or none. */
+  private async soundtrackOnEdited(id: string): Promise<void> {
+    for (const role of ["music", "voice"] as const) {
+      const project = this.d.store.require(id);
+      if (!project.timeline?.edited) return;
+      const pick = await this.d.editor.audioPick(project, role);
+      const track = project.timeline.audio.find((a) => a.role === role);
+      if (pick && track?.assetId === pick.id) continue;
+      if (pick) {
+        await this.placeOnEdited(project, pick, role);
+        continue;
+      }
+      if (!track) continue;
+      const captionsFrom = project.template === "music_video" ? "music" : "voice";
+      await this.d.store.mutate(id, (p) => {
+        if (!p.timeline?.edited) return;
+        p.timeline.audio = p.timeline.audio.filter((a) => a.role !== role);
+        if (role === captionsFrom) p.timeline.captions = [];
+      });
+    }
   }
 
   async deleteProject(id: string): Promise<void> {
@@ -206,11 +287,16 @@ export class ProjectService {
   /**
    * Store an uploaded file (a product photo, a voice reference, a song) as a project asset. A song or a voiceover goes
    * on the timeline at once and is measured by an analysis job (beats, word times), so the cut follows it shortly after.
+   * `boardId` files an image, a song or a voiceover on that board of the canvas (else it joins the first board).
    */
-  async addUpload(id: string, tmpPath: string, kind: Asset["kind"], role: Asset["role"] | undefined): Promise<Asset> {
+  async addUpload(id: string, tmpPath: string, kind: Asset["kind"], role: Asset["role"] | undefined, o: { boardId?: string | undefined } = {}): Promise<Asset> {
     this.d.store.require(id);
     const asset = await this.d.store.importFile(id, tmpPath, kind, { move: true, ...(role ? { role } : {}) });
-    await this.d.store.mutate(id, (p) => void p.assets.push(asset));
+    await this.d.store.mutate(id, (p) => {
+      p.assets.push(asset);
+      if (kind === "audio" && (role === "music" || role === "voice")) playNewest(p, role);
+      if (o.boardId && isBoardAsset(p, asset)) p.boards = placeItem(p, asset.id, { boardId: o.boardId });
+    });
     if (kind === "audio" && (role === "music" || role === "voice")) {
       void this.recutSoon(id);
       this.analyze(id, asset, role);
@@ -226,13 +312,14 @@ export class ProjectService {
     if (!asset) throw notFound(`No asset ${assetId}`);
     if (asset.role !== "reference") throw conflict("Only uploaded references can be removed here.");
     if (this.d.queue.list({ projectId: id }).some(j => j.status === "running" || j.status === "queued")) throw conflict("Wait for this project's jobs to finish before removing a reference.");
-    if (project.shots.some(s => s.stillAssetId === assetId || s.keyframes?.some(frame => frame.stillAssetId === assetId)) || project.takes.some(t => t.imageAssetId === assetId || t.videoAssetId === assetId || t.guideAssetIds?.includes(assetId))) throw conflict("This image is used by a shot or take.");
+    if (project.shots.some(s => s.stillAssetId === assetId || s.stillHistory?.some(h => h.assetId === assetId) || s.keyframes?.some(frame => frame.stillAssetId === assetId)) || project.takes.some(t => t.imageAssetId === assetId || t.videoAssetId === assetId || t.guideAssetIds?.includes(assetId))) throw conflict("This image is used by a shot or take.");
     await this.d.store.mutate(id, p => {
       const removed = new Set(projectReferences(p).filter(r => r.assetId === assetId).map(r => r.id));
       p.references = projectReferences(p).filter(r => r.assetId !== assetId);
       for (const s of p.shots) if (s.referenceIds) s.referenceIds = s.referenceIds.filter(r => !removed.has(r));
       for (const key of ["referenceAssetId", "productAssetId"]) if (p.brief[key] === assetId) delete p.brief[key];
       p.assets = p.assets.filter(a => a.id !== assetId);
+      if (p.boards) p.boards = p.boards.map(b => ({ ...b, items: b.items.filter(item => item !== assetId) }));
     });
     await rm(this.d.store.assetPath(project, asset), { force: true });
     await this.recutSoon(id);
@@ -276,7 +363,7 @@ export class ProjectService {
     const project = this.d.store.get(id);
     if (!project || this.stopping || project.timeline?.edited) return;
     try {
-      const hasPicture = project.shots.some((s) => s.stillAssetId || project.takes.some((t) => t.shotId === s.id && t.videoAssetId));
+      const hasPicture = project.shots.some((s) => onTimeline(s) && (s.stillAssetId || project.takes.some((t) => t.shotId === s.id && t.videoAssetId)));
       if (!hasPicture && !project.timeline) return;
       const cut = await this.d.editor.assemble(project, { analyze: false, signal });
       if (signal.aborted) return;
@@ -359,6 +446,7 @@ export class ProjectService {
 
   async storyboard(id: string): Promise<Job> {
     const project = this.d.store.require(id);
+    if (project.template === "blank") throw conflict("A blank project has no shot list to write. Make something with the tools.");
     if (project.template === "what_if") {
       this.requireWhatIf();
       validateWhatIfProject(project);
@@ -380,9 +468,18 @@ export class ProjectService {
     return this.d.queue.enqueue(this.newJob(id, "text", "now"), { kind: "storyboard", seed: randomSeed() });
   }
 
+  /**
+   * Draw a shot's still again: from its prompt (or `prompt`), or as an edit of an image of the project (`editFrom`,
+   * following `prompt` as the instruction). The new still is the shot's pick when it lands.
+   */
   still(id: string, shotId: string, req: StillRequest): Job {
     const project = this.d.store.require(id);
     const shot = this.shot(project, shotId);
+    if (req.editFrom !== undefined) {
+      refuseTools(project);
+      const source = this.editSource(project, req.editFrom, req.prompt);
+      return this.d.queue.enqueue(this.newJob(id, "still", "now", shotId), { kind: "still", seed: req.seed ?? randomSeed(), prompt: source.instruction, editFrom: source.image.id });
+    }
     if (project.template === "what_if") {
       this.requireWhatIf();
       validateWhatIfProject(project);
@@ -405,9 +502,130 @@ export class ProjectService {
     return this.d.queue.enqueue(this.newJob(id, "still", "now", shotId), payload);
   }
 
+  /**
+   * One use of a project tool: a new card. The new shot is left out of the cut (`onTimeline: false`), filed at the end
+   * of its board, in its own shape when the request names one (`aspect`), and its first job is queued: a still, a draft
+   * from an image, an effect or a camera move on one, or an edit of one (its still). Everything is checked before the
+   * shot is stored, so a refused request leaves nothing behind.
+   */
+  async make(id: string, req: MakeRequest): Promise<Job> {
+    const project = this.d.store.require(id);
+    refuseTools(project);
+    const prompt = req.prompt?.trim() ?? "";
+    const image = req.imageAssetId === undefined ? undefined : project.assets.find((a) => a.id === req.imageAssetId && a.kind === "image");
+    if (req.imageAssetId !== undefined && !image) throw badRequest("Choose an image from this project first.");
+    if (req.referenceIds) {
+      if (new Set(req.referenceIds).size !== req.referenceIds.length) throw badRequest("Choose up to three different references.");
+      referencesForShot(project, { referenceIds: req.referenceIds });
+    }
+    if (req.move !== undefined && req.tool === "video" && !cameraMoves.some((m) => m.id === req.move) && !(CAMERA_MOVES as readonly string[]).includes(req.move)) {
+      throw badRequest(`Unknown camera move: ${req.move}`);
+    }
+    const shot: Shot = { id: newId("shot"), index: project.shots.length, prompt, durationSec: req.durationSec ?? 4, locked: false, onTimeline: false };
+    if (req.referenceIds) shot.referenceIds = req.referenceIds;
+    if (req.aspect) shot.aspect = req.aspect;
+    const seed = req.seed ?? randomSeed();
+    /** A still drawn from the prompt, with the shot's references. */
+    const stillJob = (payload: JobPayload): { step: StepId; payload: JobPayload } => {
+      if (!prompt) throw badRequest(req.tool === "image" ? "Describe the image to make." : "Describe the video to make, or choose an image to start from.");
+      const { recipe } = this.requireStep("still");
+      validateReferences(project);
+      requireReferenceSupport(recipe, referencesForShot(project, shot));
+      return { step: "still", payload };
+    };
+    let job: { step: StepId; payload: JobPayload };
+    switch (req.tool) {
+      case "image":
+        job = stillJob({ kind: "still", seed });
+        shot.durationSec = await this.clipLength("video_draft", shot.durationSec);
+        break;
+      case "video":
+        shot.cameraMove = req.move ?? "static";
+        shot.durationSec = await this.clipLength("video_draft", shot.durationSec);
+        if (image) {
+          this.requireStep("video_draft");
+          shot.stillAssetId = image.id;
+          job = { step: "video_draft", payload: { kind: "draft", seed } };
+        } else {
+          this.requireStep("video_draft");
+          job = stillJob({ kind: "still", seed, autoDraft: true });
+        }
+        break;
+      case "effect":
+      case "camera_move": {
+        const tool: DraftTool = req.tool === "effect" ? { kind: "effect", effect: toolEffect(req.effect) } : { kind: "camera_move", move: toolMove(req.move) };
+        if (!image) throw badRequest("Choose an image from this project first.");
+        shot.stillAssetId = image.id;
+        if (tool.kind === "camera_move") shot.cameraMove = tool.move;
+        job = this.toolJob(project, shot, tool, seed);
+        shot.durationSec = await this.clipLength(job.step, shot.durationSec);
+        break;
+      }
+      case "edit": {
+        // The new card's still is the image changed as the prompt says. The image stays where it was.
+        if (!image) throw badRequest("Choose an image from this project first.");
+        const source = this.editSource(project, image.id, prompt);
+        job = { step: "still", payload: { kind: "still", seed, prompt: source.instruction, editFrom: source.image.id } };
+        shot.durationSec = await this.clipLength("video_draft", shot.durationSec);
+        break;
+      }
+    }
+    await this.d.store.mutate(id, (p) => {
+      shot.index = p.shots.length;
+      if (shot.stillAssetId) shot.stillHistory = [{ assetId: shot.stillAssetId, createdAt: nowIso() }];
+      p.shots.push(shot);
+      p.boards = placeItem(p, shot.id, { boardId: req.boardId });
+    });
+    return this.d.queue.enqueue(this.newJob(id, job.step, "now", shot.id), job.payload);
+  }
+
+  /**
+   * What an image edit starts from: an image of the project, and the instruction it follows. Checked before anything
+   * is queued: only recipes with an image edit step (effect_end_frame, FLUX.2 Klein edit) can make one.
+   */
+  private editSource(project: Project, assetId: string, prompt: string | undefined): { image: Asset; instruction: string } {
+    const recipe = this.currentRecipe();
+    if (!recipe) throw conflict("No tier is installed yet. Finish onboarding first.");
+    if (!recipe.steps.effect_end_frame) throw conflict(`The ${recipe.label} recipe cannot edit images.`);
+    const asset = project.assets.find((a) => a.id === assetId);
+    if (!asset) throw notFound("That image is not in this project.");
+    if (asset.kind !== "image") throw conflict("Only an image can be edited. Choose a still or a photo.");
+    const instruction = prompt?.trim();
+    if (!instruction) throw badRequest("Say how to change the image.");
+    return { image: asset, instruction };
+  }
+
+  /**
+   * The job of a draft made with a tool on the shot's still: an effect (the effect path, with the still as its photo)
+   * or an explicit camera move through it. Checked before anything is queued.
+   */
+  private toolJob(project: Project, shot: Shot, tool: DraftTool, seed: number): { step: StepId; payload: JobPayload } {
+    if (tool.kind === "effect") toolEffect(tool.effect);
+    else toolMove(tool.move);
+    const still = project.assets.find((a) => a.id === shot.stillAssetId && a.kind === "image");
+    if (!still) throw conflict("Make a still for this shot first: the tool starts from it.");
+    if (tool.kind === "effect") {
+      const effectBrief = { photoAssetId: still.id, effect: tool.effect, prompt: shot.prompt };
+      this.requireStep(effectDirection(effectBrief).end === null ? "video_draft" : "effect_end_frame");
+      this.requireStep("video_effect");
+      return { step: "video_effect", payload: { kind: "draft", seed, tool, effectBrief, effectPrompt: shot.prompt } };
+    }
+    this.requireStep("camera_layout");
+    this.requireStep("video_camera_move");
+    return {
+      step: "video_camera_move",
+      payload: { kind: "draft", seed, tool, cameraPhotoId: still.id, cameraMove: tool.move, cameraPrompt: cameraPrompt(shot.prompt.trim() || "The scene in the image.", tool.move) },
+    };
+  }
+
   async draft(id: string, shotId: string, req: DraftRequest): Promise<Job> {
     const project = this.d.store.require(id);
     const shot = this.shot(project, shotId);
+    if (req.tool) {
+      if (project.template === "what_if") throw conflict("A What if? film is made from its keyframes. Make another take instead.");
+      const job = this.toolJob(project, shot, req.tool, req.seed ?? randomSeed());
+      return this.d.queue.enqueue(this.newJob(id, job.step, "now", shotId), job.payload);
+    }
     if (project.template === "what_if") {
       this.requireWhatIf();
       return this.d.queue.enqueue(this.newJob(id, "video_what_if", "now", shotId), { kind: "draft", seed: req.seed ?? randomSeed(), ...whatIfDraftSnapshot(project, shot) });
@@ -453,7 +671,11 @@ export class ProjectService {
         throw err;
       }
     }
-    return this.d.queue.enqueue(this.newJob(id, step, req.mode, shotId), { kind: "final", draftId: draft.id, finalKind: req.kind });
+    const job = this.newJob(id, step, req.mode, shotId);
+    // Finals for the night that load the same model run back to back (see JobQueue).
+    const model = await this.stepModel(step);
+    if (model) job.model = model;
+    return this.d.queue.enqueue(job, { kind: "final", draftId: draft.id, finalKind: req.kind });
   }
 
   /**
@@ -550,25 +772,27 @@ export class ProjectService {
         return this.runExport(job, payload, ctx);
       case "video_effect": {
         const project = this.d.store.require(job.projectId);
+        const shot = this.shot(project, job.shotId!);
         const direction = effectDirection((payload.effectBrief ?? project.brief) as Project["brief"]);
         const videoStep = direction.end === null ? "video_draft" : "video_effect";
         try {
           const result = await runEffect({
             store: this.d.store,
             run: (step, values, hints, stepPayload, stepCtx, span) => this.runStep(job, stepPayload, step, values, hints, stepCtx, span),
-          }, project, this.shot(project, job.shotId!), job, payload, ctx,
-          await this.sizeFor("video_effect", project), await this.stepDefault(this.currentRecipe()?.steps[videoStep], "negative"));
+          }, project, shot, job, payload, ctx,
+          await this.sizeFor("video_effect", shapeOf(project, shot)), await this.stepDefault(this.currentRecipe()?.steps[videoStep], "negative"));
           await this.recutSoon(project.id);
           return result;
         } finally { await this.cleanup(job); }
       }
       case "effect_end_frame": {
         const project = this.d.store.require(job.projectId);
+        const aspect = shapeOf(project, project.shots.find((s) => s.id === job.shotId));
         try {
           return await runEffectFrame({
             store: this.d.store,
             run: (step, values, hints, stepPayload, stepCtx, span) => this.runStep(job, stepPayload, step, values, hints, stepCtx, span),
-          }, project, payload, ctx, await this.sizeFor("video_effect", project));
+          }, project, payload, ctx, { aspect, ...(await this.sizeFor("video_effect", aspect)) });
         } finally { await this.cleanup(job); }
       }
       case "camera_layout":
@@ -663,19 +887,17 @@ export class ProjectService {
 
   // ---------------------------------------------------------------- sizes
 
-  /** A workflow graph, cached until its file changes. */
-  private async graph(ref: WorkflowRef): Promise<Graph | undefined> {
-    const path = join(this.d.workflowsDir, ref.workflow);
-    try {
-      const { mtimeMs } = await stat(path);
-      const hit = this.graphs.get(path);
-      if (hit?.mtimeMs === mtimeMs) return hit.graph;
-      const graph = JSON.parse(await readFile(path, "utf8")) as Graph;
-      this.graphs.set(path, { mtimeMs, graph });
-      return graph;
-    } catch {
-      return undefined;
-    }
+  /** A step's workflow graph, cached until its file changes (`readGraph`). */
+  private graph(ref: WorkflowRef): Promise<Graph | undefined> {
+    return readGraph(join(this.d.workflowsDir, ref.workflow));
+  }
+
+  /** The main model a step of the installed recipe loads, in plain words ("LTX-2.5"), when its workflow names one. */
+  private async stepModel(step: StepId): Promise<string | undefined> {
+    const recipe = this.currentRecipe();
+    const ref = recipe?.steps[step];
+    const graph = ref && (await this.graph(ref));
+    return recipe && ref && graph ? workflowModel(recipe, ref, graph) : undefined;
   }
 
   /** A named input's value before the engine sets it: the recipe's param, else the workflow's own. */
@@ -694,17 +916,18 @@ export class ProjectService {
   }
 
   /**
-   * The size a step renders a project's shots at, in the project's aspect (see `sizeForAspect`). Stills take their
-   * draft's exact shape, so the draft starts from the whole still and the export crops nothing it did not have to.
+   * The size a step renders a shot at, in the shot's shape (`shapeOf`: its own, else the project's; see
+   * `sizeForAspect`). Stills take their draft's exact shape, so the draft starts from the whole still and the export
+   * crops nothing it did not have to.
    */
-  async sizeFor(step: StepId, project: Pick<Project, "aspect">): Promise<Size> {
+  async sizeFor(step: StepId, aspect: Aspect): Promise<Size> {
     if (step === "still") {
-      const draft = await this.sizeFor("video_draft", project);
+      const draft = await this.sizeFor("video_draft", aspect);
       const base = await this.baseSize("still");
       return sizeForRatio(base.width, base.height, draft.width / draft.height);
     }
     const base = await this.baseSize(step);
-    return sizeForAspect(base.width, base.height, project.aspect);
+    return sizeForAspect(base.width, base.height, aspect);
   }
 
   private assetFile(project: Project, assetId: string | undefined): string | undefined {
@@ -727,6 +950,28 @@ export class ProjectService {
     if (max === undefined) return { frames };
     const longest = floorFrames(max, rule.grid) / fps;
     return durationSec > longest + 1e-3 ? { frames, clampedSec: longestClipSec(max, fps, rule.grid) } : { frames };
+  }
+
+  /** A shot's length as one clip of a video step can be: at most the longest clip its model makes. */
+  private async clipLength(step: StepId, durationSec: number): Promise<number> {
+    const ref = this.currentRecipe()?.steps[step];
+    const { clampedSec } = await this.frames(ref, durationSec, num(ref?.params.fps, 24));
+    return clampedSec ?? durationSec;
+  }
+
+  /**
+   * A shot is one clip of the draft model: none is planned longer than the longest clip it makes, so the storyboard
+   * and the cut show from the start the lengths the drafts will have. Returns that length when a plan was shortened.
+   */
+  private async clampPlans(plans: ShotPlan[]): Promise<number | undefined> {
+    let longest: number | undefined;
+    for (const plan of plans) {
+      const length = await this.clipLength("video_draft", plan.durationSec);
+      if (length === plan.durationSec) continue;
+      plan.durationSec = length;
+      longest = length;
+    }
+    return longest;
   }
 
   // ---------------------------------------------------------------- jobs
@@ -801,27 +1046,20 @@ export class ProjectService {
       const missing = names.filter(name => !plan.prompt.toLowerCase().includes(name.toLowerCase()));
       if (missing.length) plan.prompt += ` Featuring ${missing.join(" and ")}.`;
     }
-    // A shot is one clip of the draft model: none is planned longer than the longest clip it makes, so the storyboard
-    // and the cut show from the start the lengths the drafts will have.
-    const draftRef = this.currentRecipe()?.steps.video_draft;
-    let longest: number | undefined;
-    for (const plan of plans) {
-      const { clampedSec } = await this.frames(draftRef, plan.durationSec, num(draftRef?.params.fps, 24));
-      if (clampedSec === undefined) continue;
-      plan.durationSec = clampedSec;
-      longest = clampedSec;
-    }
+    const longest = await this.clampPlans(plans);
     if (longest !== undefined) message += ` Shots are at most ${secs(longest)} s, the longest clip this video model makes.`;
     const updated = await this.d.store.mutate(job.projectId, (p) => {
-      p.shots = mergeShots(p.shots, plans);
+      const merged = planShots(p.shots, plans, p.takes);
+      p.boards = rewriteBoards(p, merged);
+      p.shots = merged.shots;
       // Takes of shots the new list replaced go with them.
       p.takes = p.takes.filter((t) => p.shots.some((s) => s.id === t.shotId));
     });
     await this.recutSoon(updated.id);
-    // A new project fills in by itself: every shot without a still gets one queued.
+    // A new project fills in by itself: every shot of the cut without a still gets one queued.
     if (this.currentRecipe()?.steps.still) {
       let unsupported: string | undefined;
-      for (const shot of updated.shots) if (!shot.stillAssetId) {
+      for (const shot of updated.shots) if (!shot.stillAssetId && onTimeline(shot)) {
         try { this.still(updated.id, shot.id, {}); }
         catch (error) {
           if (!(error instanceof ApiError) || error.status !== 409) throw error;
@@ -856,10 +1094,13 @@ export class ProjectService {
       await this.recutSoon(project.id);
       return { outputAssetIds: [photo.id], message: "Original photo ready" };
     }
-    const size = await this.sizeFor("still", project);
+    const aspect = shapeOf(project, shot);
+    const size = await this.sizeFor("still", aspect);
+    if (str(payload.editFrom)) return this.runEdit(job, payload, ctx, project, shot, { aspect, ...size });
     const refs = referencesForShot(project, shot);
     requireReferenceSupport(this.currentRecipe()!, refs);
-    const prompt = [referencePrompt(refs), stylePrompt(project.template, str(payload.prompt) ?? shot.prompt)].filter(Boolean).join(" ");
+    const asked = str(payload.prompt) ?? shot.prompt;
+    const prompt = [referencePrompt(refs), stylePrompt(project.template, asked)].filter(Boolean).join(" ");
     const values: Record<string, unknown> = { prompt, seed: num(payload.seed, 0), ...size };
     refs.forEach((ref, i) => {
       const path = this.assetFile(project, ref.assetId);
@@ -867,31 +1108,80 @@ export class ProjectService {
       values[i ? `image${i + 1}` : "image"] = path;
     });
     try {
-      const { outputs, peakGb } = await this.runStep(job, payload, "still", values, { aspect: project.aspect, ...size, label: `Shot ${shot.index + 1}` }, ctx);
-      const image = outputs.find((o) => o.kind === "image");
-      if (!image) throw new Error("The still step produced no image");
-      const asset = await this.d.store.importFile(project.id, image.path, "image", { move: true });
-      await this.d.store.mutate(project.id, (p) => {
-        p.assets.push(asset);
-        const s = p.shots.find((x) => x.id === shot.id);
-        if (s) s.stillAssetId = asset.id;
-      });
-      await this.recutSoon(project.id);
-      return withPeak({ outputAssetIds: [asset.id], message: "Still ready" }, peakGb);
+      const { outputs, peakGb } = await this.runStep(job, payload, "still", values, { aspect, ...size, label: `Shot ${shot.index + 1}` }, ctx);
+      const asset = await this.fileStill(project, shot, outputs, asked, "The still step produced no image");
+      const message = payload.autoDraft ? await this.autoDraft(job, payload, ctx) : "Still ready";
+      return withPeak({ outputAssetIds: [asset.id], message }, peakGb);
     } finally {
       await this.cleanup(job);
+    }
+  }
+
+  /**
+   * A still drawn as an edit of an image (`editFrom`, an image of the project), following the job's prompt as the
+   * instruction ("make it night"). The recipe's image edit step (effect_end_frame, FLUX.2 Klein edit) makes it at the
+   * shot's size, and it is filed like any new still: the shot's pick, in its history with the instruction.
+   */
+  private async runEdit(job: Job, payload: JobPayload, ctx: ExecContext, project: Project, shot: Shot, shape: Size & { aspect: Aspect }): Promise<ExecResult> {
+    const source = project.assets.find((a) => a.id === str(payload.editFrom) && a.kind === "image");
+    if (!source) throw new Error("The image to edit is no longer in this project.");
+    const instruction = str(payload.prompt) ?? shot.prompt;
+    const size = { width: shape.width, height: shape.height };
+    const values: Record<string, unknown> = { image: this.d.store.assetPath(project, source), prompt: instruction, seed: num(payload.seed, 0), ...size };
+    try {
+      const { outputs, peakGb } = await this.runStep(job, payload, "effect_end_frame", values, { ...shape, label: `Shot ${shot.index + 1}` }, ctx);
+      const asset = await this.fileStill(project, shot, outputs, instruction, "The image edit produced no image");
+      return withPeak({ outputAssetIds: [asset.id], message: "Edit ready" }, peakGb);
+    } finally {
+      await this.cleanup(job);
+    }
+  }
+
+  /** A new still lands: it is filed into the project, and is the shot's pick and the newest of its history. */
+  private async fileStill(project: Project, shot: Shot, outputs: StepOutput[], prompt: string, missing: string): Promise<Asset> {
+    const image = outputs.find((o) => o.kind === "image");
+    if (!image) throw new Error(missing);
+    const asset = await this.d.store.importFile(project.id, image.path, "image", { move: true });
+    await this.d.store.mutate(project.id, (p) => {
+      p.assets.push(asset);
+      const s = p.shots.find((x) => x.id === shot.id);
+      if (s) addStill(p, s, asset.id, prompt);
+    });
+    await this.recutSoon(project.id);
+    return asset;
+  }
+
+  /**
+   * A video made from a prompt: its still is done, so its draft is queued, once (a retried still job finds the draft it
+   * queued). A draft that cannot be queued leaves the still, and says why.
+   */
+  private async autoDraft(job: Job, payload: JobPayload, ctx: ExecContext): Promise<string> {
+    const queued = typeof payload._autoDraftJobId === "string" ? this.d.queue.get(payload._autoDraftJobId) : undefined;
+    if (queued) return "Still ready. Making the video.";
+    try {
+      const draft = await this.draft(job.projectId, job.shotId!, {});
+      ctx.remember("_autoDraftJobId", draft.id);
+      return "Still ready. Making the video.";
+    } catch (err) {
+      if (!(err instanceof ApiError)) throw err;
+      this.d.log(`project ${job.projectId}: the video of shot ${job.shotId} did not start: ${err.message}`);
+      return `Still ready. The video did not start: ${err.message}`;
     }
   }
 
   private async runDraft(job: Job, payload: JobPayload, ctx: ExecContext): Promise<ExecResult> {
     const project = this.d.store.require(job.projectId);
     const shot = this.shot(project, job.shotId!);
-    const camera = project.template === "camera_move";
+    // A camera move: a quick shot's, or one made with the camera move tool on any shot's still.
+    const camera = job.step === "video_camera_move" || job.step === "camera_layout";
     const step = camera ? "video_camera_move" : "video_draft";
     const ref = this.currentRecipe()?.steps[step];
-    const size = await this.sizeFor(step, project);
+    const aspect = shapeOf(project, shot);
+    const size = await this.sizeFor(step, aspect);
     const fps = num(ref?.params.fps, 24);
-    const prompt = camera ? str(payload.cameraPrompt) ?? cameraPrompt(shot.prompt, cameraMove(shot.cameraMove)) : stylePrompt(project.template, shot.prompt, shot.cameraMove);
+    const tool = draftTool(payload.tool);
+    const move = camera ? cameraMove(payload.cameraMove ?? shot.cameraMove) : shot.cameraMove;
+    const prompt = camera ? str(payload.cameraPrompt) ?? cameraPrompt(shot.prompt, cameraMove(shot.cameraMove)) : stylePrompt(project.template, shot.prompt.trim() || "The scene in the image.", shot.cameraMove);
     const { frames, clampedSec } = await this.frames(ref, shot.durationSec, fps);
     const durationSec = clampedSec ?? shot.durationSec;
     const values: Record<string, unknown> = { prompt, seed: num(payload.seed, 0), ...size, fps, frames, durationSec };
@@ -901,9 +1191,9 @@ export class ProjectService {
     // The negative prompt the workflow will use, so the finals can be given exactly the same.
     const negative = await this.stepDefault(ref, "negative");
     try {
-      const hints = { aspect: project.aspect, ...size, durationSec, ...(shot.cameraMove ? { cameraMove: shot.cameraMove } : {}) };
+      const hints = { aspect, ...size, durationSec, ...(move ? { cameraMove: move } : {}) };
       if (camera) {
-        values.move = cameraMove(payload.cameraMove ?? shot.cameraMove);
+        values.move = move;
         values.layout = await cameraLayout({ project, shot, payload, ctx, store: this.d.store, values,
           run: (v) => this.runStep(job, payload, "camera_layout", v, hints, ctx, [0, 0.3]) });
       }
@@ -917,12 +1207,13 @@ export class ProjectService {
       if (latentAsset) take.latentAssetId = latentAsset.id;
       if (typeof negative === "string") take.negative = negative;
       if (still && imageAssetId) take.imageAssetId = imageAssetId;
+      if (tool) take.tool = tool;
       await this.d.store.mutate(project.id, (p) => {
         p.assets.push(videoAsset, ...(latentAsset ? [latentAsset] : []));
         p.takes = [...p.takes.filter((t) => t.id !== take.id), take];
-        // The first draft of a shot is picked for it, so the fast path needs no clicks.
+        // A new draft is the shot's pick when it lands, so the fast path needs no clicks.
         const s = p.shots.find((x) => x.id === shot.id);
-        if (s && !s.chosenDraftId) s.chosenDraftId = take.id;
+        if (s) pickDraft(p, s, take.id);
         clampShot(s, clampedSec);
       });
       await this.recutSoon(project.id);
@@ -971,16 +1262,17 @@ export class ProjectService {
     const durationSec = clampedSec ?? shot.durationSec;
     Object.assign(values, { fps, frames, durationSec });
     // A same-take workflow takes its size from the draft's latent; a remaster renders at its own size.
+    const aspect = shapeOf(project, shot);
     let size: Size;
     if (ref.inputs.width && ref.inputs.height) {
-      size = await this.sizeFor(step, project);
+      size = await this.sizeFor(step, aspect);
       Object.assign(values, size);
     } else {
       const video = this.d.store.findAsset(project, draft.videoAssetId);
-      size = video?.width && video.height ? { width: video.width * 2, height: video.height * 2 } : await this.sizeFor(step, project);
+      size = video?.width && video.height ? { width: video.width * 2, height: video.height * 2 } : await this.sizeFor(step, aspect);
     }
     try {
-      const { outputs, peakGb } = await this.runStep(job, payload, step, values, { aspect: project.aspect, ...size, durationSec }, ctx);
+      const { outputs, peakGb } = await this.runStep(job, payload, step, values, { aspect, ...size, durationSec }, ctx);
       const video = outputs.find((o) => o.kind === "video");
       if (!video) throw new Error("The final step produced no video");
       const asset = await this.d.store.importFile(project.id, video.path, "video", { move: true });
@@ -998,13 +1290,18 @@ export class ProjectService {
       if (draft.negative !== undefined) take.negative = draft.negative;
       if (imageAssetId) take.imageAssetId = imageAssetId;
       if (draft.guideAssetIds) take.guideAssetIds = [...draft.guideAssetIds];
+      if (draft.tool) take.tool = draft.tool;
       await this.d.store.mutate(project.id, (p) => {
         p.assets.push(asset);
         p.takes = [...p.takes.filter((t) => t.id !== take.id), take];
         const s = p.shots.find((x) => x.id === shot.id);
         // This is now the draft's newest final (`finalFor`), so it takes over the shot. Finishing an older take must not
-        // replace a newer choice made while it was queued; picking that take again brings this final back.
-        if (s?.chosenDraftId === draft.id) s.chosenFinalId = take.id;
+        // replace a newer choice made while it was queued; picking that take again brings this final back. A still
+        // drawn or restored meanwhile is not a choice of another take: the final is the newest version and the pick.
+        if (s?.chosenDraftId === draft.id) {
+          s.chosenFinalId = take.id;
+          delete s.useStill;
+        }
         clampShot(s, clampedSec);
       });
       await this.recutSoon(project.id);
@@ -1045,7 +1342,12 @@ export class ProjectService {
       const audioPath = project.template === "what_if" && role === "voice" ? await fitWhatIfVoice(audio.path, ctx.signal) : audio.path;
       const asset = await this.d.store.importFile(project.id, audioPath, "audio", { move: true, role });
       if (words) asset.text = words;
-      await this.d.store.mutate(project.id, (p) => void p.assets.push(asset));
+      await this.d.store.mutate(project.id, (p) => {
+        p.assets.push(asset);
+        // The new one plays. It goes on its board as a card.
+        playNewest(p, role);
+        p.boards = placeItem(p, asset.id, { boardId: str(payload.boardId) });
+      });
       await this.recutSoon(project.id);
       this.analyze(project.id, asset, role);
       return withPeak({ outputAssetIds: [asset.id], message: role === "music" ? "Song ready" : "Voiceover ready" }, peakGb);
@@ -1065,8 +1367,11 @@ export class ProjectService {
     const noun = role === "music" ? "song" : "voiceover";
     const asset = project.assets.find((a) => a.id === str(payload.assetId) && a.kind === "audio");
     if (!asset) return { outputAssetIds: [], message: `The ${noun} is gone` };
-    if (project.assets.some((a) => a.kind === "audio" && a.role === role && a.createdAt > asset.createdAt)) {
-      return { outputAssetIds: [], message: `A newer ${noun} took its place` };
+    // Only the track the cut plays is measured now: the soundtrack's pick, else the newest of its role.
+    if (project.soundtrack?.[role] === null) return { outputAssetIds: [], message: `The ${noun} is off the timeline` };
+    const picked = await this.d.editor.audioPick(project, role);
+    if (picked && picked.id !== asset.id) {
+      return { outputAssetIds: [], message: picked.createdAt > asset.createdAt ? `A newer ${noun} took its place` : `Another ${noun} is on the timeline` };
     }
     ctx.progress(0.02, role === "music" ? "Finding the beat" : "Timing the words");
     if (project.timeline?.edited) {
@@ -1116,7 +1421,9 @@ export class ProjectService {
         captionMethod = measured.cut.captionMethod;
         for (const w of measured.cut.warnings) this.d.log(`export ${job.id}: ${w}`);
       }
-      if (!timeline || timeline.clips.length === 0) throw new Error("Nothing to export yet: make a still or a draft for at least one shot.");
+      if (!timeline || timeline.clips.length === 0) {
+        throw new Error(project.shots.length > 0 && !project.shots.some(onTimeline) ? "Nothing to export yet: put a shot on the timeline." : "Nothing to export yet: make a still or a draft for at least one shot.");
+      }
       const out = join(workDir, `export-${aspect.replace(":", "x")}.mp4`);
       const result = await this.d.editor.render(project, timeline, { aspect, quality, outPath: out, workDir: join(workDir, "render"), signal: ctx.signal, onProgress: (f, m) => ctx.progress(0.15 + 0.83 * f, m) });
       for (const w of result.warnings) this.d.log(`export ${job.id}: ${w}`);
@@ -1138,9 +1445,15 @@ export class ProjectService {
   }
 }
 
+/** What if? films and quick shots keep their own flow: the tools (new cards, image edits) refuse them. */
+function refuseTools(project: Project): void {
+  if (project.template === "what_if") throw conflict("A What if? film is one continuous shot. Start a new project to make more.");
+  if (project.template === "camera_move" || project.template === "vfx_effect") throw conflict("This project makes one shot from its photo. Start a new project to use the tools.");
+}
+
 /** What a cut is made of. A cut measured from a project whose parts changed meanwhile is out of date. */
 function cutInputs(p: Project): string {
-  return stableJson([p.template, p.aspect, p.brief, p.shots, p.takes, p.assets, p.timeline?.style ?? null, p.timeline?.edited ?? false]);
+  return stableJson([p.template, p.aspect, p.brief, p.shots, p.takes, p.assets, p.soundtrack ?? null, p.timeline?.style ?? null, p.timeline?.edited ?? false]);
 }
 
 /** Captions moved along the timeline by `by` seconds. */
@@ -1148,6 +1461,16 @@ function shiftCaptions(captions: Timeline["captions"], by: number): Timeline["ca
   if (Math.abs(by) < 1e-6) return captions;
   const move = (t: number) => Math.round((t + by) * 1000) / 1000;
   return captions.map((c) => ({ ...c, start: move(c.start), end: move(c.end), ...(c.words ? { words: c.words.map((w) => ({ ...w, start: move(w.start), end: move(w.end) })) } : {}) }));
+}
+
+/**
+ * A new song or voiceover (made or uploaded) is the one the cut plays: the role's pick, an id or null (off), is cleared,
+ * so the cut takes the newest of the role again.
+ */
+function playNewest(p: Project, role: "music" | "voice"): void {
+  if (!p.soundtrack || !(role in p.soundtrack)) return;
+  const { [role]: _, ...rest } = p.soundtrack;
+  p.soundtrack = rest;
 }
 
 /** A shot longer than the clip its model could make takes the clip's length, unless it was shortened meanwhile. */
@@ -1170,10 +1493,24 @@ function withPeak(result: ExecResult, peakGb: number | undefined): ExecResult {
   return peakGb === undefined ? result : { ...result, peakGb };
 }
 
-/** Locked shots keep their place; the new plan fills the other slots in order, then continues after them. */
-export function mergeShots(current: Shot[], plans: ShotPlan[]): Shot[] {
+/**
+ * A shot list rewrite. Shots it did not write keep their place: locked shots, shots kept on a board out of the cut,
+ * cards made with a tool (a take with `tool`) and images placed on the timeline (no prompt). The new plan fills the
+ * other slots in order, then continues after them. A shot the plan has no room for stays after it when it has a still
+ * or a take; one with nothing made yet goes.
+ */
+export function mergeShots(current: Shot[], plans: ShotPlan[], takes: readonly Take[] = []): Shot[] {
+  return planShots(current, plans, takes).shots;
+}
+
+/** `mergeShots`, and which shot each new shot replaced (new id to old id), for the boards. */
+function planShots(current: Shot[], plans: ShotPlan[], takes: readonly Take[]): { shots: Shot[]; replaced: Map<string, string> } {
   const ordered = [...current].sort((a, b) => a.index - b.index);
+  const withTakes = new Set(takes.map((t) => t.shotId));
+  const withTool = new Set(takes.filter((t) => t.tool).map((t) => t.shotId));
+  const notFromList = (shot: Shot) => shot.locked || !onTimeline(shot) || !shot.prompt.trim() || withTool.has(shot.id);
   const out: Shot[] = [];
+  const replaced = new Map<string, string>();
   let next = 0;
   const fresh = (plan: ShotPlan): Shot => {
     const shot: Shot = { id: newId("shot"), index: 0, prompt: plan.prompt, durationSec: plan.durationSec, locked: false };
@@ -1182,9 +1519,37 @@ export function mergeShots(current: Shot[], plans: ShotPlan[]): Shot[] {
     return shot;
   };
   for (const shot of ordered) {
-    if (shot.locked) out.push(shot);
-    else if (next < plans.length) out.push(fresh(plans[next++]!));
+    if (notFromList(shot)) out.push(shot);
+    else if (next < plans.length) {
+      const made = fresh(plans[next++]!);
+      replaced.set(made.id, shot.id);
+      out.push(made);
+    } else if (shot.stillAssetId || withTakes.has(shot.id)) out.push(shot); // every plan is placed: it follows them
   }
   while (next < plans.length) out.push(fresh(plans[next++]!));
-  return out.map((s, i) => ({ ...s, index: i }));
+  return { shots: out.map((s, i) => ({ ...s, index: i })), replaced };
+}
+
+/**
+ * The canvas after a shot list rewrite: a new shot takes the place of the shot it replaced, on that shot's board, and
+ * a new shot past the old list follows the new one before it. Replaced shots leave their boards. A new shot with no
+ * place to take is left for `projectBoards`, which shows it on the first board.
+ */
+function rewriteBoards(before: Project, merged: { shots: Shot[]; replaced: Map<string, string> }): Board[] {
+  const boards = projectBoards(before).map((b) => ({ ...b, items: [...b.items] }));
+  const kept = new Set(merged.shots.map((s) => s.id));
+  const old = new Set(before.shots.map((s) => s.id));
+  let previous: string | undefined;
+  for (const shot of merged.shots) {
+    if (old.has(shot.id)) continue;
+    const replaced = merged.replaced.get(shot.id);
+    const anchor = replaced ?? previous;
+    const board = anchor ? boardOf(boards, anchor) : undefined;
+    if (!board || !anchor) continue;
+    const at = board.items.indexOf(anchor);
+    if (replaced) board.items[at] = shot.id;
+    else board.items.splice(at + 1, 0, shot.id);
+    previous = shot.id;
+  }
+  return boards.map((b) => ({ ...b, items: b.items.filter((id) => kept.has(id) || !old.has(id)) }));
 }

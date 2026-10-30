@@ -5,6 +5,7 @@ import { Button, Toaster, cx } from "@/ui/primitives";
 import { Mark } from "@/ui/Mark";
 import { Sidebar } from "./Sidebar";
 import { Toolbar } from "./Toolbar";
+import { useSidebar } from "./useSidebar";
 import { Onboarding } from "@/features/onboarding/Onboarding";
 import { Home } from "@/features/home/Home";
 import { NewProject } from "@/features/newproject/NewProject";
@@ -12,6 +13,7 @@ import { Storyboard } from "@/features/storyboard/Storyboard";
 import { Takes } from "@/features/takes/Takes";
 import { Finals } from "@/features/finals/Finals";
 import { Editor } from "@/features/editor/Editor";
+import { MediaPage } from "@/features/media/MediaPage";
 import { SettingsPage } from "@/features/settings/Settings";
 import { QueuePage } from "@/features/queue/QueuePanel";
 import { DevPanel } from "@/features/dev/DevPanel";
@@ -25,7 +27,8 @@ export function App() {
   );
 }
 
-const stageKeys = ["storyboard", "takes", "finals", "editor"] as const;
+/** A project's two areas, in nav order: Cmd+1 Media, Cmd+2 Editor. */
+const stageKeys = ["media", "editor"] as const;
 
 function Shell() {
   const state = useEngineState();
@@ -33,6 +36,7 @@ function Shell() {
   const loc = useLocation();
   const nav = useNavigate();
   const [devOpen, setDevOpen] = useState(false);
+  const sidebar = useSidebar();
   const params = useProjectIdFromPath(loc.pathname);
   const project = useProject(params);
   const phase = state.status?.phase;
@@ -45,7 +49,8 @@ function Shell() {
   // The engine went away after the app had loaded. The app stays as it was, under the "can't reach" screen.
   const lost = state.unreachable && state.status !== null;
 
-  // Keyboard: Cmd+N new project, Cmd+, settings, Cmd+1..4 project stages, M mock panel, Escape closes.
+  // Keyboard: Cmd+N new project, Cmd+, settings, Cmd+1 Media, Cmd+2 Editor, Cmd+\ sidebar, M mock panel, Escape closes.
+  const toggleSidebar = sidebar.toggle;
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const t = e.target as HTMLElement | null;
@@ -53,6 +58,12 @@ function Shell() {
       const cmd = e.metaKey || e.ctrlKey;
       if (e.key === "Escape") setDevOpen(false);
       if (!typing && isDevMock() && (e.key === "m" || e.key === "M") && !cmd) setDevOpen((v) => !v);
+      // The sidebar toggles from anywhere it shows, even while typing: Cmd+\ means nothing in a field.
+      if (cmd && !e.altKey && !e.shiftKey && e.key === "\\" && !onSetup && !lost && !document.querySelector("dialog[open]")) {
+        e.preventDefault();
+        toggleSidebar();
+        return;
+      }
       if (!cmd || e.altKey || onSetup || !ready || lost) return;
       if (e.key === "n" && !e.shiftKey) {
         e.preventDefault();
@@ -60,14 +71,14 @@ function Shell() {
       } else if (e.key === ",") {
         e.preventDefault();
         nav("/settings");
-      } else if (params && /^[1-4]$/.test(e.key) && !e.shiftKey) {
+      } else if (params && /^[1-2]$/.test(e.key) && !e.shiftKey) {
         e.preventDefault();
         nav(`/p/${params}/${stageKeys[Number(e.key) - 1]}`);
       }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [nav, params, onSetup, ready, lost]);
+  }, [nav, params, onSetup, ready, lost, toggleSidebar]);
 
   // Route guards: setup when it is needed; once the engine says setup is done, never the setup screens on a ready engine.
   useEffect(() => {
@@ -103,10 +114,10 @@ function Shell() {
   const devPanel = isDevMock() && devOpen && <DevPanel onClose={() => setDevOpen(false)} />;
   return (
     <>
-      <div className={cx("app", onSetup && "app--single")} inert={lost}>
-        {!onSetup && <Sidebar />}
+      <div className={cx("app", onSetup ? "app--single" : sidebar.collapsed && "app--collapsed", sidebar.moving && "app--sidebar-moving")} inert={lost}>
+        {!onSetup && <Sidebar collapsed={sidebar.collapsed} onToggle={sidebar.toggle} />}
         <div className="pane">
-          {!onSetup && <Toolbar project={project} onDev={() => setDevOpen((v) => !v)} />}
+          {!onSetup && <Toolbar project={project} onDev={() => setDevOpen((v) => !v)} sidebarCollapsed={sidebar.collapsed} onToggleSidebar={sidebar.toggle} />}
           <div className="main">
             <Routes>
               {/* Redirect during render: a ready engine whose setup is done never shows the setup screens. */}
@@ -117,10 +128,12 @@ function Shell() {
               <Route path="/settings" element={<SettingsPage />} />
               <Route path="/p/:id" element={<ProjectOutlet />}>
                 <Route index element={<ProjectIndexRedirect />} />
+                <Route path="media" element={<MediaPage />} />
+                <Route path="editor" element={<Editor />} />
+                {/* Out of the nav. Kept for old links, the What if? story editor and old quick shots. */}
                 <Route path="storyboard" element={<Storyboard />} />
                 <Route path="takes" element={<Takes />} />
                 <Route path="finals" element={<Finals />} />
-                <Route path="editor" element={<Editor />} />
               </Route>
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
@@ -164,12 +177,10 @@ function ProjectOutlet() {
   return <Outlet />;
 }
 
+/** A project opens on its media. */
 function ProjectIndexRedirect() {
   const { id } = useParams();
-  const project = useProject(id);
-  if (!project) return null;
-  const stage = project.shots.length === 0 || project.shots.some((s) => !s.stillAssetId) ? "storyboard" : project.shots.every((s) => s.chosenFinalId) ? "editor" : project.shots.every((s) => s.chosenDraftId) ? "finals" : "takes";
-  return <Navigate to={`/p/${id}/${stage}`} replace />;
+  return <Navigate to={`/p/${id}/media`} replace />;
 }
 
 function Splash() {

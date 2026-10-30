@@ -1,7 +1,7 @@
-import { RecipeSchema, StepIdSchema, type HardwareProfile, type Recipe, type TierSummary } from "@nightshift/contract";
-import { readdir, readFile } from "node:fs/promises";
-import { join } from "node:path";
-import { frameRule, longestClipSec, type Graph } from "./comfy/bind.js";
+import { RecipeSchema, StepIdSchema, type HardwareProfile, type Recipe, type TierSummary, type WorkflowRef } from "@nightshift/contract";
+import { readdir, readFile, stat } from "node:fs/promises";
+import { join, posix } from "node:path";
+import { bindWorkflow, frameRule, longestClipSec, type Graph } from "./comfy/bind.js";
 import { primaryGpu } from "./hardware/probe.js";
 import { nodePackProblems } from "./install/nodes.js";
 import { round1 } from "./util.js";
@@ -65,14 +65,32 @@ export async function loadRecipes(dir: string, workflowsDir?: string): Promise<R
   return { dir, recipes, problems };
 }
 
+const graphs = new Map<string, { mtimeMs: number; graph: Graph }>();
+
+/**
+ * A workflow graph from its file, read again only when the file changes. Undefined when it is missing or not JSON.
+ * The graph is shared: read it, or bind a copy (`bindWorkflow` clones it), never change it.
+ */
+export async function readGraph(path: string): Promise<Graph | undefined> {
+  try {
+    const { mtimeMs } = await stat(path);
+    const hit = graphs.get(path);
+    if (hit?.mtimeMs === mtimeMs) return hit.graph;
+    const graph = JSON.parse(await readFile(path, "utf8")) as unknown;
+    if (!graph || typeof graph !== "object" || Array.isArray(graph)) return undefined;
+    graphs.set(path, { mtimeMs, graph: graph as Graph });
+    return graph as Graph;
+  } catch {
+    return undefined;
+  }
+}
+
 async function checkWorkflows(file: string, recipe: Recipe, workflowsDir: string): Promise<RecipeProblem[]> {
   const problems: RecipeProblem[] = [];
   for (const [step, ref] of [...Object.entries(recipe.steps), ["referenceStill", recipe.referenceStill]] as const) {
     if (!ref) continue;
-    let graph: Record<string, unknown>;
-    try {
-      graph = JSON.parse(await readFile(join(workflowsDir, ref.workflow), "utf8")) as Record<string, unknown>;
-    } catch {
+    const graph = await readGraph(join(workflowsDir, ref.workflow));
+    if (!graph) {
       problems.push({ file, message: `${step}: workflow ${ref.workflow} not found or not JSON`, severity: "warning" });
       continue;
     }
@@ -84,7 +102,7 @@ async function checkWorkflows(file: string, recipe: Recipe, workflowsDir: string
     }
     const max = ref.params.maxFrames;
     if (max !== undefined) {
-      const { grid } = frameRule(graph as Graph);
+      const { grid } = frameRule(graph);
       const shortest = grid.step + grid.offset;
       if (typeof max !== "number" || !Number.isFinite(max) || max < shortest) {
         problems.push({ file, message: `${step}: maxFrames ${JSON.stringify(max)} is not a clip length this model makes (at least ${shortest} frames); the measured limit is used instead`, severity: "warning" });
@@ -135,11 +153,15 @@ export function downloadGb(recipe: Recipe): number {
   return round1(recipe.models.reduce((sum, m) => sum + m.sizeGb, 0));
 }
 
-export function tierSummaries(recipes: Recipe[], hw: HardwareProfile): TierSummary[] {
+/**
+ * What the UI shows of each tier, the recommended one flagged. With `workflowsDir`, each tier also names the main model
+ * of every step it has (`models`), read from the step's workflow.
+ */
+export async function tierSummaries(recipes: Recipe[], hw: HardwareProfile, workflowsDir?: string): Promise<TierSummary[]> {
   const best = recommendTier(recipes, hw);
-  return [...recipes]
-    .sort((a, b) => a.match.vendor.localeCompare(b.match.vendor) || b.match.minVramGb - a.match.minVramGb || b.match.minRamGb - a.match.minRamGb)
-    .map((r) => ({
+  const sorted = [...recipes].sort((a, b) => a.match.vendor.localeCompare(b.match.vendor) || b.match.minVramGb - a.match.minVramGb || b.match.minRamGb - a.match.minRamGb);
+  return Promise.all(
+    sorted.map(async (r) => ({
       tier: r.tier,
       label: r.label,
       match: r.match,
@@ -148,9 +170,23 @@ export function tierSummaries(recipes: Recipe[], hw: HardwareProfile): TierSumma
       estimates: r.estimates,
       referenceImageLimit: ["image", "image2", "image3"].filter(k => (r.referenceStill ?? r.steps.still)?.inputs[k]).length,
       steps: StepIdSchema.options.filter((s) => r.steps[s]),
+      ...(workflowsDir === undefined ? {} : { models: await stepModels(r, workflowsDir) }),
       defaultMemoryLimitGb: defaultMemoryLimitGb(r, hw),
       ...finishFacts(r),
-    }));
+    })),
+  );
+}
+
+/** The main model of each step a recipe has, in plain words (`workflowModel`). A step whose model is unknown has none. */
+export async function stepModels(recipe: Recipe, workflowsDir: string): Promise<NonNullable<TierSummary["models"]>> {
+  const models: NonNullable<TierSummary["models"]> = {};
+  for (const step of StepIdSchema.options) {
+    const ref = recipe.steps[step];
+    const graph = ref && (await readGraph(join(workflowsDir, ref.workflow)));
+    const model = ref && graph ? workflowModel(recipe, ref, graph) : undefined;
+    if (model) models[step] = model;
+  }
+  return models;
 }
 
 /**
@@ -171,4 +207,30 @@ export function finishFacts(recipe: Recipe): Pick<TierSummary, "sameTake" | "lon
   const fps = draft?.params.fps ?? 24;
   if (typeof maxFrames === "number" && typeof fps === "number" && fps > 0) facts.longestShotSec = longestClipSec(maxFrames, fps);
   return facts;
+}
+
+/** Model folders that hold a workflow's main model: the big one that takes the time to load. */
+const MAIN_MODEL_FOLDERS = new Set(["diffusion_models", "checkpoints", "unet"]);
+
+/**
+ * The main model a step's workflow loads, in plain words: "LTX-2.5" for a model named "LTX-2.5, video model". It is the
+ * recipe model the workflow's loaders name (after the step's params), a diffusion model before any other. Undefined
+ * when the workflow loads none of the recipe's models, as a plain resize does.
+ */
+export function workflowModel(recipe: Recipe, ref: WorkflowRef, source: Graph): string | undefined {
+  let graph = source;
+  try {
+    graph = bindWorkflow(source, ref, {}).graph;
+  } catch {
+    // A param the binder refuses: read the workflow as written.
+  }
+  const named = new Set<string>();
+  for (const node of Object.values(graph)) {
+    for (const value of Object.values(node.inputs ?? {})) if (typeof value === "string") named.add(value.replaceAll("\\", "/"));
+  }
+  const names = new Set([...named].map((v) => posix.basename(v)));
+  const used = recipe.models.filter((m) => named.has(m.filename) || names.has(posix.basename(m.filename)));
+  const main = used.find((m) => MAIN_MODEL_FOLDERS.has(m.folder)) ?? used[0];
+  if (!main) return undefined;
+  return main.name?.split(",")[0]?.trim() || posix.basename(main.filename).replace(/\.[^.]+$/, "");
 }

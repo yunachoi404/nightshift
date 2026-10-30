@@ -139,7 +139,8 @@ it("turns legacy product photos into named references and deletes their links wi
   expect(saved.brief.referenceAssetId).toBeUndefined();
 });
 
-it("sends selected references in order, supports an empty selection, and gives names to the writer", async () => {
+// Several stills and a shot list in one test: about 27 s on a quiet machine, so it gets room on a busy one.
+it("sends selected references in order, supports an empty selection, and gives names to the writer", { timeout: 90_000 }, async () => {
   const { MockStepRunner } = await import("../src/runner/mock.js");
   const requests: import("../src/runner/types.js").StepRequest[] = [];
   const runner = new MockStepRunner(0);

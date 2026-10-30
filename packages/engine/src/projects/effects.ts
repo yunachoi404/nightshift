@@ -1,11 +1,12 @@
 /** Photo effects through LTX, with an edited end frame where the effect has a clear final state. */
-import { quickEffects, type Asset, type Job, type Project, type Shot, type Take } from "@nightshift/contract";
+import { quickEffects, type Aspect, type Asset, type Job, type Project, type Shot, type Take } from "@nightshift/contract";
 import { conflict } from "../errors.js";
 import { exists, newId } from "../util.js";
 import type { ExecContext, ExecResult } from "../queue/queue.js";
 import type { JobPayload } from "../queue/store.js";
 import type { StepOutput, StepRequest } from "../runner/types.js";
 import type { ProjectStore } from "./store.js";
+import { draftTool, pickDraft } from "./versions.js";
 
 interface EffectDirection { end: string | null; action: string; staticCamera?: boolean }
 const DIRECTIONS: Record<string, EffectDirection> = {
@@ -48,13 +49,17 @@ interface EffectDeps {
   run(step: "effect_end_frame" | "video_effect" | "video_draft", values: Record<string, unknown>, hints: StepRequest["hints"], payload: JobPayload, ctx: ExecContext, span: [number, number]): Promise<{ outputs: StepOutput[]; peakGb?: number }>;
 }
 
-/** The image-edit step can also finish an already queued end-frame job on its own. */
-export async function runEffectFrame(deps: EffectDeps, project: Project, payload: JobPayload, ctx: ExecContext, size: { width: number; height: number }): Promise<ExecResult> {
+/**
+ * The image-edit step can also finish an already queued end-frame job on its own. `shape` is the size it renders at,
+ * and the shape of its shot (the project's when it does not say).
+ */
+export async function runEffectFrame(deps: EffectDeps, project: Project, payload: JobPayload, ctx: ExecContext, shape: { aspect?: Aspect; width: number; height: number }): Promise<ExecResult> {
   const brief = (payload.effectBrief ?? project.brief) as Project["brief"];
   const photo = effectPhoto(project, brief);
   const prompts = effectPrompts(brief, typeof brief.prompt === "string" ? brief.prompt : "");
   if (prompts.end === null) throw conflict("This effect animates the photo directly and has no end frame.");
-  const result = await deps.run("effect_end_frame", { image: deps.store.assetPath(project, photo), prompt: prompts.end, seed: payload.seed ?? 0, ...size }, { aspect: project.aspect, ...size }, payload, ctx, [0, 1]);
+  const size = { width: shape.width, height: shape.height };
+  const result = await deps.run("effect_end_frame", { image: deps.store.assetPath(project, photo), prompt: prompts.end, seed: payload.seed ?? 0, ...size }, { aspect: shape.aspect ?? project.aspect, ...size }, payload, ctx, [0, 1]);
   const output = result.outputs.find((o) => o.kind === "image");
   if (!output) throw new Error("The effect's end-frame step produced no image.");
   const image = await deps.store.importFile(project.id, output.path, "image", { move: true });
@@ -69,7 +74,8 @@ export async function runEffect(deps: EffectDeps, project: Project, shot: Shot, 
   const prompts = effectPrompts(brief, typeof payload.effectPrompt === "string" ? payload.effectPrompt : shot.prompt);
   const image = deps.store.assetPath(project, photo);
   const seed = typeof payload.seed === "number" ? payload.seed : 0;
-  const hints = { aspect: project.aspect, ...size, durationSec: 4 };
+  // The shot's own shape when it has one (a card made in another shape), else the project's.
+  const hints = { aspect: shot.aspect ?? project.aspect, ...size, durationSec: 4 };
   let peak: number | undefined;
   const run = async (step: "effect_end_frame" | "video_effect" | "video_draft", values: Record<string, unknown>, span: [number, number]) => {
     const key = step === "effect_end_frame" ? "_effectEndJobId" : "_effectVideoJobId";
@@ -102,11 +108,14 @@ export async function runEffect(deps: EffectDeps, project: Project, shot: Shot, 
   const take: Take = { id: newId("take"), shotId: shot.id, rung: "draft", seed, jobId: job.id, videoAssetId: video.id, imageAssetId: photo.id, prompt: prompts.video };
   if (latent) take.latentAssetId = latent.id;
   if (typeof negative === "string") take.negative = negative;
+  const tool = draftTool(payload.tool);
+  if (tool) take.tool = tool;
   await deps.store.mutate(project.id, (p) => {
     p.assets.push(video, ...(latent ? [latent] : []));
     p.takes = [...p.takes.filter((t) => t.jobId !== job.id), take];
+    // A new effect is the shot's pick when it lands.
     const current = p.shots.find((s) => s.id === shot.id);
-    if (current && !current.chosenDraftId) current.chosenDraftId = take.id;
+    if (current) pickDraft(p, current, take.id);
   });
   return { outputAssetIds: [...(end ? [end.id] : []), video.id, ...(latent ? [latent.id] : [])], message: "Effect ready", ...(peak === undefined ? {} : { peakGb: peak }) };
 }

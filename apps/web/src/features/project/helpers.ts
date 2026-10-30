@@ -1,5 +1,15 @@
-import { timelineDuration, type Asset, type Aspect, type Job, type Project, type Shot, type Take } from "@nightshift/contract";
+import { isBoardAsset, timelineDuration, type Asset, type Aspect, type Job, type Project, type Shot, type Take } from "@nightshift/contract";
 import { shortDuration } from "@/lib/format";
+
+/** Whether a shot is in the cut. Shots the tools make wait in the project's media until they are sent to the timeline. */
+export function onTimeline(shot: Shot): boolean {
+  return shot.onTimeline !== false;
+}
+
+/** The shots in the cut, in order: what the storyboard, takes, finals and the export show. */
+export function timelineShots(p: Project): Shot[] {
+  return [...p.shots].filter(onTimeline).sort((a, b) => a.index - b.index);
+}
 
 export function isGpuJob(job: Job): boolean {
   return job.step !== "export" && !job.analysis;
@@ -35,7 +45,7 @@ export function bestAssetFor(p: Project, shot: Shot): { asset: Asset; rung: "fin
 }
 
 export function coverFor(p: Project): Asset | undefined {
-  for (const s of p.shots) {
+  for (const s of [...timelineShots(p), ...p.shots.filter((x) => !onTimeline(x))]) {
     const b = bestAssetFor(p, s);
     if (b) return b.asset;
   }
@@ -48,7 +58,7 @@ export function coverFor(p: Project): Asset | undefined {
  */
 export function totalDuration(p: Project): number {
   if (p.timeline?.clips.length) return timelineDuration(p.timeline);
-  return p.shots.reduce((s, x) => s + x.durationSec, 0);
+  return timelineShots(p).reduce((s, x) => s + x.durationSec, 0);
 }
 
 export function frameClass(aspect: Aspect): string {
@@ -94,24 +104,26 @@ export function lastFailed(jobs: Job[], shotId: string, steps?: Job["step"][]): 
   return latest?.status === "failed" ? latest : undefined;
 }
 
-/** Where a project is in the ladder, for the home card and the stage nav. */
+/** Where a project is, for the home card and the toolbar: its running work, else how far its timeline shots are. */
 export function projectStage(p: Project, jobs: Job[]): { label: string; tone?: "accent" | "night" | "ok" | "bad" } {
   const active = jobs.filter((j) => j.projectId === p.id && isActive(j));
   const overnight = active.filter((j) => j.mode === "overnight");
   if (overnight.length) return { label: `${overnight.length} ${overnight.length === 1 ? "final" : "finals"} tonight`, tone: "night" };
   const running = active.find((j) => j.status === "running");
-  if (running) return { label: running.analysis ? jobLabel(running) : running.step === "text" ? (p.template === "camera_move" || p.template === "vfx_effect" ? "Preparing photo" : "Writing shots") : `Making ${stepLabel[running.step].toLowerCase()}`, tone: "accent" };
+  if (running) return { label: running.analysis ? jobLabel(running) : running.step === "text" ? (p.template === "camera_move" || p.template === "vfx_effect" ? "Preparing photo" : p.template === "what_if" ? "Writing the story" : "Writing shots") : `Making ${stepLabel[running.step].toLowerCase()}`, tone: "accent" };
   if (active.length) return { label: `${active.length} queued`, tone: "accent" };
-  if (!p.shots.length) return { label: "No shots yet" };
-  const finals = p.shots.filter((s) => s.chosenFinalId).length;
-  if (finals === p.shots.length) return { label: "Ready to export", tone: "ok" };
-  if (finals) return { label: `${finals} of ${p.shots.length} finals` };
-  const drafts = p.shots.filter((s) => s.chosenDraftId).length;
-  if (drafts === p.shots.length) return { label: "Drafts picked" };
-  if (drafts) return { label: `${drafts} of ${p.shots.length} drafts` };
-  const stills = p.shots.filter((s) => s.stillAssetId).length;
-  if (stills === p.shots.length) return { label: "Storyboard ready" };
-  return { label: `${stills} of ${p.shots.length} stills` };
+  if (!p.shots.length && !p.assets.some((a) => isBoardAsset(p, a))) return { label: "Empty" };
+  const cut = timelineShots(p);
+  if (!cut.length) return { label: "Nothing on the timeline" };
+  const finals = cut.filter((s) => s.chosenFinalId).length;
+  if (finals === cut.length) return { label: "Ready to export", tone: "ok" };
+  if (finals) return { label: `${finals} of ${cut.length} finals` };
+  const drafts = cut.filter((s) => s.chosenDraftId).length;
+  if (drafts === cut.length) return { label: "Drafts picked" };
+  if (drafts) return { label: `${drafts} of ${cut.length} drafts` };
+  const stills = cut.filter((s) => s.stillAssetId).length;
+  if (stills === cut.length) return { label: "Stills ready" };
+  return { label: `${stills} of ${cut.length} stills` };
 }
 
 /**

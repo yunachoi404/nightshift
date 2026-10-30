@@ -1,7 +1,7 @@
 /**
  * The caption track's chips. A chip is as long as its line is on screen, which is often shorter than its words: the
  * chip ends in an ellipsis (CSS, on the text's own box) and grows to the whole line on hover. Before, the text sat
- * on the flex chip itself, where an ellipsis never applies, so chips read "In a w" and "The Croissan".
+ * on the flex chip itself, where an ellipsis never applies, so a chip cut its line off mid-word ("In a w").
  */
 import type { Event, Project } from "@nightshift/contract";
 import { render, screen } from "@testing-library/react";
@@ -24,17 +24,17 @@ vi.mock("@/api/config", () => ({
 // The filmstrip draws on a canvas, which jsdom lacks.
 HTMLCanvasElement.prototype.getContext = (() => null) as typeof HTMLCanvasElement.prototype.getContext;
 
-const PID = "prj_croissant";
+const PID = "prj_nocturne";
 const iso = () => new Date().toISOString();
-const LINES = ["In a world of sliced bread, one baker said no.", "The Croissant.", "Flaky, golden, and made by hand every single morning at dawn."];
+const LINES = ["Three in the morning. The city sleeps. You don't.", "Nocturne.", "Nothing gets in. Just the music, all night long, made for the night."];
 
 const project: Project = {
   id: PID,
-  name: "The Croissant",
+  name: "Nocturne ad",
   template: "product_ad",
   aspect: "16:9",
   brief: {},
-  shots: [{ id: "shot_1", index: 0, prompt: "A croissant on a marble counter", durationSec: 2.04, stillAssetId: "ast_still", locked: false }],
+  shots: [{ id: "shot_1", index: 0, prompt: "Headphones turning in mid-air in a dark void", durationSec: 2.04, stillAssetId: "ast_still", locked: false }],
   takes: [],
   assets: [
     { id: "ast_still", kind: "image", path: "assets/ast_still.png", createdAt: iso() },

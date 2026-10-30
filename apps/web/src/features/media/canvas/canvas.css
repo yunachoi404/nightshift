@@ -1,0 +1,280 @@
+/* The Media canvas (CanvasView.tsx): boards on a faint dot grid, one transformed layer, controls at the bottom right. */
+.cv {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  overflow: hidden;
+  background-color: var(--window);
+  /* The grid's size and offset follow the view; they are set inline. */
+  background-image: radial-gradient(circle, var(--line-strong) 0 1px, transparent 1.5px);
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  outline: none;
+}
+.cv:focus-visible {
+  border-radius: 0;
+  box-shadow: inset 0 0 0 3px var(--selection);
+}
+.cv--animate {
+  transition:
+    background-position var(--t-med) var(--ease-out),
+    background-size var(--t-med) var(--ease-out);
+}
+.cv--space,
+.cv--space .cvb__bar {
+  cursor: grab;
+}
+.cv--panning,
+.cv--panning .cvb__bar {
+  cursor: grabbing;
+}
+/* With Space held, every press reaches the canvas: cards neither click nor drag. */
+.cv--space .cv__layer {
+  pointer-events: none;
+}
+
+.cv__layer {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 0;
+  height: 0;
+  transform-origin: 0 0;
+}
+.cv--animate .cv__layer {
+  transition: transform var(--t-med) var(--ease-out);
+}
+
+/* ---------- a board ---------- */
+.cvb {
+  /* Zoomed out, the title bar grows so it stays readable: never under 80% of its size on screen. */
+  --cvb-bar: max(1, calc(0.8 / var(--cv-zoom, 1)));
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--raised);
+  border: 1px solid var(--line);
+  border-radius: var(--r-m);
+  box-shadow: var(--card-shadow);
+  /* The outline keeps one screen pixel and a half at any zoom. */
+  outline: calc(1.5px / var(--cv-zoom, 1)) solid transparent;
+  outline-offset: calc(2px / var(--cv-zoom, 1));
+  transition:
+    outline-color var(--t-fast) var(--ease),
+    box-shadow var(--t-fast) var(--ease);
+}
+/* The board in focus sits above any board it overlaps. */
+.cvb--current {
+  z-index: 2;
+  outline-color: var(--accent-line);
+}
+.cvb--live {
+  z-index: 3;
+  box-shadow: var(--panel-shadow);
+}
+.cvb--raised {
+  z-index: 4;
+}
+
+.cvb__bar {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 40px;
+  padding: 0 6px 0 4px;
+  border-bottom: 1px solid var(--line);
+  border-radius: var(--r-m) var(--r-m) 0 0;
+  cursor: default;
+  touch-action: none;
+  zoom: var(--cvb-bar);
+}
+.cvb__grip {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 28px;
+  border-radius: var(--r-s);
+  color: var(--text-4);
+  cursor: grab;
+  transition:
+    background-color var(--t-fast) var(--ease),
+    color var(--t-fast) var(--ease);
+}
+.cvb__grip:hover {
+  background: var(--hover);
+  color: var(--text-2);
+}
+.cvb__grip:active {
+  cursor: grabbing;
+}
+.cvb__grip svg {
+  width: 14px;
+  height: 14px;
+}
+.cvb__grip--off,
+.cvb__grip--off:hover {
+  background: transparent;
+  color: var(--text-4);
+  opacity: 0.5;
+  cursor: default;
+}
+.cvb__name {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+  font-weight: 600;
+  color: var(--text);
+}
+.cvb__rename {
+  flex: 1;
+  min-width: 0;
+  min-height: 28px;
+  height: 28px;
+  padding: 3px 8px;
+  margin-left: -2px;
+  font-weight: 600;
+}
+.cvb__count {
+  flex: none;
+  font-size: var(--fs-small);
+  line-height: var(--lh-small);
+  color: var(--text-3);
+  font-variant-numeric: tabular-nums;
+  margin-right: auto;
+}
+.cvb__more {
+  position: relative;
+  flex: none;
+}
+/* Its menu stays the same size on screen at any zoom. */
+.cvb__more .menu {
+  scale: calc(1 / (var(--cv-zoom, 1) * var(--cvb-bar, 1)));
+  transform-origin: top right;
+}
+.cvb__off {
+  align-items: flex-start;
+}
+.cvb__off:disabled {
+  color: var(--text-3);
+  cursor: default;
+}
+.cvb__off:disabled:hover {
+  background: transparent;
+}
+.cvb__off svg {
+  margin-top: 2px;
+}
+.cvb__off-text {
+  display: flex;
+  flex-direction: column;
+}
+.cvb__off-text small {
+  font-size: var(--fs-small);
+  line-height: var(--lh-small);
+  color: var(--text-4);
+}
+
+.cvb__body {
+  min-width: 0;
+  min-height: 96px;
+  overflow: hidden;
+  border-radius: 0 0 var(--r-m) var(--r-m);
+  container-type: inline-size;
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+/* The right edge widens or narrows the board. */
+.cvb__resize {
+  position: absolute;
+  top: calc(40px * var(--cvb-bar, 1));
+  right: -5px;
+  bottom: 0;
+  width: 10px;
+  cursor: ew-resize;
+  touch-action: none;
+}
+.cvb__resize::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 3px;
+  width: 4px;
+  height: 36px;
+  margin-top: -18px;
+  border-radius: 2px;
+  background: var(--line-strong);
+  opacity: 0;
+  transition: opacity var(--t-fast) var(--ease);
+}
+.cvb:hover > .cvb__resize::after,
+.cvb--live > .cvb__resize::after {
+  opacity: 1;
+}
+
+/* ---------- controls ---------- */
+.cv__dock {
+  position: absolute;
+  right: 16px;
+  bottom: 16px;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  height: 38px;
+  padding: 0 5px;
+  background: var(--raised);
+  border-radius: var(--r-pill);
+  box-shadow: var(--panel-shadow);
+}
+.cv__sep {
+  width: 1px;
+  height: 18px;
+  margin: 0 4px;
+  background: var(--line);
+}
+.cv__zoom {
+  min-width: 48px;
+  height: 26px;
+  padding: 0 6px;
+  border-radius: var(--r-pill);
+  font-size: var(--fs-small);
+  font-weight: 500;
+  color: var(--text-2);
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  transition:
+    background-color var(--t-fast) var(--ease),
+    color var(--t-fast) var(--ease);
+}
+.cv__zoom:hover {
+  background: var(--hover);
+  color: var(--text);
+}
+.cv__zoom:focus-visible {
+  border-radius: var(--r-pill);
+}
+
+/* The label a board shows while it is dragged out to the timeline. Lives on <body> for a moment. */
+.cv-ghost {
+  position: fixed;
+  top: -200px;
+  left: 0;
+  padding: 6px 12px;
+  border-radius: var(--r-pill);
+  background: var(--raised);
+  color: var(--text);
+  font: 500 var(--fs-small) / var(--lh-small) var(--font);
+  box-shadow: var(--panel-shadow);
+  white-space: nowrap;
+}

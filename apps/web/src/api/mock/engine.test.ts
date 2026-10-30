@@ -1,9 +1,9 @@
 /**
  * The in-browser mock engine (dev mode, `?api=mock`) picks finals like the real engine: a new pick gets that draft's
  * final or none, a final that finishes after its draft lost the pick does not take over, and picking that draft again
- * brings its final back.
+ * brings its final back. A new draft is the pick when it lands. See media.test.ts for boards, the tools and versions.
  */
-import type { Asset, FinalKind, Project, Shot } from "@nightshift/contract";
+import { MAIN_BOARD_ID, projectBoards, type Asset, type FinalKind, type Project, type Shot } from "@nightshift/contract";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { MockEngine } from "./engine";
 
@@ -77,6 +77,24 @@ describe("mock engine picks", () => {
   });
 });
 
+describe("mock engine: a project made before boards", () => {
+  it("opens as one board of its shot, and a new draft takes the pick from the final until Take 1 is picked again", () => {
+    const p = engine.getProject(PID);
+    expect(projectBoards(p)).toEqual([{ id: MAIN_BOARD_ID, name: "Shots", items: ["shot_1"] }]);
+    engine.updateProject(PID, { name: "Ferry at dusk" });
+    expect(engine.getProject(PID).timeline?.clips.map((c) => c.assetId)).toEqual(["ast_final_1"]);
+
+    const job = engine.draft(PID, "shot_1");
+    vi.advanceTimersByTime(150);
+    engine.finishRunningNow();
+    const made = engine.getProject(PID).takes.find((t) => t.jobId === job.id)!;
+    expect(shown()).toEqual([made.id, undefined]);
+    expect(engine.getProject(PID).timeline?.clips.map((c) => c.assetId)).toEqual([made.videoAssetId]);
+    expect(pick("take_1")).toEqual(["take_1", "final_1"]);
+    expect(engine.getProject(PID).timeline?.clips.map((c) => c.assetId)).toEqual(["ast_final_1"]);
+  });
+});
+
 describe("mock engine: another app on the GPU", () => {
   it("the dev control puts otherGpuUse on the status and the event stream, and takes it off again", () => {
     engine.state.runtime = { ...engine.state.runtime, comfyui: { running: true, url: "mock://comfyui", version: "mock" } };
@@ -95,5 +113,31 @@ describe("mock engine: another app on the GPU", () => {
     engine.state.settings = { ...engine.state.settings, remote: { url: "http://spark:8190", name: "NVIDIA GB10" } };
     engine.setDev({ faults: { ...engine.dev.faults, gpuShared: true } });
     expect(engine.status().otherGpuUse).toBeUndefined();
+  });
+});
+
+describe("mock engine: finals for the night", () => {
+  it("are grouped by the model they load and run one group after the other, as the engine runs them", () => {
+    const queue = (draftId: string, kind: FinalKind) => engine.final(PID, "shot_1", { draftId, kind, mode: "overnight" });
+    const same1 = queue("take_1", "same_take");
+    const remaster = queue("take_1", "remaster");
+    const same2 = queue("take_2", "same_take");
+    expect([same1, remaster, same2].map((j) => [j.model, j.nightGroup])).toEqual([
+      ["LTX-2.5", same1.nightGroup],
+      ["MiniMax H3", remaster.nightGroup],
+      ["LTX-2.5", same1.nightGroup],
+    ]);
+    expect(remaster.nightGroup).toBeGreaterThan(same1.nightGroup!);
+    engine.setDev({ simulateNight: true });
+    const ran: string[] = [];
+    for (let i = 0; i < 3; i++) {
+      vi.advanceTimersByTime(150);
+      const running = engine.listJobs().find((j) => j.status === "running")!;
+      ran.push(running.id);
+      // An LTX final queued once its group has started waits for the next turn, after the remaster.
+      if (i === 0) expect(queue("take_2", "same_take").nightGroup).toBeGreaterThan(remaster.nightGroup!);
+      engine.finishRunningNow();
+    }
+    expect(ran).toEqual([same1.id, same2.id, remaster.id]);
   });
 });

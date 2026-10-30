@@ -1,0 +1,563 @@
+/*
+ * A shot card, opened. Left: the selected version on the media black, what it is under it, and the row of versions.
+ * Right: the card's title, one status line, then its edits in quiet sections, and the timeline at the foot. Banana marks
+ * only the pick, the selected version, an open tool, focus, progress and the one main action of a context.
+ */
+.cd {
+  /* The selected version's ring: the deeper banana reads on white, the bright one on black. */
+  --cd-ring: var(--banana-line);
+  overflow: hidden;
+}
+:root[data-theme="dark"] .cd {
+  --cd-ring: var(--banana);
+}
+.cd .dialog__body {
+  padding: 0;
+  gap: 0;
+}
+.cd-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) clamp(300px, 28vw, 336px);
+  height: min(760px, calc(100vh - 64px));
+}
+
+/* ---------- The view: stage, caption, versions ---------- */
+.cd-view {
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+.cd-stage {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 28px 32px;
+  background: var(--media);
+  container-type: size;
+}
+.cd-stage__frame {
+  height: auto;
+}
+/* No hairline on the media black. The dark theme draws one with a stronger selector. */
+.cd .cd-stage .cd-stage__frame.frame {
+  box-shadow: none;
+}
+.cd-stage__frame.frame--16x9 {
+  width: min(100%, calc(100cqh * 16 / 9));
+}
+.cd-stage__frame.frame--9x16 {
+  width: min(100%, calc(100cqh * 9 / 16));
+}
+.cd-stage__frame.frame--1x1 {
+  width: min(100%, 100cqh);
+}
+.cd .cd-stage .cd-stage__frame.frame--empty {
+  background: rgba(255, 255, 255, 0.04);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+}
+.cd-stage__empty {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: var(--fs-small);
+  line-height: var(--lh-small);
+}
+.cd-stage__play {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: var(--r-pill);
+  color: #fff;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(8px);
+  transition: background-color var(--t-fast) var(--ease);
+}
+.cd-stage__play:hover {
+  background: rgba(0, 0, 0, 0.65);
+}
+.cd-stage__play:focus-visible {
+  border-radius: var(--r-pill);
+}
+.cd-stage__play svg {
+  width: 13px;
+  height: 13px;
+  fill: currentColor;
+  stroke-width: 0;
+}
+
+.cd-caption {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-height: 64px;
+  padding: 14px 24px 6px;
+}
+.cd-caption__text {
+  flex: 1;
+  min-width: 0;
+}
+.cd-caption__line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+}
+.cd-caption__kind {
+  min-width: 0;
+  font-weight: 600;
+  color: var(--text);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.cd-caption__time {
+  flex: none;
+  font-size: var(--fs-small);
+  color: var(--text-3);
+}
+.cd-caption__prompt {
+  margin-top: 2px;
+  font-size: var(--fs-small);
+  line-height: var(--lh-small);
+  color: var(--text-3);
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+.cd-caption__note {
+  flex: none;
+  font-size: var(--fs-small);
+  color: var(--text-3);
+}
+
+/* The pick: a small banana tag, dark text on yellow. */
+.cd-pick {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 3px;
+  height: 18px;
+  padding: 0 7px 0 5px;
+  border-radius: var(--r-pill);
+  background: var(--banana);
+  color: var(--on-banana);
+  font-size: var(--fs-micro);
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+}
+.cd-pick svg {
+  width: 11px;
+  height: 11px;
+  stroke-width: 2.6;
+}
+
+/* ---------- Versions, oldest first ---------- */
+.cd-strip {
+  flex: none;
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  padding: 10px 24px 20px;
+  scroll-padding-inline: 24px;
+}
+.cd-ver {
+  flex: none;
+  width: 116px;
+}
+.cd-ver:has(.frame--1x1) {
+  width: 84px;
+}
+.cd-ver:has(.frame--9x16) {
+  width: 72px;
+}
+.cd-ver .frame--9x16 {
+  aspect-ratio: 4 / 5;
+}
+.cd-ver__btn {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  text-align: left;
+  border-radius: var(--r-frame);
+}
+/* The ring goes on the picture, not around the label. */
+.cd-ver__btn:focus-visible {
+  box-shadow: none;
+}
+/* The rings beat the frame's own hairline, which the dark theme sets with a stronger selector. */
+.cd-strip .cd-ver__frame.frame {
+  width: 100%;
+  transition: box-shadow var(--t-fast) var(--ease);
+}
+.cd-strip .cd-ver__btn:hover .cd-ver__frame.frame {
+  box-shadow:
+    0 0 0 2px var(--raised),
+    0 0 0 3px var(--line-strong);
+}
+.cd-strip .cd-ver--selected .cd-ver__frame.frame {
+  box-shadow:
+    0 0 0 2px var(--raised),
+    0 0 0 4px var(--cd-ring);
+}
+.cd-strip .cd-ver__btn:focus-visible .cd-ver__frame.frame {
+  box-shadow: var(--focus);
+}
+.cd-ver__pick {
+  position: absolute;
+  left: 5px;
+  top: 5px;
+  pointer-events: none;
+}
+.cd-ver__kind {
+  margin-top: 8px;
+  font-size: var(--fs-small);
+  line-height: var(--lh-small);
+  font-weight: 500;
+  color: var(--text);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.cd-ver__time {
+  font-size: var(--fs-micro);
+  line-height: var(--lh-micro);
+  color: var(--text-3);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.cd-ver--working .cd-ver__kind {
+  color: var(--text-2);
+}
+.cd-ver__progress {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 3px;
+  background: var(--track);
+}
+.cd-ver__progress > div {
+  height: 100%;
+  background: var(--banana-fill);
+  transition: width 240ms linear;
+}
+.cd-ver__progress--night > div {
+  background: var(--amber-fill);
+}
+
+/* ---------- The side: title, status, sections, foot ---------- */
+.cd-side {
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  border-left: 1px solid var(--line);
+}
+.cd-head {
+  flex: none;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 24px 16px 4px 24px;
+}
+.cd-head__text {
+  flex: 1;
+  min-width: 0;
+}
+.cd-title {
+  font-family: var(--font-display);
+  font-size: 20px;
+  line-height: 26px;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+.cd-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 26px;
+  margin-top: 2px;
+  font-size: var(--fs-small);
+  line-height: var(--lh-small);
+  color: var(--text-3);
+}
+.cd-status__text {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.cd-close {
+  flex: none;
+}
+
+.cd-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  padding: 16px 24px 24px;
+}
+.cd-sec {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.cd-sec__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 20px;
+}
+.cd-sec__title {
+  display: block;
+  margin: 0;
+  font-size: var(--fs-small);
+  line-height: var(--lh-small);
+  font-weight: 600;
+  color: var(--text-2);
+}
+.cd-text {
+  font-size: var(--fs-small);
+  line-height: 17px;
+  color: var(--text-3);
+  text-wrap: pretty;
+}
+.cd-prompt.textarea {
+  min-height: 92px;
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+}
+.cd-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.cd-row--end {
+  justify-content: flex-end;
+}
+.cd-row__gap {
+  flex: 1;
+}
+
+/* Camera and length: what another take uses. */
+.cd-fields {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+}
+.cd-fields .select,
+.cd-fields .input {
+  min-height: 30px;
+  font-size: var(--fs-body);
+}
+.cd-dur {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--fs-small);
+  color: var(--text-3);
+}
+.cd-dur .input {
+  width: 64px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* The ways to make a new version: rows in one soft group, the open one in soft banana. */
+.cd-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 4px;
+  border-radius: var(--r-m);
+  background: var(--inset);
+}
+:root[data-theme="dark"] .cd-actions {
+  background: var(--inset-2);
+}
+.cd-action {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 34px;
+  padding: 0 10px;
+  border-radius: var(--r-s);
+  font-size: var(--fs-body);
+  font-weight: 500;
+  color: var(--text);
+  text-align: left;
+  transition: background-color var(--t-fast) var(--ease);
+}
+.cd-action:hover:not(:disabled) {
+  background: var(--hover);
+}
+.cd-action:active:not(:disabled) {
+  background: var(--press);
+}
+:root[data-theme="dark"] .cd-action:hover:not(:disabled) {
+  background: var(--press);
+}
+.cd-action[aria-expanded="true"],
+.cd-action[aria-expanded="true"]:hover:not(:disabled) {
+  background: var(--banana-soft);
+}
+.cd-action:disabled {
+  opacity: 0.4;
+}
+.cd-action[aria-busy="true"] {
+  opacity: 1;
+}
+.cd-action__icon {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  color: var(--text-2);
+}
+.cd-action__icon svg {
+  width: 16px;
+  height: 16px;
+  stroke-width: 1.8;
+}
+.cd-action__label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.cd-action__chevron {
+  flex: none;
+  width: 14px;
+  height: 14px;
+  color: var(--text-3);
+  transition: transform var(--t-fast) var(--ease);
+}
+.cd-action[aria-expanded="true"] .cd-action__chevron {
+  transform: rotate(180deg);
+}
+
+/* Edit image in its open state. Other tools open as rows above. */
+.cd-toggle[aria-expanded="true"],
+.cd-toggle[aria-expanded="true"]:hover:not(:disabled) {
+  background: var(--banana-soft);
+  border-color: var(--banana-line);
+}
+
+/* An open tool: a soft well under the row that opened it. */
+.cd-tool {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px;
+  border-radius: var(--r-m);
+  background: var(--inset);
+}
+.cd-actions > .cd-tool {
+  margin: 0 0 4px;
+  padding: 8px 8px 10px;
+  background: none;
+}
+:root[data-theme="dark"] .cd-tool {
+  background: var(--inset-2);
+}
+.cd-tool .effects.effects--compact {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+}
+.cd-tool .effect {
+  padding: 3px 3px 6px;
+}
+.cd-tool .effect__preview {
+  aspect-ratio: 1;
+  object-fit: cover;
+}
+.cd-tool .effect__name {
+  margin: 5px 3px 0;
+  font-size: var(--fs-micro);
+  line-height: var(--lh-micro);
+}
+.cd-tool .effect__hint {
+  display: none;
+}
+.cd-tool .camera-moves {
+  grid-template-columns: 1fr;
+  gap: 6px;
+}
+.cd-tool .camera-move {
+  min-height: 0;
+  padding: 5px 8px 5px 5px;
+}
+.cd-tool .camera-move__preview {
+  width: 72px;
+  flex-basis: 72px;
+}
+
+/* Tonight: the overnight sentence, in the night's own color. */
+.cd-night {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px 14px;
+  border-radius: var(--r-m);
+  background: var(--amber-soft);
+  font-size: var(--fs-small);
+  line-height: 17px;
+}
+.cd-night p {
+  color: var(--text-2);
+}
+.cd-night .cd-night__quiet {
+  color: var(--text-3);
+}
+.cd-night .cd-row {
+  margin-top: 4px;
+}
+
+.cd-foot {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px 24px 18px;
+  border-top: 1px solid var(--line);
+}
+.cd-confirm {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 14px;
+  border-radius: var(--r-m);
+  background: var(--bad-soft);
+  font-size: var(--fs-small);
+  line-height: 17px;
+}

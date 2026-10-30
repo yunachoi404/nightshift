@@ -148,6 +148,13 @@ export const TEMPLATES: Record<TemplateId, TemplateDef> = {
     lines: "none",
     fallback: (brief) => fallbackShots("vfx_effect", brief),
   },
+  // A blank project has no shot list: it fills from the project's tools, and its prompts are used as written.
+  blank: {
+    style: "",
+    instructions: `You describe one shot. ${storyboardFormat("none")}`,
+    lines: "none",
+    fallback: () => [],
+  },
 };
 
 /** The full image or video prompt: the shot's prompt as a finished sentence, the camera move, the template's style. */

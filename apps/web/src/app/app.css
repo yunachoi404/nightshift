@@ -2,7 +2,7 @@
 .app {
   height: 100%;
   display: grid;
-  grid-template-columns: var(--sidebar-w) minmax(0, 1fr);
+  grid-template-columns: auto minmax(0, 1fr);
   background: var(--window);
 }
 :root[data-desktop-vibrancy] .app {
@@ -29,12 +29,43 @@
 }
 
 /* ---------- Sidebar: a source list ---------- */
+/* Its contents keep their width and sit at its right edge, so collapsing slides them out to the left. */
 .sidebar {
+  width: var(--sidebar-w);
   display: flex;
   flex-direction: column;
+  align-items: flex-end;
   min-height: 0;
+  overflow: hidden;
   background: var(--sidebar);
   border-right: 1px solid var(--line);
+}
+.sidebar > * {
+  width: calc(var(--sidebar-w) - 1px);
+}
+.app--collapsed .sidebar {
+  width: 0;
+  border-right-width: 0;
+  visibility: hidden;
+}
+/* The width animates only while the user toggles; it hides once it has slid out. */
+.app--sidebar-moving .sidebar {
+  transition:
+    width var(--t-med) var(--ease-out),
+    border-right-width var(--t-med) var(--ease-out),
+    visibility 0s linear;
+}
+.app--sidebar-moving.app--collapsed .sidebar {
+  transition:
+    width var(--t-med) var(--ease-out),
+    border-right-width var(--t-med) var(--ease-out),
+    visibility 0s linear var(--t-med);
+}
+@media (prefers-reduced-motion: reduce) {
+  .app--sidebar-moving .sidebar,
+  .app--sidebar-moving.app--collapsed .sidebar {
+    transition: none;
+  }
 }
 .sidebar__top {
   height: var(--toolbar-h);
@@ -58,17 +89,18 @@
   line-height: var(--lh-micro);
   font-weight: 600;
   color: var(--text-3);
-  padding: 14px 8px 4px;
+  padding: 18px 8px 6px;
 }
 .side__head:first-child {
-  padding-top: 6px;
+  padding-top: 4px;
 }
 .side__item {
   display: flex;
   align-items: center;
-  gap: 9px;
-  height: 30px;
-  padding: 0 9px;
+  gap: 8px;
+  height: 28px;
+  flex: none;
+  padding: 0 8px;
   border-radius: var(--r-s);
   color: var(--text);
   font-size: var(--fs-body);
@@ -82,23 +114,25 @@
 }
 .side__item[aria-current="page"],
 .side__item[aria-current="true"] {
-  background: var(--raised);
-  box-shadow: 0 1px 2px rgba(24, 24, 27, 0.08), 0 0 0 0.5px rgba(24, 24, 27, 0.06);
-}
-:root[data-theme="dark"] .side__item[aria-current="page"],
-:root[data-theme="dark"] .side__item[aria-current="true"] {
   background: var(--select);
-  box-shadow: none;
+  font-weight: 500;
 }
 .side__item svg {
-  width: 16px;
+  /* A 16px icon in the 20px column the project thumbnails use, so every label starts at the same place. */
+  width: 20px;
   height: 16px;
+  padding: 0 2px;
   flex: none;
-  color: var(--text-2);
+  color: var(--text-3);
   stroke-width: 1.8;
 }
-.side__item--project svg {
-  color: var(--text-3);
+.side__item[aria-current="page"] svg,
+.side__item[aria-current="true"] svg {
+  color: var(--text);
+}
+/* Adding a project is quieter than the projects themselves. */
+.side__item--new {
+  color: var(--text-2);
 }
 .side__label {
   flex: 1;
@@ -127,14 +161,14 @@
   color: var(--amber);
 }
 .side__badge--live {
-  background: var(--accent-soft);
-  color: var(--accent);
+  background: var(--banana-soft);
+  color: var(--text);
 }
 .side__thumb {
-  width: 22px;
-  height: 22px;
+  width: 20px;
+  height: 20px;
   flex: none;
-  border-radius: 5px;
+  border-radius: 4px;
   overflow: hidden;
   background: var(--media-empty);
   box-shadow: inset 0 0 0 0.5px var(--line-strong);
@@ -261,6 +295,13 @@
 .app--single .toolbar {
   padding-left: calc(var(--traffic) + 20px);
 }
+/* Collapsed, the toolbar starts with the toggle, clear of the window controls in the desktop app. */
+.app--collapsed .toolbar {
+  padding-left: calc(var(--traffic) + 10px);
+}
+.toolbar__left > .side-toggle {
+  margin-right: 4px;
+}
 .toolbar__left,
 .toolbar__right {
   display: flex;
@@ -328,6 +369,11 @@
   -webkit-app-region: no-drag;
   app-region: no-drag;
 }
+/* Media and Editor take the same width, so the knob does not change size as it moves. */
+.toolbar .seg__opt {
+  min-width: 76px;
+  justify-content: center;
+}
 .stage-dot {
   width: 5px;
   height: 5px;
@@ -375,7 +421,7 @@
   height: 14px;
   flex: none;
   border-radius: 50%;
-  background: conic-gradient(var(--ring-color, var(--accent)) calc(var(--pct, 0) * 1%), var(--track) 0);
+  background: conic-gradient(var(--ring-color, var(--banana-fill)) calc(var(--pct, 0) * 1%), var(--track) 0);
   position: relative;
 }
 .ring::after {

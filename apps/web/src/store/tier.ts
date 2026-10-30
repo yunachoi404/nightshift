@@ -1,4 +1,4 @@
-import type { HardwareProfile, TierSummary } from "@nightshift/contract";
+import type { HardwareProfile, RuntimeStatus, TierSummary } from "@nightshift/contract";
 import { useEffect, useState } from "react";
 import { useEngine, useEngineState } from "./engine";
 
@@ -103,13 +103,18 @@ export function isMac(os?: HardwareProfile["os"] | null): boolean {
 }
 
 /**
- * The machine the engine runs on: where projects live and exports run. Its hardware is known when work runs here;
- * when it runs on a GPU computer, the hardware read is that computer's, so the desktop shell or the browser decides.
+ * Whether the machine the engine runs on is a Mac. Local, mock and attach mode read that machine's own hardware (attach
+ * mode only sends the work through a proxy); remote mode reads the GPU computer's, so the desktop shell or the browser
+ * decides.
  */
+export function engineOnMac(mode: RuntimeStatus["mode"] | undefined, os: HardwareProfile["os"] | undefined): boolean {
+  return isMac(mode === "local" || mode === "mock" || mode === "attach" ? os : null);
+}
+
+/** The machine the engine runs on: where projects live and exports run. */
 export function useThisMachine(): { name: string; lower: string } {
   const hw = useHardware();
   const { status } = useEngineState();
-  const local = status?.mode === "local" || status?.mode === "mock";
-  const mac = isMac(local ? hw?.os : null);
+  const mac = engineOnMac(status?.mode, hw?.os);
   return { name: machineName(mac), lower: machineName(mac, true) };
 }

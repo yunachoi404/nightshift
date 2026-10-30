@@ -1,4 +1,4 @@
-/* ---------- Buttons: pills. 30px regular, 26px small, 40px large. Ink for the main action, amber for the night. ---------- */
+/* ---------- Buttons: pills. 30px regular, 26px small, 40px large. Banana for the main action, amber for the night. ---------- */
 .btn {
   --btn-h: 30px;
   --btn-px: 14px;
@@ -37,10 +37,10 @@
 .btn:disabled {
   opacity: 0.4;
 }
-/* Pills stay pills when focused; the base focus rule would square them off. */
-.btn:focus-visible,
-.seg__opt:focus-visible {
+/* Every button shows the focus ring, whatever shadow its variant has. Pills stay pills when focused. */
+.btn:focus-visible {
   border-radius: var(--r-pill);
+  box-shadow: var(--focus);
 }
 .btn svg {
   width: 15px;
@@ -63,17 +63,33 @@
   font-size: var(--fs-read);
 }
 .btn--primary {
-  background: var(--accent);
-  color: var(--on-accent);
+  background: var(--banana);
+  color: var(--on-banana);
+  border-color: var(--banana-line);
+  box-shadow: none;
+}
+:root[data-theme="dark"] .btn--primary {
   border-color: transparent;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
 }
 .btn--primary:hover:not(:disabled) {
-  background: var(--accent-2);
+  background: var(--banana-hover);
 }
 .btn--primary:active:not(:disabled) {
-  background: var(--accent);
+  background: var(--banana-press);
   transform: scale(0.98);
+}
+/* A main action that cannot run yet goes quiet instead of showing a faded yellow. Busy keeps its color. */
+.btn--primary:disabled:not([aria-busy="true"]),
+.btn--night:disabled:not([aria-busy="true"]) {
+  opacity: 1;
+  background: var(--press);
+  color: var(--text-4);
+  border-color: transparent;
+  box-shadow: none;
+}
+.btn--primary[aria-busy="true"],
+.btn--night[aria-busy="true"] {
+  opacity: 1;
 }
 .btn--night {
   background: var(--amber-fill);
@@ -186,8 +202,8 @@
 .input:focus,
 .textarea:focus,
 .select:focus {
-  border-color: var(--accent-line);
-  box-shadow: 0 0 0 3px var(--accent-soft);
+  border-color: var(--focus-edge);
+  box-shadow: var(--focus-field);
 }
 .input:disabled,
 .textarea:disabled,
@@ -252,6 +268,10 @@
   background: var(--seg-knob);
   color: var(--text);
   box-shadow: var(--seg-knob-shadow);
+}
+.seg__opt:focus-visible {
+  border-radius: var(--r-pill);
+  box-shadow: var(--focus);
 }
 .seg__opt:disabled {
   opacity: 0.4;
@@ -335,7 +355,7 @@
 .bar__fill {
   position: absolute;
   inset: 0 auto 0 0;
-  background: var(--accent);
+  background: var(--banana-fill);
   border-radius: 4px;
   transition: width var(--t-slow) var(--ease);
 }
@@ -364,13 +384,10 @@
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background: var(--accent);
+  background: var(--banana-fill);
   flex: none;
   animation: pulse 1.6s var(--ease) infinite;
-  --pulse-rgb: 28, 27, 25;
-}
-:root[data-theme="dark"] .pulse {
-  --pulse-rgb: 243, 240, 234;
+  --pulse-rgb: 245, 203, 0;
 }
 .pulse--night {
   background: var(--amber-fill);
@@ -454,7 +471,7 @@
 .slider::-webkit-slider-runnable-track {
   height: 4px;
   border-radius: 2px;
-  background: linear-gradient(to right, var(--accent) 0 var(--pct, 50%), var(--track) var(--pct, 50%));
+  background: linear-gradient(to right, var(--banana-fill) 0 var(--pct, 50%), var(--track) var(--pct, 50%));
 }
 .slider::-webkit-slider-thumb {
   -webkit-appearance: none;
@@ -470,7 +487,7 @@
   box-shadow: none;
 }
 .slider:focus-visible::-webkit-slider-thumb {
-  box-shadow: var(--focus-ring);
+  box-shadow: var(--focus);
 }
 
 /* ---------- Switch ---------- */
@@ -509,16 +526,13 @@
   height: 0;
 }
 .switch input:checked + .switch__track {
-  background: var(--accent);
+  background: var(--banana-fill);
 }
 .switch input:checked + .switch__track::after {
   transform: translateX(12px);
 }
-:root[data-theme="dark"] .switch input:checked + .switch__track::after {
-  background: var(--on-accent);
-}
 .switch input:focus-visible + .switch__track {
-  box-shadow: var(--focus-ring);
+  box-shadow: var(--focus);
 }
 
 /* ---------- Checkbox ---------- */
@@ -526,55 +540,77 @@
   width: 14px;
   height: 14px;
   margin: 0;
-  accent-color: var(--accent);
+  accent-color: var(--banana-fill);
 }
 
-/* ---------- Dialog: a sheet dropping from the title bar ---------- */
+/* ---------- Dialog: a calm sheet over a dimmed window ---------- */
 .dialog {
   border: 0;
   padding: 0;
   background: var(--raised);
-  background-image: var(--sheen);
   color: var(--text);
   border-radius: var(--r-l);
   box-shadow: var(--sheet-shadow);
   width: min(520px, calc(100vw - 48px));
   max-height: calc(100vh - 64px);
   margin: auto;
+  overscroll-behavior: contain;
 }
 .dialog::backdrop {
   background: var(--scrim);
 }
+/* Motion only on open: the scrim fades in, the sheet settles from a touch smaller. */
 .dialog[open] {
   animation: dialog-in var(--t-med) var(--ease-out);
+}
+.dialog[open]::backdrop {
+  animation: scrim-in var(--t-med) var(--ease-out);
 }
 @keyframes dialog-in {
   from {
     opacity: 0;
-    transform: translateY(-10px) scale(0.99);
+    transform: scale(0.97);
+  }
+}
+@keyframes scrim-in {
+  from {
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dialog[open],
+  .dialog[open]::backdrop {
+    animation: none;
   }
 }
 .dialog__body {
-  padding: 26px 26px 22px;
+  padding: 28px 28px 24px;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 12px;
 }
 .dialog__title {
   font-family: var(--font-display);
-  font-size: var(--fs-title-3);
-  line-height: var(--lh-title-3);
+  font-size: 22px;
+  line-height: 28px;
   font-weight: 400;
   letter-spacing: -0.01em;
+  text-wrap: balance;
 }
 .dialog__text {
   color: var(--text-2);
+  max-width: 60ch;
+  text-wrap: pretty;
+}
+.dialog__title + .dialog__text {
+  margin-top: -4px;
 }
 .dialog__actions {
   display: flex;
   justify-content: flex-end;
+  align-items: center;
   gap: 8px;
-  padding-top: 6px;
+  padding-top: 12px;
 }
 
 /* ---------- Menu ---------- */

@@ -1,8 +1,9 @@
-import type { InstallPlan, ModelFile, Recipe } from "@nightshift/contract";
+import type { InstallPlan, ModelFile, Recipe, ReusedModel, ReuseSkipped } from "@nightshift/contract";
 import { stat } from "node:fs/promises";
 import { join } from "node:path";
 import { GIB, round1 } from "../util.js";
 import { searchDirs, type ModelDirs } from "./modelDirs.js";
+import type { ReuseStore } from "./reuse.js";
 
 /** Disk the ComfyUI install itself takes (Python, PyTorch, node packs), on top of the models. */
 export const RUNTIME_INSTALL_GB = 9;
@@ -29,14 +30,29 @@ export async function planInstall(o: {
   comfyDir: string;
   freeDiskGb: number;
   runtimeInstalled: boolean;
+  /** Models found outside Nightshift. One the install can use counts as present; one it cannot is downloaded. */
+  reuse?: ReuseStore;
 }): Promise<InstallPlan> {
   const downloads: ModelFile[] = [];
   const alreadyPresent: string[] = [];
+  const reused: ReusedModel[] = [];
+  const reuseSkipped: ReuseSkipped[] = [];
   for (const model of o.recipe.models) {
-    if (await findModel(model, o.dirs, o.comfyDir)) alreadyPresent.push(model.id);
+    const found = await o.reuse?.status(model, join(o.comfyDir, "models", model.folder, model.filename));
+    if (found?.kind === "reuse") {
+      alreadyPresent.push(model.id);
+      reused.push({ id: model.id, ...(model.name ? { name: model.name } : {}), path: found.path, sizeGb: model.sizeGb, checked: found.checked });
+    } else if (found?.kind === "skip") {
+      reuseSkipped.push({ id: model.id, ...(model.name ? { name: model.name } : {}), path: found.path, reason: found.reason });
+      downloads.push(model);
+    } else if (await findModel(model, o.dirs, o.comfyDir)) alreadyPresent.push(model.id);
     else downloads.push(model);
   }
   const totalDownloadGb = round1(downloads.reduce((s, m) => s + m.sizeGb, 0));
   const needGb = totalDownloadGb + (o.runtimeInstalled ? 0 : RUNTIME_INSTALL_GB) + DISK_MARGIN_GB;
-  return { tier: o.recipe.tier, downloads, alreadyPresent, totalDownloadGb, freeDiskGb: o.freeDiskGb, fits: needGb <= o.freeDiskGb };
+  const plan: InstallPlan = { tier: o.recipe.tier, downloads, alreadyPresent, totalDownloadGb, freeDiskGb: o.freeDiskGb, fits: needGb <= o.freeDiskGb };
+  if (reused.length) plan.reused = reused;
+  if (reuseSkipped.length) plan.reuseSkipped = reuseSkipped;
+  if (o.reuse?.scan) plan.scan = o.reuse.scan;
+  return plan;
 }

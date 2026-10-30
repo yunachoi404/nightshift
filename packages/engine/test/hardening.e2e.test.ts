@@ -26,7 +26,7 @@ const runner: StepRunner = { run: (req, ctx) => (calls.push(structuredClone(req)
 const jobsOf = new Map<string, string>();
 const last = (step: string, projectId: string) => [...calls].reverse().find((c) => c.step === step && jobsOf.get(c.jobId) === projectId)!;
 
-async function until<T>(get: () => Promise<T>, ok: (v: T) => boolean, ms = 10_000): Promise<T> {
+async function until<T>(get: () => Promise<T>, ok: (v: T) => boolean, ms = 30_000): Promise<T> {
   const end = Date.now() + ms;
   for (;;) {
     const v = await get();

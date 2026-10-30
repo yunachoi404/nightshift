@@ -66,3 +66,31 @@
 .q-item__bar {
   margin-top: 6px;
 }
+
+/* Tonight: finals for the night in groups that share a model, each under a line that names it. */
+.q-note {
+  font-size: var(--fs-small);
+  line-height: var(--lh-small);
+  color: var(--text-3);
+  padding: 0 4px 10px;
+  max-width: 64ch;
+}
+.q-batch + .q-batch {
+  border-top: 1px solid var(--line);
+}
+.q-batch__head {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 7px 16px;
+  background: var(--amber-soft);
+  font-size: var(--fs-small);
+  line-height: var(--lh-small);
+}
+.q-batch__model {
+  font-weight: 600;
+  color: var(--amber);
+}
+.q-batch__count {
+  color: var(--text-3);
+}

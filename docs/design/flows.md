@@ -194,9 +194,15 @@ Grouped lists in the System Settings style, 720 px wide:
 
 ## 9. Queue
 
-A page: Running (with a bar and Cancel), Waiting (with "Tonight" tags and start times, Remove), Recent
-(done, failed with the message, cancelled). The lead line under the title says where renders run and
+A page: Running (with a bar and Cancel), Waiting (quick work and finals to run now, Remove), Tonight,
+Recent (done, failed with the message, cancelled). The lead line under the title says where renders run and
 whether that computer is answering.
+
+Tonight lists the finals for the night in the order they run, in groups that share a model. Each group sits
+under an amber line that names the model and counts its finals ("LTX-2.5, 2 finals"; "1 more final" while one of
+them runs). With more than one group, a note says why: "Finals that share a model run back to back, so each model
+loads once. Groups go in the order you queued them." Each row says what it waits for: the window, Paused in
+Settings, Next up or In line.
 
 ## Cross-cutting
 

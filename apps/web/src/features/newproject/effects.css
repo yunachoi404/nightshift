@@ -1,10 +1,10 @@
 .effects { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; }
-/* Same tile language as the option tiles (.opt): a hairline, a stronger one on hover, the accent when picked. */
+/* Same tile language as the option tiles (.opt): a hairline, a stronger one on hover, banana when picked. */
 .effect { display: flex; flex-direction: column; text-align: left; padding: 5px 5px 9px; color: var(--text); background: var(--raised); border: 1px solid var(--line); border-radius: var(--r-s); cursor: default; overflow: hidden; transition: border-color var(--t-fast) var(--ease), background-color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease); }
 .effect:hover { border-color: var(--line-strong); }
-.effect[aria-checked="true"] { border-color: var(--accent); background: var(--accent-soft); box-shadow: inset 0 0 0 1px var(--accent); }
-.effect:focus-visible { box-shadow: var(--focus-ring); }
-.effect[aria-checked="true"]:focus-visible { box-shadow: inset 0 0 0 1px var(--accent), var(--focus-ring); }
+.effect[aria-checked="true"] { border-color: var(--banana-line); background: var(--banana-soft); box-shadow: inset 0 0 0 1px var(--banana-line); }
+.effect:focus-visible { box-shadow: var(--focus); }
+.effect[aria-checked="true"]:focus-visible { box-shadow: inset 0 0 0 1px var(--banana-line), var(--focus); }
 .effect__preview { width: 100%; aspect-ratio: 3 / 5; object-fit: contain; border-radius: 4px; background: var(--media); pointer-events: auto; }
 .effect__name { font-size: 13px; font-weight: 600; line-height: 18px; margin: 7px 5px 0; }
 .effect__hint { font-size: 11px; line-height: 14px; color: var(--text-2); margin: 2px 5px 0; }

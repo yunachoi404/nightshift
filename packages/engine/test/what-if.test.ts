@@ -33,6 +33,34 @@ describe("What-if contract and story", () => {
     }
   });
 
+  it("picks a starter story by whole words, so a street is not a tree and a voice is not ice", () => {
+    const opening = (question: string) => fallbackWhatIf({ question }).keyframes[0]!.prompt;
+    const forest = opening("What if your coffee grew a forest?");
+    const sea = opening("What if the sea froze overnight?");
+    const space = opening("What if you fell into Jupiter?");
+    const gravity = opening("What if gravity stopped for ten seconds?");
+    for (const question of ["What if every street turned into a river?", "What if the planet's oceans were empty streets?"]) {
+      expect(opening(question)).not.toBe(forest);
+    }
+    for (const question of ["What if the police office lost its voice?", "What if this season never ended?", "What if the research lab went quiet?"]) {
+      expect(opening(question)).not.toBe(sea);
+    }
+    expect(opening("What if trees could walk?")).toBe(forest);
+    expect(opening("What if the plants were growing through the floor?")).toBe(forest);
+    expect(opening("What if ice covered the city?")).toBe(sea);
+    expect(opening("What if the oceans stood still?")).toBe(sea);
+    expect(opening("What if the planets lined up over the town?")).toBe(space);
+    expect(opening("What if you started floating at breakfast?")).toBe(gravity);
+  });
+
+  it("rejects a writer answer that echoes the format instead of writing a story", () => {
+    const story = fallbackWhatIf({ question: "What if the moon came down to the beach?" });
+    const echoed = { ...story, prompt: "the continuous action across the whole film" };
+    expect(parseWhatIf(JSON.stringify(echoed))).toBeUndefined();
+    const placeholderFrames = { ...story, keyframes: story.keyframes.map(frame => ({ ...frame, prompt: "a complete visual state" })) };
+    expect(parseWhatIf(JSON.stringify(placeholderFrames))).toBeUndefined();
+  });
+
   it("rejects unusable writer answers instead of shipping an empty or overlong story", () => {
     const story = fallbackWhatIf(brief);
     expect(parseWhatIf("not JSON")).toBeUndefined();
@@ -80,6 +108,20 @@ describe("What-if stage recovery", () => {
     await writeWhatIf(deps, saved, payload, ctx, true);
     expect(attempts).toBe(1);
     expect(store.require(project.id).shots[0]!.id).toBe(saved.shots[0]!.id);
+  });
+
+  it("says the starter story is used when the writer only repeats its outline", async () => {
+    const root = await mkdtemp(join(tmpdir(), "ns-what-if-echo-"));
+    const store = new ProjectStore(join(root, "projects"), new EventBus(), () => undefined);
+    await store.load();
+    const project = await store.create({ name: "Gravity", template: "what_if", aspect: "9:16", brief });
+    const payload: JobPayload = {};
+    const ctx: ExecContext = { signal: new AbortController().signal, progress: () => undefined, remember: (key, value) => { payload[key] = value; } };
+    const answer = join(root, "answer.txt");
+    await writeFile(answer, JSON.stringify(fallbackWhatIf(brief)));
+    const deps: Parameters<typeof writeWhatIf>[0] = { store, run: async () => ({ outputs: [{ kind: "text", path: answer, nodeId: "writer" }] }) };
+    const result = await writeWhatIf(deps, project, payload, ctx, true);
+    expect(result.message).toBe("Story ready. Using the starter story.");
   });
 
   it("reattaches to the interrupted edit and does not repeat completed images", async () => {

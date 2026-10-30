@@ -639,6 +639,92 @@
   margin-right: 6px;
   vertical-align: 0;
 }
+/* Models you already have: the scan for models on this computer */
+.reuse__found {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+}
+.reuse__found svg {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  margin-top: calc((var(--lh-body) - 16px) / 2);
+  color: var(--ok);
+  stroke-width: 2.25;
+}
+.reuse__found b {
+  font-weight: 600;
+}
+.reuse__skip {
+  color: var(--bad);
+}
+.reuse__toggle span {
+  color: var(--text-2);
+  font-size: var(--fs-small);
+}
+.reuse__list {
+  list-style: none;
+  margin: -4px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 232px;
+  overflow-y: auto;
+}
+.reuse__list li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  column-gap: 12px;
+  font-size: var(--fs-small);
+  line-height: var(--lh-small);
+}
+.reuse__size {
+  color: var(--text-2);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.reuse__list small {
+  grid-column: 1 / -1;
+  color: var(--text-3);
+  font-size: var(--fs-micro);
+  line-height: var(--lh-micro);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.reuse__path {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.reuse__path .input {
+  flex: 1;
+  min-width: 0;
+}
+/* As tall as the field beside them. */
+.reuse__path .btn {
+  --btn-h: 32px;
+}
+.reuse__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.reuse__folders {
+  flex: 1 1 160px;
+  min-width: 0;
+  text-align: right;
+  color: var(--text-3);
+  font-size: var(--fs-small);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 .mem__scale {
   display: flex;
   justify-content: space-between;

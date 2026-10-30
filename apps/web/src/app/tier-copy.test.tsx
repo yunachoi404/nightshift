@@ -157,35 +157,44 @@ describe("finals copy follows how the recipe finishes a take", () => {
   });
 });
 
-describe("new project copy follows the recipe's shot length and shot list time", () => {
-  it("on the 8 GB tier: 2 s shots and a shot list that takes minutes, more for more shots", async () => {
+/** New project opens on Blank. The cinematic shot is one click away. */
+async function pickCinematic() {
+  fireEvent.click(await screen.findByRole("radio", { name: /^Cinematic shot/ }));
+}
+
+describe("new project copy follows the recipe's shot length", () => {
+  it("on the 8 GB tier: 2 s shots, and the seeded shot list adds them up", async () => {
     const { unmount } = open("#/new", client(NVIDIA_8, []));
+    await pickCinematic();
     await screen.findByText(/You get a short film-grade shot, or a three-shot sequence, 2 to 6 seconds\./);
     const length = screen.getByRole("radiogroup", { name: "Length" });
     expect(within(length).getByRole("radio", { name: "One shot, about 2 seconds" })).toBeTruthy();
-    expect(screen.getByText("The shot list takes about 3 minutes. Stills follow.")).toBeTruthy();
+    expect(screen.getByText("1 shot, about 2 seconds. Nothing renders yet.")).toBeTruthy();
     fireEvent.click(within(length).getByRole("radio", { name: "Three shots, about 6 seconds" }));
-    expect(await screen.findByText("The shot list takes about 8 minutes. Stills follow.")).toBeTruthy();
+    expect(await screen.findByText("3 shots, about 6 seconds. Nothing renders yet.")).toBeTruthy();
     unmount();
   });
 
-  it("on the Spark: 4 s shots, and the shot list is written in seconds", async () => {
+  it("on the Spark: 4 s shots", async () => {
     const { unmount } = open("#/new", client(SPARK, []));
+    await pickCinematic();
     await screen.findByText(/a three-shot sequence, 4 to 12 seconds\./);
     const length = screen.getByRole("radiogroup", { name: "Length" });
     expect(within(length).getByRole("radio", { name: "One shot, 4 seconds" })).toBeTruthy();
     expect(within(length).getByRole("radio", { name: "Three shots, about 12 seconds" })).toBeTruthy();
-    expect(screen.getByText("The shot list is written in seconds. Stills follow.")).toBeTruthy();
+    expect(screen.getByText("1 shot, 4 seconds. Nothing renders yet.")).toBeTruthy();
     unmount();
   });
 
   it("offers to start a cinematic shot from a photo only where the setup can render from photos", async () => {
     const spark = open("#/new", client(SPARK, []));
+    await pickCinematic();
     expect(await screen.findByText("Start from a photo")).toBeTruthy();
     spark.unmount();
 
     // On the 8 GB tier the photo would become a reference no still can use.
     const small = open("#/new", client(NVIDIA_8, []));
+    await pickCinematic();
     await screen.findByText(/2 to 6 seconds\./);
     expect(screen.queryByText("Start from a photo")).toBeNull();
     expect(screen.getByText(/this setup cannot render from photos/)).toBeTruthy();

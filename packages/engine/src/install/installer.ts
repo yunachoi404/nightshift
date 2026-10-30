@@ -7,8 +7,10 @@
 import type { InstallPlan, ModelFile, Recipe } from "@nightshift/contract";
 import type { ToolOverrides } from "@nightshift/editor";
 import type { EditorLib } from "../editorLib.js";
+import { stat } from "node:fs/promises";
+import { homedir } from "node:os";
 import { join } from "node:path";
-import { conflict, notFound } from "../errors.js";
+import { badRequest, conflict, notFound } from "../errors.js";
 import type { EventBus } from "../events.js";
 import type { HardwareService } from "../hardware/service.js";
 import type { DataPaths } from "../paths.js";
@@ -23,6 +25,7 @@ import { loadModelDirs } from "./modelDirs.js";
 import { missingNodePacks, recipeNodePacks } from "./nodes.js";
 import { DISK_MARGIN_GB, planInstall, RUNTIME_INSTALL_GB } from "./plan.js";
 import { installProxy } from "./proxy.js";
+import { pickedFolder, pickedPlaces, ReuseStore, scanFolders, useFound, usualPlaces, wantedFiles, type Places } from "./reuse.js";
 
 interface InstallState {
   installed: Record<string, string>;
@@ -48,17 +51,24 @@ export interface InstallerDeps {
   editor: () => Promise<EditorLib>;
   /** Tool paths given to the engine (startEngine's editorTools). */
   editorTools?: ToolOverrides;
+  /** Where a scan for models looks besides the folders the user adds. Default: this computer's usual places. */
+  scanPlaces?: () => Promise<string[]>;
 }
 
 export class Installer {
   private state: InstallState = { installed: {} };
   private active?: { tier: string; controller: AbortController; done: Promise<void> };
+  /** Models found outside Nightshift that installs use in place. */
+  private readonly found: ReuseStore;
 
-  constructor(private readonly deps: InstallerDeps) {}
+  constructor(private readonly deps: InstallerDeps) {
+    this.found = new ReuseStore(deps.paths.foundModels);
+  }
 
   async load(): Promise<void> {
     this.state = (await readJson<InstallState>(this.deps.paths.installState)) ?? { installed: {} };
     this.state.installed ??= {};
+    await this.found.load();
   }
 
   get busy(): boolean {
@@ -99,7 +109,7 @@ export class Installer {
     const runtimeInstalled = attach || this.mode === "mock" || (await this.runtimeInstalled());
     const models: InstallPlan = attach
       ? { tier, downloads: [], alreadyPresent: recipe.models.map((m) => m.id), totalDownloadGb: 0, freeDiskGb: hw.freeDiskGb, fits: true }
-      : await planInstall({ recipe, dirs: await loadModelDirs(this.deps.paths.comfy), comfyDir: this.deps.paths.comfy, freeDiskGb: hw.freeDiskGb, runtimeInstalled });
+      : await planInstall({ recipe, dirs: await loadModelDirs(this.deps.paths.comfy), comfyDir: this.deps.paths.comfy, freeDiskGb: hw.freeDiskGb, runtimeInstalled, reuse: this.found });
     const lib = await this.deps.editor().catch((err: unknown) => err as Error);
     const editor = lib instanceof Error ? { downloads: [], present: [], notes: [`Exports will not work: ${lib.message}`] } : planEditorTools(lib, recipe, lib.checkTools(this.deps.editorTools ?? {}));
     const totalDownloadGb = round1(models.totalDownloadGb + editor.downloads.reduce((sum, m) => sum + m.sizeGb, 0));
@@ -116,7 +126,36 @@ export class Installer {
     };
     if (editor.notes.length) plan.notes = editor.notes;
     if (simulated) plan.simulated = true;
+    if (models.reused) plan.reused = models.reused;
+    if (models.reuseSkipped) plan.reuseSkipped = models.reuseSkipped;
+    if (models.scan) plan.scan = models.scan;
     return plan;
+  }
+
+  /**
+   * Look on this computer for the files every recipe needs (so a change of setup keeps the finds), then plan the tier
+   * with them. `folders`: the folders the user added, searched besides the usual places; absent keeps the last ones.
+   */
+  async scan(tier: string, folders?: string[]): Promise<InstallPlan> {
+    if (this.active) throw conflict(`Already installing ${this.active.tier}`);
+    if (!this.recipe(tier)) throw notFound(`No recipe for tier ${tier}`);
+    if (this.mode === "attach" || this.mode === "remote") throw badRequest("The models are on the GPU computer, so there is nothing to look for here.");
+    const home = homedir();
+    const before = this.found.scan?.folders ?? [];
+    const picked: string[] = [];
+    for (const input of folders ?? before) {
+      const dir = pickedFolder(input, home);
+      if (!dir) throw badRequest(`Use a full path to the folder, like ${join(home, "ComfyUI")}`);
+      // A folder added before may be gone (an unplugged drive): the scan just finds nothing there.
+      if (!before.includes(dir) && !(await stat(dir).then((s) => s.isDirectory()).catch(() => false))) throw badRequest(`There is no folder at ${dir}`);
+      if (!picked.includes(dir)) picked.push(dir);
+    }
+    const places: Places = { home, platform: process.platform, env: process.env };
+    const roots = [...(await pickedPlaces(picked)), ...(await (this.deps.scanPlaces?.() ?? usualPlaces(places)))];
+    const result = await scanFolders({ wanted: wantedFiles(this.deps.recipes().recipes), roots, exclude: [join(this.deps.paths.comfy, "models")] });
+    await this.found.record(result, picked);
+    this.deps.log(`model scan: ${result.found.size} file(s) found in ${result.searched.length} folder(s)${result.unreadable.length ? `, ${result.unreadable.length} unreadable` : ""}`);
+    return this.plan(tier);
   }
 
   /** Starts the install in the background. Progress arrives as "install" and "runtime" events. */
@@ -147,6 +186,20 @@ export class Installer {
     runtime.setPhase("starting", tier);
     if (this.mode === "local") {
       const plan = await this.plan(tier);
+      // Files used from another folder that are gone, or changed since they were checked.
+      const gone = plan.reuseSkipped?.filter((s) => s.reason === "missing").length ?? 0;
+      const changed = plan.reused?.filter((r) => !r.checked).length ?? 0;
+      if (gone || changed) {
+        const files = (n: number) => (n === 1 ? "A model file" : `${n} model files`);
+        runtime.setPhase(
+          "not_installed",
+          tier,
+          gone
+            ? `${files(gone)} Nightshift used from another folder ${gone === 1 ? "is" : "are"} gone. Set up again to download ${gone === 1 ? "it" : "them"}, or scan again if you moved ${gone === 1 ? "it" : "them"}.`
+            : `${files(changed)} found in another folder ${changed === 1 ? "needs" : "need"} a check before use. Set up again to check ${changed === 1 ? "it" : "them"}.`,
+        );
+        return;
+      }
       const models = plan.downloads.filter((m) => !isEditorItem(m)).length;
       const packs = await missingNodePacks(this.deps.paths.comfy, recipeNodePacks(this.recipe(tier)!), this.deps.nodesDir);
       // Missing editor tools do not stop the runtime: exports say what they lack.
@@ -173,15 +226,23 @@ export class Installer {
     const recipe = this.recipe(tier)!;
     try {
       // Plan first, so every progress event carries the real total.
-      const plan = await this.plan(tier);
-      const total = plan.totalDownloadGb;
+      let plan = await this.plan(tier);
+      let total = plan.totalDownloadGb;
       // The old tier's ComfyUI goes down first, once the job on it (if any) is done.
       const busy = this.deps.runningJob();
       if (busy) this.progress(null, 0, total, `Waiting for the running ${busy.step.replace(/_/g, " ")} job to finish`);
       await this.deps.exclusive(() => runtime.stop());
       if (signal.aborted) throw new Error("Install stopped");
+      const noRoom = () => new Error(`Not enough disk space: ${total} GB to download, ${plan.freeDiskGb} GB free on the data drive.`);
+      if (plan.reused?.length) {
+        if (!plan.fits) throw noRoom();
+        // A file that fails its check, or cannot be linked, is downloaded instead: plan again.
+        await useFound({ plan, recipe, store: this.found, comfyDir: paths.comfy, simulate: mode === "mock" ? 150 * this.deps.mockSpeed : undefined, link: mode === "local", signal, log, step: (m) => this.progress(null, 0, total, m) });
+        plan = await this.plan(tier);
+        total = plan.totalDownloadGb;
+      }
       this.progress(null, 0, total, "Checking disk space");
-      if (!plan.fits) throw new Error(`Not enough disk space: ${total} GB to download, ${plan.freeDiskGb} GB free on the data drive.`);
+      if (!plan.fits) throw noRoom();
 
       if (mode === "local") {
         await installComfyUI({
@@ -225,6 +286,8 @@ export class Installer {
         doneGb += model.sizeGb;
         this.progress(model.id, doneGb, total, `Downloaded ${describe(model)}`);
       }
+      // Files found elsewhere that could not be used are Nightshift's own now.
+      await this.found.forget(plan.downloads);
 
       // A remote's tier is not installed on this machine.
       if (mode !== "remote") {

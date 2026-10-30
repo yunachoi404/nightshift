@@ -3,6 +3,8 @@ import type { TemplateId } from "@nightshift/contract";
 export function suggestName(template: TemplateId, brief: Record<string, unknown>): string {
   const trim = (s: string, n = 34) => (s.length > n ? `${s.slice(0, n).replace(/\s+\S*$/, "")}…` : s);
   switch (template) {
+    case "blank":
+      return "Untitled project";
     case "what_if":
       return trim(str(brief.question, "What if?"), 48);
     case "cinematic_shot":

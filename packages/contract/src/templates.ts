@@ -9,6 +9,7 @@
  * - talking_intro: script, visuals ("match" | "abstract" | "broll")
  * - camera_move: photoAssetId, move (a quickMoves id), prompt (optional, what the scene is)
  * - vfx_effect: photoAssetId, effect (a quickEffects id), prompt (optional)
+ * - blank: none. A blank project has no shot list; it fills from the project's tools.
  */
 import type { Aspect, TemplateId } from "./index.js";
 import { fallbackWhatIf } from "./what-if.js";
@@ -65,6 +66,15 @@ export interface GenreOption {
 }
 
 export const templates: TemplateMeta[] = [
+  {
+    id: "blank",
+    name: "Blank",
+    tagline: "An empty project. You decide what goes in.",
+    gives: "Nothing to start with",
+    gets: "Images, clips, effects, camera moves, voice and music you make with the tools, cut on one timeline",
+    defaultAspect: "16:9",
+    length: "Up to you",
+  },
   {
     id: "what_if",
     name: "What if?",
@@ -227,6 +237,8 @@ type Brief = Record<string, unknown>;
 export function fallbackShots(template: TemplateId, brief: Brief): FallbackShot[] {
   const seed = hash(JSON.stringify(brief) + template);
   switch (template) {
+    case "blank":
+      return [];
     case "what_if":
       return [fallbackWhatIf(brief)];
     case "camera_move":

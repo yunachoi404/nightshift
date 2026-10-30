@@ -13,6 +13,8 @@ export interface DataPaths {
   settings: string;
   hardware: string;
   installState: string;
+  /** Models found outside Nightshift that the install uses in place (install/reuse.ts). */
+  foundModels: string;
   /** Whether setup is done, and the First shot sample it made. */
   onboarding: string;
   db: string;
@@ -35,6 +37,7 @@ export function dataPaths(dataDir: string, comfyDir?: string): DataPaths {
     settings: join(root, "settings.json"),
     hardware: join(root, "hardware.json"),
     installState: join(root, "install.json"),
+    foundModels: join(root, "found-models.json"),
     onboarding: join(root, "onboarding.json"),
     db: join(root, "engine.sqlite"),
     projects: join(root, "projects"),

@@ -1,5 +1,9 @@
-import { cleanup } from "@testing-library/react";
+import { cleanup, configure } from "@testing-library/react";
 import { afterEach } from "vitest";
+
+// findBy and waitFor give up after 1 s by default. On a machine busy with renders a screen can take longer than that
+// to appear, and tests failed only then. 5 s still fails fast and sits well inside the 15 s test timeout.
+configure({ asyncUtilTimeout: 5_000 });
 
 // jsdom has no media queries; the theme store reads one when it loads.
 window.matchMedia ??= (query: string) =>

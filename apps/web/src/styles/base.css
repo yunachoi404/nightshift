@@ -96,8 +96,9 @@ canvas {
   outline: none;
 }
 
+/* Keyboard focus: the ink ring with a banana halo (--focus). Controls with a shadow of their own restate it. */
 :focus-visible {
-  box-shadow: var(--focus-ring);
+  box-shadow: var(--focus);
   border-radius: var(--r-s);
 }
 

@@ -125,8 +125,10 @@ describe("onboarding", () => {
   it("a sample whose start was cut short gets its shot list, once", async () => {
     let e = await engine();
     await e.api.install(TIER);
-    // The engine stopped after keeping the sample and before queueing its shot list.
+    // The engine stopped after keeping the sample and before queueing its shot list. A sample kept by an engine from
+    // before new films started with their template's shot list has no shots.
     const sample = await e.api.call("POST", "/api/projects", ProjectSchema, { name: "First shot", template: "cinematic_shot", aspect: "16:9", brief: { idea: SAMPLE_IDEA, cameraMove: "dolly_in", look: "dawn", sequence: "one" } });
+    await e.api.call("PATCH", `/api/projects/${sample.id}`, ProjectSchema, { shots: [] });
     await e.stop();
     writeFileSync(join(e.dataDir, "onboarding.json"), JSON.stringify({ done: false, sampleProjectId: sample.id }));
 
@@ -135,6 +137,37 @@ describe("onboarding", () => {
     expect(answers.map((a) => a.project?.id)).toEqual([sample.id, sample.id]);
     const jobs = await until(() => e.jobs(sample.id), (js) => js.length === 3 && settled(js));
     expect(steps(jobs)).toEqual(["text", "still", "video_draft"]);
+  });
+
+  it("a sample with its seeded shot list whose start was cut short gets its still and draft, once", async () => {
+    let e = await engine();
+    await e.api.install(TIER);
+    // The engine stopped after keeping the sample and before queueing anything. A film starts with its template's shot
+    // list, so the sample has its shot, with no still, no take and no job.
+    const sample = await e.api.call("POST", "/api/projects", ProjectSchema, { name: "First shot", template: "cinematic_shot", aspect: "16:9", brief: { idea: SAMPLE_IDEA, cameraMove: "dolly_in", look: "dawn", sequence: "one" } });
+    expect(sample.shots).toHaveLength(1);
+    expect(sample.shots[0]!.stillAssetId).toBeUndefined();
+    await e.stop();
+    writeFileSync(join(e.dataDir, "onboarding.json"), JSON.stringify({ done: false, sampleProjectId: sample.id }));
+
+    e = await engine(e.dataDir);
+    expect(await e.jobs(sample.id)).toEqual([]);
+    // Two tabs ask at once: one start, not two.
+    const answers = await Promise.all([e.sample(), e.sample()]);
+    expect(answers.map((a) => a.project?.id)).toEqual([sample.id, sample.id]);
+    const jobs = await until(() => e.jobs(sample.id), (js) => js.length === 3 && settled(js));
+    expect(steps(jobs)).toEqual(["text", "still", "video_draft"]);
+    expect(jobs.every((j) => j.status === "done")).toBe(true);
+    const made = await e.api.project(sample.id);
+    expect(made.shots).toHaveLength(1);
+    expect(made.shots[0]!.stillAssetId).toBeTruthy();
+    expect(made.takes.filter((t) => t.rung === "draft")).toHaveLength(1);
+
+    // Asking again once it has its still and draft starts nothing new.
+    expect((await e.sample()).project?.id).toBe(sample.id);
+    await sleep(100);
+    expect(await e.jobs(sample.id)).toHaveLength(3);
+    expect(samples(await e.projects())).toHaveLength(1);
   });
 
   it("a deleted sample is not made again, unless the user asks for another", async () => {

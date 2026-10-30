@@ -1,5 +1,5 @@
 import type { HardwareProfile, InstallPlan, Job, Project, TierSummary } from "@nightshift/contract";
-import { Check, ChevronDown, ChevronRight, Cpu, Film, HardDrive, Image, MemoryStick, Mic, Monitor, Music, PenLine, Sparkles, Wand2 } from "lucide-react";
+import { Check, ChevronDown, ChevronRight, Cpu, Film, FolderOpen, HardDrive, Image, MemoryStick, Mic, Monitor, Music, PenLine, Search, Sparkles, Wand2 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useNavigate } from "react-router";
 import { isBrowserDemo, isDevMock } from "@/api/config";
@@ -716,10 +716,10 @@ function Tier({ hardware, choice, onChoose, onInstall, onBack }: { hardware: Har
             <div className="ob__card-body">
               <div className="ob__row-head">
                 <b>{demo ? "Demo setup" : "Download"}</b>
-                <span>{demo ? "Nothing is downloaded" : plan ? `${gb(plan.totalDownloadGb)} of ${gb(plan.freeDiskGb)} free` : "Checking"}</span>
+                <span>{demo ? "Nothing is downloaded" : plan ? (plan.totalDownloadGb > 0 ? `${gb(plan.totalDownloadGb)} of ${gb(plan.freeDiskGb)} free` : `Nothing to download, ${gb(plan.freeDiskGb)} free`) : "Checking"}</span>
               </div>
-              {demo && <p className="t-small t-muted">A real setup on this machine downloads {gb(tier.downloadGb)}.</p>}
-              {plan && !demo && <DiskBar plan={plan} />}
+              {demo && <p className="t-small t-muted">A real setup on this machine downloads {gb(Math.max(0, tier.downloadGb - reusedGb(plan)))}.</p>}
+              {plan && !demo && plan.totalDownloadGb > 0 && <DiskBar plan={plan} />}
               {!demo && plan?.downloads
                 .filter((d) => d.id.startsWith("editor-"))
                 .map((d) => (
@@ -734,6 +734,7 @@ function Tier({ hardware, choice, onChoose, onInstall, onBack }: { hardware: Har
                 </p>
               ))}
             </div>
+            {plan && client.scanModels && hasModels(plan) && <FoundModels plan={plan} onPlan={setPlan} />}
             <div className="ob__card-body">
               <div className="ob__row-head">
                 <b>Leave room for other apps</b>
@@ -894,9 +895,194 @@ function DiskBar({ plan }: { plan: InstallPlan }) {
           <i style={{ background: "var(--track)" }} />
           Free after, {gb(Math.max(0, plan.freeDiskGb - plan.totalDownloadGb))}
         </span>
-        {plan.alreadyPresent.length > 0 && <span>{plan.alreadyPresent.length} files already here</span>}
+        {/* Files found in other folders are counted under "Models you already have". */}
+        {plan.alreadyPresent.length > (plan.reused?.length ?? 0) && <span>{plan.alreadyPresent.length - (plan.reused?.length ?? 0)} files already here</span>}
       </div>
     </>
+  );
+}
+
+/** The GB a setup does not download because the files are already on this computer. */
+function reusedGb(plan: InstallPlan | null): number {
+  return (plan?.reused ?? []).reduce((sum, r) => sum + r.sizeGb, 0);
+}
+
+const isModel = (id: string) => !id.startsWith("editor-");
+
+/** The setup downloads models to this machine (not attach or remote mode, where they are on the GPU computer). */
+function hasModels(plan: InstallPlan): boolean {
+  return plan.downloads.some((d) => isModel(d.id)) || !!plan.reused?.length || !!plan.scan;
+}
+
+/** "/Users/me/ComfyUI/…/split_files/text_encoders": a long folder keeps its first and last folders, cut between them. */
+export function shortPath(path: string, max = 64): string {
+  if (path.length <= max) return path;
+  const sep = path.includes("/") ? "/" : "\\";
+  const parts = path.split(sep);
+  let tail = parts.pop()!;
+  while (parts.length > 1 && tail.length + parts.at(-1)!.length + 1 <= max * 0.6) tail = `${parts.pop()}${sep}${tail}`;
+  let head = parts.shift()!;
+  while (parts.length && head.length + parts[0]!.length + tail.length + 3 <= max) head = `${head}${sep}${parts.shift()}`;
+  if (!parts.length) return `${head}${sep}${tail}`;
+  // One folder name longer than the room: cut inside it.
+  return tail.length > max ? `…${tail.slice(-(max - 1))}` : `${head}${sep}…${sep}${tail}`;
+}
+
+const folderOf = (path: string) => path.replace(/[/\\][^/\\]*$/, "");
+
+/**
+ * Models this computer already has. A scan looks where ComfyUI keeps them (ComfyUI Desktop, ComfyUI in the home folder
+ * or a portable folder, the folders an extra_model_paths.yaml names), in the Hugging Face cache and in folders the user
+ * adds. A file matches by name and exact size. Setup checks each one before it uses it, and leaves it where it is.
+ */
+function FoundModels({ plan, onPlan }: { plan: InstallPlan; onPlan: (p: InstallPlan) => void }) {
+  const { client } = useEngine();
+  const [busy, setBusy] = useState<"scan" | "folder" | null>(null);
+  const [typing, setTyping] = useState(false);
+  const [path, setPath] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [showFiles, setShowFiles] = useState(false);
+  const pick = window.nightshiftDesktop?.pickFolder;
+  const scan = plan.scan;
+  const reused = plan.reused ?? [];
+  const skipped = plan.reuseSkipped ?? [];
+  const gone = skipped.filter((s) => s.reason === "missing");
+  const failed = skipped.filter((s) => s.reason !== "missing");
+  const files = plan.downloads.filter((d) => isModel(d.id)).length + plan.alreadyPresent.filter(isModel).length;
+  const saved = reusedGb(plan);
+
+  const run = async (kind: "scan" | "folder", folders?: string[]): Promise<boolean> => {
+    setBusy(kind);
+    setError(null);
+    try {
+      onPlan(await client.scanModels!({ tier: plan.tier, ...(folders ? { folders } : {}) }));
+      return true;
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+      return false;
+    } finally {
+      setBusy(null);
+    }
+  };
+  const addFolder = async (folder: string) => {
+    if (await run("folder", [...(scan?.folders ?? []), folder])) {
+      setTyping(false);
+      setPath("");
+    }
+  };
+
+  return (
+    <div className="ob__card-body reuse">
+      <div className="ob__row-head">
+        <b>Models you already have</b>
+        {scan && <span>{scan.searched.length === 1 ? "Looked in 1 folder" : `Looked in ${scan.searched.length} folders`}</span>}
+      </div>
+      {!scan ? (
+        <p className="t-small t-muted">Already use ComfyUI? Nightshift can look for this setup's models on this computer and use them where they are, instead of downloading them again.</p>
+      ) : reused.length > 0 ? (
+        <p className="reuse__found">
+          <Check aria-hidden />
+          <span>
+            <b>
+              Found {reused.length} of {files} model files on this computer.
+            </b>{" "}
+            {gb(saved, saved < 10 ? 1 : 0)} less to download.
+          </span>
+        </p>
+      ) : (
+        <p className="t-small t-muted">None of this setup's model files are on this computer{scan.searched.length ? " in the usual places" : ""}. Add the folder where you keep your models if it is somewhere else.</p>
+      )}
+      {reused.length > 0 && <p className="t-small t-muted">Setup checks each file against its checksum before it uses it. Your files stay where they are and are never changed.</p>}
+      {gone.length > 0 && (
+        <Notice tone="bad" title={gone.length === 1 ? "A model found in another folder is gone" : `${gone.length} models found in other folders are gone`}>
+          {gone.map((g) => g.name ?? g.id).join(", ")} {gone.length === 1 ? "is" : "are"} on the download list again. Scan again if you moved {gone.length === 1 ? "it" : "them"}.
+        </Notice>
+      )}
+      {failed.map((f) => (
+        <p className="t-small reuse__skip" key={f.id} title={f.path}>
+          {f.name ?? f.id}: {f.reason === "mismatch" ? "the file on this computer did not match its checksum, so it is downloaded." : "this computer could not link to it, so it is downloaded."}
+        </p>
+      ))}
+      {reused.length > 0 && (
+        <>
+          <button type="button" className="ob__row-head ob__toggle reuse__toggle" onClick={() => setShowFiles((v) => !v)} aria-expanded={showFiles}>
+            <span>{showFiles ? "Hide the files" : reused.length === 1 ? "Show the file" : `Show the ${reused.length} files`}</span>
+            <span>{showFiles ? <ChevronDown /> : <ChevronRight />}</span>
+          </button>
+          {showFiles && (
+            <ul className="reuse__list">
+              {reused.map((r) => (
+                <li key={r.id}>
+                  <span className="reuse__name">{r.name ?? r.path.split(/[/\\]/).pop()}</span>
+                  <span className="reuse__size">{fileSize(r.sizeGb)}</span>
+                  <small title={r.path}>{shortPath(folderOf(r.path))}</small>
+                </li>
+              ))}
+            </ul>
+          )}
+        </>
+      )}
+      {scan && scan.unreadable.length > 0 && (
+        <p className="t-small t-muted" title={scan.unreadable.join("\n")}>
+          Couldn't read {scan.unreadable.length === 1 ? `1 folder, ${shortPath(scan.unreadable[0]!, 48)}` : `${scan.unreadable.length} folders`}. Nightshift may need permission to open it.
+        </p>
+      )}
+      {typing && (
+        <form
+          className="reuse__path"
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (path.trim()) void addFolder(path.trim());
+          }}
+        >
+          <Input
+            value={path}
+            onChange={(e) => setPath(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Escape") setTyping(false);
+            }}
+            placeholder="The folder with your models, like ~/ComfyUI"
+            aria-label="Folder with models"
+            autoFocus
+            spellCheck={false}
+            autoCapitalize="off"
+            autoCorrect="off"
+          />
+          <Button type="submit" busy={busy === "folder"} disabled={!path.trim() || busy !== null}>
+            Scan
+          </Button>
+          <Button variant="quiet" onClick={() => (setTyping(false), setError(null))}>
+            Cancel
+          </Button>
+        </form>
+      )}
+      {error && <p className="t-small reuse__skip">{error}</p>}
+      {!typing && (
+        <div className="reuse__actions">
+          <Button size="s" icon={<Search />} busy={busy === "scan"} disabled={busy !== null} onClick={() => void run("scan")}>
+            {busy === "scan" ? "Looking" : scan ? "Scan again" : "Scan for models"}
+          </Button>
+          <Button
+            size="s"
+            variant="quiet"
+            icon={<FolderOpen />}
+            disabled={busy !== null}
+            onClick={async () => {
+              if (!pick) return setTyping(true);
+              const folder = await pick().catch(() => null);
+              if (folder) await addFolder(folder);
+            }}
+          >
+            {pick ? "Choose a folder" : "Add a folder"}
+          </Button>
+          {scan && scan.folders.length > 0 && (
+            <span className="reuse__folders" title={scan.folders.join("\n")}>
+              Also looks in {scan.folders.length === 1 ? shortPath(scan.folders[0]!, 40) : `${scan.folders.length} folders you added`}
+            </span>
+          )}
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -961,6 +1147,8 @@ function Install({ choice, onInstall, onBack }: { choice: Choice | null; onInsta
       active = false;
     };
   }, [tier, fileId, client]);
+  // The models found on this computer are checked before anything is downloaded.
+  const checking = !progress?.modelId && !!progress?.message.includes("already on this computer");
   const fileCount = plan ? plan.downloads.length + plan.alreadyPresent.length : 0;
   const filesDone = plan?.alreadyPresent.length ?? 0;
   let eta = "";
@@ -983,8 +1171,8 @@ function Install({ choice, onInstall, onBack }: { choice: Choice | null; onInsta
         <Meter frac={known ? frac : null} bad={!!error} />
       </Rise>
       <Rise i={1} className="ob__head">
-        <h1 className="ob__title">{demo ? (error ? "Demo setup stopped" : "Setting up the demo") : remote ? (error ? "Connecting stopped" : `Connecting to ${remoteName}`) : error ? "The download stopped" : "Downloading your setup"}</h1>
-        <p className="ob__lead">{demo ? "Nothing is downloaded." : remote ? "Setting up the link. No models are downloaded here." : error ? "Finished files stay on disk. Trying again picks up where it stopped." : "Minimize this window and come back. Finished files stay if you quit."}</p>
+        <h1 className="ob__title">{demo ? (error ? "Demo setup stopped" : "Setting up the demo") : remote ? (error ? "Connecting stopped" : `Connecting to ${remoteName}`) : error ? "The download stopped" : checking ? "Checking the models you have" : "Downloading your setup"}</h1>
+        <p className="ob__lead">{demo ? "Nothing is downloaded." : remote ? "Setting up the link. No models are downloaded here." : error ? "Finished files stay on disk. Trying again picks up where it stopped." : checking ? "Each file is read once to make sure it is the right one. Your files are not changed." : "Minimize this window and come back. Finished files stay if you quit."}</p>
       </Rise>
       {error ? (
         <div className="ob__notice"><Notice tone="bad" title="Stopped">
@@ -1003,6 +1191,7 @@ function Install({ choice, onInstall, onBack }: { choice: Choice | null; onInsta
               )}
             </span>
             {numbers && <span className="t-muted">{numbers}</span>}
+            {plan?.reused?.length ? <span className="t-muted">{`${demo ? "A real setup would use" : "Using"} ${plan.reused.length === 1 ? "1 model file" : `${plan.reused.length} model files`} already on this computer, ${gb(reusedGb(plan), reusedGb(plan) < 10 ? 1 : 0)} less to download.`}</span> : null}
           </div>
         </Rise>
       )}
@@ -1135,8 +1324,10 @@ function FirstShot() {
 
   const stage = best?.rung === "draft" ? "done" : best?.rung === "still" ? "draft" : "still";
   const remoteName = status?.mode === "remote" && settings?.remote ? (settings.remote.name ?? settings.remote.url) : null;
-  // The three steps, each done once what it makes is there. The first one not done is the one under way.
-  const doneSteps = SAMPLE_STEPS.filter((s) => (s === "text" ? !!project?.shots.length : s === "still" ? !!shot?.stillAssetId : best?.rung === "draft" || best?.rung === "final"));
+  // The three steps, each done once what it makes is there. The first one not done is the one under way. A film starts
+  // with its template's shot list, so the shot list is written once its job is done or a later step has started.
+  const written = !!shot?.stillAssetId || shotJobs.some((j) => j.step !== "text" || j.status === "done");
+  const doneSteps = SAMPLE_STEPS.filter((s) => (s === "text" ? written : s === "still" ? !!shot?.stillAssetId : best?.rung === "draft" || best?.rung === "final"));
   const current = SAMPLE_STEPS.find((s) => !doneSteps.includes(s));
   const elapsedSec = active?.status === "running" && active.startedAt && current === sampleStepOf(active.step) ? Math.max(0, (now - Date.parse(active.startedAt)) / 1000) : 0;
   // From the recipe's times: about how long it all takes, then what is left once a step is done.
@@ -1231,7 +1422,7 @@ function FirstShot() {
         step="first"
         quiet={
           stage === "done" && project ? (
-            <button type="button" className="ob__quiet" disabled={leaving} onClick={() => void finish(`/p/${project.id}/takes`)}>
+            <button type="button" className="ob__quiet" disabled={leaving} onClick={() => void finish(`/p/${project.id}/media`)}>
               Open this shot
             </button>
           ) : null

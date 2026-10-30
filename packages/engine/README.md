@@ -142,13 +142,34 @@ read. Run it after changing a pin, a patch or ComfyUI's version.
 - Load media from `GET /api/projects/:id/assets/:assetId` (the UI client's `assetUrl`). `Asset.path` is the
   file's place inside the project folder, not a URL. Asset files support Range requests and are cached
   forever (an asset id never changes content).
+- A new project only creates. A film starts with its template's shot list for the brief (no GPU), on one board.
+  Blank and What if? projects start empty. Nothing is queued until you ask.
+- `POST /api/projects/:id/make` (`MakeRequest`, 202 Job) is the tools panel: image, video, effect, camera move or
+  edit. Each makes a new card: a shot with `onTimeline: false`, filed at the end of `boardId` (else the first board),
+  in `aspect` when the request names one (`Shot.aspect`), and its first job, which carries the shot's id. A video
+  without `imageAssetId` draws its still first and queues its draft when the still lands. An edit changes
+  `imageAssetId` as `prompt` says; the result is the new card's still. What if? and quick-shot projects answer 409.
+  `DraftRequest.tool` makes an effect or a camera move on a shot's still: a new version of that card, recorded as
+  `Take.tool`, which its finals copy.
+- Image edits: `StillRequest.editFrom` (an image asset of the project) draws a shot's still as an edit of that image,
+  following `prompt` as the instruction. The still job runs the recipe's `effect_end_frame` step (FLUX.2 Klein 4B
+  edit) with the image, the instruction, the seed and the shot's still size, and files the result like any new still:
+  the pick, in `stillHistory` with the instruction. A tier without that step answers 409, an id that is not in the
+  project 404, an asset that is not an image 409, no instruction 400. Klein's edit graph keeps the source image's
+  shape (it has no width or height input); the mock draws at the shot's size.
+- Boards: `Project.boards` lists the cards on the canvas; read them through `projectBoards` in the contract. PATCH
+  `boards` (unique ids) and `soundtrack` (`music`/`voice`: an audio asset id of that role, or null for none). A
+  song or voiceover lands on `AudioRequest.boardId`, an upload on `?board=`. Making a song or voiceover clears its
+  role's pick, so the new one plays. The cut and the export use only timeline shots (`onTimeline` not false).
 - A take appears when its draft or final job finishes, as in the UI mock; a failed or cancelled job leaves
-  none. A shot's first draft becomes its `chosenDraftId`. A finished final becomes `chosenFinalId` if its draft
-  is still the pick. The engine owns which final a shot shows: when a PATCH picks another draft, the shot gets
+  none. Every new version becomes its shot's pick when it lands: a new draft (plain, effect or camera move)
+  becomes its `chosenDraftId` and clears `useStill`; a new still becomes `stillAssetId`, joins `stillHistory`
+  and sets `useStill`. A PATCH that picks another draft clears `useStill` unless it sets it. A finished final
+  becomes `chosenFinalId` if its draft is still the pick. The engine owns which final a shot shows: when a PATCH picks another draft, the shot gets
   that draft's newest final, or none yet (`finalFor` in the contract). Picking a draft again brings its final
   back, and no final is ever dropped by a pick.
-- When a storyboard job finishes, the engine queues a still for every shot that has none, so a new project
-  fills in without more clicks.
+- When a storyboard job finishes, the engine queues a still for every timeline shot that has none, so a new
+  project fills in without more clicks. A blank project has no shot list: its storyboard route answers 409.
 - For `camera_move`, the storyboard route immediately prepares one four-second shot from `photoAssetId` and
   queues its draft. It skips the LLM and still generator. The draft runs `camera_layout` first, saves that
   intermediate video, then runs `video_camera_move`. Separate persisted Comfy job IDs let either stage resume
@@ -173,13 +194,14 @@ read. Run it after changing a pin, a patch or ComfyUI's version.
   on the CPU worker. That job measures it (the song's beats; the voice's words aligned to its text with
   whisper.cpp; a song's sung words recognized phrase by phrase, or aligned to known lyrics) and rebuilds the cut
   around it. On an edited timeline it puts the track in the old one's place and, when its words are the template's
-  captions, brings new captions that end where the cut does. It can be cancelled like any job. A track that a newer
-  one of its role replaced is skipped. Without whisper.cpp, word times are estimated from the text and the sound.
+  captions, brings new captions that end where the cut does. It can be cancelled like any job. A track that is not
+  its role's pick (the soundtrack's, else the newest) is skipped. Without whisper.cpp, word times are estimated from the text and the sound.
   Stills and drafts that land while a song is measured stay in the cut: a measured cut whose project changed meanwhile
   is cut again from the current one (the same holds for the cut an export makes).
 - `PATCH /api/projects/:id` with `shots`: the array order is the storyboard order (`index` is rewritten).
-- Regenerating the storyboard keeps locked shots in place and replaces the others, and drops the takes of
-  the shots it replaced. (The UI mock replaces every shot.)
+- Regenerating the storyboard keeps locked shots and board-only shots in place and replaces the others, and drops
+  the takes of the shots it replaced. A new shot takes the replaced shot's place on its board. (The UI mock
+  replaces every shot.)
 - Export renders the timeline with the editor: shots cropped around their subject to the asked aspect, the
   template's cards and captions, the sound mixed and levelled. An unedited timeline is cut afresh first with full
   analysis; an edited one is used as it is unless the request says `rebuild: true`. `quality` is `preview` (540 px
@@ -195,7 +217,16 @@ read. Run it after changing a pin, a patch or ComfyUI's version.
   spoken by the system's synthesizer (`say` on macOS, `espeak-ng` on Linux) when there is one, so captions get real
   words to align. Exports are real renders.
 - Finals with `mode: "overnight"` wait until overnight mode is on and the clock is between `startAt` and
-  `endAt`. Interactive work always runs first.
+  `endAt`. Interactive work always runs first, then finals to run now.
+- Finals for the night run grouped by the model they load, so each model loads once a night. Every final carries
+  `model`, the main model its workflow loads in plain words ("LTX-2.5", "MiniMax H3"); a step whose workflow loads
+  none of the recipe's models (the small tiers' same take, a resize) has none and is grouped by its step. A final for
+  the night gets `nightGroup`: it joins the group of a waiting final with the same model while none of that group has
+  started, else it starts a new group at the back. Groups run lowest `nightGroup` first (the order their first finals
+  were queued), finals inside a group in the order queued, and a group that has started finishes before the next. A
+  final queued after its model's group started waits for the next turn, so no final waits behind an endless run of one
+  model. `GET /api/jobs` lists queued jobs in this order. Groups persist with the jobs; finals saved by an older engine
+  are grouped when it starts.
 - A same-take final runs only with everything its draft was made from: the saved latent (file and record), the
   recorded prompt, negative prompt, still and seed, as far as the same-take workflow takes them. Otherwise the
   route answers 409 saying what is missing ("This draft's saved latent is missing from the project folder, so it
@@ -286,6 +317,7 @@ generator, so a brief gives the same shots in both (checked on 16 briefs).
 | product_ad | `productName`, `does` (also the tagline), `tone`, `cta`; the photo in `referenceAssetId` is the end card's |
 | talking_intro | `script`, `visuals` (`match`, `abstract`, `broll`); `speakerName`, `speakerTitle` for the lower third |
 | camera_move | `photoAssetId`, `move` (a `quickMoves` ID), optional `prompt` describing the scene |
+| blank | none: no shot list, no title card; prompts are used as written |
 
 Every template also takes the editor's own keys (`title`, `subtitle`, `artist`, `tagline`, ...; see the editor's
 README), which win over the ones the engine derives. The form's option tables (looks, genres, tones, voices,
@@ -318,8 +350,14 @@ An explicit `prompt` on a voice request overrides that instruction, for example 
   other orientation swaps it (same pixels, same memory); 1:1 is the square on the same grid (64 px for LTX) nearest
   the same pixel count, at most 10% more. A square base (Krea's 768x768) takes the aspect's shape. Stills take
   their draft's exact shape, so the draft starts from the whole still. On the Spark recipe: draft 640x384,
-  384x640 or 512x512; same-take final twice that; still 960x576, 576x960 or 768x768; H3 remaster 608x352,
-  352x608 or 448x448.
+  384x640 or 512x512; same-take final twice that; still 960x576, 576x960 or 768x768; H3 remaster 1280x768,
+  768x1280 or 960x960. The aspect is the shot's own (`Shot.aspect`, a card made in another shape) when it has one,
+  else the project's, for every render of the shot: stills, edits, drafts, finals, effects and their end frames,
+  camera layouts and moves. A What if? film stays in the project's. The export frames a shot of another shape like
+  any picture of another shape (crop, or fit over a blurred copy).
+- `GET /api/tiers`: `TierSummary.models` names the main model of each step a tier has, in plain words ("Krea 2
+  Turbo", "LTX-2.5", "FLUX.2 Klein 4B"), read from the step's workflow (cached until the file changes). A step whose
+  workflow loads none of the recipe's models, or names its model another way (Breeze TTS's loader), has none.
 - `params`: `width`/`height` as above; `fps`; `maxFrames`; `promptPrefix`; any other named input as a default;
   `"node.field"` keys set a field directly.
 - `frames` is the fewest frames on the model's grid that cover the shot: 8k+1 for LTX (and Kandinsky 6, whose 4k+1

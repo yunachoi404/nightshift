@@ -12,6 +12,7 @@
 import type { Aspect, Caption, Marker, Overlay } from "@nightshift/contract";
 import type { FontId, TimelineStyle } from "../style.js";
 import { fontStack, fontSynthesis } from "./fonts.js";
+import { CAPTION_METRICS, captionCss, captionLine } from "./captions.js";
 import { EASE, PAGE_ANIMATOR, Tracks } from "./tracks.js";
 
 export interface Box {
@@ -462,10 +463,6 @@ const EM = {
   adTagline: 0.78,
   tagName: 0.54,
   tagRole: 0.7,
-  subtitle: 0.5,
-  karaoke: 0.52,
-  chip: 0.6,
-  kinetic: 0.66,
 };
 
 function textWidth(text: string, fontPx: number, em: number): number {
@@ -987,63 +984,26 @@ function captionsMarkup(scene: Scene, tracks: Tracks, L: Layout): { html: string
   const shown: { caption: Caption; index: number; start: number; end: number }[] = [];
   const bodies: string[] = [];
   scene.captions.forEach((c, i) => {
-    const id = `c${i}`;
     const end = Math.min(c.end, scene.duration);
     if (end <= c.start) return;
     shown.push({ caption: c, index: i, start: c.start, end });
-    if (look === "subtitle") {
-      tracks.window(id, c.start, end, 0.12, 0.12);
-    } else if (look === "karaoke") {
-      tracks.window(id, c.start, end, 0.08, 0.1);
-      tracks.add(id, "transform", c.start, "scale(0.96)", EASE.outBack).add(id, "transform", c.start + 0.2, "scale(1)");
-    } else if (look === "chip") {
-      tracks.window(id, c.start, end, 0.1, 0.1);
-      tracks.add(id, "transform", c.start, `translateY(${fmt(0.5 * u)}px)`, EASE.outStrong).add(id, "transform", c.start + 0.25, "translateY(0px)");
-    } else {
-      tracks.add(id, "opacity", c.start, 1).add(id, "opacity", end - 0.15, 1, EASE.in).add(id, "opacity", end, 0);
-    }
-    const words = c.words?.length ? c.words : [{ start: c.start, end, text: c.text }];
-    const spans = words.map((w, j) => {
-      const wid = `${id}w${j}`;
-      const nextStart = words[j + 1]?.start ?? end;
-      const off = Math.min(nextStart, end);
-      if (look === "karaoke") {
-        // The word lights up and gets underlined while it is said, until the next one starts.
-        tracks.add(wid, "color", w.start - 0.02, "var(--cap-text)", EASE.step).add(wid, "color", w.start, "var(--accent)").add(wid, "color", off, "var(--accent)", EASE.step).add(wid, "color", off, "var(--cap-text)");
-        tracks.add(wid, "text-decoration-color", w.start - 0.02, "transparent", EASE.step).add(wid, "text-decoration-color", w.start, "var(--accent)").add(wid, "text-decoration-color", off, "var(--accent)", EASE.step).add(wid, "text-decoration-color", off, "transparent");
-      } else if (look === "chip") {
-        // The spoken word gets a chip in the accent colour, like a marker pen over the line.
-        tracks.add(wid, "background-color", w.start - 0.02, "transparent", EASE.step).add(wid, "background-color", w.start, "var(--accent)").add(wid, "background-color", off, "var(--accent)", EASE.step).add(wid, "background-color", off, "transparent");
-        tracks.add(wid, "color", w.start - 0.02, "var(--cap-text)", EASE.step).add(wid, "color", w.start, "var(--accent-text)").add(wid, "color", off, "var(--accent-text)", EASE.step).add(wid, "color", off, "var(--cap-text)");
-        tracks.add(wid, "transform", w.start, "scale(1)", EASE.outBack).add(wid, "transform", w.start + 0.12, "scale(1.05)", EASE.out).add(wid, "transform", Math.max(w.start + 0.13, off), "scale(1.05)", EASE.out).add(wid, "transform", Math.max(w.start + 0.25, off + 0.12), "scale(1)");
-      } else if (look === "kinetic") {
-        const at = Math.max(c.start, w.start);
-        tracks.add(wid, "opacity", at, 0, EASE.out).add(wid, "opacity", at + 0.09, 1);
-        tracks.add(wid, "transform", at, "translateY(0.28em) scale(1.1)", EASE.outStrong).add(wid, "transform", at + 0.22, "translateY(0em) scale(1)");
-        tracks.add(wid, "color", at, "var(--accent)", EASE.step).add(wid, "color", off, "var(--cap-text)");
-      }
-      const initial = look === "kinetic" ? ' style="opacity:0"' : "";
-      return `<span class="w" id="${wid}"${initial}>${escapeHtml(w.text)}</span>`;
-    });
-    bodies.push(`<span class="line">${spans.join(" ")}</span>`);
+    bodies.push(captionLine(look, c, `c${i}`, end, tracks));
   });
   if (bodies.length === 0) return { html: "", keepouts: () => [] };
 
-  const base = { subtitle: 3.4, karaoke: 4.6, chip: 4.2, kinetic: 8.4 }[look];
-  const shapeScale = pick(shape, { landscape: 1, portrait: 1.3, square: 1.12 });
-  const size = base * shapeScale * style.captions.size * u;
-  const lineHeight = size * { subtitle: 1.3, karaoke: 1.22, chip: 1.4, kinetic: 0.95 }[look];
-  const pad = look === "chip" ? 1.8 * t : 0;
+  const metrics = CAPTION_METRICS[look];
+  const size = metrics.size * metrics.shapes[shape] * style.captions.size * u;
+  const lineHeight = size * metrics.lineHeight;
+  const pad = metrics.pad[1] * size;
   const maxWidth = pick(shape, { landscape: look === "subtitle" ? 0.62 : 0.7, portrait: 0.78, square: 0.84 }) * L.W;
-  const em = EM[look];
-  const linesOf = (c: Caption) => estimateLines(c.text, size, maxWidth - (look === "chip" ? 3 * t : 0), em);
+  const linesOf = (c: Caption) => estimateLines(c.text, size, maxWidth - metrics.pad[0] * size, metrics.em);
   const place = placeCaptions(scene, L, { width: maxWidth, lineHeight, pad, linesOf });
   const placement = place.anchor === "bar" ? `bottom:0;height:${fmt(letterbox)}px;` : `bottom:${fmt(place.offset)}px;height:0;`;
   // A caption on another line than the film's sits that much higher or lower inside the block.
   const lift = (w: (typeof shown)[number]) => place.lines[w.index]!.offset - place.offset;
   shown.forEach((w, k) => {
     const delta = place.anchor === "bar" ? 0 : lift(w);
-    items.push(`<div class="cap" id="c${w.index}" style="opacity:0${delta ? `;bottom:${fmt(delta)}px` : ""}">${bodies[k]}</div>`);
+    items.push(`<div class="cap" id="c${w.index}" style="visibility:hidden${delta ? `;bottom:${fmt(delta)}px` : ""}">${bodies[k]}</div>`);
   });
   // The scrim behind the block shows while captions are up, holding through short gaps between them, and grows up
   // from the block's bottom line to each caption's own height, so a one line caption never carries a tall band.
@@ -1169,18 +1129,9 @@ html,body{margin:0;padding:0;background:var(--bg)}
 .caps{position:absolute;left:0;right:0;display:flex;align-items:center;justify-content:center;pointer-events:none;font-family:${fontStack(caps)};font-synthesis:${fontSynthesis(caps)};isolation:isolate}
 .caps .band{left:0;right:0}
 .cap{position:absolute;width:var(--cap-width);left:50%;margin-left:calc(var(--cap-width) / -2);text-align:center;font-size:var(--cap-size);color:var(--cap-text)}
-.cap .line{display:inline-block;max-width:100%;text-wrap:balance}
 .anchor-bottom .cap{bottom:0;transform-origin:50% 100%}
 .anchor-bar .cap{top:50%;translate:0 -50%}
-.caps .w{display:inline-block;transform-origin:50% 70%}
-.caps-subtitle .cap{font-weight:500;line-height:1.3;letter-spacing:0.005em;text-shadow:0 0 ${px(0.5 * u)} rgba(0,0,0,0.9),0 ${px(0.2 * u)} ${px(1.2 * u)} rgba(0,0,0,0.6)}
-.caps-subtitle.anchor-bottom .cap{font-weight:550;-webkit-text-stroke:${px(0.12 * u)} rgba(0,0,0,0.7);paint-order:stroke fill;text-shadow:0 ${px(0.25 * u)} ${px(1.6 * u)} rgba(0,0,0,0.7)}
-.caps-karaoke .cap{font-weight:600;line-height:1.22;letter-spacing:-0.005em;-webkit-text-stroke:${px(0.14 * u)} rgba(0,0,0,0.85);paint-order:stroke fill;text-shadow:0 ${px(0.3 * u)} ${px(1.6 * u)} rgba(0,0,0,0.55)}
-.caps-karaoke .w{text-decoration:underline;text-decoration-thickness:0.09em;text-underline-offset:0.14em;text-decoration-color:transparent;text-decoration-skip-ink:none}
-.caps-chip .cap .line{background:var(--scrim);backdrop-filter:blur(${px(1.2 * u)});border-radius:${px(1.3 * t)};padding:${px(0.9 * t)} ${px(1.5 * t)}}
-.caps-chip .cap{font-weight:700;line-height:1.4;letter-spacing:-0.01em}
-.caps-chip .w{padding:0.02em 0.28em;margin:0 -0.16em;border-radius:0.3em;background-color:transparent}
-.caps-kinetic .cap{font-weight:800;line-height:0.95;letter-spacing:-0.01em;text-shadow:0 ${px(0.4 * u)} ${px(2.2 * u)} rgba(0,0,0,0.55)}
+${captionCss()}
 .caps.upper .cap{text-transform:uppercase}
 `;
 }

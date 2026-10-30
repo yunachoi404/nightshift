@@ -6,6 +6,10 @@
  *
  * A queued job's message says what it waits for: the GPU, the overnight window, or (an export) the jobs of its
  * project queued before it.
+ *
+ * Finals for the night run grouped by the model they load, so each model loads once a night (see `nightGroupFor` and
+ * `runOrder`). Groups keep the user's order, the finals inside one run in the order queued, and a group closes once it
+ * starts, so no final waits behind an endless run of one model.
  */
 import type { Job, OtherGpuUse, Settings } from "@nightshift/contract";
 import { failureMessage, isRuntimeLost, ShutdownError } from "../errors.js";
@@ -41,10 +45,48 @@ function notBefore(entry: StoredJob): number {
   return typeof entry.payload._notBefore === "number" ? entry.payload._notBefore : 0;
 }
 
-export function pickNext(entries: StoredJob[], settings: Settings, now: Date, canStart: (job: Job) => boolean): StoredJob | undefined {
+/** What a final for the night is grouped by: the model it loads when the engine knows it, else its step (one workflow each). */
+export function modelKey(job: Job): string {
+  return job.model ?? job.step;
+}
+
+/** A final for the night that has started on the GPU. Its group is closed: finals queued after that start a new one. */
+function started(entry: StoredJob): boolean {
+  return entry.payload._started === true;
+}
+
+/**
+ * The group a final for the night joins (Job.nightGroup): the group of a waiting final with the same model while none of
+ * that group has started, else a new group numbered by the final's own place in the queue (`seq`), so groups run in the
+ * order their first finals were queued.
+ */
+export function nightGroupFor(job: Job, seq: number, entries: Iterable<StoredJob>): number {
+  const all = [...entries];
+  const closed = new Set(all.filter(started).map((e) => e.job.nightGroup));
+  const open = all.find(
+    (e) => e.job.status === "queued" && e.job.nightGroup !== undefined && !closed.has(e.job.nightGroup) && jobPriority(e.job) === 2 && modelKey(e.job) === modelKey(job),
+  );
+  return open?.job.nightGroup ?? seq;
+}
+
+/**
+ * The GPU's order: interactive work, then finals to run now, then finals for the night, each in the order queued. Finals
+ * for the night go by group, lowest first, with `turn` (the group on the GPU now) before all, so a group that has
+ * started finishes before the next one, even when one of an earlier group comes back from a pause.
+ */
+export function runOrder(turn?: number): (a: StoredJob, b: StoredJob) => number {
+  const group = (e: StoredJob): number => {
+    if (jobPriority(e.job) !== 2) return 0;
+    const g = e.job.nightGroup ?? e.seq;
+    return g === turn ? 0 : g;
+  };
+  return (a, b) => jobPriority(a.job) - jobPriority(b.job) || group(a) - group(b) || a.seq - b.seq;
+}
+
+export function pickNext(entries: StoredJob[], settings: Settings, now: Date, canStart: (job: Job) => boolean, turn?: number): StoredJob | undefined {
   return entries
     .filter((e) => e.job.status === "queued" && notBefore(e) <= now.getTime() && isEligible(e.job, settings, now) && canStart(e.job))
-    .sort((a, b) => jobPriority(a.job) - jobPriority(b.job) || a.seq - b.seq)[0];
+    .sort(runOrder(turn))[0];
 }
 
 const NOUN: Partial<Record<Job["step"], string>> = { text: "shot list", still: "still", video_draft: "draft", video_what_if: "film", music: "song", voice: "voiceover" };
@@ -135,6 +177,8 @@ export class JobQueue {
   private lastEmit = new Map<string, number>();
   private trailing = new Map<string, NodeJS.Timeout>();
   private lastPersist = new Map<string, number>();
+  /** The night group on the GPU now, or last: it goes on before any other (see runOrder). */
+  private nightTurn?: number;
 
   constructor(
     private readonly store: JobStore,
@@ -148,6 +192,16 @@ export class JobQueue {
         store.put(entry);
       }
       this.entries.set(entry.job.id, entry);
+    }
+    for (const entry of this.entries.values()) {
+      if (entry.job.status !== "queued" || jobPriority(entry.job) !== 2) continue;
+      // Finals for the night queued before the queue grouped them join groups now, in the order they were queued.
+      if (entry.job.nightGroup === undefined) {
+        entry.job = { ...entry.job, nightGroup: nightGroupFor(entry.job, entry.seq, this.entries.values()) };
+        store.put(entry);
+      }
+      // A final that started and was put back (the engine stopped, the GPU went away) holds its group's turn.
+      if (started(entry)) this.nightTurn ??= entry.job.nightGroup;
     }
   }
 
@@ -173,7 +227,9 @@ export class JobQueue {
   }
 
   enqueue(job: Job, payload: JobPayload): Job {
-    const entry: StoredJob = { job, payload, seq: this.store.nextSeq() };
+    const seq = this.store.nextSeq();
+    if (jobPriority(job) === 2) job = { ...job, nightGroup: nightGroupFor(job, seq, this.entries.values()) };
+    const entry: StoredJob = { job, payload, seq };
     this.entries.set(job.id, entry);
     this.store.put(entry);
     this.emit(entry, true);
@@ -185,11 +241,11 @@ export class JobQueue {
     return this.entries.get(id)?.job;
   }
 
-  /** Running first, then queued in run order, then finished jobs newest first. */
+  /** Running first, then queued in run order (the GPU's; CPU jobs among them), then finished jobs newest first. */
   list(filter: { projectId?: string } = {}): Job[] {
     const all = [...this.entries.values()].filter((e) => !filter.projectId || e.job.projectId === filter.projectId);
     const running = all.filter((e) => e.job.status === "running").sort((a, b) => a.seq - b.seq);
-    const queued = all.filter((e) => e.job.status === "queued").sort((a, b) => jobPriority(a.job) - jobPriority(b.job) || a.seq - b.seq);
+    const queued = all.filter((e) => e.job.status === "queued").sort(runOrder(this.nightTurn));
     const finished = all.filter((e) => !["running", "queued"].includes(e.job.status)).sort((a, b) => b.seq - a.seq);
     return [...running, ...queued, ...finished].map((e) => e.job);
   }
@@ -304,13 +360,18 @@ export class JobQueue {
     const settings = this.opts.settings();
     const now = this.now();
     const inLane = [...this.entries.values()].filter((e) => laneOf(e.job) === lane);
-    const entry = pickNext(inLane, settings, now, (j) => this.waitReason(this.entries.get(j.id)!, settings, now) === undefined);
+    const entry = pickNext(inLane, settings, now, (j) => this.waitReason(this.entries.get(j.id)!, settings, now) === undefined, this.nightTurn);
     if (!entry) return;
     const controller = new AbortController();
     let finish!: () => void;
     const done = new Promise<void>((r) => (finish = r));
     this.active.set(lane, { entry, controller, done });
     this.waiting.delete(entry.job.id);
+    if (jobPriority(entry.job) === 2) {
+      // Its group's turn: finals of its model queued from now on start a new group (persisted below with the job).
+      this.nightTurn = entry.job.nightGroup;
+      if (!started(entry)) entry.payload = { ...entry.payload, _started: true };
+    }
     this.update(entry, { status: "running", startedAt: nowIso(), progress: 0, message: "Starting" }, true);
     try {
       const result = await hooks.execute(entry.job, entry.payload, {

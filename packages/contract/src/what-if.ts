@@ -28,10 +28,11 @@ export function fallbackWhatIf(brief: Record<string, unknown>): {
 } {
   const question = typeof brief.question === "string" && brief.question.trim()
     ? brief.question.trim().replace(/\s+/g, " ") : whatIfExamples[0]!;
-  const preset = /jupiter|outer space|planet/i.test(question) ? WHAT_IF_PRESETS.space
-    : /forest|tree|plant|nature|grow/i.test(question) ? WHAT_IF_PRESETS.forest
-      : /sea|ocean|harbor|water.*freez|ice/i.test(question) ? WHAT_IF_PRESETS.sea
-        : /gravity|float|levitat/i.test(question) ? WHAT_IF_PRESETS.gravity : undefined;
+  // Whole words only: a street is not a tree, and a voice is not ice.
+  const preset = /\b(jupiter|outer space|planets?)\b/i.test(question) ? WHAT_IF_PRESETS.space
+    : /\b(forests?|trees?|plants?|nature|grows?|grew|grown|growing)\b/i.test(question) ? WHAT_IF_PRESETS.forest
+      : /\b(seas?|oceans?|harbou?rs?|ice|icy)\b|\bwater\b.*\bfr(ee|o)z/i.test(question) ? WHAT_IF_PRESETS.sea
+        : /\b(gravity|float\w*|levitat\w*)\b/i.test(question) ? WHAT_IF_PRESETS.gravity : undefined;
   const shortQuestion = question.split(/\s+/).length <= 16 ? question : "Imagine it happening, just for a moment.";
   const lines = preset ? [shortQuestion, ...preset.lines.slice(1)] : [shortQuestion, "Everything looks familiar at first.",
     "Then the ordinary world starts to change in a way nobody expected.",

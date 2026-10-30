@@ -5,18 +5,20 @@ import { Link, useLocation, useNavigate } from "react-router";
 import { useEngineState, useJobs } from "@/store/engine";
 import { Button, Segmented, cx } from "@/ui/primitives";
 import { isDevMock } from "@/api/config";
-import { isGpuJob, jobLabel, projectStage } from "@/features/project/helpers";
+import { isGpuJob, jobLabel, projectStage, timelineShots, totalDuration } from "@/features/project/helpers";
 import { plural, shortDuration } from "@/lib/format";
-import { totalDuration } from "@/features/project/helpers";
 import { useThisMachine } from "@/store/tier";
+import { SidebarToggle } from "./Sidebar";
+import { modKey } from "./useSidebar";
 
-type Stage = "storyboard" | "takes" | "finals" | "editor";
+/** A project's two areas. The old storyboard, takes and finals pages belong to Media. */
+type Stage = "media" | "editor";
 
-export function Toolbar({ project, onDev }: { project?: Project; onDev: () => void }) {
+export function Toolbar({ project, onDev, sidebarCollapsed, onToggleSidebar }: { project?: Project; onDev: () => void; sidebarCollapsed: boolean; onToggleSidebar: () => void }) {
   const loc = useLocation();
   const nav = useNavigate();
   const jobs = useJobs();
-  const stage = (/^\/p\/[^/]+\/(storyboard|takes|finals|editor)/.exec(loc.pathname)?.[1] as Stage | undefined) ?? "storyboard";
+  const stage: Stage = /^\/p\/[^/]+\/editor/.test(loc.pathname) ? "editor" : "media";
 
   let title = "Nightshift";
   // The subtitle's parts, most important last. Narrow windows drop the first ones (see .toolbar__sub in app.css).
@@ -25,7 +27,8 @@ export function Toolbar({ project, onDev }: { project?: Project; onDev: () => vo
     title = project.name;
     const t = templates.find((x) => x.id === project.template);
     const s = projectStage(project, jobs);
-    sub = [t?.name, project.shots.length ? `${plural(project.shots.length, "shot")}, ${shortDuration(totalDuration(project))}` : null, s.label].filter((x): x is string => !!x);
+    const cut = timelineShots(project).length;
+    sub = [t?.name, cut ? `${plural(cut, "shot")}, ${shortDuration(totalDuration(project))}` : null, s.label].filter((x): x is string => !!x);
   } else if (loc.pathname === "/settings") title = "Settings";
   else if (loc.pathname === "/new") title = "New project";
   else if (loc.pathname === "/queue") title = "Queue";
@@ -33,6 +36,7 @@ export function Toolbar({ project, onDev }: { project?: Project; onDev: () => vo
   return (
     <header className="toolbar drag">
       <div className="toolbar__left">
+        {sidebarCollapsed && <SidebarToggle collapsed onToggle={onToggleSidebar} />}
         <div className="toolbar__title">
           <div className="toolbar__name">{title}</div>
           {sub.length > 0 && (
@@ -53,10 +57,8 @@ export function Toolbar({ project, onDev }: { project?: Project; onDev: () => vo
             value={stage}
             onChange={(v) => nav(`/p/${project.id}/${v}`)}
             options={[
-              { value: "storyboard", label: project.template === "camera_move" ? "Photo & move" : project.template === "vfx_effect" ? "Photo & effect" : "Storyboard" },
-              { value: "takes", label: "Takes" },
-              { value: "finals", label: "Finals" },
-              { value: "editor", label: "Editor" },
+              { value: "media", label: "Media", title: `Media (${modKey()}1)` },
+              { value: "editor", label: "Editor", title: `Editor (${modKey()}2)` },
             ]}
           />
         )}

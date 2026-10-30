@@ -78,9 +78,9 @@ export class ProjectStore {
     return assetId ? project.assets.find((a) => a.id === assetId) : undefined;
   }
 
-  async create(fields: Pick<Project, "name" | "template" | "aspect" | "brief"> & Partial<Pick<Project, "references">>): Promise<Project> {
+  async create(fields: Pick<Project, "name" | "template" | "aspect" | "brief"> & Partial<Pick<Project, "references" | "shots" | "boards">>): Promise<Project> {
     const now = nowIso();
-    const project: Project = { id: newId("prj"), ...fields, shots: [], takes: [], assets: [], timeline: null, createdAt: now, updatedAt: now };
+    const project: Project = { id: newId("prj"), shots: [], ...fields, takes: [], assets: [], timeline: null, createdAt: now, updatedAt: now };
     await mkdir(join(this.dir(project.id), "assets"), { recursive: true });
     await this.save(project);
     return project;

@@ -1,9 +1,10 @@
 /**
- * A voice or song that failed says why in its own section of the editor. Before, the section went back to its button
- * and the reason was only a tooltip in the queue, so a voice that ran out of graphics memory looked like nothing happened.
+ * A voice or song that failed says why on its own lane of the timeline, with a way to try again. Before, the editor
+ * went back to its button and the reason was only a tooltip in the queue, so a voice that ran out of graphics memory
+ * looked like nothing happened.
  */
 import type { Event, Job, Project } from "@nightshift/contract";
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import type { NightshiftClient } from "@/api/client";
 import { App } from "@/app/App";
@@ -82,21 +83,28 @@ function client(jobs: Job[]): NightshiftClient {
   });
 }
 
+/** The failure on a lane, and the lane it is on. */
+async function laneFailure(title: string) {
+  const note = (await screen.findByText(title)).closest(".tl__note") as HTMLElement;
+  return { note, lane: note.closest("[data-lane]")?.getAttribute("data-lane") };
+}
+
 describe("the editor after a voice or song failed", () => {
-  it("says why the voice failed, in plain words when the card ran out of memory; a song that worked on retry says nothing", async () => {
+  it("says why the voice failed on the Voice lane, in plain words when the card ran out of memory; a song that worked on retry says nothing", async () => {
     window.location.hash = `#/p/${PID}/editor`;
     render(
       <EngineProvider client={client([job("job_m1", "music", "failed", 60_000, "ComfyUI failed in KSampler node 3: boom"), job("job_m2", "music", "done", 50_000), job("job_v1", "voice", "failed", 40_000, OOM)])}>
         <App />
       </EngineProvider>,
     );
-    const title = await screen.findByText("The voice didn't finish");
-    const notice = title.closest(".notice") ?? title.parentElement!.parentElement!;
+    const { note, lane } = await laneFailure("The voice didn't finish.");
+    expect(lane).toBe("voice");
     // A job from an engine that only said "Failed": the error alone shows it ran out of memory.
-    expect(notice.textContent).toContain("Ran out of graphics memory. Close other apps that use the graphics card, then try again.");
-    expect(notice.textContent).toContain("BreezeTTS2VoiceDesign node 2");
-    expect(notice.textContent).not.toContain("Currently allocated");
-    expect(screen.queryByText("The music didn't finish")).toBeNull();
+    expect(note.textContent).toContain("Ran out of graphics memory. Close other apps that use the graphics card, then try again.");
+    expect(note.textContent).toContain("BreezeTTS2VoiceDesign node 2");
+    expect(note.textContent).not.toContain("Currently allocated");
+    within(note).getByRole("button", { name: "Try again" });
+    expect(screen.queryByText("The music didn't finish.")).toBeNull();
   });
 
   it("names the other apps that held the card when the engine knew", async () => {
@@ -107,9 +115,9 @@ describe("the editor after a voice or song failed", () => {
         <App />
       </EngineProvider>,
     );
-    const title = await screen.findByText("The voice didn't finish");
-    const notice = title.closest(".notice") ?? title.parentElement!.parentElement!;
-    expect(notice.textContent).toContain("Ran out of graphics memory. Other apps are using 3.5 GB (python). Close them, then try again.");
-    expect(notice.textContent).toContain("BreezeTTS2VoiceDesign node 2");
+    const { note, lane } = await laneFailure("The voice didn't finish.");
+    expect(lane).toBe("voice");
+    expect(note.textContent).toContain("Ran out of graphics memory. Other apps are using 3.5 GB (python). Close them, then try again.");
+    expect(note.textContent).toContain("BreezeTTS2VoiceDesign node 2");
   });
 });

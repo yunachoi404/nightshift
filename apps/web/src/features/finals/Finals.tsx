@@ -6,9 +6,10 @@ import { useEngine, useEngineState, useProject, useProjectJobs } from "@/store/e
 import { upscaleOnly, useInstalledTier } from "@/store/tier";
 import { Button, Dialog, Notice, Tag, cx, toast, radioGroupKeyDown } from "@/ui/primitives";
 import { Media } from "@/media/Media";
-import { activeJob, bestAssetFor, draftsFor, failureText, frameClass, jobLabel, jobStatusLine, lastFailed, takeById } from "@/features/project/helpers";
+import { activeJob, bestAssetFor, draftsFor, failureText, frameClass, jobLabel, jobStatusLine, lastFailed, takeById, timelineShots } from "@/features/project/helpers";
 import { useNow } from "@/lib/useNow";
 import { clock, clockFromDate, plural, roughDuration, shortDuration } from "@/lib/format";
+import { insideWindow, nextWindowStart } from "@/lib/overnight";
 import { useMorningSummary } from "./morning";
 import { RevealSheet } from "@/features/reveal/RevealSheet";
 import { revealable } from "@/features/reveal/reveal";
@@ -33,14 +34,16 @@ function ProjectFinals({ project }: { project: Project }) {
   const upscale = upscaleOnly(tier);
   const [kind, setKind] = useState<FinalKind>("same_take");
   const effectiveKind: FinalKind = canRemaster ? kind : "same_take";
-  const [selected, setSelected] = useState<Set<string>>(() => new Set(project.shots.filter((s) => s.chosenDraftId && !s.chosenFinalId).map((s) => s.id)));
+  // The cut's shots. Shots kept in Media only are finished from their cards there.
+  const shots = timelineShots(project);
+  const [selected, setSelected] = useState<Set<string>>(() => new Set(shots.filter((s) => s.chosenDraftId && !s.chosenFinalId).map((s) => s.id)));
   const [nightOpen, setNightOpen] = useState(false);
   const [busy, setBusy] = useState(false);
 
   const step = effectiveKind === "remaster" ? "video_final_remaster" : "video_final_same_take";
   const durationFactor = project.template === "what_if" ? 15 / 4 : 1;
   const perSec = (tier?.estimates?.[step]?.seconds ?? (effectiveKind === "remaster" ? 360 : 180)) * durationFactor;
-  const selectable = project.shots.filter((s) => s.chosenDraftId && !activeJob(jobs, s.id, ["video_final_same_take", "video_final_remaster"]));
+  const selectable = shots.filter((s) => s.chosenDraftId && !activeJob(jobs, s.id, ["video_final_same_take", "video_final_remaster"]));
   const chosen = selectable.filter((s) => selected.has(s.id));
   const totalSec = chosen.length * perSec;
 
@@ -102,7 +105,7 @@ function ProjectFinals({ project }: { project: Project }) {
     }
   };
 
-  const allFinal = project.shots.length > 0 && project.shots.every((s) => s.chosenFinalId);
+  const allFinal = shots.length > 0 && shots.every((s) => s.chosenFinalId);
   const toggle = (sid: string) =>
     setSelected((set) => {
       const n = new Set(set);
@@ -111,15 +114,15 @@ function ProjectFinals({ project }: { project: Project }) {
       return n;
     });
 
-  if (!project.shots.length) {
+  if (!shots.length) {
     return (
       <div className="page">
         <div className="empty">
           <Film className="empty__icon" />
           <div className="empty__title">Nothing to finish yet</div>
-          <p className="empty__text">{upscale ? `Finals are the takes you pick, upscaled${upscale.to}.` : "Finals are full-quality renders of the takes you pick."} Start with the storyboard.</p>
-          <Link to={`/p/${project.id}/storyboard`} className="btn btn--primary">
-            Go to the storyboard
+          <p className="empty__text">{upscale ? `Finals are the takes you pick, upscaled${upscale.to}.` : "Finals are full-quality renders of the takes you pick."} Put shots on the timeline first.</p>
+          <Link to={`/p/${project.id}/media`} className="btn btn--primary">
+            Go to Media
           </Link>
         </div>
       </div>
@@ -191,7 +194,7 @@ function ProjectFinals({ project }: { project: Project }) {
               <span>{chosen.length ? `${chosen.length} of ${selectable.length} selected` : selectable.length ? "Select shots to finish" : "No shots can be finished yet"}</span>
             </label>
           </div>
-          {project.shots.map((s, i) => (
+          {shots.map((s, i) => (
             <FinalRow key={s.id} project={project} shot={s} index={i} jobs={jobs} now={now} selected={selected.has(s.id)} selectable={selectable.includes(s)} onToggle={() => toggle(s.id)} onRetry={(k, mode) => s.chosenDraftId && void final(project.id, s.id, { draftId: s.chosenDraftId, kind: k, mode })} onCancel={(j) => void cancelJob(j.id)} />
           ))}
         </div>
@@ -224,7 +227,7 @@ function ProjectFinals({ project }: { project: Project }) {
             </Button>
           </div>
           {!chosen.length && <div className="insp__text">Tick the shots on the left. Shots need a picked take first.</div>}
-          {chosen.length > 0 && selectable.length !== project.shots.length && <div className="insp__text">{project.shots.length - selectable.length} {project.shots.length - selectable.length === 1 ? "shot needs a picked take or is already rendering." : "shots need a picked take or are already rendering."}</div>}
+          {chosen.length > 0 && selectable.length !== shots.length && <div className="insp__text">{shots.length - selectable.length} {shots.length - selectable.length === 1 ? "shot needs a picked take or is already rendering." : "shots need a picked take or are already rendering."}</div>}
         </section>
 
         {overnightJobs.length > 0 && (
@@ -441,30 +444,7 @@ function cap(s: string): string {
 }
 
 export function finalsSummary(p: Project): string {
-  const n = p.shots.filter((s) => s.chosenFinalId).length;
-  return `${n} of ${p.shots.length}`;
-}
-
-/** Minutes since midnight of "HH:MM". */
-function minutesOf(hhmm: string): number {
-  const [h, m] = hhmm.split(":").map(Number);
-  return (h ?? 0) * 60 + (m ?? 0);
-}
-
-/** True while the clock is inside the overnight window, which usually crosses midnight. */
-export function insideWindow(startAt: string, endAt: string, now: number): boolean {
-  const d = new Date(now);
-  const cur = d.getHours() * 60 + d.getMinutes();
-  const start = minutesOf(startAt);
-  const end = minutesOf(endAt);
-  return start < end ? cur >= start && cur < end : cur >= start || cur < end;
-}
-
-/** The next time the window opens: today if still ahead, else tomorrow. */
-export function nextWindowStart(startAt: string, now: number): Date {
-  const d = new Date(now);
-  const [h, m] = startAt.split(":").map(Number);
-  d.setHours(h ?? 23, m ?? 0, 0, 0);
-  if (d.getTime() <= now) d.setDate(d.getDate() + 1);
-  return d;
+  const shots = timelineShots(p);
+  const n = shots.filter((s) => s.chosenFinalId).length;
+  return `${n} of ${shots.length}`;
 }

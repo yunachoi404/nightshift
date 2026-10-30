@@ -42,12 +42,13 @@ export function createMockClient(flavor: MockFlavor = "dev"): NightshiftClient {
     updateProject: (pid, patch) => call(() => engine.updateProject(pid, patch), 30),
     deleteProject: (pid) => call(() => engine.deleteProject(pid)),
     deleteAsset: (pid, assetId) => call(() => engine.deleteAsset(pid, assetId)),
-    uploadAsset: async (pid, file) => {
+    uploadAsset: async (pid, file, opts) => {
       const dataUrl = await fileToSmallDataUrl(file);
       const kind: Asset["kind"] = file.type.startsWith("audio") ? "audio" : "image";
-      return call(() => engine.uploadAsset(pid, dataUrl, kind, { role: kind === "audio" ? "music" : "reference" }), 400);
+      return call(() => engine.uploadAsset(pid, dataUrl, kind, { role: opts?.role ?? (kind === "audio" ? "music" : "reference") }, opts?.boardId), 400);
     },
     storyboard: (pid) => call(() => engine.storyboard(pid)),
+    make: (pid, body) => call(() => engine.make(pid, body)),
     still: (pid, shotId, body) => call(() => engine.still(pid, shotId, body)),
     draft: (pid, shotId, body) => call(() => engine.draft(pid, shotId, body)),
     final: (pid, shotId, body) => call(() => engine.final(pid, shotId, body)),

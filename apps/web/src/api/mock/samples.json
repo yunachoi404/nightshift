@@ -16,789 +16,654 @@
       "durationSec": 2.04
     }
   },
-  "croissant": {
-    "id": "prj_mvt6si0o96caf3677a",
-    "name": "The Croissant ad",
+  "ad": {
+    "id": "prj_mvubmpa02f6e677062",
+    "name": "Nocturne ad",
     "template": "product_ad",
     "aspect": "16:9",
     "brief": {
       "tone": "luxury",
       "voice": "june",
-      "productName": "The Croissant",
-      "does": "takes three days to make and three bites to eat",
-      "referenceAssetId": "ast_mvt6si1937f0adbfc4",
+      "productName": "Nocturne",
+      "does": "shuts out the world so you can make music all night",
+      "referenceAssetId": "ast_mvubmpamd040447cd0",
       "referenceKind": "photo",
-      "script": "In a world of sliced bread... one baker said no. Three days. Eighty-one layers. The Croissant. Tomorrow, 7 AM.",
-      "songPrompt": "Epic orchestral movie trailer music, deep braams, thundering taiko drums, rising strings, huge brass hits, slow and dramatic, instrumental"
+      "script": "",
+      "songPrompt": "Dark driving electronic dance track, punchy drums, deep sub bass drops, moody analog synths, late-night club energy, 124 BPM, instrumental"
     },
     "references": [
       {
-        "id": "ref_ast_mvt6si1937f0adbfc4",
-        "assetId": "ast_mvt6si1937f0adbfc4",
+        "id": "ref_ast_mvubmpamd040447cd0",
+        "assetId": "ast_mvubmpamd040447cd0",
         "kind": "product",
-        "label": "The Croissant"
+        "label": "Nocturne"
       },
       {
-        "id": "ref_sfx2vi2g09",
-        "assetId": "ast_mvt6si2p3cc9fd42de",
+        "id": "ref_rae",
+        "assetId": "ast_mvue0m523be0133347",
         "kind": "character",
-        "label": "Baker"
+        "label": "Rae"
       }
     ],
     "shots": [
       {
-        "id": "shot_mvt6so4kde30c8d181",
+        "id": "shot_mvubmv519515e07bb0",
         "index": 0,
-        "prompt": "Darkness. The Croissant rests alone on a black stone counter as a hard golden rim light slowly rises across it, fine flour dust drifting through the beam like snow. Epic and dramatic, slow motion. A deep cinematic boom echoes. No text.",
-        "cameraMove": "dolly_in",
-        "line": "In a world of sliced bread...",
+        "prompt": "Rae dances alone in a dark studio full of haze, wearing one pair of Nocturne headphones on her head over her ears, nothing around her neck. She spins in slow motion, platinum hair flying, cut out by one hard white backlight through the haze and a blue rim light. Cinematic, high contrast. Deep bass thumps. No text.",
+        "cameraMove": "orbit_left",
         "referenceIds": [
-          "ref_ast_mvt6si1937f0adbfc4"
+          "ref_rae",
+          "ref_ast_mvubmpamd040447cd0"
         ],
-        "durationSec": 3.5,
-        "stillAssetId": "ast_mvt6uz4n82637e378d",
-        "chosenDraftId": "take_mvt6x8f19099c4b18e",
-        "chosenFinalId": "take_mvthc92145aa7691ff",
+        "durationSec": 3,
+        "stillAssetId": "ast_mvue305ef051b9234b",
+        "chosenDraftId": "take_mvuef5w2554de359ce",
+        "chosenFinalId": "take_mvuf6q3ef99301bcbb",
         "locked": false
       },
       {
-        "id": "shot_mvt6so4k06e0426283",
+        "id": "shot_mvubmv51607a5a2de7",
         "index": 1,
-        "prompt": "Baker stands in his dark bakery at night, arms crossed, lit from behind by the orange glow of an open oven, flour drifting in the air around him. He stares into the lens like an action hero. Low rumble of the oven. No text.",
+        "prompt": "Night rooftop in light rain with blurred city lights and soft neon glow far behind, no signs and no lettering anywhere. Rae, wearing one pair of Nocturne headphones on her head, nothing around her neck, hits sharp dance moves to the beat, hoodie and hair whipping, raindrops catching the neon light. Slow motion, cinematic, wet reflections. Rain and bass. No text.",
         "cameraMove": "dolly_in",
-        "line": "one baker said no.",
         "referenceIds": [
-          "ref_sfx2vi2g09"
+          "ref_rae",
+          "ref_ast_mvubmpamd040447cd0"
         ],
         "durationSec": 3,
-        "stillAssetId": "ast_mvt6v3zrf9f58fe4a3",
-        "chosenDraftId": "take_mvt73e40525d0c811b",
-        "chosenFinalId": "take_mvthdhbk1c352f13c1",
+        "stillAssetId": "ast_mvue3flb8ed6140264",
+        "chosenDraftId": "take_mvuegc1x48b1ac133e",
+        "chosenFinalId": "take_mvufazaufe4eb03c33",
         "locked": false
       },
       {
-        "id": "shot_mvt6so4k79235955de",
+        "id": "shot_mvubmv51973f0b9813",
         "index": 2,
-        "prompt": "Extreme close-up in slow motion: Baker's floury hands tear The Croissant open, golden flaky layers shattering, crumbs flying, a wisp of steam rising. The crust crackles loudly. No text.",
-        "cameraMove": "handheld",
-        "line": "Three days. Eighty-one layers.",
+        "prompt": "Nocturne headphones turn slowly in mid-air in a dark void as a hard copper light sweeps across the ear cups and the brushed copper rings flare, fine haze drifting through the beam. Cinematic product film. A deep synth swell. No text.",
+        "cameraMove": "orbit_left",
         "referenceIds": [
-          "ref_sfx2vi2g09",
-          "ref_ast_mvt6si1937f0adbfc4"
-        ],
-        "durationSec": 3.5,
-        "stillAssetId": "ast_mvt6vbbo2137e7b9fd",
-        "chosenDraftId": "take_mvt745pl36c25d4926",
-        "chosenFinalId": "take_mvthf0bo44c38d8820",
-        "locked": false
-      },
-      {
-        "id": "shot_mvt6so4k9a1eef77f7",
-        "index": 3,
-        "prompt": "Low angle, slow motion: Baker pulls a tray of golden croissants out of a blazing oven, heat shimmer and flour in the air, warm firelight on his face. The oven roars. No text.",
-        "cameraMove": "crane_up",
-        "referenceIds": [
-          "ref_sfx2vi2g09",
-          "ref_ast_mvt6si1937f0adbfc4"
-        ],
-        "durationSec": 2.5,
-        "stillAssetId": "ast_mvt6viha6e40361cd3",
-        "chosenDraftId": "take_mvt702x32222cd8166",
-        "chosenFinalId": "take_mvthg9w02084c9be66",
-        "locked": false
-      },
-      {
-        "id": "shot_mvt6so4k9c6023f29f",
-        "index": 4,
-        "prompt": "The Croissant alone on a black stone counter under a single spotlight, dark empty background, a little flour dust in the light. Still and quiet. No text, no letters.",
-        "cameraMove": "static",
-        "line": "The Croissant. Tomorrow, 7 AM.",
-        "referenceIds": [
-          "ref_ast_mvt6si1937f0adbfc4"
+          "ref_ast_mvubmpamd040447cd0"
         ],
         "durationSec": 3,
-        "stillAssetId": "ast_mvt6vnc10fbfa3f55e",
-        "chosenDraftId": "take_mvt70s6c97c506eeca",
-        "chosenFinalId": "take_mvthhmnrae43ffb3a9",
+        "stillAssetId": "ast_mvue1ml1ae397ef9e7",
+        "chosenDraftId": "take_mvuejcz2e891b7b5de",
+        "chosenFinalId": "take_mvufcno76cff7c0cf9",
+        "locked": false
+      },
+      {
+        "id": "shot_mvubmv518ef99ecccd",
+        "index": 3,
+        "prompt": "Extreme close-up of a young woman with a sharp platinum blonde bob and dark winged eyeliner, Rae, in the dark, eyes closed, wearing one pair of wireless Nocturne headphones on her head over her ears, no cables, bare neck with nothing around it, a strobe light flashing hard white across her face, she snaps her head to the beat and her hair swings. Cinematic, high contrast. Muffled bass. No text.",
+        "cameraMove": "dolly_in",
+        "referenceIds": [
+          "ref_ast_mvubmpamd040447cd0"
+        ],
+        "durationSec": 3,
+        "stillAssetId": "ast_mvueqvvi5e0a136704",
+        "chosenDraftId": "take_mvueusiva6e20ae7ec",
+        "chosenFinalId": "take_mvufeim6cc5fc9d704",
+        "locked": false
+      },
+      {
+        "id": "shot_mvubmv5130ad0fe7fb",
+        "index": 4,
+        "prompt": "Wide shot: Rae lands a powerful dance move in a dark empty concrete tunnel lit by a row of hard white strobe lights, one pair of Nocturne headphones on her head and nothing around her neck, dust bursting up in the light. Cinematic, slow motion, high contrast. A bass hit echoes. No text.",
+        "cameraMove": "dolly_out",
+        "referenceIds": [
+          "ref_rae",
+          "ref_ast_mvubmpamd040447cd0"
+        ],
+        "durationSec": 3,
+        "stillAssetId": "ast_mvue3uwb3b09f9c11d",
+        "chosenDraftId": "take_mvuebz8x8b289560b9",
+        "chosenFinalId": "take_mvufga4lf65bd7ed12",
         "locked": false
       }
     ],
     "takes": [
       {
-        "id": "take_mvt6x8f19099c4b18e",
-        "shotId": "shot_mvt6so4kde30c8d181",
+        "id": "take_mvue5x3ycaf9f9a51c",
+        "shotId": "shot_mvubmv519515e07bb0",
         "rung": "draft",
-        "seed": 394072645,
-        "videoAssetId": "ast_mvt6x8dq15951b9d7a",
-        "latentAssetId": "ast_mvt6x8f035f2f0eb1e",
-        "jobId": "job_mvt6w9mv2f4103cf90",
-        "prompt": "Darkness. The Croissant rests alone on a black stone counter as a hard golden rim light slowly rises across it, fine flour dust drifting through the beam like snow. Epic and dramatic, slow motion. A deep cinematic boom echoes. No text. The camera slowly dollies in. Commercial product film, crisp detail.",
+        "seed": 580412892,
+        "videoAssetId": "ast_mvue5x2y59ded70a60",
+        "latentAssetId": "ast_mvue5x3xb8503bcbb6",
+        "jobId": "job_mvue4fon07b45ecc9c",
+        "prompt": "Rae dances alone in a dark studio full of haze, wearing one pair of Nocturne headphones on her head over her ears, nothing around her neck. She spins in slow motion, platinum hair flying, cut out by one hard white backlight through the haze and a blue rim light. Cinematic, high contrast. Deep bass thumps. No text. The camera orbits left around the subject. Commercial product film, crisp detail.",
         "negative": "cartoon, video game, text, cuts, black frames",
-        "imageAssetId": "ast_mvt6uz4n82637e378d"
+        "imageAssetId": "ast_mvue305ef051b9234b"
       },
       {
-        "id": "take_mvt6ycsu5a151d1960",
-        "shotId": "shot_mvt6so4k06e0426283",
+        "id": "take_mvue7iebbad3706ba8",
+        "shotId": "shot_mvubmv51607a5a2de7",
         "rung": "draft",
-        "seed": 1647869987,
-        "videoAssetId": "ast_mvt6ycro284adf79c1",
-        "latentAssetId": "ast_mvt6ycst3831745cbf",
-        "jobId": "job_mvt6w9n20adb5b5f7a",
-        "prompt": "Baker stands in his dark bakery at night, arms crossed, lit from behind by the orange glow of an open oven, flour drifting in the air around him. He stares into the lens like an action hero. Low rumble of the oven. No text. The camera slowly dollies in. Commercial product film, crisp detail.",
+        "seed": 374411191,
+        "videoAssetId": "ast_mvue7idl456527ab2f",
+        "latentAssetId": "ast_mvue7iebf68e358975",
+        "jobId": "job_mvue4fop2308dedf36",
+        "prompt": "Night rooftop in light rain with blurred city lights and soft neon glow far behind, no signs and no lettering anywhere. Rae, wearing one pair of Nocturne headphones on her head, nothing around her neck, hits sharp dance moves to the beat, hoodie and hair whipping, raindrops catching the neon light. Slow motion, cinematic, wet reflections. Rain and bass. No text. The camera slowly dollies in. Commercial product film, crisp detail.",
         "negative": "cartoon, video game, text, cuts, black frames",
-        "imageAssetId": "ast_mvt6v3zrf9f58fe4a3"
+        "imageAssetId": "ast_mvue3flb8ed6140264"
       },
       {
-        "id": "take_mvt6z9pi2a70388eb1",
-        "shotId": "shot_mvt6so4k79235955de",
+        "id": "take_mvue9453e6c97f1f93",
+        "shotId": "shot_mvubmv51973f0b9813",
         "rung": "draft",
-        "seed": 361292276,
-        "videoAssetId": "ast_mvt6z9o4513f94409a",
-        "latentAssetId": "ast_mvt6z9pi06c6b8d5af",
-        "jobId": "job_mvt6w9n5dc2bc8abf0",
-        "prompt": "Extreme close-up in slow motion: Baker's floury hands tear The Croissant open, golden flaky layers shattering, crumbs flying, a wisp of steam rising. The crust crackles loudly. No text. Handheld camera, a little drift and breath. Commercial product film, crisp detail.",
+        "seed": 1947018637,
+        "videoAssetId": "ast_mvue944d26a9373fff",
+        "latentAssetId": "ast_mvue945242fbdc5e6b",
+        "jobId": "job_mvue4foq481db76b88",
+        "prompt": "Nocturne headphones turn slowly in mid-air in a dark void as a hard copper light sweeps across the ear cups and the brushed copper rings flare, fine haze drifting through the beam. Cinematic product film. A deep synth swell. No text. The camera orbits left around the subject. Commercial product film, crisp detail.",
         "negative": "cartoon, video game, text, cuts, black frames",
-        "imageAssetId": "ast_mvt6vbbo2137e7b9fd"
+        "imageAssetId": "ast_mvue1ml1ae397ef9e7"
       },
       {
-        "id": "take_mvt702x32222cd8166",
-        "shotId": "shot_mvt6so4k9a1eef77f7",
+        "id": "take_mvuebz8x8b289560b9",
+        "shotId": "shot_mvubmv5130ad0fe7fb",
         "rung": "draft",
-        "seed": 1120853224,
-        "videoAssetId": "ast_mvt702vz9b7bb82418",
-        "latentAssetId": "ast_mvt702x3777597d8a0",
-        "jobId": "job_mvt6w9n85eb02e3e77",
-        "prompt": "Low angle, slow motion: Baker pulls a tray of golden croissants out of a blazing oven, heat shimmer and flour in the air, warm firelight on his face. The oven roars. No text. The camera cranes up. Commercial product film, crisp detail.",
+        "seed": 757409986,
+        "videoAssetId": "ast_mvuebz879781081143",
+        "latentAssetId": "ast_mvuebz8xb20b986430",
+        "jobId": "job_mvue4fos79620be803",
+        "prompt": "Wide shot: Rae lands a powerful dance move in a dark empty concrete tunnel lit by a row of hard white strobe lights, one pair of Nocturne headphones on her head and nothing around her neck, dust bursting up in the light. Cinematic, slow motion, high contrast. A bass hit echoes. No text. The camera slowly pulls back. Commercial product film, crisp detail.",
         "negative": "cartoon, video game, text, cuts, black frames",
-        "imageAssetId": "ast_mvt6viha6e40361cd3"
+        "imageAssetId": "ast_mvue3uwb3b09f9c11d"
       },
       {
-        "id": "take_mvt70s6c97c506eeca",
-        "shotId": "shot_mvt6so4k9c6023f29f",
+        "id": "take_mvuef5w2554de359ce",
+        "shotId": "shot_mvubmv519515e07bb0",
         "rung": "draft",
-        "seed": 613551079,
-        "videoAssetId": "ast_mvt70s50a8e5723751",
-        "latentAssetId": "ast_mvt70s6cadb58f6408",
-        "jobId": "job_mvt6w9nd499fc60651",
-        "prompt": "The Croissant alone on a black stone counter under a single spotlight, dark empty background, a little flour dust in the light. Still and quiet. No text, no letters. The camera holds still. Commercial product film, crisp detail.",
+        "seed": 1257503044,
+        "videoAssetId": "ast_mvuef5v29b9c461104",
+        "latentAssetId": "ast_mvuef5w1a3faa39f10",
+        "jobId": "job_mvue4fou720800c6b2",
+        "prompt": "Rae dances alone in a dark studio full of haze, wearing one pair of Nocturne headphones on her head over her ears, nothing around her neck. She spins in slow motion, platinum hair flying, cut out by one hard white backlight through the haze and a blue rim light. Cinematic, high contrast. Deep bass thumps. No text. The camera orbits left around the subject. Commercial product film, crisp detail.",
         "negative": "cartoon, video game, text, cuts, black frames",
-        "imageAssetId": "ast_mvt6vnc10fbfa3f55e"
+        "imageAssetId": "ast_mvue305ef051b9234b"
       },
       {
-        "id": "take_mvt73e40525d0c811b",
-        "shotId": "shot_mvt6so4k06e0426283",
+        "id": "take_mvuegc1x48b1ac133e",
+        "shotId": "shot_mvubmv51607a5a2de7",
         "rung": "draft",
-        "seed": 1287647871,
-        "videoAssetId": "ast_mvt73e2s3f04c0d809",
-        "latentAssetId": "ast_mvt73e40e60eadb903",
-        "jobId": "job_mvt71h077dc2e8f048",
-        "prompt": "Baker stands in his dark bakery at night, arms crossed, lit from behind by the orange glow of an open oven, flour drifting in the air around him. He stares into the lens like an action hero. Low rumble of the oven. No text. The camera slowly dollies in. Commercial product film, crisp detail.",
+        "seed": 1022776327,
+        "videoAssetId": "ast_mvuegc0v20a803f464",
+        "latentAssetId": "ast_mvuegc1x16d108eca3",
+        "jobId": "job_mvue4fovf9475d5ce4",
+        "prompt": "Night rooftop in light rain with blurred city lights and soft neon glow far behind, no signs and no lettering anywhere. Rae, wearing one pair of Nocturne headphones on her head, nothing around her neck, hits sharp dance moves to the beat, hoodie and hair whipping, raindrops catching the neon light. Slow motion, cinematic, wet reflections. Rain and bass. No text. The camera slowly dollies in. Commercial product film, crisp detail.",
         "negative": "cartoon, video game, text, cuts, black frames",
-        "imageAssetId": "ast_mvt6v3zrf9f58fe4a3"
+        "imageAssetId": "ast_mvue3flb8ed6140264"
       },
       {
-        "id": "take_mvt745pl36c25d4926",
-        "shotId": "shot_mvt6so4k79235955de",
+        "id": "take_mvuejcz2e891b7b5de",
+        "shotId": "shot_mvubmv51973f0b9813",
         "rung": "draft",
-        "seed": 2105518145,
-        "videoAssetId": "ast_mvt745ol72b5eeed72",
-        "latentAssetId": "ast_mvt745plc607847365",
-        "jobId": "job_mvt71h1q39d4a55c9e",
-        "prompt": "Extreme close-up in slow motion: Baker's floury hands tear The Croissant open, golden flaky layers shattering, crumbs flying, a wisp of steam rising. The crust crackles loudly. No text. Handheld camera, a little drift and breath. Commercial product film, crisp detail.",
+        "seed": 1324583241,
+        "videoAssetId": "ast_mvuejcxp4bab94ede6",
+        "latentAssetId": "ast_mvuejcz1a50820295c",
+        "jobId": "job_mvue4fow19d46c62f4",
+        "prompt": "Nocturne headphones turn slowly in mid-air in a dark void as a hard copper light sweeps across the ear cups and the brushed copper rings flare, fine haze drifting through the beam. Cinematic product film. A deep synth swell. No text. The camera orbits left around the subject. Commercial product film, crisp detail.",
         "negative": "cartoon, video game, text, cuts, black frames",
-        "imageAssetId": "ast_mvt6vbbo2137e7b9fd"
+        "imageAssetId": "ast_mvue1ml1ae397ef9e7"
       },
       {
-        "id": "take_mvthc92145aa7691ff",
-        "shotId": "shot_mvt6so4kde30c8d181",
+        "id": "take_mvuekqmi593afef88e",
+        "shotId": "shot_mvubmv5130ad0fe7fb",
+        "rung": "draft",
+        "seed": 84101227,
+        "videoAssetId": "ast_mvuekqldac376e96b8",
+        "latentAssetId": "ast_mvuekqmif657966245",
+        "jobId": "job_mvue4foy8d896a4b0a",
+        "prompt": "Wide shot: Rae lands a powerful dance move in a dark empty concrete tunnel lit by a row of hard white strobe lights, one pair of Nocturne headphones on her head and nothing around her neck, dust bursting up in the light. Cinematic, slow motion, high contrast. A bass hit echoes. No text. The camera slowly pulls back. Commercial product film, crisp detail.",
+        "negative": "cartoon, video game, text, cuts, black frames",
+        "imageAssetId": "ast_mvue3uwb3b09f9c11d"
+      },
+      {
+        "id": "take_mvuetgvmbd61af8e64",
+        "shotId": "shot_mvubmv518ef99ecccd",
+        "rung": "draft",
+        "seed": 680356104,
+        "videoAssetId": "ast_mvuetgukb08ed9b4e2",
+        "latentAssetId": "ast_mvuetgvmc210fe9b63",
+        "jobId": "job_mvuerl1a049e2a3e70",
+        "prompt": "Extreme close-up of a young woman with a sharp platinum blonde bob and dark winged eyeliner, Rae, in the dark, eyes closed, wearing one pair of wireless Nocturne headphones on her head over her ears, no cables, bare neck with nothing around it, a strobe light flashing hard white across her face, she snaps her head to the beat and her hair swings. Cinematic, high contrast. Muffled bass. No text. The camera slowly dollies in. Commercial product film, crisp detail.",
+        "negative": "cartoon, video game, text, cuts, black frames",
+        "imageAssetId": "ast_mvueqvvi5e0a136704"
+      },
+      {
+        "id": "take_mvueusiva6e20ae7ec",
+        "shotId": "shot_mvubmv518ef99ecccd",
+        "rung": "draft",
+        "seed": 154638409,
+        "videoAssetId": "ast_mvueusi596de351806",
+        "latentAssetId": "ast_mvueusivc1ebbb72cc",
+        "jobId": "job_mvuerl1b5fc456a839",
+        "prompt": "Extreme close-up of a young woman with a sharp platinum blonde bob and dark winged eyeliner, Rae, in the dark, eyes closed, wearing one pair of wireless Nocturne headphones on her head over her ears, no cables, bare neck with nothing around it, a strobe light flashing hard white across her face, she snaps her head to the beat and her hair swings. Cinematic, high contrast. Muffled bass. No text. The camera slowly dollies in. Commercial product film, crisp detail.",
+        "negative": "cartoon, video game, text, cuts, black frames",
+        "imageAssetId": "ast_mvueqvvi5e0a136704"
+      },
+      {
+        "id": "take_mvuf6q3ef99301bcbb",
+        "shotId": "shot_mvubmv519515e07bb0",
         "rung": "final",
         "finalKind": "same_take",
-        "parentTakeId": "take_mvt6x8f19099c4b18e",
-        "seed": 394072645,
-        "videoAssetId": "ast_mvthc90m7e71e00c42",
-        "jobId": "job_mvth5xqf293a2410ce",
-        "prompt": "Darkness. The Croissant rests alone on a black stone counter as a hard golden rim light slowly rises across it, fine flour dust drifting through the beam like snow. Epic and dramatic, slow motion. A deep cinematic boom echoes. No text. The camera slowly dollies in. Commercial product film, crisp detail.",
+        "parentTakeId": "take_mvuef5w2554de359ce",
+        "seed": 1257503044,
+        "videoAssetId": "ast_mvuf6q2n17481a609f",
+        "jobId": "job_mvuf05929769eea42f",
+        "prompt": "Rae dances alone in a dark studio full of haze, wearing one pair of Nocturne headphones on her head over her ears, nothing around her neck. She spins in slow motion, platinum hair flying, cut out by one hard white backlight through the haze and a blue rim light. Cinematic, high contrast. Deep bass thumps. No text. The camera orbits left around the subject. Commercial product film, crisp detail.",
         "negative": "cartoon, video game, text, cuts, black frames",
-        "imageAssetId": "ast_mvt6uz4n82637e378d"
+        "imageAssetId": "ast_mvue305ef051b9234b"
       },
       {
-        "id": "take_mvthdhbk1c352f13c1",
-        "shotId": "shot_mvt6so4k06e0426283",
+        "id": "take_mvufazaufe4eb03c33",
+        "shotId": "shot_mvubmv51607a5a2de7",
         "rung": "final",
         "finalKind": "same_take",
-        "parentTakeId": "take_mvt73e40525d0c811b",
-        "seed": 1287647871,
-        "videoAssetId": "ast_mvthdha5a122a020cd",
-        "jobId": "job_mvth5xql7ee65e8f07",
-        "prompt": "Baker stands in his dark bakery at night, arms crossed, lit from behind by the orange glow of an open oven, flour drifting in the air around him. He stares into the lens like an action hero. Low rumble of the oven. No text. The camera slowly dollies in. Commercial product film, crisp detail.",
+        "parentTakeId": "take_mvuegc1x48b1ac133e",
+        "seed": 1022776327,
+        "videoAssetId": "ast_mvufaz9r822dbdb2ec",
+        "jobId": "job_mvuf059507a39e6bf3",
+        "prompt": "Night rooftop in light rain with blurred city lights and soft neon glow far behind, no signs and no lettering anywhere. Rae, wearing one pair of Nocturne headphones on her head, nothing around her neck, hits sharp dance moves to the beat, hoodie and hair whipping, raindrops catching the neon light. Slow motion, cinematic, wet reflections. Rain and bass. No text. The camera slowly dollies in. Commercial product film, crisp detail.",
         "negative": "cartoon, video game, text, cuts, black frames",
-        "imageAssetId": "ast_mvt6v3zrf9f58fe4a3"
+        "imageAssetId": "ast_mvue3flb8ed6140264"
       },
       {
-        "id": "take_mvthf0bo44c38d8820",
-        "shotId": "shot_mvt6so4k79235955de",
+        "id": "take_mvufcno76cff7c0cf9",
+        "shotId": "shot_mvubmv51973f0b9813",
         "rung": "final",
         "finalKind": "same_take",
-        "parentTakeId": "take_mvt745pl36c25d4926",
-        "seed": 2105518145,
-        "videoAssetId": "ast_mvthf0ai00c1e89969",
-        "jobId": "job_mvth5xqs43875ffd80",
-        "prompt": "Extreme close-up in slow motion: Baker's floury hands tear The Croissant open, golden flaky layers shattering, crumbs flying, a wisp of steam rising. The crust crackles loudly. No text. Handheld camera, a little drift and breath. Commercial product film, crisp detail.",
+        "parentTakeId": "take_mvuejcz2e891b7b5de",
+        "seed": 1324583241,
+        "videoAssetId": "ast_mvufcnmz96bdf40ea7",
+        "jobId": "job_mvuf0597f8b112cce4",
+        "prompt": "Nocturne headphones turn slowly in mid-air in a dark void as a hard copper light sweeps across the ear cups and the brushed copper rings flare, fine haze drifting through the beam. Cinematic product film. A deep synth swell. No text. The camera orbits left around the subject. Commercial product film, crisp detail.",
         "negative": "cartoon, video game, text, cuts, black frames",
-        "imageAssetId": "ast_mvt6vbbo2137e7b9fd"
+        "imageAssetId": "ast_mvue1ml1ae397ef9e7"
       },
       {
-        "id": "take_mvthg9w02084c9be66",
-        "shotId": "shot_mvt6so4k9a1eef77f7",
+        "id": "take_mvufeim6cc5fc9d704",
+        "shotId": "shot_mvubmv518ef99ecccd",
         "rung": "final",
         "finalKind": "same_take",
-        "parentTakeId": "take_mvt702x32222cd8166",
-        "seed": 1120853224,
-        "videoAssetId": "ast_mvthg9up027796535a",
-        "jobId": "job_mvth5xqxa6d248ffa0",
-        "prompt": "Low angle, slow motion: Baker pulls a tray of golden croissants out of a blazing oven, heat shimmer and flour in the air, warm firelight on his face. The oven roars. No text. The camera cranes up. Commercial product film, crisp detail.",
+        "parentTakeId": "take_mvueusiva6e20ae7ec",
+        "seed": 154638409,
+        "videoAssetId": "ast_mvufeikz9f7d25aa27",
+        "jobId": "job_mvuf05996526e96e29",
+        "prompt": "Extreme close-up of a young woman with a sharp platinum blonde bob and dark winged eyeliner, Rae, in the dark, eyes closed, wearing one pair of wireless Nocturne headphones on her head over her ears, no cables, bare neck with nothing around it, a strobe light flashing hard white across her face, she snaps her head to the beat and her hair swings. Cinematic, high contrast. Muffled bass. No text. The camera slowly dollies in. Commercial product film, crisp detail.",
         "negative": "cartoon, video game, text, cuts, black frames",
-        "imageAssetId": "ast_mvt6viha6e40361cd3"
+        "imageAssetId": "ast_mvueqvvi5e0a136704"
       },
       {
-        "id": "take_mvthhmnrae43ffb3a9",
-        "shotId": "shot_mvt6so4k9c6023f29f",
+        "id": "take_mvufga4lf65bd7ed12",
+        "shotId": "shot_mvubmv5130ad0fe7fb",
         "rung": "final",
         "finalKind": "same_take",
-        "parentTakeId": "take_mvt70s6c97c506eeca",
-        "seed": 613551079,
-        "videoAssetId": "ast_mvthhmm9d7bfbaedf2",
-        "jobId": "job_mvth5xr1725bda645a",
-        "prompt": "The Croissant alone on a black stone counter under a single spotlight, dark empty background, a little flour dust in the light. Still and quiet. No text, no letters. The camera holds still. Commercial product film, crisp detail.",
+        "parentTakeId": "take_mvuebz8x8b289560b9",
+        "seed": 757409986,
+        "videoAssetId": "ast_mvufga3c31171bc736",
+        "jobId": "job_mvuf059b8dedbfb159",
+        "prompt": "Wide shot: Rae lands a powerful dance move in a dark empty concrete tunnel lit by a row of hard white strobe lights, one pair of Nocturne headphones on her head and nothing around her neck, dust bursting up in the light. Cinematic, slow motion, high contrast. A bass hit echoes. No text. The camera slowly pulls back. Commercial product film, crisp detail.",
         "negative": "cartoon, video game, text, cuts, black frames",
-        "imageAssetId": "ast_mvt6vnc10fbfa3f55e"
+        "imageAssetId": "ast_mvue3uwb3b09f9c11d"
       }
     ],
     "assets": [
       {
-        "id": "ast_mvt6si1937f0adbfc4",
+        "id": "ast_mvubmpamd040447cd0",
         "kind": "image",
-        "path": "sample:croissant/reference-1.jpg",
-        "width": 1600,
-        "height": 1760,
+        "path": "sample:nocturne/reference-1.jpg",
+        "width": 1024,
+        "height": 1024,
         "role": "reference",
-        "createdAt": "2026-10-29T06:53:09.112Z"
+        "createdAt": "2026-10-30T01:56:22.799Z"
       },
       {
-        "id": "ast_mvt6si2p3cc9fd42de",
+        "id": "ast_mvue0m523be0133347",
         "kind": "image",
-        "path": "sample:croissant/reference-2.jpg",
-        "width": 768,
-        "height": 768,
+        "path": "sample:nocturne/reference-2.jpg",
+        "width": 896,
+        "height": 1152,
         "role": "reference",
-        "createdAt": "2026-10-29T06:53:09.122Z"
+        "createdAt": "2026-10-30T03:03:11.126Z"
       },
       {
-        "id": "ast_mvt6uz4n82637e378d",
+        "id": "ast_mvue305ef051b9234b",
         "kind": "image",
-        "path": "sample:croissant/still-1.jpg",
+        "path": "sample:nocturne/still-1.jpg",
         "width": 960,
         "height": 576,
-        "createdAt": "2026-10-29T06:55:04.536Z"
+        "createdAt": "2026-10-30T03:05:02.595Z"
       },
       {
-        "id": "ast_mvt6x8dq15951b9d7a",
+        "id": "ast_mvue5x2y59ded70a60",
         "kind": "video",
-        "path": "sample:croissant/draft-1-1.mp4",
-        "width": 640,
-        "height": 384,
-        "durationSec": 3.71,
-        "createdAt": "2026-10-29T06:56:49.884Z"
-      },
-      {
-        "id": "ast_mvt6x8f035f2f0eb1e",
-        "kind": "latent",
-        "path": "latents/ast_mvt6x8f035f2f0eb1e.latent",
-        "createdAt": "2026-10-29T06:56:49.884Z"
-      },
-      {
-        "id": "ast_mvthc90m7e71e00c42",
-        "kind": "video",
-        "path": "sample:croissant/final-1.mp4",
-        "width": 1280,
-        "height": 768,
-        "durationSec": 3.71,
-        "createdAt": "2026-10-29T11:48:26.713Z"
-      },
-      {
-        "id": "ast_mvt6v3zrf9f58fe4a3",
-        "kind": "image",
-        "path": "sample:croissant/still-2.jpg",
-        "width": 960,
-        "height": 576,
-        "createdAt": "2026-10-29T06:55:10.840Z"
-      },
-      {
-        "id": "ast_mvt6ycro284adf79c1",
-        "kind": "video",
-        "path": "sample:croissant/draft-2-1.mp4",
+        "path": "sample:nocturne/draft-1-1.mp4",
         "width": 640,
         "height": 384,
         "durationSec": 3.04,
-        "createdAt": "2026-10-29T06:57:42.221Z"
+        "createdAt": "2026-10-30T03:07:18.621Z"
       },
       {
-        "id": "ast_mvt6ycst3831745cbf",
+        "id": "ast_mvue5x3xb8503bcbb6",
         "kind": "latent",
-        "path": "latents/ast_mvt6ycst3831745cbf.latent",
-        "createdAt": "2026-10-29T06:57:42.222Z"
+        "path": "latents/ast_mvue5x3xb8503bcbb6.latent",
+        "createdAt": "2026-10-30T03:07:18.622Z"
       },
       {
-        "id": "ast_mvt73e2s3f04c0d809",
+        "id": "ast_mvuef5v29b9c461104",
         "kind": "video",
-        "path": "sample:croissant/draft-2-2.mp4",
+        "path": "sample:nocturne/draft-1-2.mp4",
         "width": 640,
         "height": 384,
         "durationSec": 3.04,
-        "createdAt": "2026-10-29T07:01:37.200Z"
+        "createdAt": "2026-10-30T03:14:29.905Z"
       },
       {
-        "id": "ast_mvt73e40e60eadb903",
+        "id": "ast_mvuef5w1a3faa39f10",
         "kind": "latent",
-        "path": "latents/ast_mvt73e40e60eadb903.latent",
-        "createdAt": "2026-10-29T07:01:37.200Z"
+        "path": "latents/ast_mvuef5w1a3faa39f10.latent",
+        "createdAt": "2026-10-30T03:14:29.906Z"
       },
       {
-        "id": "ast_mvthdha5a122a020cd",
+        "id": "ast_mvuf6q2n17481a609f",
         "kind": "video",
-        "path": "sample:croissant/final-2.mp4",
+        "path": "sample:nocturne/final-1.mp4",
         "width": 1280,
         "height": 768,
         "durationSec": 3.04,
-        "createdAt": "2026-10-29T11:49:24.080Z"
+        "createdAt": "2026-10-30T03:35:55.802Z"
       },
       {
-        "id": "ast_mvt6vbbo2137e7b9fd",
+        "id": "ast_mvue3flb8ed6140264",
         "kind": "image",
-        "path": "sample:croissant/still-3.jpg",
+        "path": "sample:nocturne/still-2.jpg",
         "width": 960,
         "height": 576,
-        "createdAt": "2026-10-29T06:55:20.342Z"
+        "createdAt": "2026-10-30T03:05:22.610Z"
       },
       {
-        "id": "ast_mvt6z9o4513f94409a",
+        "id": "ast_mvue7idl456527ab2f",
         "kind": "video",
-        "path": "sample:croissant/draft-3-1.mp4",
-        "width": 640,
-        "height": 384,
-        "durationSec": 3.71,
-        "createdAt": "2026-10-29T06:58:24.870Z"
-      },
-      {
-        "id": "ast_mvt6z9pi06c6b8d5af",
-        "kind": "latent",
-        "path": "latents/ast_mvt6z9pi06c6b8d5af.latent",
-        "createdAt": "2026-10-29T06:58:24.870Z"
-      },
-      {
-        "id": "ast_mvt745ol72b5eeed72",
-        "kind": "video",
-        "path": "sample:croissant/draft-3-2.mp4",
-        "width": 640,
-        "height": 384,
-        "durationSec": 3.71,
-        "createdAt": "2026-10-29T07:02:12.969Z"
-      },
-      {
-        "id": "ast_mvt745plc607847365",
-        "kind": "latent",
-        "path": "latents/ast_mvt745plc607847365.latent",
-        "createdAt": "2026-10-29T07:02:12.969Z"
-      },
-      {
-        "id": "ast_mvthf0ai00c1e89969",
-        "kind": "video",
-        "path": "sample:croissant/final-3.mp4",
-        "width": 1280,
-        "height": 768,
-        "durationSec": 3.71,
-        "createdAt": "2026-10-29T11:50:35.364Z"
-      },
-      {
-        "id": "ast_mvt6viha6e40361cd3",
-        "kind": "image",
-        "path": "sample:croissant/still-4.jpg",
-        "width": 960,
-        "height": 576,
-        "createdAt": "2026-10-29T06:55:29.616Z"
-      },
-      {
-        "id": "ast_mvt702vz9b7bb82418",
-        "kind": "video",
-        "path": "sample:croissant/draft-4-1.mp4",
-        "width": 640,
-        "height": 384,
-        "durationSec": 2.71,
-        "createdAt": "2026-10-29T06:59:02.727Z"
-      },
-      {
-        "id": "ast_mvt702x3777597d8a0",
-        "kind": "latent",
-        "path": "latents/ast_mvt702x3777597d8a0.latent",
-        "createdAt": "2026-10-29T06:59:02.727Z"
-      },
-      {
-        "id": "ast_mvthg9up027796535a",
-        "kind": "video",
-        "path": "sample:croissant/final-4.mp4",
-        "width": 1280,
-        "height": 768,
-        "durationSec": 2.71,
-        "createdAt": "2026-10-29T11:51:34.416Z"
-      },
-      {
-        "id": "ast_mvt6vnc10fbfa3f55e",
-        "kind": "image",
-        "path": "sample:croissant/still-5.jpg",
-        "width": 960,
-        "height": 576,
-        "createdAt": "2026-10-29T06:55:35.906Z"
-      },
-      {
-        "id": "ast_mvt70s50a8e5723751",
-        "kind": "video",
-        "path": "sample:croissant/draft-5-1.mp4",
+        "path": "sample:nocturne/draft-2-1.mp4",
         "width": 640,
         "height": 384,
         "durationSec": 3.04,
-        "createdAt": "2026-10-29T06:59:35.459Z"
+        "createdAt": "2026-10-30T03:08:32.867Z"
       },
       {
-        "id": "ast_mvt70s6cadb58f6408",
+        "id": "ast_mvue7iebf68e358975",
         "kind": "latent",
-        "path": "latents/ast_mvt70s6cadb58f6408.latent",
-        "createdAt": "2026-10-29T06:59:35.460Z"
+        "path": "latents/ast_mvue7iebf68e358975.latent",
+        "createdAt": "2026-10-30T03:08:32.867Z"
       },
       {
-        "id": "ast_mvthhmm9d7bfbaedf2",
+        "id": "ast_mvuegc0v20a803f464",
         "kind": "video",
-        "path": "sample:croissant/final-5.mp4",
+        "path": "sample:nocturne/draft-2-2.mp4",
+        "width": 640,
+        "height": 384,
+        "durationSec": 3.04,
+        "createdAt": "2026-10-30T03:15:24.549Z"
+      },
+      {
+        "id": "ast_mvuegc1x16d108eca3",
+        "kind": "latent",
+        "path": "latents/ast_mvuegc1x16d108eca3.latent",
+        "createdAt": "2026-10-30T03:15:24.549Z"
+      },
+      {
+        "id": "ast_mvufaz9r822dbdb2ec",
+        "kind": "video",
+        "path": "sample:nocturne/final-2.mp4",
         "width": 1280,
         "height": 768,
         "durationSec": 3.04,
-        "createdAt": "2026-10-29T11:52:37.623Z"
+        "createdAt": "2026-10-30T03:39:14.358Z"
       },
       {
-        "id": "ast_mvt7806be10606bad2",
+        "id": "ast_mvue1ml1ae397ef9e7",
+        "kind": "image",
+        "path": "sample:nocturne/still-3.jpg",
+        "width": 960,
+        "height": 576,
+        "createdAt": "2026-10-30T03:03:58.357Z"
+      },
+      {
+        "id": "ast_mvue944d26a9373fff",
+        "kind": "video",
+        "path": "sample:nocturne/draft-3-1.mp4",
+        "width": 640,
+        "height": 384,
+        "durationSec": 3.04,
+        "createdAt": "2026-10-30T03:09:47.702Z"
+      },
+      {
+        "id": "ast_mvue945242fbdc5e6b",
+        "kind": "latent",
+        "path": "latents/ast_mvue945242fbdc5e6b.latent",
+        "createdAt": "2026-10-30T03:09:47.703Z"
+      },
+      {
+        "id": "ast_mvuejcxp4bab94ede6",
+        "kind": "video",
+        "path": "sample:nocturne/draft-3-2.mp4",
+        "width": 640,
+        "height": 384,
+        "durationSec": 3.04,
+        "createdAt": "2026-10-30T03:17:45.709Z"
+      },
+      {
+        "id": "ast_mvuejcz1a50820295c",
+        "kind": "latent",
+        "path": "latents/ast_mvuejcz1a50820295c.latent",
+        "createdAt": "2026-10-30T03:17:45.710Z"
+      },
+      {
+        "id": "ast_mvufcnmz96bdf40ea7",
+        "kind": "video",
+        "path": "sample:nocturne/final-3.mp4",
+        "width": 1280,
+        "height": 768,
+        "durationSec": 3.04,
+        "createdAt": "2026-10-30T03:40:32.599Z"
+      },
+      {
+        "id": "ast_mvueqvvi5e0a136704",
+        "kind": "image",
+        "path": "sample:nocturne/still-4.jpg",
+        "width": 960,
+        "height": 576,
+        "createdAt": "2026-10-30T03:23:36.799Z"
+      },
+      {
+        "id": "ast_mvuetgukb08ed9b4e2",
+        "kind": "video",
+        "path": "sample:nocturne/draft-4-1.mp4",
+        "width": 640,
+        "height": 384,
+        "durationSec": 3.04,
+        "createdAt": "2026-10-30T03:25:37.330Z"
+      },
+      {
+        "id": "ast_mvuetgvmc210fe9b63",
+        "kind": "latent",
+        "path": "latents/ast_mvuetgvmc210fe9b63.latent",
+        "createdAt": "2026-10-30T03:25:37.330Z"
+      },
+      {
+        "id": "ast_mvueusi596de351806",
+        "kind": "video",
+        "path": "sample:nocturne/draft-4-2.mp4",
+        "width": 640,
+        "height": 384,
+        "durationSec": 3.04,
+        "createdAt": "2026-10-30T03:26:39.079Z"
+      },
+      {
+        "id": "ast_mvueusivc1ebbb72cc",
+        "kind": "latent",
+        "path": "latents/ast_mvueusivc1ebbb72cc.latent",
+        "createdAt": "2026-10-30T03:26:39.079Z"
+      },
+      {
+        "id": "ast_mvufeikz9f7d25aa27",
+        "kind": "video",
+        "path": "sample:nocturne/final-4.mp4",
+        "width": 1280,
+        "height": 768,
+        "durationSec": 3.04,
+        "createdAt": "2026-10-30T03:41:59.358Z"
+      },
+      {
+        "id": "ast_mvue3uwb3b09f9c11d",
+        "kind": "image",
+        "path": "sample:nocturne/still-5.jpg",
+        "width": 960,
+        "height": 576,
+        "createdAt": "2026-10-30T03:05:42.444Z"
+      },
+      {
+        "id": "ast_mvuebz879781081143",
+        "kind": "video",
+        "path": "sample:nocturne/draft-5-1.mp4",
+        "width": 640,
+        "height": 384,
+        "durationSec": 3.04,
+        "createdAt": "2026-10-30T03:12:01.329Z"
+      },
+      {
+        "id": "ast_mvuebz8xb20b986430",
+        "kind": "latent",
+        "path": "latents/ast_mvuebz8xb20b986430.latent",
+        "createdAt": "2026-10-30T03:12:01.329Z"
+      },
+      {
+        "id": "ast_mvuekqldac376e96b8",
+        "kind": "video",
+        "path": "sample:nocturne/draft-5-2.mp4",
+        "width": 640,
+        "height": 384,
+        "durationSec": 3.04,
+        "createdAt": "2026-10-30T03:18:50.058Z"
+      },
+      {
+        "id": "ast_mvuekqmif657966245",
+        "kind": "latent",
+        "path": "latents/ast_mvuekqmif657966245.latent",
+        "createdAt": "2026-10-30T03:18:50.058Z"
+      },
+      {
+        "id": "ast_mvufga3c31171bc736",
+        "kind": "video",
+        "path": "sample:nocturne/final-5.mp4",
+        "width": 1280,
+        "height": 768,
+        "durationSec": 3.04,
+        "createdAt": "2026-10-30T03:43:21.669Z"
+      },
+      {
+        "id": "ast_mvuenhajde57baf6bb",
         "kind": "audio",
-        "path": "sample:croissant/voice.m4a",
-        "durationSec": 6.64,
-        "role": "voice",
-        "text": "In a world of sliced bread... one baker said no. Three days. Eighty-one layers. The Croissant. Tomorrow, 7 AM.",
-        "createdAt": "2026-10-29T07:05:12.468Z"
-      },
-      {
-        "id": "ast_mvt797gq495d156aa0",
-        "kind": "audio",
-        "path": "sample:croissant/music.m4a",
-        "durationSec": 16,
+        "path": "sample:nocturne/music.m4a",
+        "durationSec": 14.99,
         "role": "music",
-        "createdAt": "2026-10-29T07:06:08.571Z"
+        "createdAt": "2026-10-30T03:20:57.975Z"
       },
       {
-        "id": "ast_mvtlbb3z8e062d9fdc",
+        "id": "ast_mvui2q7nd897325381",
         "kind": "video",
-        "path": "sample:croissant/export.mp4",
+        "path": "sample:nocturne/export.mp4",
         "width": 1920,
         "height": 1080,
         "durationSec": 15,
         "role": "export",
-        "createdAt": "2026-10-29T13:39:41.252Z"
+        "createdAt": "2026-10-30T04:56:48.208Z"
       }
     ],
     "timeline": {
       "clips": [
         {
-          "shotId": "shot_mvt6so4kde30c8d181",
-          "assetId": "ast_mvthc90m7e71e00c42",
+          "shotId": "shot_mvubmv519515e07bb0",
+          "assetId": "ast_mvuf6q2n17481a609f",
           "start": 0,
           "in": 0,
-          "out": 2.41,
-          "gain": 0
+          "out": 3,
+          "gain": 0.6
         },
         {
-          "shotId": "shot_mvt6so4k06e0426283",
-          "assetId": "ast_mvthdha5a122a020cd",
-          "start": 2.41,
+          "shotId": "shot_mvubmv51607a5a2de7",
+          "assetId": "ast_mvufaz9r822dbdb2ec",
+          "start": 3,
           "in": 0,
-          "out": 2.45,
-          "gain": 0
+          "out": 3,
+          "gain": 0.6
         },
         {
-          "shotId": "shot_mvt6so4k79235955de",
-          "assetId": "ast_mvthf0ai00c1e89969",
-          "start": 4.86,
+          "shotId": "shot_mvubmv51973f0b9813",
+          "assetId": "ast_mvufcnmz96bdf40ea7",
+          "start": 6,
           "in": 0,
-          "out": 1.59,
-          "gain": 0
+          "out": 3,
+          "gain": 0.6
         },
         {
-          "shotId": "shot_mvt6so4k9a1eef77f7",
-          "assetId": "ast_mvthg9up027796535a",
-          "start": 6.45,
+          "shotId": "shot_mvubmv518ef99ecccd",
+          "assetId": "ast_mvufeikz9f7d25aa27",
+          "start": 9,
           "in": 0,
-          "out": 1.98,
-          "gain": 0
+          "out": 3,
+          "gain": 0.6
         },
         {
-          "shotId": "shot_mvt6so4k9c6023f29f",
-          "assetId": "ast_mvthhmm9d7bfbaedf2",
-          "start": 8.43,
+          "shotId": "shot_mvubmv5130ad0fe7fb",
+          "assetId": "ast_mvufga3c31171bc736",
+          "start": 12,
           "in": 0,
-          "out": 1.49,
-          "gain": 0
-        },
-        {
-          "shotId": "shot_mvt6so4kde30c8d181",
-          "assetId": "ast_mvthc90m7e71e00c42",
-          "start": 9.92,
-          "in": 0,
-          "out": 3.658,
-          "gain": 0
-        },
-        {
-          "shotId": "shot_mvt6so4k06e0426283",
-          "assetId": "ast_mvthdha5a122a020cd",
-          "start": 13.578,
-          "in": 0.97,
-          "out": 2.392,
-          "gain": 0
+          "out": 3,
+          "gain": 0.6
         }
       ],
       "audio": [
         {
-          "assetId": "ast_mvt797gq495d156aa0",
+          "assetId": "ast_mvuenhajde57baf6bb",
           "role": "music",
           "start": 0,
           "gain": 1,
           "in": 0,
           "out": 15
-        },
-        {
-          "assetId": "ast_mvt7806be10606bad2",
-          "role": "voice",
-          "start": 0.3,
-          "gain": 1,
-          "out": 1.39
-        },
-        {
-          "assetId": "ast_mvt7806be10606bad2",
-          "role": "voice",
-          "start": 2.49,
-          "gain": 1,
-          "in": 1.39,
-          "out": 2.76
-        },
-        {
-          "assetId": "ast_mvt7806be10606bad2",
-          "role": "voice",
-          "start": 4.66,
-          "gain": 1,
-          "in": 2.76,
-          "out": 3.605
-        },
-        {
-          "assetId": "ast_mvt7806be10606bad2",
-          "role": "voice",
-          "start": 6.305,
-          "gain": 1,
-          "in": 3.605,
-          "out": 4.855
-        },
-        {
-          "assetId": "ast_mvt7806be10606bad2",
-          "role": "voice",
-          "start": 8.355,
-          "gain": 1,
-          "in": 4.855,
-          "out": 5.605
-        },
-        {
-          "assetId": "ast_mvt7806be10606bad2",
-          "role": "voice",
-          "start": 9.905,
-          "gain": 1,
-          "in": 5.605
         }
       ],
-      "captions": [
-        {
-          "start": 0.31,
-          "end": 0.77,
-          "text": "In a world",
-          "words": [
-            {
-              "start": 0.31,
-              "end": 0.42,
-              "text": "In"
-            },
-            {
-              "start": 0.42,
-              "end": 0.48,
-              "text": "a"
-            },
-            {
-              "start": 0.48,
-              "end": 0.77,
-              "text": "world"
-            }
-          ]
-        },
-        {
-          "start": 0.77,
-          "end": 2.04,
-          "text": "of sliced bread...",
-          "words": [
-            {
-              "start": 0.77,
-              "end": 0.86,
-              "text": "of"
-            },
-            {
-              "start": 0.95,
-              "end": 1.16,
-              "text": "sliced"
-            },
-            {
-              "start": 1.27,
-              "end": 1.69,
-              "text": "bread..."
-            }
-          ]
-        },
-        {
-          "start": 2.49,
-          "end": 3.93,
-          "text": "one baker said no.",
-          "words": [
-            {
-              "start": 2.49,
-              "end": 2.67,
-              "text": "one"
-            },
-            {
-              "start": 2.67,
-              "end": 2.97,
-              "text": "baker"
-            },
-            {
-              "start": 2.97,
-              "end": 3.21,
-              "text": "said"
-            },
-            {
-              "start": 3.21,
-              "end": 3.58,
-              "text": "no."
-            }
-          ]
-        },
-        {
-          "start": 4.94,
-          "end": 5.63,
-          "text": "Three days.",
-          "words": [
-            {
-              "start": 4.94,
-              "end": 5.02,
-              "text": "Three"
-            },
-            {
-              "start": 5.02,
-              "end": 5.28,
-              "text": "days."
-            }
-          ]
-        },
-        {
-          "start": 6.53,
-          "end": 7.75,
-          "text": "Eighty-one layers.",
-          "words": [
-            {
-              "start": 6.53,
-              "end": 6.9,
-              "text": "Eighty-one"
-            },
-            {
-              "start": 6.9,
-              "end": 7.4,
-              "text": "layers."
-            }
-          ]
-        },
-        {
-          "start": 8.51,
-          "end": 9.36,
-          "text": "The Croissant.",
-          "words": [
-            {
-              "start": 8.51,
-              "end": 8.57,
-              "text": "The"
-            },
-            {
-              "start": 8.57,
-              "end": 9.01,
-              "text": "Croissant."
-            }
-          ]
-        },
-        {
-          "start": 10,
-          "end": 11.15,
-          "text": "Tomorrow, 7 AM.",
-          "words": [
-            {
-              "start": 10,
-              "end": 10.35,
-              "text": "Tomorrow,"
-            },
-            {
-              "start": 10.35,
-              "end": 10.5,
-              "text": "7"
-            },
-            {
-              "start": 10.52,
-              "end": 10.8,
-              "text": "AM."
-            }
-          ]
-        }
-      ],
+      "captions": [],
       "overlays": [
         {
           "id": "product",
           "kind": "title",
           "start": 0.25,
-          "end": 1.89,
-          "text": "The Croissant",
-          "subtext": "Takes three days to make and three bites to eat"
+          "end": 1.8,
+          "text": "Nocturne",
+          "subtext": "Shuts out the world so you can make music all night"
         },
         {
           "id": "end-card",
           "kind": "end_card",
-          "start": 11.15,
+          "start": 11.78,
           "end": 15,
-          "text": "The Croissant",
-          "subtext": "Takes three days to make and three bites to eat",
+          "text": "Nocturne",
+          "subtext": "Shuts out the world so you can make music all night",
           "cta": "Shop now",
-          "assetId": "ast_mvt6si1937f0adbfc4"
+          "assetId": "ast_mvubmpamd040447cd0"
         }
       ],
       "markers": [],
       "style": {
-        "look": "product_ad"
+        "look": "product_ad",
+        "captionSize": 1.25,
+        "captions": false
       },
-      "revision": 46
+      "edited": true,
+      "revision": 34
     },
-    "createdAt": "2026-10-29T06:53:09.048Z",
-    "updatedAt": "2026-10-29T13:39:41.253Z"
+    "createdAt": "2026-10-30T01:56:22.776Z",
+    "updatedAt": "2026-10-30T04:56:48.209Z"
   }
 }

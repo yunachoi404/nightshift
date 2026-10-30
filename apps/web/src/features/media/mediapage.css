@@ -1,0 +1,542 @@
+/* Media: the prompt panel on the left, the boards on the right, the timeline strip at the foot. */
+.mp {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 320px minmax(0, 1fr);
+}
+.mp-main {
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--content);
+}
+.mp-canvas {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+}
+/* Several boards: the canvas pans and zooms itself. */
+.mp-canvas--boards {
+  display: flex;
+  overflow: hidden;
+}
+
+/* ---------- Boards ---------- */
+.mp-board {
+  position: relative;
+  padding: 0 20px 28px;
+  min-height: 100%;
+  transition: background-color var(--t-fast) var(--ease);
+}
+.mp-board--over {
+  background: var(--accent-soft);
+}
+/* Inside a board's frame on the canvas: the frame draws the edge and the name. */
+.mp-board--canvas {
+  min-height: 96px;
+  padding: 12px 12px 14px;
+}
+.mp-board__head {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 52px;
+  padding: 10px 0;
+  background: var(--content);
+}
+.mp-board--canvas .mp-board__head {
+  position: static;
+  min-height: 0;
+  padding: 0 0 12px;
+  background: transparent;
+}
+.mp-board__head--steps {
+  justify-content: flex-end;
+}
+.mp-board--over .mp-board__head {
+  background: transparent;
+}
+.mp-board__title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+.mp-board__name {
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+  font-weight: 600;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.mp-board__rename {
+  width: 220px;
+  min-height: 28px;
+  font-weight: 600;
+}
+.mp-board__count {
+  color: var(--text-3);
+  font-size: var(--fs-small);
+  white-space: nowrap;
+}
+.mp-board__actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: none;
+}
+.mp-board__status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  font-size: var(--fs-small);
+  color: var(--text-2);
+}
+.mp-board__notice {
+  margin-bottom: 14px;
+  max-width: 640px;
+}
+
+.mp-masonry {
+  display: grid;
+  gap: 14px;
+  align-items: start;
+}
+.mp-col {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+}
+
+.mp-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  max-width: 44ch;
+  margin: 0 auto;
+  padding: 96px 24px;
+  text-align: center;
+}
+.mp-empty__title {
+  font-family: var(--font-display);
+  font-size: var(--fs-title-3);
+  line-height: var(--lh-title-3);
+}
+.mp-empty__text {
+  color: var(--text-3);
+}
+.mp-empty--drop {
+  padding: 28px 16px;
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--r-m);
+  color: var(--text-4);
+  font-size: var(--fs-small);
+  max-width: none;
+}
+
+/* ---------- Cards ---------- */
+.mp-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+.mp-card--dragging {
+  opacity: 0.4;
+}
+/* Where a dragged card lands: a line above or below this card. */
+.mp-card--drop-before::before,
+.mp-card--drop-after::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--accent);
+  z-index: 2;
+}
+.mp-card--drop-before::before {
+  top: -8px;
+}
+.mp-card--drop-after::after {
+  bottom: -8px;
+}
+.mp-card__frame {
+  transition: box-shadow var(--t-fast) var(--ease);
+}
+.mp-card__frame:hover {
+  box-shadow:
+    inset 0 0 0 1px var(--content),
+    0 0 0 2px var(--line-strong);
+}
+.mp-card__open {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: var(--r-frame);
+}
+/* The whole card is one button: its frame shows the focus ring (the button itself is clipped by the frame). */
+.mp-card__open:focus-visible {
+  box-shadow: none;
+}
+.mp-card__frame:has(.mp-card__open:focus-visible) {
+  box-shadow: var(--focus);
+}
+/* Making: progress and the status dot in banana. Overnight work stays amber. */
+.mp-card .frame__progress > div {
+  background: var(--banana-fill);
+}
+.mp-card .frame__progress--night > div {
+  background: var(--amber-fill);
+}
+.mp-card .frame--empty .frame__progress {
+  background: var(--track);
+}
+/* Marks on the picture, kept small: Final, and how many versions a card has. */
+.mp-card__marks {
+  position: absolute;
+  left: 8px;
+  top: 8px;
+  z-index: 2;
+  display: flex;
+  gap: 4px;
+  pointer-events: none;
+}
+.mp-mark {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 20px;
+  padding: 0 7px;
+  border-radius: var(--r-pill);
+  font-size: var(--fs-micro);
+  font-weight: 500;
+  line-height: 1;
+  color: rgba(255, 255, 255, 0.92);
+  background: rgba(0, 0, 0, 0.42);
+  backdrop-filter: blur(8px);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.mp-mark svg {
+  width: 11px;
+  height: 11px;
+  opacity: 0.85;
+}
+.mp-mark--final::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--amber-fill);
+}
+.mp-card__state {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px;
+  text-align: center;
+  font-size: var(--fs-small);
+  line-height: var(--lh-small);
+  color: var(--text-3);
+  pointer-events: none;
+}
+.mp-card__state > * {
+  pointer-events: auto;
+}
+.mp-card__state > .pulse,
+.mp-card__state > span:not(.mp-card__fail) {
+  pointer-events: none;
+}
+.mp-card__state svg {
+  width: 20px;
+  height: 20px;
+  color: var(--text-4);
+}
+.mp-card__state--onmedia {
+  flex-direction: row;
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+.mp-card__state--failed {
+  background: color-mix(in srgb, var(--media) 72%, transparent);
+  color: rgba(255, 255, 255, 0.86);
+}
+.mp-card__fail {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
+}
+.mp-card__dots {
+  position: absolute;
+  left: 8px;
+  bottom: 8px;
+  z-index: 2;
+  display: flex;
+  gap: 3px;
+  opacity: 0;
+  transition: opacity var(--t-fast) var(--ease);
+  pointer-events: none;
+}
+.mp-card__dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.45);
+}
+.mp-card__dot--final {
+  background: color-mix(in srgb, var(--amber-fill) 55%, transparent);
+}
+.mp-card__dot--pick {
+  background: #fff;
+}
+.mp-card__dot--final.mp-card__dot--pick {
+  background: var(--amber-fill);
+}
+.mp-card__hover {
+  position: absolute;
+  right: 6px;
+  bottom: 6px;
+  z-index: 3;
+  display: flex;
+  gap: 4px;
+  opacity: 0;
+  transform: translateY(2px);
+  transition:
+    opacity var(--t-fast) var(--ease),
+    transform var(--t-fast) var(--ease);
+}
+.mp-card__frame:hover .mp-card__hover,
+.mp-card__frame:hover .mp-card__dots,
+.mp-card:focus-within .mp-card__hover {
+  opacity: 1;
+  transform: none;
+}
+.mp-onmedia {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 24px;
+  padding: 0 9px;
+  border-radius: var(--r-pill);
+  font-size: var(--fs-micro);
+  font-weight: 600;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.62);
+  backdrop-filter: blur(8px);
+  white-space: nowrap;
+  transition: background-color var(--t-fast) var(--ease);
+}
+.mp-onmedia:hover {
+  background: rgba(0, 0, 0, 0.8);
+}
+.mp-onmedia svg {
+  width: 13px;
+  height: 13px;
+}
+.mp-onmedia--icon {
+  width: 24px;
+  padding: 0;
+  justify-content: center;
+}
+.mp-onmedia:focus-visible {
+  box-shadow: 0 0 0 2px #fff;
+}
+
+/* The card the panel's tool starts from: a banana ring. */
+.mp-card--source .mp-card__frame,
+.mp-card--source .mp-card__frame:hover {
+  box-shadow:
+    inset 0 0 0 1px var(--content),
+    0 0 0 2.5px var(--banana-line);
+}
+:root[data-theme="dark"] .mp-card--source .mp-card__frame {
+  box-shadow:
+    inset 0 0 0 1px var(--content),
+    0 0 0 2.5px var(--banana);
+}
+/* Choosing an image for the panel: the cards that have one ring in banana under the pointer. */
+.mp-card--pickable .mp-card__open {
+  cursor: copy;
+}
+.mp-card--pickable .mp-card__frame:hover {
+  box-shadow:
+    inset 0 0 0 1px var(--content),
+    0 0 0 2.5px var(--banana-line);
+}
+.mp-card--unpickable {
+  opacity: 0.45;
+}
+.mp-card__pickhint {
+  position: absolute;
+  left: 50%;
+  bottom: 8px;
+  z-index: 2;
+  transform: translateX(-50%);
+  height: 22px;
+  padding: 0 9px;
+  display: inline-flex;
+  align-items: center;
+  border-radius: var(--r-pill);
+  font-size: var(--fs-micro);
+  font-weight: 600;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.62);
+  backdrop-filter: blur(8px);
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity var(--t-fast) var(--ease);
+  pointer-events: none;
+}
+.mp-card__frame:hover .mp-card__pickhint {
+  opacity: 1;
+}
+
+.mp-card__meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 20px;
+}
+.mp-card__label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: var(--fs-small);
+  line-height: var(--lh-small);
+  color: var(--text-2);
+}
+.mp-card__ontl {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 18px;
+  border-radius: var(--r-pill);
+  background: var(--hover);
+  color: var(--text-2);
+}
+.mp-card__ontl svg {
+  width: 11px;
+  height: 11px;
+}
+
+/* A song or a voiceover: a compact tile. */
+.mp-audio {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 8px 8px 8px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-m);
+  background: var(--raised);
+  box-shadow: var(--card-shadow);
+}
+.mp-audio__play {
+  flex: none;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--accent);
+  color: var(--on-accent);
+}
+.mp-audio__play:disabled {
+  opacity: 0.35;
+}
+.mp-audio__play svg {
+  width: 13px;
+  height: 13px;
+  fill: currentColor;
+  stroke-width: 0;
+}
+.mp-audio__text {
+  flex: 1;
+  min-width: 0;
+}
+.mp-audio__name {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-weight: 500;
+}
+.mp-audio__name svg {
+  width: 13px;
+  height: 13px;
+  color: var(--text-3);
+}
+.mp-audio__dur {
+  color: var(--text-3);
+  font-weight: 400;
+  font-size: var(--fs-small);
+  font-variant-numeric: tabular-nums;
+}
+.mp-audio__words {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: var(--fs-small);
+  line-height: var(--lh-small);
+  color: var(--text-3);
+}
+
+/* ---------- Timeline strip ---------- */
+.mp-strip {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 44px;
+  padding: 0 12px 0 20px;
+  border-top: 1px solid var(--line);
+  background: var(--content);
+  font-size: var(--fs-small);
+  transition: background-color var(--t-fast) var(--ease);
+}
+.mp-strip--over {
+  background: var(--accent-soft);
+  box-shadow: inset 0 0 0 1px var(--accent-line);
+}
+.mp-strip__icon {
+  width: 15px;
+  height: 15px;
+  color: var(--text-3);
+  flex: none;
+}
+.mp-strip__text {
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.mp-strip__hint {
+  flex: 1;
+  min-width: 0;
+  text-align: right;
+  color: var(--text-4);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}

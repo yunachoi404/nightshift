@@ -64,13 +64,14 @@ export function withRevision(before: Timeline | null, after: Timeline | null, la
 }
 
 /**
- * The plain cut: shots in storyboard order, back to back, each clip one of the shot's own pictures from its start
+ * The plain cut: the timeline's shots in storyboard order, back to back, each clip one of the shot's own pictures from its start
  * for the shot's storyboard length. A shot with no picture leaves its slot empty.
  */
 export function isDefaultCut(p: Project, clips: Timeline["clips"]): boolean {
   let t = 0;
   let k = 0;
   for (const shot of [...p.shots].sort((a, b) => a.index - b.index)) {
+    if (shot.onTimeline === false) continue;
     const clip = clips[k];
     if (clip?.shotId === shot.id) {
       const plain = near(clip.start, t) && clip.in === 0 && near(clip.out, shot.durationSec) && clip.gain === undefined && clip.focus === undefined;

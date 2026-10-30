@@ -3,7 +3,7 @@ import { Link } from "react-router";
 import { useEngine, useEngineState, useJobs, useProjectList } from "@/store/engine";
 import { Button, Tag, cx } from "@/ui/primitives";
 import { Media } from "@/media/Media";
-import { coverFor, frameClass, projectStage } from "@/features/project/helpers";
+import { coverFor, frameClass, projectStage, timelineShots } from "@/features/project/helpers";
 import { templates } from "@nightshift/contract";
 import { plural, relativeTime } from "@/lib/format";
 import { useMorningSummary } from "@/features/finals/morning";
@@ -47,7 +47,7 @@ export function Home() {
           </div>
           <div className="morning__actions">
             {morning.projectIds.length === 1 && (
-              <Link to={`/p/${morning.projectIds[0]}/finals`} className="btn btn--night btn--s" onClick={morning.dismiss}>
+              <Link to={`/p/${morning.projectIds[0]}/media`} className="btn btn--night btn--s" onClick={morning.dismiss}>
                 See the finals
               </Link>
             )}
@@ -61,8 +61,8 @@ export function Home() {
       {projects.length === 0 ? (
         <div className="empty">
           <Film className="empty__icon" />
-          <div className="empty__title">Start with a template</div>
-          <p className="empty__text">A cinematic shot, a music video, a product ad or a talking intro. You give a few words. Nightshift writes the shot list and draws the first frames in seconds.</p>
+          <div className="empty__title">Start a project</div>
+          <p className="empty__text">Start blank, or from a preset like a music video or a product ad. Make images, clips, voice and music, then cut them on one timeline.</p>
           <Link to="/new" className="btn btn--primary">
             <Plus /> New project
           </Link>
@@ -74,6 +74,7 @@ export function Home() {
             const cover = coverFor(p);
             const stage = projectStage(p, jobs);
             const t = templates.find((x) => x.id === p.template);
+            const cut = timelineShots(p).length;
             return (
               <Link key={p.id} to={`/p/${p.id}`} className="pcard">
                 <div className="pcard__frame">
@@ -84,7 +85,7 @@ export function Home() {
                   <div className="pcard__meta">
                     <span>
                       {t?.name ?? p.template}
-                      {p.shots.length ? `, ${plural(p.shots.length, "shot")}` : ""}
+                      {cut ? `, ${plural(cut, "shot")}` : ""}
                     </span>
                     <span>{relativeTime(p.updatedAt)}</span>
                   </div>

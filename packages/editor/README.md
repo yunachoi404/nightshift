@@ -82,13 +82,15 @@ Each template reads its text from `project.brief`. Every key is optional.
 |---|---|---|---|---|
 | `cinematic_shot` | `title`, `subtitle` | Full shots, 0.8 s dissolves, fade in from and out to black | Title over the first shot | Film subtitles in the letterbox bar, when there is a voice |
 | `music_video` | `title`, `artist`, `durationSec`, `songStartSec` | On beats, pulled towards bar lines, half bars and section changes. Ends on a bar line. Reuses shots with new in-points when the song outlasts them | Title and artist, bottom left | Lyrics, word by word |
-| `product_ad` | `productName`, `tagline`, `cta`, `script`, `productImageAssetId`, `durationSec` | Between the voiceover's sentences, then at word gaps for long sentences. Runs 15 s (or `durationSec`): a voice that ends early gets pauses of up to 0.8 s between its sentences, then the end card holds up to 6 s. A longer voice makes a longer ad | Product name at the start, end card with photo, name and call to action | Karaoke: the spoken word lights up |
-| `talking_intro` | `script` (one line per visual), `title`, `speakerName`, `speakerTitle` | Each script line opens with its own shot | Optional title, lower third with name and role | Karaoke |
+| `product_ad` | `productName`, `tagline`, `cta`, `script`, `productImageAssetId`, `durationSec` | Between the voiceover's sentences, then at word gaps for long sentences. Runs 15 s (or `durationSec`): a voice that ends early gets pauses of up to 0.8 s between its sentences, then the end card holds up to 6 s. A longer voice makes a longer ad | Product name at the start, end card with photo, name and call to action | Chip: an accent block slides from word to word |
+| `talking_intro` | `script` (one line per visual), `title`, `speakerName`, `speakerTitle` | Each script line opens with its own shot | Optional title, lower third with name and role | Karaoke: the accent sweeps across each spoken word |
 
-Shots use the best picture they have: the chosen final, else the chosen draft, else the newest take, else the
-storyboard still. Stills get a slow push-in, so a storyboard-only project still exports.
+Only shots on the timeline are cut: a shot with `onTimeline: false` stays on its board. Shots use the best picture
+they have: the still when it is the shot's pick (`useStill`), else the chosen final, else the chosen draft, else the
+newest take, else the storyboard still. Stills get a slow push-in, so a storyboard-only project still exports.
 
-The song is the newest audio asset with `role: "music"`, the voice the newest with `role: "voice"`. A voice's
+The song is the project's `soundtrack.music` pick, else the newest audio asset with `role: "music"`; the voice is
+`soundtrack.voice`, else the newest with `role: "voice"`. A pick of null leaves the role out. A voice's
 `text` is its script; a song's `text` is its lyrics. Before the voice exists, timing is estimated from the script
 so the timeline still lays out.
 
@@ -132,15 +134,17 @@ The schema is `TimelineStyleSchema` in `src/style.ts`. The looks themselves are 
 ```
 
 - `fonts`: `cormorant-garamond`, `fraunces`, `instrument-sans`, `archivo`, `syne`, `bricolage-grotesque`, `inter`,
-  `playfair-display`, `bebas-neue`. Each template leans on its own pair (film serif, editorial serif, wide grotesk,
+  `inter-display`, `playfair-display`, `bebas-neue`. All under the SIL Open Font License, through Fontsource. Each template leans on its own pair (film serif, editorial serif, wide grotesk,
   grotesk with ink traps) so the four never look like one template.
 - `picture.reframe`: `crop` fills the frame, centred on the subject (found automatically per clip, or set with
   `clip.focus`). `fit_blur` shows the whole shot over a blurred copy of itself.
 - `transition.accent` hits hard cuts: `punch` (quick zoom), `flash`, `whip`, or `none`. `transition.duration` is the
   dissolve the planner builds between shots; it shortens the film by that much per cut, so the cinematic look uses
   0.5 s. Set it to 0 for hard cuts.
-- `captions.look`: `subtitle` (film), `karaoke` (the spoken word lights up and is underlined), `chip` (the line in a
-  dark pill, the spoken word on an accent chip), `kinetic` (words land as they are sung).
+- `captions.look`: `subtitle` (film: the line breathes in, blur to sharp), `karaoke` (words rise through a mask; the
+  accent sweeps across the spoken word), `chip` (the line on a frosted plate; one accent block slides from word to
+  word), `kinetic` (lyrics land as they are sung, large and soft settling to sharp). The editor's caption styles map
+  onto them: Clean is karaoke, Boxed is chip, Film is subtitle, Lyrics is kinetic.
 
 Cards and captions keep to each shape's safe area (on 9:16 the top strip, the bottom fifth and the right edge belong
 to the social apps' controls). The subject of each shot is measured along with the crop: a point (motion, then

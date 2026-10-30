@@ -40,6 +40,7 @@ export function createHttpClient(base: string): NightshiftClient {
     tiers: () => call("GET", "/api/tiers"),
     installPlan: (tier) => call("GET", `/api/install/plan?tier=${encodeURIComponent(tier)}`),
     install: (body) => call("POST", "/api/install", body),
+    scanModels: (body) => call("POST", "/api/install/scan", body),
     remoteCheck: (url) => call("POST", "/api/remote/check", { url }),
     remoteUse: (body) => call("POST", "/api/remote", body),
     remoteForget: () => call("DELETE", "/api/remote"),
@@ -55,12 +56,13 @@ export function createHttpClient(base: string): NightshiftClient {
     updateProject: (id, patch) => call("PATCH", `/api/projects/${id}`, patch),
     deleteProject: (id) => call("DELETE", `/api/projects/${id}`),
     deleteAsset: (id, assetId) => call("DELETE", `/api/projects/${id}/assets/${assetId}`),
-    uploadAsset: async (id, file) => {
+    uploadAsset: async (id, file, opts) => {
       const form = new FormData();
       form.append("file", file, file.name);
+      const query = new URLSearchParams({ ...(opts?.role ? { role: opts.role } : {}), ...(opts?.boardId ? { board: opts.boardId } : {}) }).toString();
       let res: Response;
       try {
-        res = await fetch(`${root}/api/projects/${id}/assets`, { method: "POST", body: form });
+        res = await fetch(`${root}/api/projects/${id}/assets${query ? `?${query}` : ""}`, { method: "POST", body: form });
       } catch (e) {
         throw new ApiError(e instanceof Error ? e.message : "Network error", 0, "unreachable");
       }
@@ -68,6 +70,7 @@ export function createHttpClient(base: string): NightshiftClient {
       return (await res.json()) as import("@nightshift/contract").Asset;
     },
     storyboard: (id) => call("POST", `/api/projects/${id}/storyboard`),
+    make: (id, body) => call("POST", `/api/projects/${id}/make`, body),
     still: (id, shotId, body) => call("POST", `/api/projects/${id}/shots/${shotId}/still`, body),
     draft: (id, shotId, body) => call("POST", `/api/projects/${id}/shots/${shotId}/draft`, body ?? {}),
     final: (id, shotId, body) => call("POST", `/api/projects/${id}/shots/${shotId}/final`, body),

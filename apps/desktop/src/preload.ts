@@ -11,5 +11,6 @@ const bridge: DesktopBridge = {
   revealExport: (projectId, assetId) => ipcRenderer.invoke('desktop:reveal-export', projectId, assetId),
   openExternal: url => ipcRenderer.invoke('desktop:external', url),
   setDemo: on => ipcRenderer.invoke('desktop:demo', on),
+  pickFolder: () => ipcRenderer.invoke('desktop:pick-folder'),
 };
 contextBridge.exposeInMainWorld('nightshiftDesktop', Object.freeze(bridge));

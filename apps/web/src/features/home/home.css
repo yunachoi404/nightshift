@@ -32,7 +32,7 @@
   box-shadow: none;
 }
 .pcard:focus-visible .pcard__frame {
-  box-shadow: inset 0 0 0 1px var(--content), 0 0 0 2px var(--accent);
+  box-shadow: var(--focus);
 }
 .pcard__frame .frame {
   position: absolute;

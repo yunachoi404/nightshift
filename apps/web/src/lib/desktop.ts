@@ -15,6 +15,8 @@ export interface DesktopBridge {
    * opened without mode switches (`canSwitchDemo`). The window closes and the app opens again in the other mode.
    */
   setDemo?(on: boolean): Promise<void>;
+  /** The system's folder picker. The chosen folder's full path, or null when the user cancels. */
+  pickFolder?(): Promise<string | null>;
 }
 
 declare global {

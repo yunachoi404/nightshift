@@ -22,6 +22,14 @@ export class Api {
     return this.call("GET", `/api/projects/${id}`, ProjectSchema);
   }
 
+  /** A request that is expected to fail: its status and its error message. */
+  async refused(method: string, path: string, body?: unknown): Promise<{ status: number; error: string }> {
+    const res = await fetch(this.url + path, { method, ...(body === undefined ? {} : { body: JSON.stringify(body), headers: { "content-type": "application/json" } }) });
+    const text = await res.text();
+    if (res.ok) throw new Error(`${method} ${path}: expected a refusal, got ${res.status} ${text}`);
+    return { status: res.status, error: (JSON.parse(text) as { error: string }).error };
+  }
+
   async job(path: string, body: unknown = {}): Promise<Job> {
     return this.call("POST", path, JobSchema, body);
   }
@@ -52,10 +60,12 @@ export class Api {
     }
   }
 
-  async upload(projectId: string, bytes: Uint8Array, filename: string, type: string, role?: string) {
+  /** Upload a file as the UI does. `board` files it on that board of the canvas. */
+  async upload(projectId: string, bytes: Uint8Array, filename: string, type: string, role?: string, board?: string) {
     const form = new FormData();
     form.append("file", new Blob([new Uint8Array(bytes)], { type }), filename);
-    const res = await fetch(`${this.url}/api/projects/${projectId}/assets${role ? `?role=${role}` : ""}`, { method: "POST", body: form });
+    const query = new URLSearchParams({ ...(role ? { role } : {}), ...(board ? { board } : {}) }).toString();
+    const res = await fetch(`${this.url}/api/projects/${projectId}/assets${query ? `?${query}` : ""}`, { method: "POST", body: form });
     if (res.status !== 201) throw new Error(`upload ${filename}: ${res.status} ${await res.text()}`);
     return AssetSchema.parse(await res.json());
   }
@@ -83,6 +93,8 @@ export const BRIEFS: Record<TemplateId, { name: string; brief: Record<string, un
   // Quick shots: one shot each, no storyboard writing.
   camera_move: { name: "Harbor move", brief: { prompt: "a quiet harbor at dawn", move: "dolly_in" } },
   vfx_effect: { name: "Statue effect", brief: { prompt: "a marble statue in a museum", effect: "disintegrate" } },
+  // Blank: no brief, no shot list. It fills from the project's tools.
+  blank: { name: "Blank canvas", brief: {} },
 };
 
 const LYRICS = "Headlights on an empty road\nThe city sleeps and we drive on\nNeon rain on the window\nHold on till the morning comes";

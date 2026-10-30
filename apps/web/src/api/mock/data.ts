@@ -124,4 +124,4 @@ export const hardwarePresets: Record<string, { label: string; profile: HardwareP
   },
 };
 
-export { mockTier, mockTiers, rankTiers, recommendTier, type MockTier } from "./recipes";
+export { mockTier, mockTiers, rankTiers, recommendTier, stepModels, type MockTier } from "./recipes";

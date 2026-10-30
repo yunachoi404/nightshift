@@ -3,62 +3,66 @@ import type { Aspect, TemplateId, TemplateMeta, TierSummary } from "@nightshift/
 import { ImagePlus, Music2, RectangleHorizontal, RectangleVertical, Square } from "lucide-react";
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useNavigate } from "react-router";
-import { useEngine, useEngineState } from "@/store/engine";
+import { useEngine } from "@/store/engine";
 import { Button, Field, Input, Segmented, Textarea, cx, toast, radioGroupKeyDown } from "@/ui/primitives";
 import { Media } from "@/media/Media";
 import { mockUrl } from "@/media/placeholder";
-import { cameraMoves, genres, looks, templates, tones, voices, fallbackShots } from "@nightshift/contract";
+import { WHAT_IF_DURATION, cameraMoves, genres, looks, templates, tones, voices, fallbackShots } from "@nightshift/contract";
 import { frameClass } from "@/features/project/helpers";
-import { CameraMoveFields } from "./CameraMoveFields";
+import { TemplateIcon } from "@/features/project/TemplateIcon";
 import { NewReferences, type DraftReference } from "@/features/references/References";
 import "./newproject.css";
-import { EffectFields } from "./EffectFields";
-import { shotListSeconds, useInstalledTier } from "@/store/tier";
-import { roughDuration } from "@/lib/format";
+import { useInstalledTier } from "@/store/tier";
+import { plural } from "@/lib/format";
 import { WhatIfFields } from "./WhatIfFields";
 import { publicUrl } from "@/lib/publicUrl";
 
-const previews: Record<TemplateId, string> = {
+/** The presets a new project can start from, in the order the picker shows them. Effects and camera moves are tools. */
+type Preset = "blank" | "cinematic_shot" | "product_ad" | "music_video" | "talking_intro" | "what_if";
+const PRESETS: Preset[] = ["blank", "cinematic_shot", "product_ad", "music_video", "talking_intro", "what_if"];
+
+/** A rendered look for each film preset. Blank has none: it starts empty, so its tile is empty too. */
+const previews: Record<Exclude<Preset, "blank">, string> = {
   what_if: publicUrl("what-if/preview.webp"),
   cinematic_shot: mockUrl({ kind: "water", seed: 31, w: 480, h: 270, quality: "final", palette: 5, move: "static" }),
   music_video: mockUrl({ kind: "city", seed: 7, w: 270, h: 480, quality: "final", palette: 2, move: "static" }),
   product_ad: mockUrl({ kind: "product", seed: 3, w: 270, h: 480, quality: "final", palette: 6, move: "static" }),
   talking_intro: mockUrl({ kind: "abstract", seed: 12, w: 480, h: 270, quality: "final", palette: 5, move: "static" }),
-  camera_move: mockUrl({ kind: "water", seed: 44, w: 480, h: 270, quality: "final", palette: 3, move: "static" }),
-  vfx_effect: publicUrl("effects/freeze.webp"),
 };
 
-/** The template a new project starts on. */
-const FIRST_TEMPLATE: TemplateId = "cinematic_shot";
+/** The preset a new project starts on. */
+const FIRST_PRESET: Preset = "blank";
 
+const metaOf = (id: Preset): TemplateMeta => templates.find((t) => t.id === id)!;
+
+/**
+ * New project: a name, a format and a preset. It only creates. A preset seeds the brief, the shot list, the look and
+ * the captions; nothing renders until you ask for it in Media.
+ */
 export function NewProject() {
   const nav = useNavigate();
-  const { createProject, storyboard, updateProject, client } = useEngine();
-  const { status } = useEngineState();
+  const { createProject, updateProject, client } = useEngine();
   const tier = useInstalledTier();
-  const availableTemplates = templates.filter((t) => {
-    if (t.id === "what_if") return tier?.steps?.includes("video_what_if");
-    if (t.id === "vfx_effect") return tier?.steps?.includes("video_effect") && tier.steps.includes("effect_end_frame");
-    if (t.id === "camera_move") return tier?.steps?.includes("video_camera_move") && tier.steps.includes("camera_layout");
-    return true;
-  });
-  const [template, setTemplate] = useState<TemplateId>(FIRST_TEMPLATE);
-  const [aspect, setAspect] = useState<Aspect>(() => templates.find((t) => t.id === FIRST_TEMPLATE)!.defaultAspect);
-  const [brief, setBrief] = useState<Record<string, unknown>>(() => defaultBrief(FIRST_TEMPLATE));
+  const presets = PRESETS.filter((id) => id !== "what_if" || tier?.steps?.includes("video_what_if"));
+  const [template, setTemplate] = useState<Preset>(FIRST_PRESET);
+  const [aspect, setAspect] = useState<Aspect>(() => metaOf(FIRST_PRESET).defaultAspect);
+  const [brief, setBrief] = useState<Record<string, unknown>>(() => defaultBrief(FIRST_PRESET));
   const [file, setFile] = useState<File | null>(null);
   const [references, setReferences] = useState<DraftReference[]>([]);
   const [name, setName] = useState("");
   const [nameTouched, setNameTouched] = useState(false);
   const [busy, setBusy] = useState(false);
-  const meta = templates.find((t) => t.id === template)!;
+  const meta = metaOf(template);
+  const film = template !== "blank";
+  const takesReferences = template !== "blank" && template !== "what_if";
 
-  // Switching template resets the brief and the aspect to the template default. Here, not in an effect: an effect runs
+  // Switching preset resets the brief and the aspect to the preset default. Here, not in an effect: an effect runs
   // after the first paint and could wipe a choice made right then.
-  const pickTemplate = (id: TemplateId) => {
+  const pickPreset = (id: Preset) => {
     if (id === template) return;
     setTemplate(id);
     setBrief(defaultBrief(id));
-    setAspect(templates.find((t) => t.id === id)!.defaultAspect);
+    setAspect(metaOf(id).defaultAspect);
     setFile(null);
     setNameTouched(false);
   };
@@ -66,7 +70,8 @@ export function NewProject() {
   const suggested = useMemo(() => suggestName(template, brief), [template, brief]);
   const finalName = nameTouched && name.trim() ? name.trim() : suggested;
   const referenceCount = references.length + (file?.type.startsWith("image/") ? 1 : 0);
-  const valid = isValid(template, brief, file) && (template === "camera_move" || template === "vfx_effect" || referenceCount <= 6);
+  const valid = isValid(template, brief, file) && (!takesReferences || referenceCount <= 6);
+  const seeded = seededLine(template, brief, tier?.longestShotSec);
 
   const set = (k: string, v: unknown) => setBrief((b) => ({ ...b, [k]: v }));
 
@@ -76,10 +81,12 @@ export function NewProject() {
     try {
       const p = await createProject({ name: finalName, template, aspect, brief });
       if (file) {
-        const asset = await client.uploadAsset(p.id, file);
-        await updateProject(p.id, { brief: { ...brief, ...((template === "camera_move" || template === "vfx_effect" || template === "what_if") ? { photoAssetId: asset.id } : { referenceAssetId: asset.id }), referenceKind: file.type.startsWith("audio") ? "song" : "photo" } });
+        // A music video's file is its song; every other preset's is a photo.
+        const song = template === "music_video";
+        const asset = await client.uploadAsset(p.id, file, song ? { role: "music" } : undefined);
+        await updateProject(p.id, { brief: { ...brief, ...(template === "what_if" ? { photoAssetId: asset.id } : { referenceAssetId: asset.id }), referenceKind: song ? "song" : "photo" } });
       }
-      if (template !== "camera_move" && template !== "vfx_effect" && template !== "what_if" && references.length) {
+      if (takesReferences && references.length) {
         const current = await client.getProject(p.id);
         const saved = [...(current.references ?? [])];
         for (const reference of references.slice(0, 6 - saved.length)) {
@@ -88,8 +95,7 @@ export function NewProject() {
         }
         await updateProject(p.id, { references: saved });
       }
-      await storyboard(p.id);
-      nav(`/p/${p.id}/${template === "camera_move" || template === "vfx_effect" ? "takes" : "storyboard"}`);
+      nav(`/p/${p.id}/media`);
     } catch (e) {
       toast({ title: "Couldn't create the project", text: e instanceof Error ? e.message : String(e), tone: "bad" });
       setBusy(false);
@@ -98,21 +104,31 @@ export function NewProject() {
 
   return (
     <div className="np">
-      <div className="np__templates" role="radiogroup" aria-label="Template" onKeyDown={radioGroupKeyDown}>
-        <div className="side__head">Template</div>
-        {availableTemplates.map((t) => (
-          <button key={t.id} type="button" role="radio" aria-checked={t.id === template} tabIndex={t.id === template ? 0 : -1} className="tpl" onClick={() => pickTemplate(t.id)}>
-            <div className="tpl__thumb">
-              <div className={cx("frame", frameClass(t.defaultAspect))}>
-                <Media src={previews[t.id]} kind="image" />
+      <div className="np__templates" role="radiogroup" aria-label="Preset" onKeyDown={radioGroupKeyDown}>
+        <div className="side__head">Preset</div>
+        {presets.map((id) => {
+          const t = metaOf(id);
+          return (
+            <button key={id} type="button" role="radio" aria-checked={id === template} tabIndex={id === template ? 0 : -1} className="tpl" onClick={() => pickPreset(id)}>
+              {/* A picture of the preset, not part of its name. */}
+              <div className="tpl__thumb" aria-hidden>
+                {id === "blank" ? (
+                  <div className={cx("frame frame--empty tpl__blank", frameClass(t.defaultAspect))}>
+                    <TemplateIcon template="blank" />
+                  </div>
+                ) : (
+                  <div className={cx("frame", frameClass(t.defaultAspect))}>
+                    <Media src={previews[id]} kind="image" />
+                  </div>
+                )}
               </div>
-            </div>
-            <div className="tpl__text">
-              <div className="tpl__name">{t.name}</div>
-              <div className="tpl__tag">{t.tagline}</div>
-            </div>
-          </button>
-        ))}
+              <div className="tpl__text">
+                <div className="tpl__name">{t.name}</div>
+                <div className="tpl__tag">{t.tagline}</div>
+              </div>
+            </button>
+          );
+        })}
       </div>
 
       <form
@@ -126,22 +142,28 @@ export function NewProject() {
         <div className="brief__scroll">
           <div className="brief__head">
             <h2 className="brief__title">{meta.name}</h2>
-            <p className="brief__lead">
-              You give {meta.gives.toLowerCase()}. You get {meta.gets.toLowerCase()}, {templateLength(meta, tier).toLowerCase()}.
-            </p>
+            {film ? (
+              <>
+                <p className="brief__lead">
+                  You give {meta.gives.toLowerCase()}. You get {meta.gets.toLowerCase()}
+                  {/* "A 15 second ad" says its length already. */}
+                  {/seconds?\b/.test(meta.gets) ? "" : `, ${templateLength(meta, tier).toLowerCase()}`}.
+                </p>
+                <p className="brief__seed">
+                  {template === "what_if" ? "The preset only sets up the story, the look and the captions." : "The preset only sets up the shot list, the look and the captions. Every field is optional."} Nothing renders until you ask.
+                </p>
+              </>
+            ) : (
+              <p className="brief__lead">
+                It starts with nothing in it. Make images, clips, effects and camera moves in Media, voice and music in the Editor, and put what you like on the timeline.
+              </p>
+            )}
           </div>
 
           <div className="brief__form">
             {template === "what_if" && <WhatIfFields question={str(brief.question)} look={str(brief.look)}
               onQuestion={value => set("question", value)} onLook={value => set("look", value)}
               photo={<DropZone file={file} onFile={setFile} accept="image/*" icon={<ImagePlus />} label="Drop a photo here, or click to choose" />} />}
-            {template === "vfx_effect" && <EffectFields
-              photo={<DropZone file={file} onFile={setFile} accept="image/*" icon={<ImagePlus />} label="Drop a photo here, or click to choose" />}
-              effect={str(brief.effect)} prompt={str(brief.prompt)} onEffect={(v) => set("effect", v)} onPrompt={(v) => set("prompt", v)}
-            />}
-            {template === "camera_move" && <CameraMoveFields
-              photo={<DropZone file={file} onFile={setFile} accept="image/*" icon={<ImagePlus />} label="Drop a photo here, or click to choose" />}
-              move={str(brief.move)} prompt={str(brief.prompt)} onMove={(v) => set("move", v)} onPrompt={(v) => set("prompt", v)} />}
 
             {template === "cinematic_shot" && (
               <>
@@ -256,13 +278,13 @@ export function NewProject() {
               </>
             )}
 
-            {template !== "camera_move" && template !== "vfx_effect" && template !== "what_if" && <><NewReferences references={references} onChange={setReferences} />{referenceCount > 6 && <p className="t-small">Use up to six references, including the starting photo. Remove one to continue.</p>}</>}
+            {takesReferences && <><NewReferences references={references} onChange={setReferences} />{referenceCount > 6 && <p className="t-small">Use up to six references, including the starting photo. Remove one to continue.</p>}</>}
 
             <div className="brief__row">
               <Field label="Format">
                 {() => (
                   <Segmented
-                      label="Format"
+                    label="Format"
                     value={aspect}
                     onChange={setAspect}
                     options={[
@@ -277,6 +299,7 @@ export function NewProject() {
                 {(id) => (
                   <Input
                     id={id}
+                    autoFocus={!film}
                     value={nameTouched ? name : suggested}
                     onChange={(e) => {
                       setNameTouched(true);
@@ -290,9 +313,9 @@ export function NewProject() {
         </div>
 
         <div className="brief__foot">
-          <span className="t-small t-muted">{status?.phase === "ready" ? template === "vfx_effect" ? "One photo becomes a four-second effect shot." : template === "camera_move" ? "One photo, one 4-second shot. Compare takes, then finish your favorite." : shotListLine(template, brief, tier) : "The engine is not ready yet. The project is saved, rendering waits."}</span>
+          <span className="t-small t-muted">{seeded ? `${seeded}. Nothing renders yet.` : "Nothing renders yet. The project opens in Media."}</span>
           <Button type="submit" variant="primary" disabled={!valid} busy={busy}>
-            {template === "vfx_effect" ? "Create effect" : template === "camera_move" ? "Make camera move" : "Create storyboard"}
+            Create project
           </Button>
         </div>
       </form>
@@ -304,8 +327,10 @@ function str(v: unknown): string {
   return typeof v === "string" ? v : "";
 }
 
-function defaultBrief(t: TemplateId): Record<string, unknown> {
+function defaultBrief(t: Preset): Record<string, unknown> {
   switch (t) {
+    case "blank":
+      return {};
     case "what_if":
       return { look: "cinematic" };
     case "cinematic_shot":
@@ -316,30 +341,14 @@ function defaultBrief(t: TemplateId): Record<string, unknown> {
       return { tone: "confident", voice: "mara" };
     case "talking_intro":
       return { voice: "mara", visuals: "match" };
-    case "camera_move":
-      return { move: "dolly_in" };
-    case "vfx_effect":
-      return { effect: "disintegrate" };
   }
 }
 
-function isValid(t: TemplateId, b: Record<string, unknown>, file: File | null): boolean {
-  switch (t) {
-    case "what_if":
-      return str(b.question).trim().length >= 8 && str(b.question).length <= 300;
-    case "cinematic_shot":
-      return str(b.idea).trim().length > 3 || !!file;
-    case "music_video":
-      return (str(b.songSource) === "upload" ? !!file : str(b.songPrompt).trim().length > 2) && str(b.subject).trim().length > 2;
-    case "product_ad":
-      return str(b.productName).trim().length > 0 && str(b.does).trim().length > 2;
-    case "talking_intro":
-      return str(b.script).trim().length > 8;
-    case "camera_move":
-      return !!file && file.type.startsWith("image/");
-    case "vfx_effect":
-      return !!file && (file.type.startsWith("image/") || /\.(png|jpe?g|webp|heic|heif)$/i.test(file.name));
-  }
+/** Every brief field is optional, but a What if? needs its question and "Use my song" needs the song. */
+function isValid(t: Preset, b: Record<string, unknown>, file: File | null): boolean {
+  if (t === "what_if") return str(b.question).trim().length >= 8 && str(b.question).length <= 300;
+  if (t === "music_video" && str(b.songSource) === "upload") return !!file;
+  return true;
 }
 
 function OptionGrid({ label, value, onChange, options }: { label: string; value: string; onChange: (v: string) => void; options: Array<{ id: string; name: string; hint: string }> }) {
@@ -436,32 +445,36 @@ function DropZone({ file, onFile, accept, icon, label }: { file: File | null; on
 }
 
 /**
- * Seconds of a cinematic shot list: the shots the template drafts, each no longer than one draft of this setup makes
- * (the engine clamps them the same way). So the copy follows both the template and the recipe.
+ * The shot list a preset seeds, and how long it runs: each shot no longer than one draft of this setup makes (the engine
+ * clamps them the same way). So the copy follows both the brief and the recipe.
  */
-function cinematicSeconds(brief: Record<string, unknown>, sequence: "one" | "three", longestShotSec?: number): { shots: number; total: number } {
-  const shots = fallbackShots("cinematic_shot", { ...brief, sequence });
+function seededShots(template: TemplateId, brief: Record<string, unknown>, longestShotSec?: number): { shots: number; total: number } {
+  const shots = fallbackShots(template, brief);
   const total = shots.reduce((sum, s) => sum + (longestShotSec ? Math.min(s.durationSec, longestShotSec) : s.durationSec), 0);
   return { shots: shots.length, total };
 }
 
+const seconds = (total: number) => `${Number.isInteger(total) ? total : `about ${Math.round(total)}`} seconds`;
+
+/** "3 shots, about 12 seconds": what a preset starts with. A What if? is one continuous film. Blank starts empty. */
+function seededLine(template: Preset, brief: Record<string, unknown>, longestShotSec?: number): string | null {
+  if (template === "blank") return null;
+  if (template === "what_if") return `One continuous film, about ${WHAT_IF_DURATION} seconds`;
+  const { shots, total } = seededShots(template, brief, longestShotSec);
+  return `${plural(shots, "shot")}, ${seconds(total)}`;
+}
+
 /** "Three shots, about 12 seconds" with LTX 2.5, "Three shots, about 6 seconds" where a draft is 2 s. */
 function sequenceLabel(brief: Record<string, unknown>, sequence: "one" | "three", longestShotSec?: number): string {
-  const { shots, total } = cinematicSeconds(brief, sequence, longestShotSec);
+  const { shots, total } = seededShots("cinematic_shot", { ...brief, sequence }, longestShotSec);
   const count = shots === 1 ? "One shot" : shots === 3 ? "Three shots" : `${shots} shots`;
-  return `${count}, ${Number.isInteger(total) ? total : `about ${Math.round(total)}`} seconds`;
+  return `${count}, ${seconds(total)}`;
 }
 
 /** The finished video's length for the lead. A cinematic shot's follows this setup's longest shot ("2 to 6 seconds"). */
 function templateLength(meta: TemplateMeta, tier: TierSummary | null): string {
   if (meta.id !== "cinematic_shot" || !tier?.longestShotSec) return meta.length;
-  const one = Math.round(cinematicSeconds({}, "one", tier.longestShotSec).total);
-  const three = Math.round(cinematicSeconds({}, "three", tier.longestShotSec).total);
+  const one = Math.round(seededShots("cinematic_shot", { sequence: "one" }, tier.longestShotSec).total);
+  const three = Math.round(seededShots("cinematic_shot", { sequence: "three" }, tier.longestShotSec).total);
   return `${one} to ${three} seconds`;
-}
-
-/** How long the shot list takes here: "in seconds" on a fast machine, minutes on a small card, more for more shots. */
-function shotListLine(template: TemplateId, brief: Record<string, unknown>, tier: TierSummary | null): string {
-  const seconds = shotListSeconds(tier, fallbackShots(template, brief).length);
-  return seconds === null || seconds < 45 ? "The shot list is written in seconds. Stills follow." : `The shot list takes ${roughDuration(seconds)}. Stills follow.`;
 }

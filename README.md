@@ -7,6 +7,12 @@ Nightshift is an entry in Comfy's [Open Source Higgsfield](https://comfy.org/ope
 image, video, voice and music clip is made in ComfyUI on your own GPU, driven through the Comfy SDK. The code is
 Apache-2.0.
 
+![A draft opening into its final: left of the line, the same take finished at twice the resolution; right, the 640x384 draft you picked. Same motion, same sound.](docs/media/same-take.gif)
+
+**Not the same seed, the same latent.** Nightshift saves each draft's joint audio and video latent with its own
+ComfyUI node and continues that exact take into the final. On four real projects every final matched its draft frame
+by frame (SSIM 0.91 to 0.96 after downscaling) and its decoded audio was bit-identical.
+
 <!-- Demo video: add the link here before publishing (docs/PUBLISHING.md). -->
 
 ## Try it
@@ -17,10 +23,10 @@ Four ways in, shortest first. Most of them need no GPU and download no models.
    Spark, from the first question to the export.
 2. **Try it in your browser** (about 2 minutes, nothing to install). Open
    **[yunachoi404.github.io/nightshift](https://yunachoi404.github.io/nightshift/)** in a desktop browser. Choose
-   **Get started**, pick a sample machine, then **Try the demo**. The First shot (a lighthouse) and The Croissant ad are
-   real renders: open the ad for its takes, finals and edit with voice, music and word-timed captions, then **Export
-   video**. New projects you start there get placeholder pictures. Nothing runs on a server; it all stays in your
-   browser.
+   **Get started**, pick a sample machine, then **Try the demo**. The First shot (a lighthouse) and the Nocturne ad (a
+   headphones ad danced by Rae, a generated person) are real renders: open the ad for its takes, finals and edit with
+   music and title cards, then **Export video**. New projects you start there get placeholder pictures. Nothing runs on
+   a server; it all stays in your browser.
 3. **Download the Mac app** (Apple Silicon, macOS 12 or later; a 294 MB download, then about 3 minutes).
    1. Download `Nightshift-0.1.0-arm64.dmg` from the [latest release](https://github.com/yunachoi404/nightshift/releases/latest),
       open it and drag Nightshift to Applications.
@@ -33,22 +39,26 @@ Four ways in, shortest first. Most of them need no GPU and download no models.
       reads your real hardware, picks your recipe, and runs the real engine and editor with placeholder renders and
       real MP4 exports. Nothing is downloaded. **Set up for real** in Settings goes back to a real setup.
 4. **Real renders** (an hour or more, most of it downloading 56 to 148 GB of models). Follow
-   **[docs/SETUP.md](docs/SETUP.md)**. What each machine gets:
+   **[docs/SETUP.md](docs/SETUP.md)**. Already run ComfyUI? Choose **Scan for models** on the setup card first. Models
+   you already have are checked against their SHA256 and used where they are, not downloaded again. What each machine
+   gets:
    - **A Linux PC with an NVIDIA card, local install.** Tested on an 8 GB RTX 2080 Super: setup took 51 minutes, 47.5
      of them for 56 GB of models. Stills in about 2.4 minutes, drafts with sound in about a minute, 384x256 and about
      2 s a shot. Good for storyboards and animatics. Bigger cards get bigger recipes; those are estimates.
    - **A Mac with a GPU computer on your network.** Tested with a DGX Spark: stills in 31 s, 4-second drafts in 56 s,
      same-take finals at twice the size, H3 remasters, What if? films, effects and camera moves. The GPU computer needs
      Linux, an NVIDIA GPU and 148 GB of models.
-   - **A Mac on its own.** The app installs everything, 63 to 122 GB. Untested with real renders on a Mac: the Apple
-     recipes are estimates, and MPS support for LTX 2.5 and the quantized MOSS kernels is unproven.
+   - **A Mac on its own.** The app installs everything, 63 to 122 GB. Tested on an M4 Max set up as a 16 to 32 GB Mac:
+     setup took 22 minutes for 63 GB, stills about 12 minutes, 2-second drafts with sound about 2 minutes, then the
+     same-take final, voice, music, captions and a 1080p export, all on MPS. The 64 GB+ Mac recipe is an estimate, and
+     MPS support for LTX 2.5 is unproven.
+   - **Windows.** No native build yet. Look around in the browser demo (step 2).
 
-![The Nightshift editor with a product ad made in the app. Its stills, drafts, finals, voice and music were rendered on a DGX Spark on the same network.](docs/media/editor.jpg)
+![The Nightshift editor with the Nocturne ad made in the app: its five shots on the timeline, the music lane, and the project's media at the side. Every still, draft, final and song was rendered on a DGX Spark on the same network.](docs/media/editor.jpg)
 
-<sub>The editor, with a 15-second product ad made in the app. Every shot, the voice and the music were rendered on a
-DGX Spark on the same network as the Mac. The baker is a generated person, not a real one. The croissant reference is
-a [photo by James Collington on Pexels](https://www.pexels.com/photo/30403209/). All screenshots here are the real
-app on real projects.</sub>
+<sub>The editor, with a 15-second product ad made in the app. Every shot and the music were rendered on a DGX Spark on
+the same network as the Mac. Rae is a generated person, not a real one, and the Nocturne headphones were generated in
+the app too. All screenshots here are the real app on real projects.</sub>
 
 ## Why it is different
 
@@ -63,9 +73,9 @@ app on real projects.</sub>
   real projects each final matched its draft frame by frame (SSIM 0.91 to 0.96 after downscaling) and its decoded
   audio was bit-identical. The **remaster** re-renders with MiniMax H3, guided by the draft, and the app says it may
   drift. Queue finals for tonight; the Mac stays awake and tells you when they are done.
-- **Share reveal.** From the Finals page, a same-take final becomes a clip of 8 to 12 seconds, vertical or wide.
-  The draft plays, freezes on one frame, and the finished take appears on that same frame, then plays on with its own
-  sound. Every size and frame number on screen is read from the files. A remaster is never offered as a same-take
+- **Share reveal.** From a finished card in Media, a same-take final becomes a clip of 8 to 12 seconds, vertical or
+  wide. The draft plays, freezes on one frame, and the finished take appears on that same frame, then plays on with its
+  own sound. Every size and frame number on screen is read from the files. A remaster is never offered as a same-take
   proof.
 - **It fits your machine.** Before it downloads anything, Nightshift reads your GPU, memory, disk and OS, then
   installs one of seven hardware recipes. Each recipe is its own model lineup, not one model squeezed down: Krea 2,
@@ -82,16 +92,19 @@ app on real projects.</sub>
   references per storyboard still. In the Spark tests, the Solenne bottle and an illustrated character stayed
   recognizable across different compositions. Small details, lettering and skin tone can still drift.
   [Visual checks](research/2026-10-21_references.md).
-- **Idea to finished video in one app.** Five templates (What if?, cinematic shot, music video, product ad, talking intro)
-  write a shot list with a local LLM, draw stills, make drafts, add voice, music and word-timed captions, and export
-  MP4 in 16:9, 9:16 and 1:1.
-- **A camera move from one photo.** On the Spark, pick a camera path for a four-second shot. MoGe estimates
-  depth, an explicit camera renders the layout, and LTX 2.5 turns it into video. Compare takes and finish the
-  same take through the usual editor and export flow.
-- **An effect from one photo.** Ten LTX 2.5 effects: Disintegrate, Freeze, Ignite, Melt, Shatter, Bloom, Solid gold,
-  Crystallize, Levitate and Earth zoom out. For an effect with an end state, FLUX.2 Klein 4B edits the photo into
-  the after image, and LTX 2.5 moves from one to the other in a four-second shot. Then the same take finishes and
-  exports like any other. Tested on the Spark. [Effect tests](research/2026-10-21_vfx_effects.md).
+- **A project is one video, with two places: Media and Editor.** Start blank, or from a preset (cinematic shot,
+  product ad, music video, talking intro, What if?) that sets up the shot list, look and captions. Creating a project
+  renders nothing. Media is a board of cards: one card per shot, showing its pick, with every still, draft, effect,
+  camera move and final it had, so any version can be restored. A prompt panel on the left makes new cards (Image,
+  Video, Effect, Camera move). Several boards (a scene, a mood board) sit on a canvas. Drag cards into the Editor's
+  timeline, make the voice and the music on their lanes, add word-timed captions and export MP4 in 16:9, 9:16 and 1:1.
+- **A camera move on any image.** A tool in every project, on a still, an uploaded photo or a reference. On the
+  Spark, pick a camera path for a four-second shot. MoGe estimates depth, an explicit camera renders the layout, and
+  LTX 2.5 turns it into video. Compare takes and finish the same take through the usual editor and export flow.
+- **An effect on any image.** A tool in every project. Ten LTX 2.5 effects: Disintegrate, Freeze, Ignite, Melt,
+  Shatter, Bloom, Solid gold, Crystallize, Levitate and Earth zoom out. For an effect with an end state, FLUX.2 Klein
+  4B edits the image into the after image, and LTX 2.5 moves from one to the other in a four-second shot. Then the
+  same take finishes and exports like any other. Tested on the Spark. [Effect tests](research/2026-10-21_vfx_effects.md).
 
 ## In the app
 
@@ -99,14 +112,16 @@ app on real projects.</sub>
 
 ![A What if? project: four keyframes for "What if you fell into Jupiter?", each with its narration line](docs/media/what-if.jpg)
 
-**The storyboard, with references.** The croissant photo and the baker are references; each shot picks its own.
+**Media: a board of cards, with references.** One card per shot, each keeping its versions. The headphones and Rae
+are references, so every shot keeps the same product and the same person. The tools sit on the left: Image, Video,
+Edit, Effect and Camera move.
 
-![The storyboard of the product ad: two references, then shots with their prompts, camera moves and finals](docs/media/storyboard.jpg)
+![The Media board of the Nocturne ad: five shot cards marked Final with their version counts, the voice and music, the two references, and the tool panel on the left](docs/media/media-board.jpg)
 
-**Finals, now or tonight.** Pick the same take or a remaster. With every shot ticked, the panel says when tonight's
-run would be done. Nothing is queued until you press a button.
+**Versions, and finals now or tonight.** A card keeps every still, draft, effect and final it has had. Restore any of
+them, or finish the pick now or tonight. Nothing is queued until you press a button.
 
-![The Finals screen: five same-take finals, each with Share reveal, and the panel that finishes them now or overnight](docs/media/finals-overnight.jpg)
+![A card's versions: its history side by side, Restore, and finishing the pick now or tonight](docs/media/version-popup.jpg)
 
 **Share reveal.** The draft and its finished take, on the same frame.
 
@@ -317,9 +332,9 @@ carries these measured times, so the app calls this tier tested.
   logos. The end card uses your original photo.
 - **The portrait crop is a heuristic.** Turning a 16:9 shot into 9:16 follows the brightest, busiest area, which can
   miss the subject. The editor's "Whole picture, blurred background" framing is the fallback.
-- **Two machines are tested.** The DGX Spark over the network, and an RTX 2080 Super with a local install. Local
-  renders on a Mac are untested: the Apple recipes are estimates, and MPS support for LTX 2.5 and the quantized MOSS
-  kernels is unproven. The other NVIDIA tiers are estimates too.
+- **Three setups are tested.** The DGX Spark over the network, an RTX 2080 Super with a local install, and a Mac on
+  the 16 to 32 GB recipe. The 64 GB+ Mac recipe and the other NVIDIA tiers are estimates, and MPS support for LTX 2.5 is
+  unproven.
 - **An 8 GB card makes animatics, not finished video.** Drafts are 384x256 and at most about 2 s a shot, and the
   final is a 2x resize of the same take: same motion and sound, no new detail.
 - **A full graphics card fails some jobs.** The image and video models stream weights when another app holds part of
@@ -328,9 +343,9 @@ carries these measured times, so the app calls this tier tested.
 - **Same take is close, not pixel-identical.** On the LTX 2.5 tiers the final adds detail at the same framing and
   motion. On the 8 GB and Apple 16 GB tiers it is the draft upscaled to 2x, and adds no detail; the app says so. The
   remaster can change the subject; the app says so too.
-- **Camera control depends on the template.** Camera move quick shots use an explicit path through estimated
-  photo depth, with LTX Layout-To-Render following the resulting clip. Newly revealed surfaces can still deform,
-  especially glass. Other templates use prompt guidance. See the [camera quality report](research/2026-10-21_camera_moves.md).
+- **Camera control depends on the tool.** The Camera move tool uses an explicit path through estimated photo depth,
+  with LTX Layout-To-Render following the resulting clip. Newly revealed surfaces can still deform, especially glass.
+  Shots from a preset and the Video tool use prompt guidance. See the [camera quality report](research/2026-10-21_camera_moves.md).
 - **Shots are at most about 4 s** with LTX 2.5 (97 frames), and about 2 s with Kandinsky 6 Lite on the 8 GB and
   Apple 16 GB tiers (49 frames). Longer shots are trimmed to that, not extended.
 - **The Mac app is not notarized.** It is ad-hoc signed and Apple Silicon only. A downloaded copy is blocked the first

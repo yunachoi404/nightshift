@@ -1,0 +1,655 @@
+/*
+ * The prompt panel (PromptPanel.tsx): the tools at the top, the tool's fields in the middle, and the Generate bar at
+ * the foot. Everything is quiet but the bar, a full-width banana pill that says what it makes and what it costs.
+ * Banana also marks the chosen tool, chosen references, the image being picked and focus. Nothing else is warm.
+ */
+.mp-panel {
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid var(--line);
+  background: var(--inset);
+}
+/* A photo or a card dragged over the panel: the whole panel takes it. */
+.mp-panel--over::after {
+  content: "";
+  position: absolute;
+  inset: 6px;
+  z-index: 5;
+  border: 1.5px dashed var(--banana-line);
+  border-radius: var(--r-l);
+  pointer-events: none;
+}
+
+/* ---------- Tools: icon over label, one row; each tab as wide as its label needs, the rest shared ---------- */
+.mp-panel__tools {
+  flex: none;
+  padding: 10px 10px 9px;
+  border-bottom: 1px solid var(--line);
+}
+.mp-tools {
+  display: flex;
+  gap: 2px;
+}
+.mp-tool {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  min-width: 0;
+  height: 50px;
+  padding: 0 6px;
+  border-radius: var(--r-m);
+  font-size: var(--fs-small);
+  line-height: var(--lh-small);
+  font-weight: 500;
+  color: var(--text-2);
+  white-space: nowrap;
+  transition:
+    background-color var(--t-fast) var(--ease),
+    color var(--t-fast) var(--ease);
+}
+.mp-tool svg {
+  width: 18px;
+  height: 18px;
+  flex: none;
+  stroke-width: 1.75;
+  color: var(--text-3);
+  transition: color var(--t-fast) var(--ease);
+}
+.mp-tool span {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.mp-tool:hover:not(:disabled):not([aria-checked="true"]) {
+  background: var(--hover);
+  color: var(--text);
+}
+.mp-tool:hover:not(:disabled) svg {
+  color: var(--text-2);
+}
+.mp-tool[aria-checked="true"] {
+  background: var(--banana-soft);
+  color: var(--text);
+}
+.mp-tool[aria-checked="true"] svg {
+  color: var(--text);
+}
+:root[data-theme="dark"] .mp-tool[aria-checked="true"] svg {
+  color: var(--banana);
+}
+.mp-tool:focus-visible {
+  border-radius: var(--r-m);
+  box-shadow: var(--focus);
+}
+.mp-tool:disabled {
+  opacity: 0.4;
+}
+
+/* ---------- Body ---------- */
+.mp-panel__body {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: 16px 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.mp-sec {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+  border-radius: var(--r-m);
+  transition:
+    background-color var(--t-fast) var(--ease),
+    box-shadow var(--t-fast) var(--ease);
+}
+/* The references light up when a photo dropped on the panel would become one. */
+.mp-sec--over {
+  background: var(--banana-soft);
+  box-shadow: 0 0 0 8px var(--banana-soft);
+}
+.mp-sec__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+.mp-sec__title {
+  font-size: var(--fs-small);
+  line-height: var(--lh-small);
+  font-weight: 600;
+  color: var(--text-2);
+}
+.mp-sec__aside {
+  font-size: var(--fs-small);
+  line-height: var(--lh-small);
+  color: var(--text-3);
+  font-variant-numeric: tabular-nums;
+}
+.mp-sec__hint {
+  font-size: var(--fs-small);
+  line-height: var(--lh-small);
+  color: var(--text-3);
+}
+
+/* ---------- The prompt box: a roomy white field, the keys that generate in its corner ---------- */
+.mp-prompt {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--input-line);
+  border-radius: var(--r-m);
+  background: var(--raised);
+  cursor: text;
+  transition:
+    border-color var(--t-fast) var(--ease),
+    box-shadow var(--t-fast) var(--ease);
+}
+.mp-prompt:hover:not(:focus-within) {
+  border-color: var(--text-4);
+}
+.mp-prompt:focus-within {
+  border-color: var(--focus-edge);
+  box-shadow: var(--focus-field);
+}
+.mp-prompt__field {
+  display: block;
+  width: 100%;
+  resize: none;
+  border: 0;
+  background: transparent;
+  padding: 12px 12px 6px;
+  font: inherit;
+  font-size: var(--fs-body);
+  line-height: 20px;
+  color: var(--text);
+  overflow-y: hidden;
+}
+.mp-prompt__field:focus,
+.mp-prompt__field:focus-visible {
+  box-shadow: none;
+  outline: none;
+}
+.mp-prompt__field::placeholder {
+  color: var(--text-3);
+  opacity: 0.85;
+}
+.mp-prompt__keys {
+  align-self: flex-end;
+  display: inline-flex;
+  gap: 3px;
+  padding: 0 8px 8px;
+  pointer-events: none;
+}
+
+/* ---------- Start from: a drop zone, or the image and its name ---------- */
+.mp-well {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 12px 10px;
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--r-m);
+  text-align: center;
+  transition:
+    border-color var(--t-fast) var(--ease),
+    background-color var(--t-fast) var(--ease);
+}
+.mp-well--choosing {
+  border-color: var(--banana-line);
+}
+.mp-well--over {
+  border-style: solid;
+  border-color: var(--banana-line);
+  background: var(--banana-soft);
+  padding-bottom: 16px;
+}
+.mp-well__icon {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--inset-2);
+  color: var(--text-2);
+}
+.mp-well--choosing .mp-well__icon,
+.mp-well--over .mp-well__icon {
+  background: var(--banana);
+  color: var(--on-banana);
+}
+.mp-well__icon svg {
+  width: 16px;
+  height: 16px;
+}
+.mp-well__prompt b {
+  display: block;
+  font-weight: 500;
+}
+.mp-well__prompt small {
+  display: block;
+  margin-top: 2px;
+  font-size: var(--fs-small);
+  line-height: var(--lh-small);
+  color: var(--text-3);
+}
+.mp-well__buttons {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 2px;
+}
+.mp-well--full {
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 8px;
+  border-style: solid;
+  border-color: var(--line);
+  background: var(--raised);
+  text-align: left;
+}
+.mp-well__thumb {
+  position: relative;
+  flex: none;
+  width: 64px;
+  height: 64px;
+  border-radius: var(--r-frame);
+  overflow: hidden;
+  background: var(--media);
+}
+.mp-well__thumb > .media {
+  position: absolute;
+  inset: 0;
+}
+.mp-well__text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  padding-top: 2px;
+}
+.mp-well__text b {
+  font-weight: 500;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+.mp-well__text small {
+  font-size: var(--fs-small);
+  line-height: var(--lh-small);
+  color: var(--text-3);
+}
+.mp-well__actions {
+  display: flex;
+  gap: 2px;
+  margin: 4px 0 0 -11px;
+}
+
+/* ---------- References: chips that switch on and off ---------- */
+.mp-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.mp-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 100%;
+  height: 30px;
+  padding: 0 11px 0 3px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-pill);
+  background: var(--raised);
+  font-size: var(--fs-small);
+  font-weight: 500;
+  color: var(--text-2);
+  transition:
+    border-color var(--t-fast) var(--ease),
+    background-color var(--t-fast) var(--ease),
+    color var(--t-fast) var(--ease);
+}
+.mp-chip:hover:not(:disabled) {
+  border-color: var(--line-strong);
+  color: var(--text);
+}
+.mp-chip--on,
+.mp-chip--on:hover:not(:disabled) {
+  border-color: var(--banana-line);
+  background: var(--banana-soft);
+  color: var(--text);
+}
+.mp-chip:focus-visible {
+  border-radius: var(--r-pill);
+  box-shadow: var(--focus);
+}
+.mp-chip:disabled {
+  opacity: 0.45;
+}
+.mp-chip__thumb {
+  position: relative;
+  flex: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--media);
+}
+.mp-chip__thumb > .media {
+  position: absolute;
+  inset: 0;
+}
+.mp-chip__label {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.mp-chip--add {
+  padding: 0 12px 0 9px;
+  border-style: dashed;
+  border-color: var(--line-strong);
+  background: transparent;
+}
+.mp-chip--add svg {
+  width: 13px;
+  height: 13px;
+}
+
+.mp-newref {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-m);
+  background: var(--raised);
+}
+.mp-newref__row {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+}
+.mp-newref__thumb {
+  flex: none;
+  width: 52px;
+  height: 52px;
+  border-radius: var(--r-frame);
+  overflow: hidden;
+  background: var(--media);
+}
+.mp-newref__thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.mp-newref__name {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.mp-newref__name label {
+  font-size: var(--fs-small);
+  line-height: var(--lh-small);
+  color: var(--text-3);
+}
+.mp-newref .seg {
+  display: flex;
+}
+.mp-newref .seg__opt {
+  flex: 1;
+  justify-content: center;
+  padding-left: 6px;
+  padding-right: 6px;
+}
+.mp-newref__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+/* ---------- Options: quiet rows, a label and a compact control ---------- */
+.mp-opts {
+  gap: 0;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+  border-radius: 0;
+}
+.mp-opts__toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  min-height: 24px;
+  border-radius: var(--r-s);
+}
+.mp-opts__toggle:hover .mp-sec__title {
+  color: var(--text);
+}
+.mp-opts__toggle:focus-visible {
+  box-shadow: var(--focus);
+}
+.mp-opts__chev {
+  width: 14px;
+  height: 14px;
+  color: var(--text-3);
+  transition: transform var(--t-fast) var(--ease);
+}
+.mp-opts__chev--closed {
+  transform: rotate(-90deg);
+}
+.mp-opts__body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-top: 8px;
+}
+.mp-opt {
+  display: grid;
+  grid-template-columns: 68px minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+  min-height: 30px;
+}
+.mp-opt__label {
+  font-size: var(--fs-small);
+  line-height: var(--lh-small);
+  color: var(--text-3);
+}
+.mp-opt__control {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+}
+.mp-opt__value {
+  font-size: var(--fs-small);
+  line-height: var(--lh-small);
+  color: var(--text-2);
+}
+.mp-opt__select,
+.mp-seed__input {
+  min-height: 28px;
+  padding-top: 2px;
+  padding-bottom: 2px;
+  font-size: var(--fs-small);
+  border-radius: var(--r-pill);
+}
+.mp-opt__select {
+  width: 100%;
+}
+.mp-seed {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+.mp-seed__input {
+  width: 0;
+  flex: 1;
+  min-width: 64px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* The pickers from the new-project gallery, fitted to the narrow column. */
+.mp-panel .effects.effects--compact {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+}
+.mp-panel .effect {
+  padding: 3px 3px 6px;
+}
+.mp-panel .effect__preview {
+  aspect-ratio: 1;
+  object-fit: cover;
+}
+.mp-panel .effect__name {
+  font-size: var(--fs-micro);
+  line-height: var(--lh-micro);
+  margin: 5px 3px 0;
+}
+.mp-panel .effect__hint {
+  display: none;
+}
+.mp-panel .camera-moves {
+  grid-template-columns: 1fr;
+  gap: 6px;
+}
+.mp-panel .camera-move {
+  min-height: 0;
+  padding: 5px 8px 5px 5px;
+}
+.mp-panel .camera-move__preview {
+  width: 72px;
+  flex-basis: 72px;
+}
+
+/* ---------- The foot: where it goes, and the Generate bar ---------- */
+.mp-go {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 10px 16px 16px;
+  border-top: 1px solid var(--line);
+}
+.mp-go__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 26px;
+}
+.mp-go__into {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  font-size: var(--fs-small);
+  line-height: var(--lh-small);
+  color: var(--text-3);
+}
+.mp-go__into b {
+  font-weight: 500;
+  color: var(--text);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.mp-go__board {
+  width: auto;
+  max-width: 168px;
+  min-height: 26px;
+  padding-top: 2px;
+  padding-bottom: 2px;
+  font-size: var(--fs-small);
+  border-radius: var(--r-pill);
+}
+.mp-upload {
+  position: relative;
+  flex: none;
+  margin-right: -8px;
+}
+/* At the foot of the window the menu opens upward. */
+.mp-upload .menu {
+  top: auto !important;
+  bottom: calc(100% + 6px);
+}
+
+.mp-go__bar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  width: 100%;
+  min-height: 52px;
+  padding: 7px 18px;
+  border-radius: var(--r-pill);
+  background: var(--banana);
+  color: var(--on-banana);
+  box-shadow: inset 0 0 0 1px var(--banana-line);
+  transition:
+    background-color var(--t-fast) var(--ease),
+    transform var(--t-fast) var(--ease);
+}
+:root[data-theme="dark"] .mp-go__bar {
+  box-shadow: none;
+}
+.mp-go__bar:hover:not(:disabled) {
+  background: var(--banana-hover);
+}
+.mp-go__bar:active:not(:disabled) {
+  background: var(--banana-press);
+  transform: scale(0.99);
+}
+.mp-go__bar:focus-visible {
+  border-radius: var(--r-pill);
+  box-shadow: var(--focus);
+}
+.mp-go__action {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  line-height: 18px;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+}
+.mp-go__sub {
+  max-width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: var(--fs-micro);
+  line-height: var(--lh-micro);
+  font-weight: 500;
+  color: color-mix(in srgb, var(--on-banana) 72%, transparent);
+}
+.mp-go__sub:empty {
+  display: none;
+}
+.mp-go__bar .spin {
+  border-color: color-mix(in srgb, currentColor 30%, transparent);
+  border-top-color: currentColor;
+}
+/* Not ready: quiet, and the line under the action says why. Busy keeps the banana. */
+.mp-go__bar:disabled:not([aria-busy="true"]) {
+  background: var(--press);
+  box-shadow: none;
+  color: var(--text-3);
+}
+.mp-go__bar:disabled:not([aria-busy="true"]) .mp-go__sub {
+  color: var(--text-2);
+}

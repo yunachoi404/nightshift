@@ -1,4 +1,4 @@
-import { RecipeSchema, StepIdSchema, type HardwareProfile, type ModelFile, type Recipe, type TierSummary } from "@nightshift/contract";
+import { RecipeSchema, StepIdSchema, type HardwareProfile, type ModelFile, type Recipe, type StepId, type TierSummary } from "@nightshift/contract";
 
 /**
  * The real hardware recipes from `recipes/`, so the mock and the browser demo show the same setups, download sizes,
@@ -14,7 +14,8 @@ export const recipes: Recipe[] = Object.keys(files)
     return parsed.success ? [parsed.data] : [];
   });
 
-export type MockTier = TierSummary & { models: ModelFile[] };
+/** A setup as the mock keeps it: the summary `GET /api/tiers` answers, and the files its install downloads. */
+export type MockTier = TierSummary & { files: ModelFile[] };
 
 /** Requirements match within 5%, as the engine matches them. */
 const MATCH_TOLERANCE = 0.95;
@@ -66,8 +67,9 @@ function summary(recipe: Recipe, hw: HardwareProfile | null, best: Recipe | unde
     referenceImageLimit: ["image", "image2", "image3"].filter((k) => (recipe.referenceStill ?? recipe.steps.still)?.inputs[k]).length,
     steps: StepIdSchema.options.filter((s) => recipe.steps[s]),
     defaultMemoryLimitGb: recipe.defaultMemoryLimitGb ?? (hw ? Math.round(hw.ramGb * 0.8) : undefined),
+    models: stepModels(recipe),
     ...finishFacts(recipe),
-    models: recipe.models,
+    files: recipe.models,
   };
 }
 
@@ -79,11 +81,47 @@ export function mockTiers(hw: HardwareProfile | null): MockTier[] {
     .map((r) => summary(r, hw, best));
 }
 
-/** As `GET /api/tiers` answers: the summaries without their model lists. */
+/** As `GET /api/tiers` answers: the summaries without their files. */
 export function rankTiers(hw: HardwareProfile | null): TierSummary[] {
-  return mockTiers(hw).map(({ models: _models, ...t }) => t);
+  return mockTiers(hw).map(({ files: _files, ...t }) => t);
 }
 
 export function mockTier(tier: string, hw: HardwareProfile | null = null): MockTier | undefined {
   return mockTiers(hw).find((t) => t.tier === tier);
+}
+
+/**
+ * The role, in a recipe model's name ("LTX-2.5, video model"), of the main model each step's workflow loads. The engine
+ * reads the model from the step's workflow (`workflowModel` in packages/engine/src/recipes.ts); the mock goes by the
+ * shipped lineup, and recipes.test.ts checks the two agree for every recipe. The voice step names none: its node loads
+ * the voice model by folder, not by file, so the engine finds none of the recipe's files in it.
+ */
+const STEP_ROLE: Partial<Record<StepId, string>> = {
+  text: "writing model",
+  still: "image model",
+  video_draft: "video model",
+  video_final_same_take: "video model",
+  video_final_remaster: "overnight video model",
+  music: "music model",
+  camera_layout: "depth model",
+  video_camera_move: "video model",
+  effect_end_frame: "photo reference model",
+  video_effect: "video model",
+  video_what_if: "video model",
+};
+
+/**
+ * The main model each of the recipe's steps loads, in plain words (TierSummary.models): "Krea 2 Turbo" for the still,
+ * "LTX-2.5" for the draft. A same take that only resizes the draft's frames loads none.
+ */
+export function stepModels(recipe: Recipe): Partial<Record<StepId, string>> {
+  const out: Partial<Record<StepId, string>> = {};
+  for (const step of StepIdSchema.options) {
+    const ref = recipe.steps[step];
+    const role = STEP_ROLE[step];
+    if (!ref || !role || (step === "video_final_same_take" && !ref.inputs.latent)) continue;
+    const name = recipe.models.find((m) => m.name?.split(",").slice(1).join(",").trim() === role)?.name?.split(",")[0]?.trim();
+    if (name) out[step] = name;
+  }
+  return out;
 }

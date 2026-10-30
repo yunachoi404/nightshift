@@ -10,7 +10,7 @@ import { useEngine, useProject, useProjectJobs } from "@/store/engine";
 import { useInstalledTier } from "@/store/tier";
 import { Button, Dialog, Menu, MenuItem, Notice, Select, Tag, cx, toast } from "@/ui/primitives";
 import { Media } from "@/media/Media";
-import { activeJob, bestAssetFor, failureText, frameClass, isActive, jobElapsed, jobStatusLine, lastFailed, totalDuration } from "@/features/project/helpers";
+import { activeJob, bestAssetFor, failureText, frameClass, isActive, jobElapsed, jobStatusLine, lastFailed, timelineShots, totalDuration } from "@/features/project/helpers";
 import { useNow } from "@/lib/useNow";
 import { cameraMoves, fallbackShots, sentenceCase } from "@nightshift/contract";
 import { id as newId } from "@/lib/ids";
@@ -31,10 +31,12 @@ export function Storyboard() {
   const [rewriteOpen, setRewriteOpen] = useState(false);
   const [rewriting, setRewriting] = useState(false);
   const saves = useRef(Promise.resolve());
+  // The cut's shots, in order. Edits save the whole list, so shots kept in Media only keep their place.
+  const shots = timelineShots(project);
   const writing = jobs.find((j) => j.step === "text" && isActive(j));
   // The shot list can take minutes on a small GPU: its elapsed time ticks.
   const now = useNow(1000, writing?.status === "running");
-  const writingFailed = !writing && !project.shots.length ? jobs.filter((j) => j.step === "text" && j.status === "failed").at(-1) : undefined;
+  const writingFailed = !writing && !shots.length ? jobs.filter((j) => j.step === "text" && j.status === "failed").at(-1) : undefined;
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
@@ -62,7 +64,7 @@ export function Storyboard() {
     });
   };
 
-  const readyForDrafts = project.shots.filter((s) => s.stillAssetId && !project.takes.some((t) => t.shotId === s.id) && !activeJob(jobs, s.id, DRAFT_STEPS));
+  const readyForDrafts = shots.filter((s) => s.stillAssetId && !project.takes.some((t) => t.shotId === s.id) && !activeJob(jobs, s.id, DRAFT_STEPS));
   const draftEst = tier?.estimates?.[draftStepFor(project)]?.seconds;
 
   const makeAllDrafts = async () => {
@@ -92,26 +94,26 @@ export function Storyboard() {
           <div>
             <h1 className="page__title">Storyboard</h1>
             <p className="page__sub">
-              {project.shots.length ? `${plural(project.shots.length, "shot")}, ${shortDuration(totalDuration(project))}. Edit the words, drag to reorder, lock what you like.` : writing ? "Nightshift is writing a shot list from your brief." : "The shot list for this project."}
+              {shots.length ? `${plural(shots.length, "shot")}, ${shortDuration(totalDuration(project))}. Edit the words, drag to reorder, lock what you like.` : writing ? "Nightshift is writing a shot list from your brief." : "The shot list for this project."}
             </p>
           </div>
           <div className="page__actions">
-            {project.shots.length > 0 && (
+            {shots.length > 0 && (
               <Button variant="quiet" icon={<RefreshCw />} disabled={!!writing} onClick={() => setRewriteOpen(true)}>
                 Rewrite shot list
               </Button>
             )}
-            {project.shots.length > 0 && (
+            {shots.length > 0 && (
               <Button variant="quiet" icon={<Plus />} onClick={addShot}>
                 Add shot
               </Button>
             )}
             {readyForDrafts.length > 0 && (
               <Button variant="primary" icon={<Clapperboard />} onClick={() => void makeAllDrafts()}>
-                {readyForDrafts.length === project.shots.length ? "Make drafts" : `Make ${plural(readyForDrafts.length, "draft")}`}
+                {readyForDrafts.length === shots.length ? "Make drafts" : `Make ${plural(readyForDrafts.length, "draft")}`}
               </Button>
             )}
-            {readyForDrafts.length === 0 && project.shots.length > 0 && project.shots.every((s) => project.takes.some((t) => t.shotId === s.id)) && (
+            {readyForDrafts.length === 0 && shots.length > 0 && shots.every((s) => project.takes.some((t) => t.shotId === s.id)) && (
               <Link to={`/p/${project.id}/takes`} className="btn btn--primary">
                 Go to takes
               </Link>
@@ -140,7 +142,16 @@ export function Storyboard() {
           </Notice>
         )}
 
-        {!project.shots.length && !writing && !writingFailed && (
+        {!shots.length && !writing && !writingFailed && (project.template === "blank" || project.shots.length > 0 ? (
+          <div className="empty">
+            <LayoutGrid className="empty__icon" />
+            <div className="empty__title">Nothing on the timeline</div>
+            <p className="empty__text">Make shots in Media, then put the ones you like on the timeline.</p>
+            <Link to={`/p/${project.id}/media`} className="btn btn--primary">
+              Go to Media
+            </Link>
+          </div>
+        ) : (
           <div className="empty">
             <LayoutGrid className="empty__icon" />
             <div className="empty__title">No shots yet</div>
@@ -149,21 +160,21 @@ export function Storyboard() {
               Write the shot list
             </Button>
           </div>
-        )}
+        ))}
 
-        {(project.shots.length > 0 || writing) && (
+        {(shots.length > 0 || writing) && (
           <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd} accessibility={{
             screenReaderInstructions: { draggable: "To reorder this shot, press Space. Use the arrow keys to move it. Press Space to drop it, or Escape to cancel." },
             announcements: {
-              onDragStart: ({ active }) => `Picked up shot ${project.shots.findIndex((s) => s.id === active.id) + 1}.`,
-              onDragOver: ({ over }) => over ? `Moving to position ${project.shots.findIndex((s) => s.id === over.id) + 1}.` : undefined,
-              onDragEnd: ({ over }) => over ? `Shot dropped at position ${project.shots.findIndex((s) => s.id === over.id) + 1}.` : "Shot returned to its place.",
+              onDragStart: ({ active }) => `Picked up shot ${shots.findIndex((s) => s.id === active.id) + 1}.`,
+              onDragOver: ({ over }) => over ? `Moving to position ${shots.findIndex((s) => s.id === over.id) + 1}.` : undefined,
+              onDragEnd: ({ over }) => over ? `Shot dropped at position ${shots.findIndex((s) => s.id === over.id) + 1}.` : "Shot returned to its place.",
               onDragCancel: () => "Reordering cancelled.",
             },
           }}>
-            <SortableContext items={project.shots.map((s) => s.id)} strategy={rectSortingStrategy}>
+            <SortableContext items={shots.map((s) => s.id)} strategy={rectSortingStrategy}>
               <div className={cx("sb-grid", gridClass)}>
-                {project.shots.map((s, i) => (
+                {shots.map((s, i) => (
                   <ShotCard
                     key={s.id}
                     project={project}
@@ -184,8 +195,8 @@ export function Storyboard() {
                   />
                 ))}
                 {/* One placeholder per shot the brief asks for: a one-shot project waits on one frame, not three. */}
-                {writing && !project.shots.length && fallbackShots(project.template, project.brief).map((_, k) => <div key={k} className={cx("frame shimmer", frameClass(project.aspect))} data-testid="shot-placeholder" />)}
-                {project.shots.length > 0 && (
+                {writing && !shots.length && fallbackShots(project.template, project.brief).map((_, k) => <div key={k} className={cx("frame shimmer", frameClass(project.aspect))} data-testid="shot-placeholder" />)}
+                {shots.length > 0 && (
                   <button type="button" className={cx("frame shot__add", frameClass(project.aspect))} onClick={addShot}>
                     <Plus /> Add a shot
                   </button>

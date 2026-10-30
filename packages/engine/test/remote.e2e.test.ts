@@ -8,7 +8,7 @@
  */
 import { HardwareProfileSchema, JobSchema, ProjectSchema, RemoteCheckSchema, RuntimeStatusSchema, SettingsSchema, TierSummarySchema, type Job, type Project, type RuntimeStatus } from "@nightshift/contract";
 import { execFileSync } from "node:child_process";
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, symlinkSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -81,7 +81,12 @@ describe.skipIf(!uv || !ffmpeg)("a GPU computer on the network, through the real
   const assetBytes = (p: Project, assetId: string | undefined) => readFileSync(join(dataDir, "projects", p.id, p.assets.find((a) => a.id === assetId)!.path));
 
   beforeAll(async () => {
-    await installProxy({ proxyVenv: PROXY_VENV, log: () => undefined });
+    // The venv is shared by the test runs of every checkout on this machine. One left half-installed by a run that was
+    // cut short (pip finds no METADATA) is made again from scratch.
+    await installProxy({ proxyVenv: PROXY_VENV, log: () => undefined }).catch(async () => {
+      rmSync(PROXY_VENV, { recursive: true, force: true });
+      await installProxy({ proxyVenv: PROXY_VENV, log: () => undefined });
+    });
     const work = mkdtempSync(join(tmpdir(), "ns-remote-"));
     video = join(work, "clip.mp4");
     execFileSync("ffmpeg", ["-v", "error", "-f", "lavfi", "-i", "color=c=gray:s=128x64:d=1", "-r", "24", "-pix_fmt", "yuv420p", video]);
@@ -191,7 +196,8 @@ describe.skipIf(!uv || !ffmpeg)("a GPU computer on the network, through the real
   }, 90_000);
 
   it("a crashed proxy here: jobs wait while it restarts by itself", async () => {
-    const line = execFileSync("ps", ["-eo", "pid=,command="], { encoding: "utf8" })
+    // Every process's full command line: well over execFileSync's 1 MB default on a busy machine (ENOBUFS).
+    const line = execFileSync("ps", ["-eo", "pid=,command="], { encoding: "utf8", maxBuffer: 64 * 1024 * 1024 })
       .split("\n")
       .find((l) => l.includes("comfy-api-proxy run") && l.includes(join(dataDir, "proxy", "remote")));
     const pid = Number(line?.trim().split(/\s+/)[0]);

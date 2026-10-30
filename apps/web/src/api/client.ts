@@ -1,11 +1,13 @@
 import type {
   Aspect,
+  DraftRequest,
   ExportRequest,
   Event as EngineEvent,
   FinalKind,
   HardwareProfile,
   InstallPlan,
   Job,
+  MakeRequest,
   Onboarding,
   OnboardingSample,
   Project,
@@ -27,7 +29,7 @@ export interface CreateProjectBody {
   brief: Record<string, unknown>;
 }
 
-export type ProjectPatch = Partial<Pick<Project, "name" | "shots" | "timeline" | "brief" | "aspect" | "references">>;
+export type ProjectPatch = Partial<Pick<Project, "name" | "shots" | "timeline" | "brief" | "aspect" | "references" | "boards" | "soundtrack">>;
 
 export interface FinalBody {
   draftId: string;
@@ -41,6 +43,8 @@ export interface AudioBody {
   text?: string;
   durationSec?: number;
   voice?: string;
+  /** The board the result goes on. */
+  boardId?: string;
 }
 
 export class ApiError extends Error {
@@ -65,6 +69,11 @@ export interface NightshiftClient {
   tiers(): Promise<TierSummary[]>;
   installPlan(tier: TierId): Promise<InstallPlan>;
   install(body: { tier: TierId; memoryLimitGb: number | null }): Promise<void>;
+  /**
+   * Looks on this computer for the models a setup needs (ComfyUI folders, the Hugging Face cache, `folders` the user
+   * added) and returns the plan with what it found. The in-browser engines have no disk to look at, so no scan.
+   */
+  scanModels?(body: { tier: TierId; folders?: string[] }): Promise<InstallPlan>;
   /** Checks a GPU computer on the network (a host, "host:port" or URL) before using it. */
   remoteCheck(url: string): Promise<RemoteCheck>;
   /** Sends all work to that computer. Downloads nothing. */
@@ -86,13 +95,17 @@ export interface NightshiftClient {
   getProject(id: string): Promise<Project>;
   updateProject(id: string, patch: ProjectPatch): Promise<Project>;
   deleteProject(id: string): Promise<void>;
-  /** Uploads a user file (reference photo, song) into the project. */
+  /** Deletes an uploaded image (a reference or a photo) and its links. */
   deleteAsset(id: string, assetId: string): Promise<void>;
-  uploadAsset(id: string, file: File): Promise<import("@nightshift/contract").Asset>;
+  /** Uploads a user file (reference photo, song, voice) into the project. `role` defaults as the engine decides; `boardId` files it in that board. */
+  uploadAsset(id: string, file: File, opts?: { role?: "reference" | "music" | "voice"; boardId?: string }): Promise<import("@nightshift/contract").Asset>;
 
   storyboard(id: string): Promise<Job>;
+  /** One use of a project tool (image, video, effect, camera move): a new shot in the project's media and its first job. */
+  make(id: string, body: MakeRequest): Promise<Job>;
   still(id: string, shotId: string, body?: StillRequest): Promise<Job>;
-  draft(id: string, shotId: string, body?: { seed?: number }): Promise<Job>;
+  /** A new draft of a shot: a plain motion draft, or with `tool` an effect or a camera move on its still. */
+  draft(id: string, shotId: string, body?: DraftRequest): Promise<Job>;
   final(id: string, shotId: string, body: FinalBody): Promise<Job>;
   audio(id: string, body: AudioBody): Promise<Job>;
   exportVideo(id: string, body: ExportRequest): Promise<Job>;

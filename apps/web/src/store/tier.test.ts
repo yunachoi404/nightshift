@@ -1,6 +1,6 @@
 import type { TierSummary } from "@nightshift/contract";
 import { describe, expect, it } from "vitest";
-import { isMac, machineName, tierFor } from "./tier";
+import { engineOnMac, isMac, machineName, tierFor } from "./tier";
 
 const tier = (match: TierSummary["match"], label = "internal note; unverified"): TierSummary => ({ tier: "t", label, match, downloadGb: 10 }) as TierSummary;
 
@@ -19,5 +19,19 @@ describe("the machine's name", () => {
     expect(machineName(isMac("linux"))).toBe("This computer");
     expect(machineName(isMac("windows"), true)).toBe("this computer");
     expect(machineName(true, true)).toBe("this Mac");
+  });
+
+  it("comes from the engine's own hardware when the work goes through a proxy, not from the browser", () => {
+    // A judge's browser on a Mac, with the engine on a Linux box attached to its ComfyUI proxy.
+    Object.defineProperty(navigator, "platform", { value: "MacIntel", configurable: true });
+    try {
+      expect(engineOnMac("attach", "linux")).toBe(false);
+      expect(engineOnMac("local", "linux")).toBe(false);
+      expect(engineOnMac("attach", "macos")).toBe(true);
+      // A GPU computer on the network: the hardware read is that computer's, so the browser decides.
+      expect(engineOnMac("remote", "linux")).toBe(true);
+    } finally {
+      Object.defineProperty(navigator, "platform", { value: "", configurable: true });
+    }
   });
 });

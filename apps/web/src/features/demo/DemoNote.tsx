@@ -11,7 +11,7 @@ function demoText(): { title: string; text: string } {
   return isBrowserDemo()
     ? {
         title: "This is the browser demo",
-        text: "The Croissant ad and the First shot are real renders, made on a DGX Spark and an RTX 2080 Super. New projects get placeholder pictures. Nothing is rendered or downloaded.",
+        text: "The Nocturne ad and the First shot are real renders, made on a DGX Spark and an RTX 2080 Super. New projects get placeholder pictures. Nothing is rendered or downloaded.",
       }
     : {
         title: "This is the demo",

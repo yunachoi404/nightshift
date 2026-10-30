@@ -38,6 +38,8 @@ export async function shootFrames(compDir: string, outDir: string, times: number
 
     await page.setViewport({ width: size.width, height: size.height });
     await page.evaluate(() => document.fonts.ready);
+    // Captions measure their words once the fonts are in; wait for that as HyperFrames does.
+    await page.waitForFunction(() => (window as unknown as { __hfTimelinesBuilding?: boolean }).__hfTimelinesBuilding !== true, { timeout: 10_000 });
     for (const t of times) {
       await page.evaluate(async (seconds: number) => {
         for (const a of document.getAnimations()) a.currentTime = seconds * 1000;

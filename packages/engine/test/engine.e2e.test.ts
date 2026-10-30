@@ -79,7 +79,8 @@ async function listen(): Promise<void> {
   })();
 }
 
-async function waitJob(id: string, ms = 20_000): Promise<Job> {
+// Measuring a song or a voiceover runs ffmpeg and speech timing on the CPU: allow for a busy machine.
+async function waitJob(id: string, ms = 60_000): Promise<Job> {
   const end = Date.now() + ms;
   for (;;) {
     const job = (await api("GET", "/api/jobs", z.array(JobSchema))).find((j) => j.id === id);
@@ -179,7 +180,11 @@ describe("mock engine, end to end", () => {
     await api("POST", "/api/projects", ErrorResponseSchema, { name: "", template: "cinematic_shot", aspect: "16:9" }, 400);
     const brief = { idea: "a lighthouse in a storm", look: "noir", cameraMove: "orbit_left", sequence: "three" };
     project = await api("POST", "/api/projects", ProjectSchema, { name: "Lighthouse", template: "cinematic_shot", aspect: "16:9", brief }, 201);
-    expect(project).toMatchObject({ shots: [], takes: [], assets: [], timeline: null });
+    expect(project).toMatchObject({ takes: [], assets: [], timeline: null });
+    // A new film starts with its template's shot list on one board, and queues nothing.
+    expect(project.shots.map((s) => [s.index, s.cameraMove, s.stillAssetId])).toEqual([[0, "static", undefined], [1, "orbit_left", undefined], [2, "handheld", undefined]]);
+    expect(project.boards).toEqual([{ id: "board_main", name: "Shots", items: project.shots.map((s) => s.id) }]);
+    expect(await api("GET", `/api/jobs?projectId=${project.id}`, z.array(JobSchema))).toEqual([]);
 
     // Multipart with a "file" field, as apps/web/src/api/http.ts sends it.
     const png = placeholderScene(64, 36, "ref").toPng();

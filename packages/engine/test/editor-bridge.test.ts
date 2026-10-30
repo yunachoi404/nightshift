@@ -173,12 +173,14 @@ describe("the project as the editor reads it", () => {
     expect(editorStyle("product_ad", { captions: false, captionLook: "serif", captionPos: "center", captionSize: 1.4, look: "product_ad" })).toEqual({
       look: "product_ad",
       captions: { enabled: false, look: "subtitle", position: "middle", size: 1.4 },
-      fonts: { captions: "playfair-display" },
     });
-    expect(editorStyle("music_video", { captionLook: "boxed", captionPos: "bottom" }).captions).toEqual({ look: "karaoke", position: "lower" });
+    expect(editorStyle("music_video", { captionLook: "boxed", captionPos: "bottom" }).captions).toEqual({ look: "chip", position: "lower" });
+    expect(editorStyle("talking_intro", { captionLook: "lyrics" }).captions).toEqual({ look: "kinetic" });
+    expect(editorStyle("product_ad", { captionLook: "clean" }).captions).toEqual({ look: "karaoke" });
     for (const template of ["cinematic_shot", "music_video", "product_ad", "talking_intro"] as const) {
       const { warnings } = resolveStyle(template, editorStyle(template, { captions: true, captionLook: "clean", captionPos: "bottom", captionSize: 9 }));
       expect(warnings).toEqual([]);
+      expect(resolveStyle(template, editorStyle(template, { captionLook: "lyrics" })).warnings).toEqual([]);
     }
   });
 });

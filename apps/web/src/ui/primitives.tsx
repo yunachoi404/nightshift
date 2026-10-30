@@ -30,7 +30,7 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
-  { variant = "ghost", size = "m", icon, busy, iconOnly, className, children, disabled, type = "button", ...rest },
+  { variant = "ghost", size = "m", icon, busy, iconOnly, className, children, disabled, type = "button", autoFocus, ...rest },
   ref,
 ) {
   return (
@@ -40,6 +40,8 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
       className={cx("btn", `btn--${variant}`, size !== "m" && `btn--${size}`, iconOnly && "btn--icon", className)}
       disabled={disabled || busy}
       aria-busy={busy || undefined}
+      autoFocus={autoFocus}
+      data-autofocus={autoFocus || undefined}
       {...rest}
     >
       {busy ? <span className="spin" aria-hidden /> : icon}
@@ -73,12 +75,14 @@ export function Field({ label, hint, error, children, className }: FieldProps) {
   );
 }
 
-export const Input = forwardRef<HTMLInputElement, InputHTMLAttributes<HTMLInputElement> & { inline?: boolean }>(function Input({ className, inline, ...rest }, ref) {
-  return <input ref={ref} className={cx("input", inline && "input--inline", className)} {...rest} />;
+// React focuses `autoFocus` itself and leaves no attribute behind. The mark lets a dialog that opens around the field
+// find it again (see Dialog).
+export const Input = forwardRef<HTMLInputElement, InputHTMLAttributes<HTMLInputElement> & { inline?: boolean }>(function Input({ className, inline, autoFocus, ...rest }, ref) {
+  return <input ref={ref} className={cx("input", inline && "input--inline", className)} autoFocus={autoFocus} data-autofocus={autoFocus || undefined} {...rest} />;
 });
 
-export const Textarea = forwardRef<HTMLTextAreaElement, TextareaHTMLAttributes<HTMLTextAreaElement>>(function Textarea({ className, ...rest }, ref) {
-  return <textarea ref={ref} className={cx("textarea", className)} {...rest} />;
+export const Textarea = forwardRef<HTMLTextAreaElement, TextareaHTMLAttributes<HTMLTextAreaElement>>(function Textarea({ className, autoFocus, ...rest }, ref) {
+  return <textarea ref={ref} className={cx("textarea", className)} autoFocus={autoFocus} data-autofocus={autoFocus || undefined} {...rest} />;
 });
 
 export const Select = forwardRef<HTMLSelectElement, SelectHTMLAttributes<HTMLSelectElement>>(function Select({ className, ...rest }, ref) {
@@ -184,22 +188,117 @@ export function Notice({ tone, title, children, actions, icon }: { tone?: "bad" 
 
 // ---------------------------------------------------------------- Dialog
 
+// A control with tabindex -1 (a roving list's other items) is reachable by its arrows, not by Tab.
+const FOCUSABLE = ['button:not(:disabled)', "a[href]", 'input:not(:disabled):not([type="hidden"])', "select:not(:disabled)", "textarea:not(:disabled)", "[tabindex]"].map((s) => `${s}:not([tabindex="-1"])`).join(", ");
+
+/** What Tab can reach inside an element, in order. Hidden things are skipped where the browser can tell. */
+export function focusablesIn(root: HTMLElement): HTMLElement[] {
+  return Array.from(root.querySelectorAll<HTMLElement>(FOCUSABLE)).filter((el) => !el.closest("[inert]") && (el.checkVisibility?.() ?? true));
+}
+
+/** Keep Tab and Shift+Tab inside `root`, wrapping at either end. */
+export function trapTab(e: KeyboardEvent<HTMLElement> | globalThis.KeyboardEvent, root: HTMLElement) {
+  if (e.key !== "Tab") return;
+  const items = focusablesIn(root);
+  if (!items.length) {
+    e.preventDefault();
+    return;
+  }
+  const first = items[0]!;
+  const last = items.at(-1)!;
+  const active = document.activeElement;
+  if (e.shiftKey && (active === first || !root.contains(active))) {
+    e.preventDefault();
+    last.focus();
+  } else if (!e.shiftKey && (active === last || !root.contains(active))) {
+    e.preventDefault();
+    first.focus();
+  }
+}
+
+/** Where a dialog puts focus when it opens: a field marked autofocus, else the first field, else the main action. */
+function initialFocus(root: HTMLElement): HTMLElement | undefined {
+  const items = focusablesIn(root);
+  return (
+    items.find((el) => el.hasAttribute("data-autofocus")) ??
+    items.find((el) => el.matches('textarea, select, input:not([type="checkbox"]):not([type="radio"]):not([type="range"])')) ??
+    items.find((el) => el.matches(".btn--primary, .btn--night")) ??
+    items[0]
+  );
+}
+
+/**
+ * A modal sheet. Escape and a click on the dimmed window ask `onClose`; the owner decides (a busy dialog may stay).
+ * Focus moves in on open (see initialFocus), Tab stays inside, and focus goes back to the opener on close.
+ */
 export function Dialog({ open, onClose, children, width, className }: { open: boolean; onClose: () => void; children: ReactNode; width?: number; className?: string }) {
   const ref = useRef<HTMLDialogElement>(null);
+  const openRef = useRef(open);
+  const pressedBackdrop = useRef(false);
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
+  openRef.current = open;
+
   useEffect(() => {
     const d = ref.current;
-    if (!d) return;
-    if (open && !d.open) d.showModal();
-    if (!open && d.open) d.close();
+    if (!d || !open) return;
+    const opener = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    if (!d.open) d.showModal();
+    // Name the dialog after its title and describe it with its text, when it has them.
+    const title = d.querySelector<HTMLElement>(".dialog__title, h1, h2");
+    const text = d.querySelector<HTMLElement>(".dialog__text");
+    if (title) {
+      title.id ||= `dlg-title-${Math.random().toString(36).slice(2, 9)}`;
+      d.setAttribute("aria-labelledby", title.id);
+    }
+    if (text) {
+      text.id ||= `dlg-text-${Math.random().toString(36).slice(2, 9)}`;
+      d.setAttribute("aria-describedby", text.id);
+    }
+    initialFocus(d)?.focus({ preventScroll: true });
+    return () => {
+      if (d.open) d.close();
+      d.removeAttribute("aria-labelledby");
+      d.removeAttribute("aria-describedby");
+      // Back to whatever opened the dialog, unless something else took focus in the meantime.
+      const active = document.activeElement;
+      if (opener?.isConnected && (!active || active === document.body || d.contains(active))) opener.focus({ preventScroll: true });
+    };
   }, [open]);
+
   return (
     <dialog
       ref={ref}
       className={cx("dialog", className)}
       style={width ? { width: `min(${width}px, calc(100vw - 48px))` } : undefined}
-      onClose={onClose}
+      onKeyDown={(e) => {
+        const d = ref.current;
+        // A dialog opened inside this one handles its own keys.
+        if (!d || (e.target as Element).closest("dialog") !== d) return;
+        // Escape asks the owner; a field or menu inside that handled Escape itself has already prevented it.
+        if (e.key === "Escape") {
+          if (!e.defaultPrevented) onCloseRef.current();
+          e.preventDefault();
+          return;
+        }
+        trapTab(e, d);
+      }}
+      // Some close requests skip keydown (a system gesture): ask the owner instead of closing underneath it.
+      onCancel={(e) => {
+        e.preventDefault();
+        onCloseRef.current();
+      }}
+      // The browser closed it anyway: tell the owner, unless the owner closed it.
+      onClose={() => {
+        if (openRef.current) onCloseRef.current();
+      }}
+      onPointerDown={(e) => {
+        pressedBackdrop.current = e.target === ref.current;
+      }}
       onClick={(e) => {
-        if (e.target === ref.current) onClose();
+        // Only a click that starts and ends on the dimmed window closes; a drag out of a field does not.
+        if (e.target === ref.current && pressedBackdrop.current) onCloseRef.current();
+        pressedBackdrop.current = false;
       }}
     >
       {open && <div className="dialog__body">{children}</div>}
@@ -214,21 +313,8 @@ export function usePanelFocus<T extends HTMLElement = HTMLElement>() {
     const panel = ref.current;
     if (!panel) return;
     const opener = document.activeElement as HTMLElement | null;
-    const focusable = () => Array.from(panel.querySelectorAll<HTMLElement>('button:not(:disabled), a[href], input:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex="0"]')).filter((el) => el.getClientRects().length);
-    focusable()[0]?.focus();
-    const trap = (e: globalThis.KeyboardEvent) => {
-      if (e.key !== "Tab") return;
-      const items = focusable();
-      const first = items[0];
-      const last = items.at(-1);
-      if (e.shiftKey && (document.activeElement === first || !panel.contains(document.activeElement))) {
-        e.preventDefault();
-        last?.focus();
-      } else if (!e.shiftKey && (document.activeElement === last || !panel.contains(document.activeElement))) {
-        e.preventDefault();
-        first?.focus();
-      }
-    };
+    focusablesIn(panel)[0]?.focus();
+    const trap = (e: globalThis.KeyboardEvent) => trapTab(e, panel);
     panel.addEventListener("keydown", trap);
     return () => {
       panel.removeEventListener("keydown", trap);
@@ -251,8 +337,12 @@ export function Menu({ open, onClose, anchor, children, align = "right" }: { ope
     };
     const onKey = (e: globalThis.KeyboardEvent) => {
       if (e.key === "Escape") {
+        // The menu closes, not the dialog or page around it.
+        e.preventDefault();
+        e.stopPropagation();
         onClose();
         anchor.current?.focus();
+        return;
       }
       if (["ArrowDown", "ArrowUp", "Home", "End"].includes(e.key)) {
         const items = Array.from(ref.current?.querySelectorAll<HTMLElement>('[role="menuitem"]') ?? []);
@@ -264,10 +354,11 @@ export function Menu({ open, onClose, anchor, children, align = "right" }: { ope
       }
     };
     document.addEventListener("mousedown", onDoc);
-    document.addEventListener("keydown", onKey);
+    // Capture, so the menu hears Escape before a dialog it sits in.
+    document.addEventListener("keydown", onKey, true);
     return () => {
       document.removeEventListener("mousedown", onDoc);
-      document.removeEventListener("keydown", onKey);
+      document.removeEventListener("keydown", onKey, true);
     };
   }, [open, onClose, anchor]);
   if (!open) return null;

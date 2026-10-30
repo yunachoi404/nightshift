@@ -133,6 +133,7 @@ function installIpc(): void {
   ipcMain.handle('desktop:reveal-project', async (event, id: unknown) => { trusted(event); await revealProject(id); });
   ipcMain.handle('desktop:reveal-export', async (event, id: unknown, assetId: unknown) => { trusted(event); await revealExport(id, assetId); });
   ipcMain.handle('desktop:demo', async (event, on: unknown) => { trusted(event); await switchDemo(on); });
+  ipcMain.handle('desktop:pick-folder', async event => { trusted(event); return pickFolder(); });
 }
 async function writeChoice(demo: boolean): Promise<void> {
   await mkdir(realDataDir, { recursive: true });
@@ -151,6 +152,13 @@ async function switchDemo(on: unknown): Promise<void> {
   relaunching = { previous: !on };
   app.quit();
 }
+/** A folder of models the user already has, for the setup's scan. Only its path goes to the page. */
+async function pickFolder(): Promise<string | null> {
+  const options = { title: 'Choose a folder with models', buttonLabel: 'Scan this folder', properties: ['openDirectory' as const] };
+  const result = window ? await dialog.showOpenDialog(window, options) : await dialog.showOpenDialog(options);
+  return result.canceled ? null : result.filePaths[0] ?? null;
+}
+
 async function revealProject(id: unknown): Promise<void> {
   const value = await project(id);
   const root = await containedPath(dataDir, join('projects', safeId(value.id)));

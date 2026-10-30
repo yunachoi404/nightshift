@@ -35,4 +35,6 @@ export interface DesktopBridge {
   openExternal(url: string): Promise<void>;
   /** Relaunch in the demo (true) or the real setup (false). Rejected when the app was opened with a mode switch. */
   setDemo(on: boolean): Promise<void>;
+  /** The system's folder picker, for a folder of models. Its full path, or null when the user cancels. */
+  pickFolder(): Promise<string | null>;
 }

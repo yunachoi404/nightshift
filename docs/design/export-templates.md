@@ -50,9 +50,12 @@ shot (the opening of the crash zoom) takes the line above her head for its own c
 the crop, so a 9:16 crop between dark towers reads the sky). A soft full-width band, fading at both edges, darkens
 behind a title, a caption block or a lyric when the picture there is bright: nothing over a dark road, 45% black
 over a foggy sky, and at least 30% when a subject is under the text. The band behind captions shows only while
-captions are up, holds through short gaps, and grows to each caption's own height. Film subtitles keep a dark
-stroke and a soft shadow over the picture. Karaoke captions have a stroke and shadow. Chip captions sit in a dark
-pill and get no band. Lyrics are heavy enough to carry their own weight, with a shadow.
+captions are up, holds through short gaps, and grows to each caption's own height. Captions carry no heavy stroke:
+film subtitles and karaoke get a soft shadow, chip captions sit on a frosted plate and get no band, and lyrics are
+heavy enough to carry their own weight, with a soft shadow.
+
+Every caption look moves, timed to the spoken words, and each moves in its own way (`render/captions.ts`). A line
+leaves before the next one arrives, so two lines never share a frame.
 
 **Type scales with the frame.** Everything is sized in units of the short side (1% = 1 u). Text on a phone frame is
 1.28 times bigger than the short side alone suggests, 1.12 on a square, because it is read at arm's length.
@@ -74,9 +77,10 @@ Film. The picture is letterboxed to 2.39 on 16:9 (full frame on 9:16 and 1:1), w
   seconds. A full-width band behind the block (18% black at least, 45% over a bright sky) keeps the thin serif
   readable; the band fades over its top and bottom thirds. Band: the one with room, away from the subject (see
   above). On 16:9 the usual lines sit at 25% and 76% of the picture, on 9:16 at 27% and 56% of the frame.
-- **Subtitles**: Instrument Sans 500, 3.4 u, in the lower letterbox bar on 16:9. On 9:16 and 1:1 they sit on the
-  bottom line of the safe area (24% up on a phone, 9% on a square) with a stroke and shadow, or above the subject's
-  head when the figure reaches the bottom of the frame.
+- **Subtitles**: Instrument Sans 500, 3.5 u, in the lower letterbox bar on 16:9. On 9:16 and 1:1 they sit on the
+  bottom line of the safe area (24% up on a phone, 9% on a square) with a soft shadow, or above the subject's head
+  when the figure reaches the bottom of the frame. Each line comes in out of focus and settles, its words drawing
+  in towards the middle, and drifts up out of focus when it goes. No word is singled out.
 - **Cuts**: 0.5 s dissolves, a 0.6 s fade from black and a 0.9 s fade out. Dissolves overlap the shots, so each
   one shortens the film by half a second: a 4 + 4 + 3.5 s film runs 11 s. Set `transition.duration` to 0 for hard
   cuts.
@@ -98,8 +102,9 @@ The way music channels credit a video, with lyrics that land on the words.
   in Bricolage Grotesque 800 capitals (10 u, 11 u on a phone), the artist under it in capitals tracked 0.22 em.
   Beside a centred figure the block stops short of her: the title stacks one word per line (each word shrinks to fit
   the column, never under three quarters) and the artist line shrinks to fit on one line.
-- **Lyrics** (`kinetic`): Bricolage Grotesque 800 capitals, 8.4 u. Each word lands as it is sung (a small drop and
-  scale), lit in lime while it sounds, white afterwards. The block grows upwards from a fixed line, so a one line
+- **Lyrics** (`kinetic`): Bricolage Grotesque 800 capitals at its narrowest width, 9.6 u. Each word lands as it is
+  sung, settling from a little large and out of focus to sharp, lit in lime until the next word lands, then easing
+  to white. The line lifts away out of focus when it ends. The block grows upwards from a fixed line, so a one line
   and a two line lyric share the same baseline: just under the middle of the frame when nothing is in the way, just
   above the subject's head when a figure fills the middle.
 - **Motion**: hard cuts with a quick punch on each, a 2.5% pulse on every downbeat, a white flash where the song
@@ -119,8 +124,9 @@ A commercial: a wide display name, captions in a pill, a split end card.
 - **Name**: Syne 800 (9 u, 10 u on a phone) in a top corner, on the side away from the subject, with a coral rule
   above it and the tagline in Archivo capitals tracked 0.14 em. It stops short of a subject that leaves it room;
   over a product that fills the frame it stays in its corner with a scrim behind it.
-- **Captions** (`chip`): Archivo 700 in a dark pill with a blurred backdrop, 4.2 u. The spoken word gets a coral
-  chip with light text, like a marker over the line. On the film's line (12% up on 16:9, 32% up on a phone), the
+- **Captions** (`chip`): Archivo 640, a little wide, 5 u, on a frosted dark plate that opens from the middle. One
+  coral block slides from word to word as each is said, taking each word's width (measured in the page once the
+  fonts are in); the word on it takes the text-on-accent colour. On the film's line (12% up on 16:9, 32% up on a phone), the
   lowest line, or above a figure's head, by the rules above. The pill needs no band.
 - **End card**: fills the frame. The product photo takes the top 56% of a phone frame or the left 56% of a wide
   one; a coral panel takes the rest with the name in Syne (12 u), the tagline, and the call to action as a light
@@ -152,8 +158,10 @@ An explainer with an editorial voice.
   in Instrument Sans capitals tracked 0.1 em. A faint gradient behind it keeps it readable on bright footage. It
   sits on the side away from the subject, 24% up on 16:9 and 1:1, 23% up on a phone (just above the apps'
   controls), and stops short of the figure: beside a centred figure the role wraps to two lines.
-- **Captions** (`karaoke`): Instrument Sans 600, 4.6 u, with a stroke and shadow. The spoken word turns sky blue
-  and gets an underline, then returns to white when the next word starts. Above the figure's head on a phone and a
+- **Captions** (`karaoke`): Inter Display 700, tracked tight, 4.6 u (a size up on 16:9), with a soft shadow. Words
+  rise into place through a mask, one after another. The accent sweeps across each word as it is said, then fades
+  back to white as the next one starts, so the colour travels along the line. The words leave upwards through the
+  same mask. Above the figure's head on a phone and a
   square, on the bottom line on 16:9.
 - **Cuts**: 0.4 s dissolves, short fades.
 - **Palette**: blue black `#0E1116`, white, sky `#7DD3FC`.
@@ -165,7 +173,7 @@ An explainer with an editorial voice.
 ## Style is data
 
 Everything above is a default in `packages/editor/src/style.ts`. A timeline's `style` overrides any of it: palette,
-fonts (nine families ship), caption look and position, dissolve length, fades, letterbox ratio, vignette, grain,
+fonts (ten families ship), caption look and position, dissolve length, fades, letterbox ratio, vignette, grain,
 beat pulse. The UI can offer a few named styles later without touching the renderer. A product ad can borrow the
 cinematic look by setting `look`.
 

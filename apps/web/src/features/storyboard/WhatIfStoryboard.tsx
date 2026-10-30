@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router";
-import { Clapperboard, RefreshCw } from "lucide-react";
+import { Clapperboard, PenLine, RefreshCw } from "lucide-react";
 import { whatIfBeatNames, type Keyframe, type Project } from "@nightshift/contract";
 import { useEngine, useProjectJobs } from "@/store/engine";
 import { Button, Notice, Textarea, toast } from "@/ui/primitives";
@@ -42,7 +42,7 @@ export function WhatIfStoryboard({ project }: { project: Project }) {
       <div><h1 className="page__title">{String(project.brief.question)}</h1>
         <p className="page__sub">Four linked keyframes. One continuous film.</p></div>
       <div className="page__actions">
-        <Button variant="quiet" icon={<RefreshCw />} disabled={busy || active.length > 0} onClick={() => void act(() => storyboard(project.id))}>Rewrite story</Button>
+        {shot && <Button variant="quiet" icon={<RefreshCw />} disabled={busy || active.length > 0} onClick={() => void act(() => storyboard(project.id))}>Rewrite story</Button>}
         {shot && <Button variant="primary" icon={<Clapperboard />} disabled={working || !ready} onClick={() => void act(async () => {
           await draft(project.id, shot.id); nav(`/p/${project.id}/takes`);
         })}>{project.takes.length ? "Another take" : "Make a film"}</Button>}
@@ -53,7 +53,9 @@ export function WhatIfStoryboard({ project }: { project: Project }) {
     {failed && !working && <Notice tone="bad" title="A step needs another try">{failureText(failed)}</Notice>}
     {writer?.message?.includes("starter story") && <p className="t-small t-muted">The writer used a starter story. You can edit any beat below.</p>}
     {!shot?.keyframes ? <div className="empty"><Clapperboard className="empty__icon" /><div className="empty__title">{working ? "Writing your story" : "Your story starts here"}</div>
-      <p className="empty__text">An ordinary moment, an impossible change, then its consequence.</p></div>
+      <p className="empty__text">An ordinary moment, an impossible change, then its consequence.</p>
+      {/* A new What if? starts with its question only. Nothing is written until you ask. */}
+      {!shot && !active.length && <Button variant="primary" icon={<PenLine />} busy={busy} onClick={() => void act(() => storyboard(project.id))}>Write the story</Button>}</div>
       : <>
         <div className={`whatif-grid ${project.aspect === "9:16" ? "whatif-grid--tall" : ""}`}>
           {shot.keyframes.map((frame, index) => <Beat key={`${shot.id}-${frame.id}`} frame={frame} index={index} project={project} disabled={working}

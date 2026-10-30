@@ -180,7 +180,7 @@ export async function startEngine(opts: EngineOptions): Promise<EngineHandle> {
     onRuntimeLost: () => runtime.noteLost(),
   });
 
-  const ctx: EngineContext = { paths, bus, hardware, recipes: () => recipeSet, reloadRecipes, installer, remote, runtime, settings, store, service, queue, onboarding, log, sseClients: new Set() };
+  const ctx: EngineContext = { paths, bus, hardware, recipes: () => recipeSet, reloadRecipes, workflowsDir, installer, remote, runtime, settings, store, service, queue, onboarding, log, sseClients: new Set() };
   const router = buildRouter(ctx);
   const webDir = opts.webDir ? resolve(opts.webDir) : undefined;
   if (webDir && !(await exists(join(webDir, "index.html")))) log(`warning: ${webDir} has no index.html`);

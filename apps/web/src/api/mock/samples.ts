@@ -1,11 +1,12 @@
-import { ProjectSchema, type Asset, type Project, type Shot } from "@nightshift/contract";
+import { ProjectSchema, type Asset, type Project, type Shot, type Timeline } from "@nightshift/contract";
 import { publicUrl } from "@/lib/publicUrl";
 import fixture from "./samples.json";
+import { soundPick } from "./soundtrack";
 
 /**
  * Real renders the mock replays where it has them, made by `scripts/build_demo_samples.py` (see public/demo/README.md):
- * the First shot sample's still and draft, and The Croissant ad, a finished project with its takes, finals, voice,
- * music and export. A sample asset's path is `sample:<file under public/demo>`. Every other render stays a procedural
+ * the First shot sample's still and draft, and the Nocturne ad, a finished project with its takes, finals, music, title
+ * cards and export. A sample asset's path is `sample:<file under public/demo>`. Every other render stays a procedural
  * `mock:` picture, so a prompt the samples never saw never gets a real but unrelated picture.
  */
 
@@ -23,12 +24,12 @@ export function sampleUrl(path: string): string {
 /** The lighthouse the First shot sample made on an RTX 2080 Super. */
 export const firstShot = fixture.firstShot;
 
-/** The Croissant ad, as the engine saved it on the DGX Spark that made it. */
-export function croissantProject(): Project {
-  return ProjectSchema.parse(structuredClone(fixture.croissant));
+/** The Nocturne ad, as the engine saved it on the DGX Spark that made it. */
+export function sampleAd(): Project {
+  return ProjectSchema.parse(structuredClone(fixture.ad));
 }
 
-const croissant = croissantProject();
+const ad = sampleAd();
 
 /** A recorded shot: its prompt, then the still, drafts and same-take final made from that prompt. */
 interface SampleShot {
@@ -42,9 +43,9 @@ const pick = (a: Asset | undefined) => (a ? { path: a.path, width: a.width, heig
 
 const shots: SampleShot[] = [
   { prompt: firstShot.prompt, still: firstShot.still, drafts: [firstShot.draft] },
-  ...croissant.shots.map((shot: Shot): SampleShot => {
-    const asset = (id: string | undefined) => croissant.assets.find((a) => a.id === id);
-    const takes = croissant.takes.filter((t) => t.shotId === shot.id);
+  ...ad.shots.map((shot: Shot): SampleShot => {
+    const asset = (id: string | undefined) => ad.assets.find((a) => a.id === id);
+    const takes = ad.takes.filter((t) => t.shotId === shot.id);
     return {
       prompt: shot.prompt,
       still: pick(asset(shot.stillAssetId))!,
@@ -69,17 +70,47 @@ export function sampleForDraft(path: string | undefined): SampleShot | undefined
   return isSamplePath(path) ? shots.find((s) => s.drafts.some((d) => d.path === path)) : undefined;
 }
 
-/** The export The Croissant ad made, for its cut as it was recorded. */
-export const croissantExport = croissant.assets.find((a) => a.role === "export")!;
+/** The export the Nocturne ad made, for its cut as it was recorded. */
+export const sampleAdExport = ad.assets.find((a) => a.role === "export")!;
 
 /**
- * Whether a project still has the cut it was recorded with: the same shots in the same clips. Then the mock keeps that
- * timeline (trims, voice lines, overlays) instead of laying out its own, and its export is the real one.
+ * The cut The Croissant ad was recorded with (trims, voice lines, overlays), while the project still has what it was
+ * cut from: the same shots on the timeline with the same picks, and the recorded song and voice as the cut picks them
+ * (the soundtrack's pick, else the newest of the role). Then the mock lays out this cut instead of its own, and while
+ * it is not edited by hand its export is the real one. It depends only on those inputs, so a card waiting on a board
+ * changes nothing, and picking the recorded version again brings the recorded cut back. Undefined otherwise.
  */
-export function keepsRecordedCut(p: Project, recorded: readonly string[]): boolean {
-  if (!recorded.includes(p.id) || !p.timeline) return false;
-  const original = croissant.timeline;
-  if (p.id !== croissant.id || !original) return false;
-  const picks = (q: Project) => q.shots.map((s) => `${s.id}:${s.chosenDraftId}:${s.chosenFinalId}`).join(",");
-  return picks(p) === picks(croissant) && JSON.stringify(p.timeline.clips) === JSON.stringify(original.clips);
+/**
+ * Whether a recorded project's cut is the one it exported: the same picks, clips and sound as recorded. Then the mock
+ * exports the recorded film. A hand-edited cut (the Nocturne ad's is one) holds its clips when a pick changes, so the
+ * picks are checked as well as the clips.
+ */
+export function playsRecordedCut(p: Project, recorded: readonly string[]): boolean {
+  const original = ad.timeline;
+  if (!recorded.includes(p.id) || p.id !== ad.id || !original || !p.timeline) return false;
+  const picks = (q: Project) =>
+    q.shots
+      .filter((s) => s.onTimeline !== false)
+      .sort((a, b) => a.index - b.index)
+      .map((s) => `${s.id}:${s.chosenDraftId}:${s.chosenFinalId}:${s.useStill ? "still" : ""}`)
+      .join(",");
+  const same = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b);
+  // Which song and voice play, not their levels: a track put back after another comes back at the default level.
+  const tracks = (audio: Timeline["audio"]) => audio.map((a) => `${a.role}:${a.assetId}`).sort();
+  return picks(p) === picks(ad) && same(p.timeline.clips, original.clips) && same(tracks(p.timeline.audio), tracks(original.audio));
+}
+
+export function recordedCut(p: Project, recorded: readonly string[]): Timeline | undefined {
+  const original = ad.timeline;
+  if (!recorded.includes(p.id) || p.id !== ad.id || !original) return undefined;
+  const picks = (q: Project) =>
+    q.shots
+      .filter((s) => s.onTimeline !== false)
+      .sort((a, b) => a.index - b.index)
+      .map((s) => `${s.id}:${s.chosenDraftId}:${s.chosenFinalId}:${s.useStill ? "still" : ""}`)
+      .join(",");
+  const sound = (["music", "voice"] as const).every((role) => (soundPick(p, role) ?? undefined) === original.audio.find((a) => a.role === role)?.assetId);
+  if (!sound || picks(p) !== picks(ad)) return undefined;
+  // In the caption style the user chose: a style change is not an edit.
+  return { ...structuredClone(original), style: p.timeline?.style ?? original.style };
 }

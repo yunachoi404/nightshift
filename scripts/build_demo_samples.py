@@ -3,19 +3,20 @@
 The browser demo (apps/web, `VITE_NIGHTSHIFT_API=demo`) replays real renders where it has them:
 
 - the First shot sample, the lighthouse made by the onboarding on an RTX 2080 Super (`nvidia-8`);
-- The Croissant ad, a finished five-shot product ad made on a DGX Spark (`unified-128-cuda`), with its takes,
-  same-take finals, voice, music, word-timed captions and its 15-second export.
+- the Nocturne ad, a finished five-shot product ad for headphones, danced by Rae (a generated person), made on a DGX
+  Spark (`unified-128-cuda`), with its takes, same-take finals, music, title cards and its 15-second export.
 
 It writes small copies to apps/web/public/demo/ and the projects, with their real prompts, picks and timeline, to
-apps/web/src/api/mock/samples.json. Stills and videos are scaled down and the takes lose their sound (the app never
-plays a take's own sound outside an export), so the whole set stays near 2.5 MB.
+apps/web/src/api/mock/samples.json. Only the drafts made from each shot's current still are kept, with the picked
+finals. Stills and videos are scaled down and the takes lose their sound (the app never plays a take's own sound
+outside an export), so the whole set stays near 2.5 MB.
 
     uv run --no-project --python 3.12 python scripts/build_demo_samples.py \\
-      --croissant outputs/launch/app-data/projects/prj_mvt6si0o96caf3677a \\
+      --ad outputs/launch/app-data-v4/projects/prj_mvubmpa02f6e677062 \\
       --first-shot outputs/duck-e2e/sample/projects/prj_mvtdhcrw8563b561ae
 
 Both folders are engine project folders (project.json and assets/). They live in the gitignored outputs/ folder of
-the checkout that made them. Needs ffmpeg.
+the checkout that made them. They are only read. Needs ffmpeg.
 """
 import argparse
 import json
@@ -26,6 +27,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 PUBLIC = ROOT / "apps/web/public/demo"
 FIXTURE = ROOT / "apps/web/src/api/mock/samples.json"
+# The ad's folder under public/demo.
+AD = "nocturne"
 
 VIDEO = ["-c:v", "libx264", "-preset", "veryslow", "-pix_fmt", "yuv420p", "-movflags", "+faststart"]
 
@@ -50,15 +53,18 @@ def export_video(src: Path, dst: Path) -> None:
     ffmpeg("-i", str(src), "-vf", "scale=854:-2:flags=lanczos", *VIDEO, "-crf", "30", "-c:a", "aac", "-b:a", "80k", str(dst))
 
 
-def croissant(folder: Path) -> dict:
+def ad(folder: Path) -> dict:
     project = json.loads((folder / "project.json").read_text())
-    out = PUBLIC / "croissant"
+    out = PUBLIC / AD
     shutil.rmtree(out, ignore_errors=True)
     out.mkdir(parents=True)
     assets = {a["id"]: a for a in project["assets"]}
     shots = sorted(project["shots"], key=lambda s: s["index"])
     finals = {s["chosenFinalId"] for s in shots}
-    takes = [t for t in project["takes"] if t["rung"] == "draft" or t["id"] in finals]
+    stills = {s["id"]: s["stillAssetId"] for s in shots}
+    # A draft made from a still the shot has since redrawn shows another picture: only the current still's drafts.
+    current = lambda t: t.get("imageAssetId", stills[t["shotId"]]) == stills[t["shotId"]]
+    takes = [t for t in project["takes"] if (t["rung"] == "draft" and current(t)) or t["id"] in finals]
     keep: dict[str, dict] = {}
 
     def add(asset_id: str, name: str) -> None:
@@ -71,20 +77,20 @@ def croissant(folder: Path) -> dict:
         elif kind == "image":
             file = f"{name}.jpg"
             still(src, out / file, 400 if role == "reference" else 640)
-            a["path"] = f"sample:croissant/{file}"
+            a["path"] = f"sample:{AD}/{file}"
         elif kind == "audio":
             file = f"{name}.m4a"
             audio(src, out / file, 96 if role == "music" else 64, mono=role != "music")
-            a["path"] = f"sample:croissant/{file}"
+            a["path"] = f"sample:{AD}/{file}"
         elif role == "export":
             file = f"{name}.mp4"
             export_video(src, out / file)
-            a["path"] = f"sample:croissant/{file}"
+            a["path"] = f"sample:{AD}/{file}"
         else:
             file = f"{name}.mp4"
             final = any(t["videoAssetId"] == asset_id and t["rung"] == "final" for t in takes)
             silent_video(src, out / file, 768 if final else 512, 31)
-            a["path"] = f"sample:croissant/{file}"
+            a["path"] = f"sample:{AD}/{file}"
         keep[asset_id] = a
 
     for n, ref in enumerate(project.get("references", []), 1):
@@ -133,10 +139,10 @@ def first_shot(folder: Path) -> dict:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("--croissant", type=Path, required=True)
+    parser.add_argument("--ad", type=Path, required=True)
     parser.add_argument("--first-shot", type=Path, required=True)
     args = parser.parse_args()
-    fixture = {"firstShot": first_shot(args.first_shot), "croissant": croissant(args.croissant)}
+    fixture = {"firstShot": first_shot(args.first_shot), "ad": ad(args.ad)}
     FIXTURE.write_text(json.dumps(fixture, indent=2) + "\n")
     total = sum(f.stat().st_size for f in PUBLIC.rglob("*") if f.is_file())
     print(f"{FIXTURE.relative_to(ROOT)} and {PUBLIC.relative_to(ROOT)}: {total / 1e6:.2f} MB")

@@ -17,7 +17,13 @@ const ALIASES: Record<string, string[]> = {
 
 export type ModelDirs = Map<string, string[]>;
 
-function expand(p: string): string {
+/** A recipe folder and the same folder under ComfyUI's other name for its top level: "clip/x" for "text_encoders/x". */
+export function folderNames(folder: string): string[] {
+  const [top = "", ...rest] = folder.split("/");
+  return [folder, ...(ALIASES[top] ?? []).map((alias) => [alias, ...rest].join("/"))];
+}
+
+export function expand(p: string): string {
   return p.replace(/^~(?=$|[/\\])/, homedir()).replace(/\$\{?([A-Za-z_][A-Za-z0-9_]*)\}?/g, (_, name: string) => process.env[name] ?? "");
 }
 

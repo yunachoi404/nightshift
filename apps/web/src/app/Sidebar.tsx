@@ -1,5 +1,5 @@
 import type { Project } from "@nightshift/contract";
-import { Film, Gpu, ListTodo, Plus, Settings as SettingsIcon, X } from "lucide-react";
+import { Film, Gpu, ListTodo, PanelLeftClose, PanelLeftOpen, Plus, Settings as SettingsIcon, X } from "lucide-react";
 import { useState } from "react";
 import { Link, NavLink, useLocation } from "react-router";
 import { useEngine, useEngineState, useJobs, useProjectList } from "@/store/engine";
@@ -9,8 +9,27 @@ import { Button, cx } from "@/ui/primitives";
 import { TemplateIcon } from "@/features/project/TemplateIcon";
 import { clock, gb } from "@/lib/format";
 import { useThisMachine } from "@/store/tier";
+import { sidebarShortcut } from "./useSidebar";
 
-export function Sidebar() {
+/** Opens or closes the sidebar. In the sidebar's title strip when it is open, first in the toolbar when it is not. */
+export function SidebarToggle({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => void }) {
+  const label = collapsed ? "Show sidebar" : "Hide sidebar";
+  return (
+    <Button
+      variant="toolbar"
+      iconOnly
+      icon={collapsed ? <PanelLeftOpen /> : <PanelLeftClose />}
+      aria-label={label}
+      aria-controls="app-sidebar"
+      title={`${label} (${sidebarShortcut()})`}
+      className="side-toggle"
+      data-sidebar-toggle=""
+      onClick={onToggle}
+    />
+  );
+}
+
+export function Sidebar({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => void }) {
   const projects = useProjectList();
   const jobs = useJobs();
   const loc = useLocation();
@@ -19,15 +38,17 @@ export function Sidebar() {
   const running = jobs.some((j) => j.status === "running");
 
   return (
-    <aside className="sidebar" aria-label="Sidebar">
-      <div className="sidebar__top drag" />
+    <aside id="app-sidebar" className="sidebar" aria-label="Sidebar" inert={collapsed} aria-hidden={collapsed || undefined}>
+      <div className="sidebar__top drag">
+        <SidebarToggle collapsed={false} onToggle={onToggle} />
+      </div>
       <nav className="sidebar__list">
         <div className="side__head">Projects</div>
-        {projects.length === 0 && <div className="side__empty">Nothing yet. Start with a template.</div>}
+        {projects.length === 0 && <div className="side__empty">Nothing yet. Start a project.</div>}
         {projects.map((p) => (
           <ProjectItem key={p.id} project={p} current={loc.pathname.startsWith(`/p/${p.id}`)} />
         ))}
-        <Link to="/new" className="side__item side__item--project" aria-current={loc.pathname === "/new" ? "page" : undefined}>
+        <Link to="/new" className="side__item side__item--new" aria-current={loc.pathname === "/new" ? "page" : undefined}>
           <Plus />
           <span className="side__label">New project</span>
         </Link>

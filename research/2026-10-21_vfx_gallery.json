@@ -1,14 +1,15 @@
 {
   "disintegrate": {
-    "run": "person-disintegrate",
-    "posterFrame": 24
+    "clip": "showcase-v2/fx-disintegrate-final.mp4",
+    "center": 0.47,
+    "posterFrame": 22
   },
   "freeze": {
-    "run": "product-freeze",
+    "clip": "showcase-v2/fx-freeze-final.mp4",
     "posterFrame": 96
   },
   "ignite": {
-    "run": "statue-ignite",
+    "clip": "showcase-v2/fx-ignite-final.mp4",
     "posterFrame": 96
   },
   "bloom": {
@@ -16,7 +17,7 @@
     "posterFrame": 96
   },
   "gold": {
-    "run": "product-gold",
+    "clip": "showcase-v2/fx-gold-final.mp4",
     "posterFrame": 96
   },
   "crystal": {
@@ -24,7 +25,8 @@
     "posterFrame": 96
   },
   "levitate": {
-    "run": "product-levitate",
+    "clip": "showcase-v2/fx-levitate-final.mp4",
+    "center": 0.45,
     "posterFrame": 96
   },
   "earth_zoom": {
@@ -36,7 +38,7 @@
     "posterFrame": 48
   },
   "explode": {
-    "run": "statue-explode",
-    "posterFrame": 24
+    "clip": "showcase-v2/fx-shatter-gold-final.mp4",
+    "posterFrame": 48
   }
 }

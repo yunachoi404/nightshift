@@ -1,9 +1,16 @@
+/* The editor: the media sidebar on the left, then the player and the inspector over the timeline. */
 .ed {
   flex: 1;
   min-height: 0;
   display: grid;
-  grid-template-rows: minmax(0, 1fr) auto;
+  grid-template-columns: var(--ed-media-w, 240px) minmax(0, 1fr);
   overflow: hidden;
+}
+.ed__main {
+  min-width: 0;
+  min-height: 0;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
 }
 .ed__top {
   display: grid;
@@ -20,6 +27,11 @@
 :root[data-theme="dark"] .ed__stage {
   --viewer: #09090a;
 }
+/* The viewer takes focus on open so Space plays. It is not a control, so it draws no ring. */
+.ed__stage:focus-visible {
+  box-shadow: none;
+  border-radius: 0;
+}
 .ed__preview {
   flex: 1;
   min-height: 0;
@@ -28,6 +40,8 @@
   justify-content: center;
   padding: 20px 24px 14px;
   container-type: size;
+  /* The frame's shadow stays in the dark viewer instead of hazing the light panels beside it. */
+  overflow: hidden;
 }
 /* The frame is as large as the viewer allows in either direction, never distorted. */
 .ed__preview .frame {
@@ -99,77 +113,115 @@
   container-type: inline-size;
 }
 
-/* captions overlay */
-.cap {
+/* captions: the export's looks (CaptionPreview.tsx), sized in units of the frame */
+.cpv-frame {
   position: absolute;
-  left: 6%;
-  right: 6%;
-  display: flex;
-  justify-content: center;
-  text-align: center;
+  inset: 0;
+  container-type: size;
   pointer-events: none;
 }
-.cap--bottom {
-  bottom: 8%;
+.cpv {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+  font-size: var(--cpv-size);
+  color: var(--cpv-text);
+  -webkit-font-smoothing: antialiased;
 }
-.cap--center {
-  top: 50%;
-  transform: translateY(-50%);
-}
-.cap__text {
-  display: inline;
-  padding: 0.25em 0.6em;
-  border-radius: 0.3em;
-  font-size: var(--cap-size, 28px);
-  line-height: 1.25;
-  font-weight: 600;
-  color: #fff;
-  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.6);
+.cpv-line {
+  display: inline-block;
   max-width: 100%;
+  text-wrap: balance;
 }
-.cap__text--boxed {
-  background: rgba(0, 0, 0, 0.55);
+.cpv-w,
+.cpv-wi {
+  display: inline-block;
 }
-.cap__text--serif {
-  font-family: "Iowan Old Style", "Palatino", Georgia, serif;
-  font-weight: 400;
-  font-style: italic;
-  letter-spacing: 0.01em;
+.cpv-wi {
+  position: relative;
 }
-.cap__word {
-  opacity: 0.55;
-  transition: opacity 80ms linear;
+.cpv--serif {
+  font-weight: 500;
+  line-height: 1.28;
+  letter-spacing: 0.004em;
 }
-.cap__word--on {
-  opacity: 1;
+.cpv--serif .cpv-line {
+  text-shadow: 0 0 0.5em rgba(0, 0, 0, 0.45), 0 0.04em 0.12em rgba(0, 0, 0, 0.5);
 }
-.cap__word--lamp.cap__word--on {
-  color: #ffc876;
+.cpv--clean {
+  font-weight: 700;
+  line-height: 1.08;
+  letter-spacing: -0.022em;
+}
+.cpv--clean .cpv-line {
+  filter: drop-shadow(0 0.02em 0.04em rgba(0, 0, 0, 0.4)) drop-shadow(0 0.04em 0.45em rgba(0, 0, 0, 0.34));
+}
+.cpv--clean .cpv-w {
+  overflow: hidden;
+  padding: 0.1em 0.06em 0.2em;
+  margin: -0.1em -0.06em -0.2em;
+  vertical-align: top;
+}
+.cpv-wf {
+  position: absolute;
+  left: -0.04em;
+  top: -0.2em;
+  padding: 0.2em 0.04em;
+  color: var(--cpv-accent);
+  white-space: nowrap;
+  mask-image: linear-gradient(90deg, #000 0%, #000 42%, transparent 58%, transparent 100%);
+  mask-size: 300% 100%;
+  mask-repeat: no-repeat;
+}
+.cpv--boxed {
+  font-weight: 640;
+  line-height: 1.22;
+  letter-spacing: -0.012em;
+  word-spacing: 0.1em;
+  font-variation-settings: "wdth" 108;
+}
+.cpv--boxed .cpv-line {
+  position: relative;
+  isolation: isolate;
+  padding: 0.31em 0.55em 0.33em;
+  border-radius: 0.36em;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0) 60%), var(--cpv-scrim);
+  backdrop-filter: blur(0.6em) saturate(1.4);
+  box-shadow: inset 0 0 0 0.03em rgba(255, 255, 255, 0.1), 0 0.15em 0.8em rgba(0, 0, 0, 0.2);
+}
+.cpv--boxed .cpv-wi {
+  transition: color 160ms cubic-bezier(0.65, 0, 0.35, 1);
+}
+.cpv--boxed .cpv-on .cpv-wi {
+  color: var(--cpv-accent-text);
+}
+.cpv-hl {
+  position: absolute;
+  z-index: -1;
+  border-radius: 0.22em;
+  background: var(--cpv-accent);
+  transition: left 160ms cubic-bezier(0.65, 0, 0.35, 1), top 160ms cubic-bezier(0.65, 0, 0.35, 1), width 160ms cubic-bezier(0.65, 0, 0.35, 1), height 160ms cubic-bezier(0.65, 0, 0.35, 1), opacity 120ms ease-out;
+}
+.cpv--lyrics {
+  font-weight: 800;
+  line-height: 0.94;
+  letter-spacing: -0.012em;
+  font-variation-settings: "wdth" 75;
+}
+.cpv--lyrics .cpv-line {
+  filter: drop-shadow(0 0.02em 0.04em rgba(0, 0, 0, 0.3)) drop-shadow(0 0.03em 0.3em rgba(0, 0, 0, 0.3));
+}
+.cpv--lyrics .cpv-wi {
+  transform-origin: 50% 60%;
+}
+.cpv--upper {
+  text-transform: uppercase;
 }
 
-/* inspector: one column that scrolls as a whole. Export is the last section, in the same rhythm as the rest.
-   In a tall enough window it stays in view at the foot of the column while the rest scrolls under it. */
+/* inspector: Captions, then Export, in one column that scrolls as a whole. */
 .ed__side {
   min-height: 0;
-  container-type: size;
-}
-.insp__export {
-  margin-top: auto;
-  border-top: 1px solid var(--line);
-  border-bottom: 0;
-}
-.insp:has(+ .insp__export) {
-  border-bottom: 0;
-}
-/* The export stays in reach at the foot of a tall inspector. A shorter one scrolls, so the captions, music and
-   voice sections above it are never covered. */
-@container (min-height: 760px) {
-  .insp__export {
-    position: sticky;
-    bottom: 0;
-    background: var(--inset);
-    z-index: 1;
-  }
 }
 .insp__row .insp__voice {
   flex: 1;
@@ -222,11 +274,12 @@
   justify-self: start;
   margin-top: 2px;
 }
-/* timeline */
+/* timeline: a ruler, then the Shots, Music, Voice and Captions lanes */
 .tl {
+  --tl-rows: 24px 72px 36px 36px 32px;
   height: 224px;
   display: grid;
-  grid-template-columns: 88px minmax(0, 1fr);
+  grid-template-columns: 112px minmax(0, 1fr);
   background: var(--inset);
   border-top: 1px solid var(--line);
   user-select: none;
@@ -234,12 +287,14 @@
 .tl__labels {
   border-right: 1px solid var(--line);
   display: grid;
-  grid-template-rows: 24px 72px 32px 32px 32px;
+  grid-template-rows: var(--tl-rows);
 }
 .tl__label {
+  position: relative;
   display: flex;
   align-items: center;
-  padding: 0 10px;
+  gap: 4px;
+  padding: 0 6px 0 10px;
   font-size: var(--fs-micro);
   font-weight: 600;
   color: var(--text-3);
@@ -248,6 +303,36 @@
 /* The corner above the labels sits on the ruler's row and shares its background. */
 .tl__label:first-child {
   background: var(--content);
+}
+.tl__label-name {
+  flex: 1;
+  min-width: 0;
+}
+.tl__label-actions {
+  display: flex;
+  gap: 2px;
+}
+/* Small square lane buttons: make a song or a voiceover, take one off, dismiss a failure. */
+.tl__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  flex: none;
+  border-radius: 6px;
+  color: var(--text-3);
+  transition: background-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease);
+}
+.tl__icon:hover,
+.tl__icon--on {
+  background: var(--hover);
+  color: var(--text);
+}
+.tl__icon svg {
+  width: 13px;
+  height: 13px;
+  stroke-width: 2;
 }
 .tl__scroll {
   overflow-x: auto;
@@ -258,7 +343,7 @@
   position: relative;
   min-width: 100%;
   display: grid;
-  grid-template-rows: 24px 72px 32px 32px 32px;
+  grid-template-rows: var(--tl-rows);
 }
 .tl__ruler {
   position: relative;
@@ -281,9 +366,16 @@
 .tl__track {
   position: relative;
   border-bottom: 1px solid var(--line);
+  transition: background-color var(--t-fast) var(--ease);
 }
+/* A lane a card is dragged over: the active drop target. */
+.tl__track--drop {
+  background: var(--banana-soft);
+}
+/* The last tick's label sits left of its line, and its box takes no room, so the timeline never scrolls for it. */
 .tl__tick--end {
   padding-left: 0;
+  width: 0;
 }
 .tl__tick--end > span {
   transform: translateX(calc(-100% - 4px));
@@ -296,17 +388,64 @@
   overflow: hidden;
   background: var(--media);
   box-shadow: inset 0 0 0 1px var(--line-strong);
-  display: flex;
-  transition: box-shadow var(--t-fast) var(--ease);
+  transition: box-shadow var(--t-fast) var(--ease), opacity var(--t-fast) var(--ease);
 }
 .tl__clip:hover {
   box-shadow: inset 0 0 0 1px var(--text-3);
 }
+/* The clip under the playhead is the active one; a clip with keyboard focus shows the focus ring. */
 .tl__clip--on {
-  box-shadow: inset 0 0 0 1px var(--content), 0 0 0 2px var(--accent);
+  box-shadow: inset 0 0 0 1px var(--content), 0 0 0 2px var(--banana-line);
 }
-.tl__clip:focus-visible {
-  box-shadow: inset 0 0 0 1px var(--content), 0 0 0 2px var(--accent);
+.tl__clip:has(.tl__clip-body:focus-visible) {
+  box-shadow: inset 0 0 0 1px var(--content), var(--focus);
+}
+.tl__clip--dragging {
+  opacity: 0.4;
+}
+.tl__clip-body {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  overflow: hidden;
+  border-radius: inherit;
+  cursor: grab;
+}
+.tl__clip-body:active {
+  cursor: grabbing;
+}
+.tl__clip-body:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+/* Takes the clip off the timeline. On hover or focus, in the clip's corner. */
+.tl__clip-x {
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 5px;
+  background: rgba(20, 20, 22, 0.75);
+  color: #fff;
+  opacity: 0;
+  transition: opacity var(--t-fast) var(--ease), background-color var(--t-fast) var(--ease);
+}
+.tl__clip-x svg {
+  width: 12px;
+  height: 12px;
+  stroke-width: 2.4;
+}
+.tl__clip:hover .tl__clip-x,
+.tl__clip-x:focus-visible,
+.tl__clip:has(.tl__clip-body:focus-visible) .tl__clip-x {
+  opacity: 1;
+}
+.tl__clip-x:hover {
+  background: rgba(20, 20, 22, 0.95);
 }
 .tl__filmstrip {
   height: 100%;
@@ -329,6 +468,34 @@
 }
 .tl__clip-label--final {
   color: #ffc876;
+}
+/* Where a dragged card lands: a bar between the clips with a cap at each end. */
+.tl__insert {
+  position: absolute;
+  top: 2px;
+  bottom: 2px;
+  width: 2px;
+  margin-left: -2px;
+  border-radius: 1px;
+  background: var(--banana-line);
+  pointer-events: none;
+  z-index: 3;
+}
+.tl__insert::before,
+.tl__insert::after {
+  content: "";
+  position: absolute;
+  left: -3px;
+  width: 8px;
+  height: 2px;
+  border-radius: 1px;
+  background: var(--banana-line);
+}
+.tl__insert::before {
+  top: 0;
+}
+.tl__insert::after {
+  bottom: 0;
 }
 .tl__audio {
   position: absolute;
@@ -401,9 +568,87 @@
   inset: 0;
   display: flex;
   align-items: center;
+  gap: 6px;
   padding: 0 10px 0 22px;
   font-size: var(--fs-micro);
   color: var(--text-4);
+  white-space: nowrap;
+  pointer-events: none;
+}
+.tl__empty--sound {
+  padding-left: 18px;
+}
+/* The empty lane's own way to make a song or a voiceover. */
+.tl__make {
+  pointer-events: auto;
+  height: 22px;
+  padding: 0 9px;
+  border-radius: var(--r-pill);
+  font-size: var(--fs-micro);
+  font-weight: 600;
+  color: var(--text-2);
+  background: var(--btn-bg);
+  box-shadow: inset 0 0 0 1px var(--btn-line);
+  transition: background-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease);
+}
+.tl__make:hover {
+  background: var(--btn-bg-hover);
+  color: var(--text);
+}
+/* A song or voiceover being made, or one that failed, on its lane. */
+.tl__note {
+  position: absolute;
+  top: 5px;
+  bottom: 5px;
+  left: 18px;
+  max-width: calc(100% - 26px);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 4px 0 10px;
+  border-radius: 6px;
+  background: var(--raised);
+  box-shadow: inset 0 0 0 1px var(--line-strong);
+  font-size: var(--fs-micro);
+  color: var(--text-2);
+  z-index: 1;
+}
+.tl__note-text {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.tl__note-text b {
+  font-weight: 600;
+  color: var(--text);
+}
+.tl__note-bar {
+  width: 72px;
+  flex: none;
+  margin-right: 6px;
+}
+.tl__note--ready {
+  padding-right: 10px;
+}
+.tl__note--bad {
+  background: var(--raised);
+  box-shadow: inset 0 0 0 1px var(--bad-line);
+}
+.tl__note--bad .tl__note-text b {
+  color: var(--bad);
+}
+.tl__note-icon {
+  width: 13px;
+  height: 13px;
+  flex: none;
+  color: var(--bad);
+}
+.tl__note .btn {
+  --btn-h: 22px;
+  --btn-px: 8px;
+  flex: none;
+  font-size: var(--fs-micro);
 }
 .tl__head {
   position: absolute;
@@ -426,4 +671,393 @@
 .insp__framing {
   width: auto;
   max-width: 200px;
+}
+
+/* The popover a lane's + opens, beside the lane label, rising over the timeline. */
+.lane-pop {
+  position: absolute;
+  left: calc(100% + 6px);
+  bottom: 2px;
+  z-index: 30;
+  width: 340px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  border-radius: var(--r-m);
+  background: var(--raised);
+  background-image: var(--sheen);
+  box-shadow: var(--panel-shadow);
+  font-size: var(--fs-small);
+  font-weight: 400;
+  color: var(--text);
+  user-select: text;
+  cursor: default;
+  animation: menu-in var(--t-fast) var(--ease-out);
+}
+.lane-pop__title {
+  font-size: var(--fs-body);
+  font-weight: 600;
+}
+.lane-pop .textarea {
+  font-size: var(--fs-small);
+  min-height: 64px;
+}
+.lane-pop__text {
+  color: var(--text-3);
+  line-height: var(--lh-small);
+}
+.lane-pop__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.lane-pop__voice {
+  flex: 1;
+  width: 0;
+  min-width: 0;
+  min-height: 26px;
+  padding: 3px 24px 3px 7px;
+  font-size: var(--fs-small);
+}
+.lane-pop .notice {
+  padding: 10px 12px;
+}
+
+/* the player before anything is on the timeline: a quiet drop zone in the film's shape */
+/* The player is always dark, so a card held over it rings the frame in white. */
+.ed__preview--drop .frame {
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.55), 0 20px 60px rgba(0, 0, 0, 0.45);
+}
+.ed__preview .ed__blank {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  box-shadow: none;
+  border: 1px dashed rgba(255, 255, 255, 0.18);
+  border-radius: var(--r-s);
+  max-height: 100%;
+}
+.ed__preview--drop .ed__blank {
+  border-color: rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.04);
+  box-shadow: none;
+}
+.ed__blank-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 16px;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.62);
+  font-size: var(--fs-body);
+}
+.ed__blank-icon {
+  width: 28px;
+  height: 28px;
+  stroke-width: 1.4;
+  color: rgba(255, 255, 255, 0.36);
+  margin-bottom: 4px;
+}
+.ed__blank-title {
+  font-family: var(--font-display);
+  font-size: var(--fs-title-3);
+  line-height: var(--lh-title-3);
+  color: #fff;
+}
+.ed__blank-link {
+  margin-top: 6px;
+  color: #fff;
+  font-weight: 500;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: rgba(255, 255, 255, 0.4);
+}
+
+/* media sidebar: the boards as small groups of cards to drag onto the timeline */
+.edm {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid var(--line);
+  background: var(--inset);
+}
+.edm__head {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 40px;
+  padding: 0 12px 0 14px;
+  border-bottom: 1px solid var(--line);
+}
+.edm__title {
+  font-weight: 600;
+  font-size: var(--fs-body);
+}
+.edm__open {
+  font-size: var(--fs-small);
+  color: var(--text-3);
+}
+.edm__open:hover {
+  color: var(--text);
+}
+.edm__scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 6px 10px 14px;
+}
+.edm__none {
+  padding: 10px 4px;
+  color: var(--text-3);
+  font-size: var(--fs-small);
+  line-height: var(--lh-small);
+}
+.edm__none a {
+  color: var(--text);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.edm__none--board {
+  padding: 2px 4px 6px 26px;
+}
+.edm__tip {
+  padding: 8px 4px 0;
+  color: var(--text-4);
+  font-size: var(--fs-micro);
+  line-height: var(--lh-micro);
+}
+.edm__board + .edm__board {
+  margin-top: 4px;
+}
+.edm__board-head {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: 30px;
+  padding: 0 4px 0 0;
+  border-radius: var(--r-s);
+  cursor: grab;
+}
+.edm__board-head:hover {
+  background: var(--hover);
+}
+.edm__board-head:active {
+  cursor: grabbing;
+}
+.edm__toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  flex: none;
+  border-radius: 6px;
+  color: var(--text-3);
+}
+.edm__chev {
+  width: 13px;
+  height: 13px;
+  stroke-width: 2.2;
+  transition: transform var(--t-fast) var(--ease);
+}
+.edm__chev--open {
+  transform: rotate(90deg);
+}
+.edm__board-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: var(--fs-small);
+  font-weight: 600;
+}
+.edm__count {
+  font-size: var(--fs-micro);
+  color: var(--text-4);
+  font-variant-numeric: tabular-nums;
+}
+.edm__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px 8px;
+  padding: 4px 0 8px;
+}
+.edm__grid--tall {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.edm__card {
+  min-width: 0;
+  cursor: grab;
+}
+.edm__card:active {
+  cursor: grabbing;
+}
+.edm__frame {
+  border-radius: var(--r-frame);
+  transition: box-shadow var(--t-fast) var(--ease);
+}
+.edm__card:hover .edm__frame {
+  box-shadow: inset 0 0 0 1px var(--line-strong), 0 0 0 2px var(--accent-line);
+}
+.edm__frame > .tl__filmstrip {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.edm__label {
+  margin-top: 4px;
+  font-size: var(--fs-micro);
+  line-height: var(--lh-micro);
+  color: var(--text-2);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.edm__card--on .edm__label {
+  color: var(--text);
+}
+/* On the timeline: a small ink check in the top right corner. */
+.edm__mark {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--accent);
+  color: var(--on-accent);
+  box-shadow: 0 0 0 1.5px var(--raised);
+}
+.edm__mark svg {
+  width: 10px;
+  height: 10px;
+  stroke-width: 3;
+}
+.edm__final {
+  position: absolute;
+  left: 4px;
+  bottom: 4px;
+  height: 16px;
+  padding: 0 5px;
+  font-size: 10px;
+}
+.edm__busy {
+  position: absolute;
+  left: 6px;
+  top: 6px;
+}
+/* Adds a card to the end of the timeline. Shown on hover and keyboard focus. */
+.edm__add {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  background: rgba(20, 20, 22, 0.75);
+  color: #fff;
+  opacity: 0;
+  transition: opacity var(--t-fast) var(--ease), background-color var(--t-fast) var(--ease);
+}
+.edm__add svg {
+  width: 13px;
+  height: 13px;
+  stroke-width: 2.4;
+}
+.edm__card:hover .edm__add,
+.edm__add:focus-visible {
+  opacity: 1;
+}
+.edm__add:hover {
+  background: rgba(20, 20, 22, 0.95);
+}
+.edm__sound {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 36px;
+  margin: 0 0 4px;
+  padding: 0 6px 0 9px;
+  border-radius: var(--r-s);
+  background: var(--raised);
+  box-shadow: inset 0 0 0 1px var(--line);
+  cursor: grab;
+}
+.edm__sound:hover {
+  box-shadow: inset 0 0 0 1px var(--line-strong);
+}
+.edm__sound-icon {
+  width: 14px;
+  height: 14px;
+  flex: none;
+  color: var(--text-3);
+}
+.edm__sound-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  line-height: 14px;
+}
+.edm__sound-name {
+  font-size: var(--fs-small);
+  font-weight: 500;
+}
+.edm__sound-sub {
+  font-size: var(--fs-micro);
+  color: var(--text-3);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.edm__sound-mark {
+  width: 16px;
+  height: 16px;
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--accent);
+  color: var(--on-accent);
+}
+.edm__sound-mark svg {
+  width: 10px;
+  height: 10px;
+  stroke-width: 3;
+}
+.edm__add--row {
+  position: static;
+  opacity: 1;
+  background: transparent;
+  color: var(--text-3);
+}
+.edm__add--row:hover {
+  background: var(--hover);
+  color: var(--text);
+}
+
+/* The captions switch, kept off until the project has a timeline to hold its style. */
+.insp__switch {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+  display: inline-flex;
+}
+.insp__switch:disabled {
+  opacity: 0.45;
 }

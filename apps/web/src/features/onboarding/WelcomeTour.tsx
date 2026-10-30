@@ -1,44 +1,49 @@
-import { cameraMoves } from "@nightshift/contract";
-import { Check, Clapperboard, Download, Moon, Play, Plus, RectangleHorizontal, RectangleVertical, RefreshCw, SkipBack, Square } from "lucide-react";
+import { Check, Clapperboard, Download, Film, Image as ImageIcon, Moon, Move3d, Play, Plus, RectangleHorizontal, RectangleVertical, RotateCcw, SkipBack, Sparkles, Square, Sun, Video, X } from "lucide-react";
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { cx } from "@/ui/primitives";
 import "./welcome-tour.css";
 import { publicUrl } from "@/lib/publicUrl";
 
 /**
- * The welcome's app window: one real project, Northern Lights, walked through the four stages in order. Every
- * picture is a real render from that project (see public/welcome/README.md); every label is one the app uses.
- * It plays on its own, pauses under the pointer, jumps when a stage is clicked, and holds still on Finals
+ * The welcome's app window: one real project, Northern Lights, walked through the app's two areas. Media first: the
+ * shots as cards on one board, then shot 4's card opened over it, where a second take becomes the pick. Then the
+ * Editor. Every picture is a real render from that project (see public/welcome/README.md); every label is one the app
+ * uses. It plays on its own, pauses under the pointer, jumps when an area is clicked, and holds still on the open card
  * when motion is reduced.
  */
 
-const stages = ["storyboard", "takes", "finals", "editor"] as const;
+const stages = ["media", "card", "editor"] as const;
 type TourStage = (typeof stages)[number];
-const stageLabel: Record<TourStage, string> = { storyboard: "Storyboard", takes: "Takes", finals: "Finals", editor: "Editor" };
+/** The toolbar's two areas. The card opens over the board, so it is part of Media. */
+const areas = ["media", "editor"] as const;
+type Area = (typeof areas)[number];
+const areaLabel: Record<Area, string> = { media: "Media", editor: "Editor" };
+const areaOf = (s: TourStage): Area => (s === "editor" ? "editor" : "media");
 /** The tape on the window, relabeled at each stage the way a camera assistant would. It says what is on screen. */
 function tapeNote(stage: TourStage, picked: boolean): string {
-  if (stage === "storyboard") return "Northern Lights, 7 shots";
-  if (stage === "takes") return picked ? "shot 4, take 2 picked" : "shot 4, two takes";
-  if (stage === "finals") return "shot 1, same take, final";
+  if (stage === "media") return "Northern Lights, one board";
+  if (stage === "card") return picked ? "shot 4, take 2 picked" : "shot 4, two versions";
   return "30 s, ready to export";
 }
 const STAGE_MS = 3800;
 const PICK_MS = 1400;
-/** A stage fades out completely before the next one fades in, so two stages never share a frame. */
+/** A stage fades out completely before the next one fades in, so two areas never share a frame. */
 const FADE_OUT_MS = 180;
 
-/** The project's shots as written: the first sentence of each prompt and its camera move. */
+/** The project's shots as written: the first sentence of each prompt. A card is labeled with it. */
 const shots = [
-  { move: "dolly_in", prompt: "Wide symmetrical opening from the frozen lake surface, looking straight toward the snowy far shore." },
-  { move: "static", prompt: "Almost motionless view through snow-heavy spruce boughs at the extreme left edge, opening onto the same remote frozen northern lake at midnight." },
-  { move: "static", prompt: "Close landscape detail of polished black lake ice, fine white trapped frost lines, and reflected emerald and violet ribbons." },
-  { move: "static", prompt: "Medium close view from the frozen lake of the same small dark wooden cabin at midnight." },
-  { move: "pan_left", prompt: "Low wide angle close to the snow-covered near shore." },
-  { move: "static", prompt: "Locked-off upward view of the green and violet aurora above the same frozen northern lake at midnight." },
-  { move: "dolly_out", prompt: "Closing wide view from farther back along the same frozen shore, tall spruce tree in silhouette at left, broad mirror of black ice below a graceful green aurora arch edged in violet." },
+  "Wide symmetrical opening from the frozen lake surface, looking straight toward the snowy far shore.",
+  "Almost motionless view through snow-heavy spruce boughs at the extreme left edge, opening onto the same remote frozen northern lake at midnight.",
+  "Close landscape detail of polished black lake ice, fine white trapped frost lines, and reflected emerald and violet ribbons.",
+  "Medium close view from the frozen lake of the same small dark wooden cabin at midnight.",
+  "Low wide angle close to the snow-covered near shore.",
+  "Locked-off upward view of the green and violet aurora above the same frozen northern lake at midnight.",
+  "Closing wide view from farther back along the same frozen shore, tall spruce tree in silhouette at left, broad mirror of black ice below a graceful green aurora arch edged in violet.",
 ];
-const moveLabel = (id: string) => cameraMoves.find((c) => c.id === id)?.label ?? "Still camera";
 const still = (n: number) => publicUrl(`welcome/still-${n}.jpg`);
+const take = (n: number, ext: "jpg" | "mp4") => publicUrl(`welcome/take-${n}.${ext}`);
+/** The shot whose card opens: its two takes are the project's real drafts, the second one picked and finished. */
+const OPENED = 4;
 
 /** The edit's cuts in seconds, shot by shot, as the project's timeline has them. */
 const cuts: Array<[shot: number, start: number, length: number]> = [
@@ -76,8 +81,8 @@ function useReducedMotion(): boolean {
 
 export function WelcomeTour() {
   const reduced = useReducedMotion();
-  // `at` is the stage the switch points to; `shown` is the one on screen, which follows once the last has faded.
-  const [at, setAt] = useState<TourStage>(reduced ? "finals" : "storyboard");
+  // `at` is the stage the tour is on; `shown` is the one on screen, which follows once the last has faded.
+  const [at, setAt] = useState<TourStage>(reduced ? "card" : "media");
   const [shown, setShown] = useState<TourStage>(at);
   const [leaving, setLeaving] = useState(false);
   const [held, setHeld] = useState(false);
@@ -86,12 +91,13 @@ export function WelcomeTour() {
   const [picked, setPicked] = useState(reduced);
 
   useEffect(() => {
-    if (reduced) setAt("finals");
+    if (reduced) setAt("card");
   }, [reduced]);
 
+  // Between areas the old one fades out first. Within Media the board stays put and only the card opens or closes.
   useEffect(() => {
     if (at === shown) return setLeaving(false);
-    if (reduced) return setShown(at);
+    if (reduced || areaOf(at) === areaOf(shown)) return setShown(at);
     setLeaving(true);
     const t = window.setTimeout(() => {
       setShown(at);
@@ -106,11 +112,12 @@ export function WelcomeTour() {
     return () => window.clearTimeout(t);
   }, [at, held, reduced, jumps]);
 
-  // On Takes, the first take starts picked, as the app picks it; a beat later the second one is picked.
+  // On the board, shot 4's first take is its pick, as the app picks it. A beat after its card opens, the second is.
   useEffect(() => {
-    if (shown !== "takes") return;
     if (reduced) return setPicked(true);
+    if (shown === "editor") return;
     setPicked(false);
+    if (shown !== "card") return;
     const t = window.setTimeout(() => setPicked(true), PICK_MS);
     return () => window.clearTimeout(t);
   }, [shown, reduced]);
@@ -119,7 +126,7 @@ export function WelcomeTour() {
 
   return (
     <div className="ob__window" onPointerEnter={() => setHeld(true)} onPointerLeave={() => setHeld(false)} onFocus={() => setHeld(true)} onBlur={() => setHeld(false)}>
-      <div className="pw" role="group" aria-label="Nightshift, one project from storyboard to edit">
+      <div className="pw" role="group" aria-label="Nightshift, one project from media to edit">
         <div className="pw__side" aria-hidden>
           <div className="pw__lights">
             <i />
@@ -140,23 +147,18 @@ export function WelcomeTour() {
               <b>Northern Lights</b>
               <small>Music video</small>
             </div>
-            <StageSwitch
-              at={at}
-              onPick={(s) => {
-                setAt(s);
+            <AreaSwitch
+              at={areaOf(at)}
+              onPick={(a) => {
+                setAt(a);
                 setJumps((n) => n + 1);
               }}
             />
           </div>
           <div className="pw__stages" aria-hidden>
-            <Stage on={on("storyboard")}>
-              <StoryboardStage />
-            </Stage>
-            <Stage on={on("takes")}>
-              <TakesStage picked={picked} playing={on("takes") && !reduced} />
-            </Stage>
-            <Stage on={on("finals")}>
-              <FinalsStage playing={on("finals") && !reduced} />
+            <Stage on={on("media") || on("card")}>
+              {/* The card stays open while the window fades to the Editor, so it leaves as it was. */}
+              <MediaStage picked={picked} open={shown === "card"} playing={on("card") && !reduced} />
             </Stage>
             <Stage on={on("editor")}>
               <EditorStage playing={on("editor") && !reduced} />
@@ -171,15 +173,15 @@ export function WelcomeTour() {
   );
 }
 
-/** The toolbar's segmented control, with a knob that slides to the stage on show. */
-function StageSwitch({ at, onPick }: { at: TourStage; onPick: (s: TourStage) => void }) {
+/** The toolbar's segmented control, with a knob that slides to the area on show. */
+function AreaSwitch({ at, onPick }: { at: Area; onPick: (a: Area) => void }) {
   const track = useRef<HTMLDivElement>(null);
   const [knob, setKnob] = useState<{ x: number; w: number } | null>(null);
   useLayoutEffect(() => {
     const el = track.current;
     if (!el) return;
     const place = () => {
-      const b = el.querySelector<HTMLElement>(`[data-stage="${at}"]`);
+      const b = el.querySelector<HTMLElement>(`[data-area="${at}"]`);
       if (b) setKnob({ x: b.offsetLeft, w: b.offsetWidth });
     };
     place();
@@ -190,9 +192,9 @@ function StageSwitch({ at, onPick }: { at: TourStage; onPick: (s: TourStage) => 
   return (
     <div ref={track} className="pw__seg" role="radiogroup" aria-label="Stage">
       {knob && <span className="pw__knob" style={{ width: knob.w, transform: `translateX(${knob.x - 3}px)` }} aria-hidden />}
-      {stages.map((s) => (
-        <button key={s} type="button" role="radio" data-stage={s} aria-checked={s === at} className={cx("pw__stage-btn", s === at && "pw__stage-btn--on")} onClick={() => onPick(s)}>
-          {stageLabel[s]}
+      {areas.map((a) => (
+        <button key={a} type="button" role="radio" data-area={a} aria-checked={a === at} className={cx("pw__stage-btn", a === at && "pw__stage-btn--on")} onClick={() => onPick(a)}>
+          {areaLabel[a]}
         </button>
       ))}
     </div>
@@ -215,128 +217,164 @@ function Clip({ src, poster, playing }: { src: string; poster: string; playing: 
   return <video ref={ref} src={src} poster={poster} muted loop playsInline preload={playing ? "auto" : "metadata"} />;
 }
 
-function StoryboardStage() {
+/** Media: the prompt panel that makes new cards, the board of shots, and the timeline strip under it. */
+function MediaStage({ picked, open, playing }: { picked: boolean; open: boolean; playing: boolean }) {
   return (
-    <div className="pw-page">
-      <div className="pw-head">
-        <div>
-          <div className="pw-h">Storyboard</div>
-          <p className="pw-sub">7 shots, 28 s. Edit the words, drag to reorder, lock what you like.</p>
+    <div className="pw-md">
+      <div className="pw-md__panel">
+        <div className="pw-md__tools">
+          <span className="pw-md__tool pw-md__tool--on">
+            <ImageIcon />
+            Image
+          </span>
+          <span className="pw-md__tool">
+            <Video />
+            Video
+          </span>
+          <span className="pw-md__tool">
+            <Sparkles />
+            Effect
+          </span>
+          <span className="pw-md__tool">
+            <Move3d />
+            Camera move
+          </span>
         </div>
-        <div className="pw-actions">
-          <span className="pw-btn pw-btn--quiet pw-btn--extra">
-            <RefreshCw />
-            Rewrite shot list
-          </span>
-          <span className="pw-btn pw-btn--quiet pw-btn--extra">
-            <Plus />
-            Add shot
-          </span>
-          <span className="pw-btn pw-btn--ink">
-            <Clapperboard />
-            Make drafts
-          </span>
-        </div>
-      </div>
-      <div className="pw-sb">
-        {shots.slice(0, 6).map((s, i) => (
-          <div key={i} className="pw-shot" style={{ "--i": i } as React.CSSProperties}>
-            <div className="pw-frame">
-              <img src={still(i + 1)} alt="" />
-            </div>
-            <div className="pw-shot__meta">
-              <b>Shot {i + 1}</b>
-              <span>4 s</span>
-              <span className="pw-shot__move">{moveLabel(s.move)}</span>
-            </div>
-            <p className="pw-shot__prompt">{s.prompt}</p>
+        <div className="pw-md__label">Prompt</div>
+        <div className="pw-md__prompt">Snow falling past the cabin window, the aurora above</div>
+        <div className="pw-md__go">
+          <div className="pw-md__into">
+            Into <b>Shots</b>
           </div>
-        ))}
+          <span className="pw-btn pw-btn--ink pw-md__generate">
+            <Sparkles />
+            Generate
+          </span>
+        </div>
       </div>
+      <div className="pw-md__main">
+        <div className="pw-md__board">
+          <div className="pw-md__head">
+            <b>Shots</b>
+            <span>{shots.length} cards</span>
+            <span className="pw-btn pw-btn--quiet pw-btn--s pw-md__new">
+              <Plus />
+              New board
+            </span>
+          </div>
+          <div className="pw-sb">
+            {shots.map((prompt, i) => {
+              const n = i + 1;
+              // Shot 1's pick is its final; shot 4 has two takes, the one picked on show.
+              const final = n === 1;
+              const versions = n === 1 || n === OPENED ? 2 : 1;
+              const pick = n === 1 ? publicUrl("welcome/window.jpg") : n === OPENED ? take(picked ? 2 : 1, "jpg") : still(n);
+              return (
+                <div key={n} className={cx("pw-shot", n === OPENED && "pw-shot--opened")} style={{ "--i": i } as React.CSSProperties}>
+                  <div className="pw-frame">
+                    <img src={pick} alt="" />
+                    {final && <span className="tag tag--onmedia tag--night pw-frame__tag">Final</span>}
+                    {versions > 1 && <span className="tag tag--onmedia pw-frame__tag pw-frame__tag--right">{versions} versions</span>}
+                  </div>
+                  <div className="pw-shot__meta">
+                    <span className="pw-shot__label">{prompt}</span>
+                    <span className="pw-shot__ontl">
+                      <Film />
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+        <div className="pw-md__strip">
+          <Film />
+          <b>On the timeline: {shots.length} shots, 0:30</b>
+          <span className="tag">Music</span>
+          <span className="pw-md__hint">Drag cards here to add them</span>
+          <span className="pw-btn pw-btn--s">Open editor</span>
+        </div>
+      </div>
+      <CardPopup open={open} picked={picked} playing={playing} />
     </div>
   );
 }
 
-function TakesStage({ picked, playing }: { picked: boolean; playing: boolean }) {
-  const takes = [1, 2];
+/** Shot 4's card, opened over the board: its versions side by side, the pick marked, and the ways to go on. */
+function CardPopup({ open, picked, playing }: { open: boolean; picked: boolean; playing: boolean }) {
   const chosen = picked ? 2 : 1;
   return (
-    <div className="pw-tk">
-      <div className="pw-tk__rail">
-        <div className="pw__head">Shots</div>
-        {[1, 2, 3, 4, 5, 6].map((n) => (
-          <div key={n} className={cx("pw-tk__item", n === 4 && "pw-tk__item--on")}>
-            <img src={still(n)} alt="" />
-            <span>
-              <b>Shot {n}</b>
-              <small>Take {n === 4 ? chosen : 1} picked</small>
-            </span>
-            <Check />
-          </div>
-        ))}
-      </div>
-      <div className="pw-page pw-tk__main">
-        <div className="pw-head">
-          <div>
-            <div className="pw-h">Shot 4</div>
-            <p className="pw-sub">{shots[3]!.prompt}</p>
-          </div>
-          <div className="pw-actions">
-            <span className="pw-btn pw-btn--extra">Compare</span>
-            <span className="pw-btn">
-              <Plus />
-              Another take
-            </span>
+    <div className={cx("pw-cd", open && "pw-cd--open")}>
+      <div className="pw-cd__dlg">
+        <div className="pw-cd__main">
+          <div className="pw-cd__takes">
+            {[1, 2].map((n) => (
+              <div key={n} className="pw-take">
+                <div className={cx("pw-frame", n === chosen && "pw-frame--picked")}>
+                  <Clip src={take(n, "mp4")} poster={take(n, "jpg")} playing={playing} />
+                  {n === chosen && (
+                    <span className="tag tag--onmedia pw-frame__tag">
+                      <Check />
+                      Pick
+                    </span>
+                  )}
+                </div>
+                <div className="pw-take__meta">
+                  <b>Take {n}</b>
+                  <span className="pw-extra">Draft, 4 s</span>
+                  {n === chosen ? (
+                    <span className="pw-take__pick">The pick</span>
+                  ) : (
+                    <span className="pw-btn pw-btn--s">
+                      <RotateCcw />
+                      Restore
+                    </span>
+                  )}
+                </div>
+              </div>
+            ))}
           </div>
         </div>
-        <div className="pw-tk__takes">
-          {takes.map((n) => (
-            <div key={n} className="pw-take">
-              <div className={cx("pw-frame", n === chosen && "pw-frame--picked")}>
-                <Clip src={publicUrl(`welcome/take-${n}.mp4`)} poster={publicUrl(`welcome/take-${n}.jpg`)} playing={playing} />
-                <span className="tag tag--onmedia pw-frame__tag">Draft</span>
-              </div>
-              <div className="pw-take__meta">
-                <b>Take {n}</b>
-                <span>4 s</span>
-                <span className={cx("pw-btn pw-btn--s", n === chosen && "pw-btn--ink")}>
-                  {n === chosen && <Check />}
-                  {n === chosen ? "Picked" : "Pick"}
-                </span>
-              </div>
+        <div className="pw-cd__side">
+          <div className="pw-cd__head">
+            <div>
+              <div className="pw-cd__title">{shots[OPENED - 1]}</div>
+              <div className="pw-cd__sub">On the timeline, 4 s, 2 versions</div>
             </div>
-          ))}
+            <X />
+          </div>
+          <div className="pw-cd__sec pw-extra">
+            <div className="pw-cd__h">New version</div>
+            <div className="pw-cd__row">
+              <span className="pw-btn pw-btn--s">
+                <Clapperboard />
+                Another take
+              </span>
+              <span className="pw-btn pw-btn--s">
+                <Sparkles />
+                Effect
+              </span>
+              <span className="pw-btn pw-btn--s">
+                <Move3d />
+                Camera move
+              </span>
+            </div>
+          </div>
+          <div className="pw-cd__sec">
+            <div className="pw-cd__h">Final</div>
+            <p className="pw-cd__text">The take you picked at full quality. Same motion, same framing.</p>
+            <div className="pw-cd__row">
+              <span className="pw-btn pw-btn--s pw-btn--ink pw-extra">
+                <Sun />
+                Finish now
+              </span>
+              <span className="pw-btn pw-btn--s pw-btn--night">
+                <Moon />
+                Finish tonight
+              </span>
+            </div>
+          </div>
         </div>
-      </div>
-    </div>
-  );
-}
-
-function FinalsStage({ playing }: { playing: boolean }) {
-  return (
-    <div className="pw-fn">
-      <div className="pw__viewer">
-        <Clip src={publicUrl("welcome/window.mp4")} poster={publicUrl("welcome/window.jpg")} playing={playing} />
-        <span className="tag tag--onmedia tag--night pw__tag">Final, same take</span>
-      </div>
-      <div className="pw__insp">
-        <div className="pw__insp-title">
-          <Moon />
-          Tonight
-        </div>
-        <div className="pw__kv">
-          <span>Queued</span>
-          <b>3 finals</b>
-        </div>
-        <div className="pw__kv">
-          <span>Starts</span>
-          <b>11 pm</b>
-        </div>
-        <div className="pw__kv">
-          <span>Done by</span>
-          <b>about 2:40 am</b>
-        </div>
-        <span className="pw__night">Finish overnight</span>
       </div>
     </div>
   );

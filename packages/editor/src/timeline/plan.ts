@@ -137,7 +137,8 @@ function planCinematic(ctx: Ctx, voice: VoiceTrack | null, song: SongTrack | nul
   const words = voice ? shiftWords(voice.words, voiceStart) : [];
   const duration = Math.max(t, words.at(-1)?.end ?? 0, ctx.sources.length ? 0 : 4);
   const titleStart = Math.min(0.6, duration * 0.1);
-  const overlays: Overlay[] = ctx.template === "camera_move" || ctx.template === "vfx_effect" || ctx.template === "what_if" ? [] : [
+  // Quick shots, What if? films and blank projects open on their picture, without a title card.
+  const overlays: Overlay[] = ctx.template === "camera_move" || ctx.template === "vfx_effect" || ctx.template === "what_if" || ctx.template === "blank" ? [] : [
     {
       id: "title",
       kind: "title",

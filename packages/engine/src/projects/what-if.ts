@@ -15,6 +15,7 @@ import type { JobPayload } from "../queue/store.js";
 import type { StepOutput, StepRequest } from "../runner/types.js";
 import { errorMessage, exists, newId, runStreaming } from "../util.js";
 import type { ProjectStore } from "./store.js";
+import { pickDraft } from "./versions.js";
 
 type Plan = ReturnType<typeof fallbackWhatIf>;
 interface Deps {
@@ -53,15 +54,25 @@ const Answer = z.object({
   keyframes: z.array(z.object({ prompt: z.string().trim().min(12).max(3000), line: z.string().trim().min(1).max(400) })).length(4),
 });
 
+/** The placeholder values in the writer's JSON format. A small model sometimes copies them back as its answer. */
+const FORMAT = { prompt: "the continuous action across the whole film", frame: "a complete visual state", line: "spoken narration" };
+const echoesFormat = (text: string) => Object.values(FORMAT).some((placeholder) => text.toLowerCase().includes(placeholder));
+
 export function parseWhatIf(raw: string): Plan | undefined {
   let value: unknown;
   try { value = JSON.parse(raw.slice(raw.indexOf("{"), raw.lastIndexOf("}") + 1)); } catch { return; }
   const answer = Answer.safeParse(value);
   if (!answer.success) return;
+  if (echoesFormat(answer.data.prompt) || answer.data.keyframes.some((frame) => echoesFormat(frame.prompt) || echoesFormat(frame.line))) return;
   const line = answer.data.keyframes.map((frame) => frame.line).join(" ");
   const words = line.split(/\s+/).length;
   if (words < 35 || words > 50) return;
   return { ...answer.data, keyframes: answer.data.keyframes.map((frame, index) => ({ ...frame, id: `beat-${index}` })), line, durationSec: WHAT_IF_DURATION };
+}
+
+function sameStory(a: Plan, b: Plan): boolean {
+  const text = (plan: Plan) => [plan.prompt, ...plan.keyframes.flatMap((frame) => [frame.prompt, frame.line])].join("\n");
+  return text(a) === text(b);
 }
 
 /** Each stage has its own durable Comfy job ID, including each image in the chain. */
@@ -84,7 +95,7 @@ export async function writeWhatIf(deps: Deps, project: Project, payload: JobPayl
   let peakGb: number | undefined;
   if (canWrite) {
     try {
-      const system = `Write a fictional 15-second What-if film as ONE uninterrupted shot. Return JSON only: {"prompt":"the continuous action across the whole film","cameraMove":"static or dolly_in","keyframes":[{"prompt":"a complete visual state","line":"spoken narration"}]}. Exactly four keyframes: ordinary, first change, escalation, consequence. Keep the same place, objects, lighting and visual style. No cuts, montage, fades, text in images, close-up faces, crowds, precise hand actions or brands. Describe four clearly DIFFERENT states, not four camera angles. The first is ordinary, before the change. Prefer a fixed camera; dolly_in is only for a continuous first-person journey. The four narration lines TOTAL 35 to 50 words. Tell an imagined premise plainly; do not assert scientific facts, numbers, causes or predictions as truth. The last line has a consequence. Each image prompt must name the same setting and objects, and describe what has changed. ${whatIfLook(project.brief)}`;
+      const system = `Write a fictional 15-second What-if film as ONE uninterrupted shot. Return JSON only: {"prompt":"${FORMAT.prompt}","cameraMove":"static or dolly_in","keyframes":[{"prompt":"${FORMAT.frame}","line":"${FORMAT.line}"}]}. Exactly four keyframes: ordinary, first change, escalation, consequence. Keep the same place, objects, lighting and visual style. No cuts, montage, fades, text in images, close-up faces, crowds, precise hand actions or brands. Describe four clearly DIFFERENT states, not four camera angles. The first is ordinary, before the change. Prefer a fixed camera; dolly_in is only for a continuous first-person journey. The four narration lines TOTAL 35 to 50 words. Tell an imagined premise plainly; do not assert scientific facts, numbers, causes or predictions as truth. The last line has a consequence. Each image prompt must name the same setting and objects, and describe what has changed. ${whatIfLook(project.brief)}`;
       const prompt = `Question: ${project.brief.question}\n${project.brief.photoAssetId ? "The user's photo is the opening frame. Describe changes to that scene without inventing a new place." : "Choose a simple, striking place and a few objects."}\nUse this visual outline when it fits the question. Keep the narration about the same objects and changes:\n${JSON.stringify(plan)}`;
       const result = await stage(deps, "_whatIfWriterJobId", "text", {
         system, prompt, text: prompt, maxTokens: 1024, seed: payload.seed ?? 0, fallback: JSON.stringify(plan),
@@ -92,7 +103,8 @@ export async function writeWhatIf(deps: Deps, project: Project, payload: JobPayl
       peakGb = result.peakGb;
       const output = result.outputs.find((item) => item.kind === "text");
       const parsed = output ? parseWhatIf(await readFile(output.path, "utf8")) : undefined;
-      if (parsed) { plan = parsed; message = "Story ready"; }
+      // An answer that only repeats the outline is still the starter story; say so.
+      if (parsed) { message = sameStory(parsed, plan) ? message : "Story ready"; plan = parsed; }
       else message = "The writer's answer did not fit. Using the starter story.";
     } catch (error) {
       if (ctx.signal.aborted) throw error;
@@ -207,7 +219,8 @@ export async function renderWhatIf(deps: Deps, project: Project, shot: Shot, job
     p.assets.push(video, latent);
     p.takes = [...p.takes.filter((item) => item.jobId !== job.id), take];
     const current = p.shots.find((item) => item.id === shot.id);
-    if (current) { current.chosenDraftId ??= take.id; current.durationSec = WHAT_IF_DURATION; }
+    // A new take of the film is its pick when it lands, like any draft.
+    if (current) { pickDraft(p, current, take.id); current.durationSec = WHAT_IF_DURATION; }
   });
   return { outputAssetIds: [video.id, latent.id], message: "Continuous film ready", ...(result.peakGb === undefined ? {} : { peakGb: result.peakGb }) };
 }

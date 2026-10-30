@@ -3,7 +3,11 @@ import { createRequire } from "node:module";
 import { dirname, join } from "node:path";
 import type { FontId } from "../style.js";
 
-/** Fonts ship as files with the package (SIL Open Font License, through Fontsource) so every render looks the same. */
+/**
+ * Fonts ship as files with the package (through Fontsource) so every render looks the same. Every family here is
+ * under the SIL Open Font License 1.1 (OFL-1.1): Inter, Playfair Display, Bebas Neue, Cormorant Garamond, Fraunces,
+ * Instrument Sans, Archivo, Syne and Bricolage Grotesque.
+ */
 interface FontFace {
   file: string;
   style: "normal" | "italic";
@@ -32,8 +36,11 @@ const RANGES = {
 } as const;
 
 interface VariableOptions {
-  /** Fontsource's file variant: `wght` carries the weight axis, `opsz` weight and optical size. */
-  axes?: "wght" | "opsz";
+  /**
+   * Fontsource's file variant: `wght` carries the weight axis, `opsz` weight and optical size, `standard` every axis
+   * the family has (width too, for Archivo and Bricolage).
+   */
+  axes?: "wght" | "opsz" | "standard";
   weight?: string;
   italic?: boolean;
 }
@@ -62,14 +69,16 @@ function fixed(name: string, pkg: string, family: string, fallback: FontFamily["
 
 const FONTS: Record<FontId, FontFamily> = {
   inter: variable("inter", "@fontsource-variable/inter", "NS Inter", "sans-serif"),
+  // The same files' optical sizes: at caption sizes the browser picks Inter Display, tighter and finer.
+  "inter-display": variable("inter", "@fontsource-variable/inter", "NS Inter Display", "sans-serif", { axes: "opsz" }),
   "playfair-display": variable("playfair-display", "@fontsource-variable/playfair-display", "NS Playfair Display", "serif"),
   "bebas-neue": fixed("bebas-neue", "@fontsource/bebas-neue", "NS Bebas Neue", "sans-serif", [400], false),
   "cormorant-garamond": fixed("cormorant-garamond", "@fontsource/cormorant-garamond", "NS Cormorant Garamond", "serif", [400, 500, 600], true),
   fraunces: variable("fraunces", "@fontsource-variable/fraunces", "NS Fraunces", "serif", { axes: "opsz" }),
   "instrument-sans": variable("instrument-sans", "@fontsource-variable/instrument-sans", "NS Instrument Sans", "sans-serif", { weight: "400 700" }),
-  archivo: variable("archivo", "@fontsource-variable/archivo", "NS Archivo", "sans-serif"),
+  archivo: variable("archivo", "@fontsource-variable/archivo", "NS Archivo", "sans-serif", { axes: "standard" }),
   syne: variable("syne", "@fontsource-variable/syne", "NS Syne", "sans-serif", { weight: "400 800", italic: false }),
-  "bricolage-grotesque": variable("bricolage-grotesque", "@fontsource-variable/bricolage-grotesque", "NS Bricolage Grotesque", "sans-serif", { axes: "opsz", weight: "200 800", italic: false }),
+  "bricolage-grotesque": variable("bricolage-grotesque", "@fontsource-variable/bricolage-grotesque", "NS Bricolage Grotesque", "sans-serif", { axes: "standard", weight: "200 800", italic: false }),
 };
 
 export function fontStack(id: FontId): string {

@@ -251,7 +251,8 @@ describe("GET /api/status and the event stream (mock engine, NIGHTSHIFT_MOCK_OTH
         // aborted
       }
     })();
-  });
+    // The install runs at the mock's 1/50 speed: on a busy machine it takes longer than the default 10 s.
+  }, 60_000);
   afterAll(async () => {
     sse?.abort();
     await engine?.stop();

@@ -122,24 +122,39 @@ describe("buildComposition", () => {
     expect(portraitHtml).not.toContain('class="bar bar-top"');
   });
 
-  it("lights each word up and underlines it while it is spoken (karaoke)", () => {
-    const tracks = tracksOf(buildComposition(scene({ style: defaultStyle("talking_intro") }), "").html);
-    const color = tracks.find(([id, prop]) => id === "c0w1" && prop === "color")![2];
-    expect(color.some(([t, v]) => t === 1500 && v === "var(--accent)")).toBe(true);
-    const underline = tracks.find(([id, prop]) => id === "c0w1" && prop === "text-decoration-color")![2];
-    expect(underline.some(([t, v]) => t === 1500 && v === "var(--accent)")).toBe(true);
-    // Lit until the caption ends, then back to the caption colour.
-    expect(color.at(-1)).toEqual([2500, "var(--cap-text)"]);
+  it("raises words through a mask and sweeps the accent across the spoken word (karaoke)", () => {
+    const { html } = buildComposition(scene({ style: defaultStyle("talking_intro") }), "");
+    const tracks = tracksOf(html);
+    // Each word rises into place as the line arrives, the second a beat after the first.
+    const rise = (j: number) => tracks.find(([id, prop]) => id === `c0w${j}i` && prop === "translate")![2];
+    expect(rise(0)[0]).toEqual([990, "0 1.2em", expect.any(String)]);
+    expect(rise(1)[0]![0]).toBeGreaterThan(990);
+    // The fill crosses "there" while it is said (1.5 to 2.2 s); "Hello" fades back as "there" starts.
+    const fill = tracks.find(([id, prop]) => id === "c0w1f" && prop === "mask-position")![2];
+    expect(fill).toEqual([[1500, "100% 0%", expect.any(String)], [2200, "0% 0%"]]);
+    const fade = tracks.find(([id, prop]) => id === "c0w0f" && prop === "opacity")![2];
+    expect(fade).toEqual([[1500, 1, expect.any(String)], [1700, 0]]);
+    expect(html).not.toContain("text-decoration");
+    // Hidden either side of its span, so stacked captions never show together.
+    const shown = tracks.find(([id, prop]) => id === "c0" && prop === "visibility")![2];
+    expect(shown.at(-1)![1]).toBe("hidden");
   });
 
-  it("puts the spoken word on an accent chip inside a dark pill (chip)", () => {
+  it("slides one accent block from word to word on a frosted plate (chip)", () => {
     const { html } = buildComposition(scene({ style: defaultStyle("product_ad") }), "");
     expect(html).toContain('class="caps caps-chip anchor-bottom band-lower"');
+    expect(html).toContain('<span class="hl" id="c0h"');
     const tracks = tracksOf(html);
-    const chip = tracks.find(([id, prop]) => id === "c0w1" && prop === "background-color")![2];
-    expect(chip.some(([t, v]) => t === 1500 && v === "var(--accent)")).toBe(true);
-    const color = tracks.find(([id, prop]) => id === "c0w1" && prop === "color")![2];
-    expect(color.some(([t, v]) => t === 1500 && v === "var(--accent-text)")).toBe(true);
+    // Measured in the page: the block's left edge travels from "Hello" to "there", arriving as it is said.
+    const left = tracks.find(([id, prop]) => id === "c0h" && prop === "left")![2];
+    expect(left.at(-2)).toEqual([1430, "calc({x:c0w0}px - 0.13em)", expect.any(String)]);
+    expect(left.at(-1)).toEqual([1610, "calc({x:c0w1}px - 0.13em)"]);
+    // The word under the block takes the text-on-accent colour while the block is on it.
+    const color = tracks.find(([id, prop]) => id === "c0w1i" && prop === "color")![2];
+    expect(color.at(-1)).toEqual([1610, "var(--accent-text)"]);
+    // The plate opens from the middle.
+    const plate = tracks.find(([id, prop]) => id === "c0l" && prop === "clip-path")![2];
+    expect(plate[0]![1]).toBe("inset(0% 50% 0% 50% round 0.36em)");
   });
 
   it("lands lyric words as they are sung and anchors the block to a fixed line (kinetic)", () => {
@@ -149,8 +164,14 @@ describe("buildComposition", () => {
     expect(html).toContain('class="caps caps-kinetic anchor-bottom band-lower upper"');
     expect(html).toMatch(/caps-kinetic[^>]*style="bottom:422.4px;height:0;/);
     const tracks = tracksOf(html);
-    const word = tracks.find(([id, prop]) => id === "c0w1" && prop === "opacity")![2];
-    expect(word[0]).toEqual([1500, 0, expect.any(String)]);
+    const word = tracks.find(([id, prop]) => id === "c0w1i" && prop === "opacity")![2];
+    expect(word[0]).toEqual([1480, 0, expect.any(String)]);
+    // It lands large and soft, settles, and is lit in the accent until the next word.
+    const scale = tracks.find(([id, prop]) => id === "c0w1i" && prop === "scale")![2];
+    expect(scale.map(([, v]) => v)).toEqual(["1.22", "1"]);
+    const color = tracks.find(([id, prop]) => id === "c0w0i" && prop === "color")![2];
+    expect(color[0]).toEqual([980, "var(--accent)"]);
+    expect(color.at(-1)![1]).toBe("var(--cap-text)");
   });
 
   it("keeps a corner title on the side away from the subject", () => {
@@ -378,8 +399,9 @@ describe("keep-out: captions", () => {
     expect(place.lines.map((l) => l.band)).toEqual(["lower", "upper", "lower"]);
     expect(place.lines[1]!.offset).toBeCloseTo(1920 - (0.37 * 1920 - 2 * L.u), 6);
     const html = buildComposition(s, "").html;
-    expect(html).toContain('id="c1" style="opacity:0;bottom:616.8px"');
-    expect(html).toContain('id="c0" style="opacity:0"');
+    // The walker's caption sits on its own line, the others on the film's.
+    expect(html).toMatch(/id="c1" style="visibility:hidden;bottom:[\d.]+px"/);
+    expect(html).toContain('id="c0" style="visibility:hidden"');
     // A subject that is not a figure (the cup) never pulls a shot off the film's line.
     const cupped = portrait(defaultStyle("product_ad"), [{ ...lights, start: 0, end: 4 }, { ...CUP, start: 4, end: 6 }, { ...lights, start: 6, end: 10 }], { captions, duration: 10 });
     expect(placeCaptions(cupped, L, { width: 842.4, lineHeight: 71, pad: 25, linesOf: () => 1 }).lines.map((l) => l.band)).toEqual(["lower", "lower", "lower"]);

@@ -13,6 +13,8 @@ import { whatIfStyle } from "./what-if.js";
  */
 export const FontIdSchema = z.enum([
   "inter",
+  /** Inter's display cut (optical sizes): tight, even captions in the manner of a product film. */
+  "inter-display",
   "bebas-neue",
   "playfair-display",
   /** Film titles: a Garamond with sharp serifs, tracked out in capitals. */
@@ -155,7 +157,7 @@ const talkingIntro: TimelineStyle = {
   look: "talking_intro",
   fps: "auto",
   palette: { background: "#0E1116", text: "#FFFFFF", accent: "#7DD3FC", accentText: "#0E1116", scrim: "rgba(10,12,16,0.6)" },
-  fonts: { display: "fraunces", body: "instrument-sans", captions: "instrument-sans" },
+  fonts: { display: "fraunces", body: "instrument-sans", captions: "inter-display" },
   picture: { reframe: "crop", letterbox: null, vignette: 0.2, grain: 0, stillMotion: 0.07, videoMotion: 0.02 },
   transition: { kind: "dissolve", duration: 0.4, accent: "none", sectionFlash: false, head: 0.5, tail: 0.8 },
   beatPulse: 0,
@@ -182,6 +184,13 @@ const DEFAULTS: Record<TemplateId, TimelineStyle> = {
     transition: { ...cinematic.transition, duration: 0, head: 0, tail: 0 },
     captions: { ...cinematic.captions, enabled: false },
   },
+  // A blank project is whatever its tools made: clean shots with short dissolves, captions once there is a voice.
+  blank: {
+    ...cinematic,
+    picture: { ...cinematic.picture, letterbox: null, vignette: 0, grain: 0 },
+    transition: { ...cinematic.transition, duration: 0.3, head: 0, tail: 0.3 },
+    captions: { ...talkingIntro.captions, enabled: true },
+  },
 };
 
 export function defaultStyle(template: TemplateId): TimelineStyle {
@@ -201,7 +210,7 @@ export interface ResolvedStyle {
 export function resolveStyle(template: TemplateId, stored: Record<string, unknown> | undefined): ResolvedStyle {
   const overrides = isPlainObject(stored) ? structuredClone(stored) : {};
   // Quick-shot templates use the cinematic compositor with clean shot defaults.
-  if ((template === "camera_move" || template === "vfx_effect" || template === "what_if") && overrides.look === template) delete overrides.look;
+  if ((template === "camera_move" || template === "vfx_effect" || template === "what_if" || template === "blank") && overrides.look === template) delete overrides.look;
   const lookParse = TimelineStyleSchema.shape.look.safeParse(overrides.look);
   const base = defaultStyle(lookParse.success ? lookParse.data : template);
   const warnings: string[] = [];

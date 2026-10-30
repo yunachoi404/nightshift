@@ -1,4 +1,4 @@
-import { cameraMoves, genres, looks, tones, type Shot, type TemplateId } from "@nightshift/contract";
+import { cameraMoves, genres, looks, tones, type Shot, type Take, type TemplateId } from "@nightshift/contract";
 import { describe, expect, it } from "vitest";
 import { mergeShots } from "../src/projects/service.js";
 import { briefForLlm, conformsToTemplate, parseStoryboard, scriptLines, stylePrompt, TEMPLATES } from "../src/projects/templates.js";
@@ -32,8 +32,11 @@ describe("template fallbacks", () => {
     expect(TEMPLATES.cinematic_shot.fallback({ idea: "x", sequence: "three" }).map((s) => s.durationSec)).toEqual([4, 4, 3.5]);
   });
 
-  it("empty briefs still produce something sensible", () => {
-    for (const t of Object.values(TEMPLATES)) expect(t.fallback({}).length).toBeGreaterThan(0);
+  it("empty briefs still produce something sensible; a blank project has no shot list", () => {
+    for (const [id, t] of Object.entries(TEMPLATES)) if (id !== "blank") expect(t.fallback({}).length, id).toBeGreaterThan(0);
+    expect(TEMPLATES.blank.fallback({})).toEqual([]);
+    // A blank project's prompts are used as written: no template style is added.
+    expect(stylePrompt("blank", "a kite over the dunes", "static")).toBe("A kite over the dunes. The camera holds still.");
   });
 
   it("keeps a music video's subject and constraints in every fallback shot", () => {
@@ -81,6 +84,7 @@ const BRIEFS: Record<TemplateId, Record<string, unknown>[]> = {
   ],
   camera_move: [{}, { prompt: "a quiet harbor at dawn.", move: "dolly_in" }, { prompt: "  boats, fog  ", move: "crane_up" }],
   vfx_effect: [{}, { prompt: "A marble statue in a museum", effect: "disintegrate" }],
+  blank: [{}],
 };
 
 /** Words the user wrote with a capital, which may appear mid-sentence (names), plus the pronoun I. */
@@ -190,7 +194,7 @@ describe("parseStoryboard", () => {
     expect(parseStoryboard(raw, TEMPLATES.cinematic_shot.lines)).toEqual([{ prompt: "A red motorcycle on wet cobblestones", durationSec: 4 }]);
     expect(parseStoryboard(raw, TEMPLATES.product_ad.lines)?.[0]?.line).toBe("A red motorcycle parked on wet cobblestones at night.");
     expect(Object.fromEntries(Object.entries(TEMPLATES).map(([id, t]) => [id, t.lines]))).toEqual({
-      what_if: "none", cinematic_shot: "none", music_video: "none", product_ad: "short", talking_intro: "script", camera_move: "none", vfx_effect: "none",
+      what_if: "none", cinematic_shot: "none", music_video: "none", product_ad: "short", talking_intro: "script", camera_move: "none", vfx_effect: "none", blank: "none",
     });
   });
 
@@ -224,8 +228,35 @@ describe("mergeShots", () => {
     expect(out[3]?.line).toBe("hello");
   });
 
-  it("drops unlocked shots the new plan has no room for", () => {
+  it("drops unlocked shots the new plan has no room for, when nothing was made for them yet", () => {
     const out = mergeShots([shot("a", 0, false), shot("b", 1, false)], [{ prompt: "n1", durationSec: 3 }]);
     expect(out.map((s) => s.prompt)).toEqual(["n1"]);
+  });
+
+  it("keeps the timeline shots it did not write in place, and shots with a still or a take after the new ones", () => {
+    const take = (shotId: string, tool?: Take["tool"]): Take => ({ id: `take_${shotId}`, shotId, rung: "draft", seed: 1, jobId: "job", ...(tool ? { tool } : {}) });
+    const current = [
+      shot("effect", 0, false), // a card made with a tool, sent to the timeline
+      shot("a", 1, false),
+      { ...shot("image", 2, false), prompt: "", stillAssetId: "ast_photo" }, // an image placed on the timeline
+      shot("b", 3, false),
+      shot("move", 4, false), // a card made with a tool
+      shot("c", 5, false),
+      { ...shot("drawn", 6, false), stillAssetId: "ast_still" }, // past the new plan, with a still
+      shot("drafted", 7, false), // past the new plan, with a draft
+      shot("empty", 8, false), // past the new plan, with nothing made yet
+    ];
+    const takes = [take("effect", { kind: "effect", effect: "freeze" }), take("move", { kind: "camera_move", move: "crane_up" }), take("drafted")];
+    const out = mergeShots(current, [{ prompt: "n1", durationSec: 3 }, { prompt: "n2", durationSec: 3 }, { prompt: "n3", durationSec: 3 }], takes);
+    expect(out.map((s) => [s.index, s.prompt])).toEqual([
+      [0, "effect"],
+      [1, "n1"],
+      [2, ""],
+      [3, "n2"],
+      [4, "move"],
+      [5, "n3"],
+      [6, "drawn"],
+      [7, "drafted"],
+    ]);
   });
 });

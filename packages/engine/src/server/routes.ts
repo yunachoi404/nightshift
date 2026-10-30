@@ -8,6 +8,8 @@ import {
   FinalRequestSchema,
   HardwareProfileSchema,
   InstallRequestSchema,
+  ModelScanRequestSchema,
+  MakeRequestSchema,
   OnboardingSampleRequestSchema,
   RemoteCheckRequestSchema,
   RemoteUseRequestSchema,
@@ -42,6 +44,8 @@ export interface EngineContext {
   hardware: HardwareService;
   recipes: () => RecipeSet;
   reloadRecipes: () => Promise<RecipeSet>;
+  /** Where recipes' workflows live. */
+  workflowsDir: string;
   installer: Installer;
   remote: RemoteService;
   runtime: Runtime;
@@ -86,7 +90,7 @@ export function buildRouter(e: EngineContext): Router {
   r.add(routes.hardware, matched);
   r.add(routes.hardwareManual, async ({ req }) => e.hardware.setManual(await readBody(req, HardwareProfileSchema)));
   r.add(routes.hardwareReset, () => e.hardware.clearManual());
-  r.add(routes.tiers, async () => tierSummaries((await e.reloadRecipes()).recipes, await matched()));
+  r.add(routes.tiers, async () => tierSummaries((await e.reloadRecipes()).recipes, await matched(), e.workflowsDir));
 
   // ---------------------------------------------------------------- install and runtime
   r.add(routes.installPlan, async ({ query }) => {
@@ -100,6 +104,11 @@ export function buildRouter(e: EngineContext): Router {
     await e.reloadRecipes();
     e.installer.start(body.tier, body.memoryLimitGb);
     return new Reply(202, e.runtime.status());
+  });
+  r.add(routes.scanModels, async ({ req }) => {
+    const body = await readBody(req, ModelScanRequestSchema);
+    await e.reloadRecipes();
+    return e.installer.scan(body.tier, body.folders);
   });
   r.add(routes.remoteCheck, async ({ req }) => e.remote.check((await readBody(req, RemoteCheckRequestSchema)).url));
   r.add(routes.remoteUse, async ({ req }) => new Reply(202, await e.remote.use(await readBody(req, RemoteUseRequestSchema))));
@@ -134,6 +143,7 @@ export function buildRouter(e: EngineContext): Router {
     return new Reply(204);
   });
   r.add(routes.storyboard, async (ctx) => new Reply(202, await e.service.storyboard(id(ctx))));
+  r.add(routes.make, async (ctx) => new Reply(202, await e.service.make(id(ctx), await readBody(ctx.req, MakeRequestSchema))));
   r.add(routes.still, async (ctx) => new Reply(202, e.service.still(id(ctx), id(ctx, "shotId"), await readBody(ctx.req, StillRequestSchema))));
   r.add(routes.draft, async (ctx) => new Reply(202, await e.service.draft(id(ctx), id(ctx, "shotId"), await readBody(ctx.req, DraftRequestSchema))));
   r.add(routes.final, async (ctx) => new Reply(202, await e.service.final(id(ctx), id(ctx, "shotId"), await readBody(ctx.req, FinalRequestSchema))));
@@ -156,6 +166,7 @@ export function buildRouter(e: EngineContext): Router {
 
   // The UI sends multipart with the field "file". Raw bytes with ?filename= (or a Content-Type) work too.
   // Role: ?role= (or a "role" form field) when given, else "music" for audio in a music video, else "reference".
+  // ?board= files an image, a song or a voiceover on that board of the canvas.
   r.add(routes.uploadAsset, async (ctx) => {
     const projectId = id(ctx);
     const project = e.store.require(projectId);
@@ -184,7 +195,7 @@ export function buildRouter(e: EngineContext): Router {
       if (!kind) throw new ApiError(415, "Upload an image, a video or an audio file");
       const role = RoleSchema.safeParse(upload.role || defaultUploadRole(project.template, kind));
       if (!role.success) throw badRequest("role must be one of reference, music, voice, sfx");
-      return new Reply(201, await e.service.addUpload(projectId, upload.path, kind, role.data));
+      return new Reply(201, await e.service.addUpload(projectId, upload.path, kind, role.data, { boardId: ctx.query.get("board") ?? undefined }));
     } finally {
       await rm(upload.path, { force: true });
     }

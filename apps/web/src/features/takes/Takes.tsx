@@ -8,7 +8,7 @@ import { useEngine, useProject, useProjectJobs } from "@/store/engine";
 import { useInstalledTier } from "@/store/tier";
 import { Button, Notice, Tag, cx, toast } from "@/ui/primitives";
 import { Media } from "@/media/Media";
-import { activeJob, assetById, bestAssetFor, draftsFor, failureText, frameClass, jobStatusLine, lastFailed } from "@/features/project/helpers";
+import { activeJob, assetById, bestAssetFor, draftsFor, failureText, frameClass, jobStatusLine, lastFailed, timelineShots } from "@/features/project/helpers";
 import { useNow } from "@/lib/useNow";
 import { roughDuration } from "@/lib/format";
 import "./takes.css";
@@ -22,8 +22,10 @@ export function Takes() {
   const tier = useInstalledTier();
   const nav = useNavigate();
 
-  const shotId = params.get("shot") ?? project.shots.find((s) => s.stillAssetId)?.id ?? project.shots[0]?.id;
-  const shot = project.shots.find((s) => s.id === shotId) ?? project.shots[0];
+  // The cut's shots. Shots kept in Media only are picked from their cards there.
+  const shots = timelineShots(project);
+  const shotId = params.get("shot") ?? shots.find((s) => s.stillAssetId)?.id ?? shots[0]?.id;
+  const shot = shots.find((s) => s.id === shotId) ?? shots[0];
   const [compare, setCompare] = useState(false);
   const [compareIds, setCompareIds] = useState<string[]>([]);
 
@@ -54,9 +56,9 @@ export function Takes() {
     }
   };
 
-  const picked = project.shots.filter((s) => s.chosenDraftId).length;
-  const allPicked = project.shots.length > 0 && picked === project.shots.length;
-  const nextUnpicked = project.shots.find((s) => !s.chosenDraftId && s.id !== shot?.id);
+  const picked = shots.filter((s) => s.chosenDraftId).length;
+  const allPicked = shots.length > 0 && picked === shots.length;
+  const nextUnpicked = shots.find((s) => !s.chosenDraftId && s.id !== shot?.id);
 
   const whatIf = project.template === "what_if";
   const singleShot = whatIf || project.template === "camera_move" || project.template === "vfx_effect";
@@ -67,16 +69,16 @@ export function Takes() {
   // How many takes sit side by side before the row wraps. The CSS sizes each take from this.
   const stageCount = Math.min(Math.max(1, visible.length + (compare ? 0 : drafting.length)), project.aspect === "9:16" ? 4 : 3);
 
-  if (!project.shots.length) {
+  if (!shots.length) {
     const preparing = singleShot && jobs.some((j) => j.step === "text" && (j.status === "queued" || j.status === "running"));
     return (
       <div className="page">
         <div className="empty">
           <Clapperboard className="empty__icon" />
-          <div className="empty__title">{preparing ? "Preparing your photo" : "No shots yet"}</div>
-          <p className="empty__text">{preparing ? "Your shot will appear here as it renders." : "Takes are motion drafts of each shot. Write the storyboard first."}</p>
-          {!preparing && <Link to={`/p/${project.id}/storyboard`} className="btn btn--primary">
-            Go to the storyboard
+          <div className="empty__title">{preparing ? "Preparing your photo" : "No shots on the timeline"}</div>
+          <p className="empty__text">{preparing ? "Your shot will appear here as it renders." : whatIf ? "Takes are films made from your story. Write the story first." : "Takes are motion drafts of the shots on the timeline. Make shots in Media first."}</p>
+          {!preparing && <Link to={`/p/${project.id}/${whatIf ? "storyboard" : "media"}`} className="btn btn--primary">
+            {whatIf ? "Go to the story" : "Go to Media"}
           </Link>}
         </div>
       </div>
@@ -87,11 +89,11 @@ export function Takes() {
     <div className={cx("tk", singleShot && "tk--single")}>
       <nav className="tk-rail" aria-label="Shots">
         <div className="side__head">Shots</div>
-        {project.shots.map((s, i) => (
+        {shots.map((s, i) => (
           <RailShot key={s.id} project={project} shot={s} index={i} current={s.id === shot?.id} onClick={() => setParams({ shot: s.id })} jobs={jobs} />
         ))}
         <div className="tk-rail__foot">
-          <span className="t-small t-muted">{picked} of {project.shots.length} picked</span>
+          <span className="t-small t-muted">{picked} of {shots.length} picked</span>
           {allPicked && !shot?.chosenDraftId && (
             <Link to={`/p/${project.id}/finals`} className="btn btn--primary btn--s">
               Go to finals
@@ -104,7 +106,7 @@ export function Takes() {
         <div className="tk-main">
           <div className="page__head">
             <div>
-              <h1 className="page__title">{quickLabel ?? `Shot ${project.shots.indexOf(shot) + 1}`}</h1>
+              <h1 className="page__title">{quickLabel ?? `Shot ${shots.indexOf(shot) + 1}`}</h1>
               <p className="page__sub">{whatIf ? String(project.brief.question) : shot.prompt}</p>
             </div>
             <div className="page__actions">
