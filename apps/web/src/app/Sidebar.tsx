@@ -10,6 +10,7 @@ import { TemplateIcon } from "@/features/project/TemplateIcon";
 import { clock, gb } from "@/lib/format";
 import { useThisMachine } from "@/store/tier";
 import { sidebarShortcut } from "./useSidebar";
+import { ComputePopover, useCompute, usePopover } from "./ComputePopover";
 
 /** Opens or closes the sidebar. In the sidebar's title strip when it is open, first in the toolbar when it is not. */
 export function SidebarToggle({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => void }) {
@@ -115,15 +116,12 @@ function OtherGpuUse() {
   );
 }
 
-/** Where work runs and what it is doing, in one line at the foot of the sidebar. */
+/** Where work runs and what it is doing, in one line at the foot of the sidebar. Opens the details above it. */
 function ComputeStatus() {
   const { status, settings, projects } = useEngineState();
-  const jobs = useJobs();
-  const running = jobs.find((j) => j.status === "running");
-  const queued = jobs.filter((j) => j.status === "queued");
-  const remote = status?.mode === "remote" ? settings?.remote : null;
+  const { where, remote, away, running, queued } = useCompute();
   const here = useThisMachine();
-  const where = remote ? (remote.name ?? remote.url.replace(/^https?:\/\//, "")) : status?.mode === "attach" ? "GPU proxy" : here.name;
+  const pop = usePopover<HTMLButtonElement>();
 
   let dot = "pulse--ok";
   let text = where;
@@ -132,7 +130,7 @@ function ComputeStatus() {
   if (!status || status.phase !== "ready") {
     text = status?.phase === "installing" ? "Installing" : status?.phase === "starting" ? "Starting" : status?.phase === "error" ? "Needs attention" : "Not set up";
     dot = status?.phase === "error" ? "pulse--bad" : "pulse--idle";
-  } else if (!status.comfyui.running && (!running || isGpuJob(running))) {
+  } else if (away) {
     text = remote ? `Waiting for ${where}` : "Waiting for the GPU";
     dot = "pulse--idle";
   } else if (running) {
@@ -152,14 +150,25 @@ function ComputeStatus() {
   }
 
   return (
-    <Link to="/queue" className={cx("side__status", tone && `side__status--${tone}`)} title={running && !isGpuJob(running) ? `This work runs on ${here.lower}` : remote ? `Generation runs on ${where} at ${remote.url}` : "Work runs on this computer"}>
-      <span className={cx("pulse", dot)} />
-      <span>{text}</span>
-      {bar && (
-        <span className={cx("bar", bar.night && "bar--night")}>
-          <span className="bar__fill" style={{ width: `${bar.value * 100}%` }} />
-        </span>
-      )}
-    </Link>
+    <>
+      <button
+        ref={pop.anchor}
+        type="button"
+        className={cx("side__status", tone && `side__status--${tone}`)}
+        aria-expanded={pop.open}
+        aria-haspopup="dialog"
+        title={running && !isGpuJob(running) ? `This work runs on ${here.lower}` : remote ? `Generation runs on ${where}` : "Work runs on this computer"}
+        onClick={pop.toggle}
+      >
+        <span className={cx("pulse", dot)} />
+        <span>{text}</span>
+        {bar && (
+          <span className={cx("bar", bar.night && "bar--night")}>
+            <span className="bar__fill" style={{ width: `${bar.value * 100}%` }} />
+          </span>
+        )}
+      </button>
+      <ComputePopover open={pop.open} onClose={pop.close} anchor={pop.anchor} placement="above-start" />
+    </>
   );
 }

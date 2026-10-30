@@ -599,16 +599,25 @@
   border-radius: var(--r-pill);
   background: var(--banana);
   color: var(--on-banana);
-  box-shadow: inset 0 0 0 1px var(--banana-line);
+  /* A lit top edge, a crisp rim and a warm shadow under it, so the one main action sits above the panel. */
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.55),
+    inset 0 0 0 1px var(--banana-line),
+    0 1px 2px rgba(120, 92, 0, 0.16),
+    0 6px 16px -8px rgba(196, 150, 0, 0.55);
   transition:
     background-color var(--t-fast) var(--ease),
-    transform var(--t-fast) var(--ease);
+    box-shadow 180ms var(--ease-out),
+    transform 180ms var(--ease-out);
 }
 :root[data-theme="dark"] .mp-go__bar {
-  box-shadow: none;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.45),
+    0 8px 24px -10px rgba(255, 225, 79, 0.45);
 }
 .mp-go__bar:hover:not(:disabled) {
   background: var(--banana-hover);
+  transform: translateY(-1px);
 }
 .mp-go__bar:active:not(:disabled) {
   background: var(--banana-press);

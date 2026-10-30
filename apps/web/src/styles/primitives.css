@@ -558,6 +558,7 @@
 }
 .dialog::backdrop {
   background: var(--scrim);
+  backdrop-filter: blur(3px);
 }
 /* Motion only on open: the scrim fades in, the sheet settles from a touch smaller. */
 .dialog[open] {

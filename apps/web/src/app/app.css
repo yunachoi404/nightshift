@@ -416,6 +416,223 @@
 .activity--night {
   color: var(--amber);
 }
+.activity[aria-expanded="true"] {
+  background: var(--select);
+  color: var(--text);
+}
+/* The GPU is away: a quiet hairline pill, so it reads as a state and not an error. */
+.activity--away {
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+.activity__chev {
+  width: 12px;
+  height: 12px;
+  flex: none;
+  margin-left: -2px;
+  color: var(--text-4);
+  stroke-width: 2;
+  transition: transform var(--t-med) var(--ease-out);
+}
+.activity[aria-expanded="true"] .activity__chev {
+  transform: rotate(180deg);
+}
+
+/* ---------- The way back from the queue and settings ---------- */
+.toolbar__back {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 28px;
+  padding: 0 10px 0 6px;
+  margin-right: 8px;
+  border-radius: var(--r-pill);
+  font-size: var(--fs-small);
+  font-weight: 500;
+  color: var(--text-2);
+  background: var(--btn-bg);
+  box-shadow: var(--btn-shadow), inset 0 0 0 1px var(--btn-line);
+  white-space: nowrap;
+  min-width: 0;
+  max-width: 240px;
+  flex: none;
+  transition:
+    background-color var(--t-fast) var(--ease),
+    color var(--t-fast) var(--ease);
+}
+.toolbar__back:hover {
+  background: var(--btn-bg-hover);
+  color: var(--text);
+}
+.toolbar__back svg {
+  width: 14px;
+  height: 14px;
+  flex: none;
+  stroke-width: 2;
+}
+.toolbar__back-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ---------- What the GPU is doing: a popover over the page ---------- */
+.gpu-pop {
+  position: fixed;
+  z-index: 60;
+  width: 320px;
+  max-height: min(520px, calc(100vh - 80px));
+  overflow: auto;
+  padding: 4px;
+  border-radius: var(--r-m);
+  background: var(--raised);
+  box-shadow: var(--panel-shadow);
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+  animation: gpu-pop-in var(--t-med) var(--ease-out);
+}
+.gpu-pop--below-end {
+  transform-origin: top right;
+}
+.gpu-pop--above-start {
+  transform-origin: bottom left;
+}
+@keyframes gpu-pop-in {
+  from {
+    opacity: 0;
+    transform: scale(0.97) translateY(-2px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .gpu-pop {
+    animation: none;
+  }
+}
+.gpu-pop__head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px 8px;
+}
+.gpu-pop__where {
+  flex: 1;
+  min-width: 0;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.gpu-pop__state {
+  flex: none;
+  height: 20px;
+  padding: 0 8px;
+  display: inline-flex;
+  align-items: center;
+  border-radius: var(--r-pill);
+  font-size: var(--fs-micro);
+  font-weight: 500;
+  color: var(--ok);
+  background: var(--ok-soft);
+}
+.gpu-pop__state--busy {
+  color: var(--text);
+  background: var(--banana-soft);
+}
+.gpu-pop__state--away {
+  color: var(--text-2);
+  background: var(--accent-soft);
+}
+.gpu-pop__state--night {
+  color: var(--amber);
+  background: var(--amber-soft);
+}
+.gpu-pop__why {
+  margin: 0 12px 10px;
+  color: var(--text-2);
+  font-size: var(--fs-small);
+  line-height: var(--lh-small);
+  text-wrap: pretty;
+}
+.gpu-pop__section {
+  margin: 0 4px;
+  padding: 10px 8px 8px;
+  border-top: 1px solid var(--line);
+}
+.gpu-pop__title {
+  margin: 0 0 6px;
+  font-size: var(--fs-micro);
+  line-height: var(--lh-micro);
+  font-weight: 600;
+  color: var(--text-3);
+  font-variant-numeric: tabular-nums;
+}
+.gpu-pop__section--night .gpu-pop__title {
+  color: var(--amber);
+}
+.gpu-pop__job {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+  min-width: 0;
+}
+.gpu-pop__job-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.gpu-pop__job-name,
+.gpu-pop__job-sub {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.gpu-pop__job-name {
+  font-weight: 500;
+}
+.gpu-pop__job-sub {
+  font-size: var(--fs-small);
+  line-height: var(--lh-small);
+  color: var(--text-3);
+}
+.gpu-pop__pct {
+  flex: none;
+  font-size: var(--fs-small);
+  color: var(--text-2);
+  font-variant-numeric: tabular-nums;
+}
+.gpu-pop__bar {
+  display: block;
+  margin: 4px 0 2px;
+  height: 3px;
+}
+.gpu-pop__more,
+.gpu-pop__empty {
+  font-size: var(--fs-small);
+  line-height: var(--lh-small);
+  color: var(--text-3);
+}
+.gpu-pop__more {
+  padding: 2px 0;
+}
+.gpu-pop__empty {
+  margin: 0;
+  padding: 10px 12px;
+  border-top: 1px solid var(--line);
+}
+.gpu-pop__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 4px;
+  padding: 8px;
+  border-top: 1px solid var(--line);
+}
+.gpu-pop__foot svg {
+  width: 14px;
+  height: 14px;
+}
 .ring {
   width: 14px;
   height: 14px;

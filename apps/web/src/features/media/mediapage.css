@@ -127,6 +127,22 @@
   padding: 96px 24px;
   text-align: center;
 }
+/* An empty board: a small fan of blank frames above the words, where the first cards will land. */
+.mp-empty:not(.mp-empty--drop)::before {
+  content: "";
+  width: 64px;
+  height: 40px;
+  margin-bottom: 18px;
+  border-radius: var(--r-frame);
+  background: linear-gradient(180deg, var(--raised), var(--inset));
+  box-shadow:
+    0 0 0 1px var(--line-strong),
+    0 8px 18px -8px rgba(24, 24, 27, 0.22),
+    -14px -7px 0 -4px var(--media-empty),
+    -14px -7px 0 -3px var(--line),
+    14px -7px 0 -4px var(--media-empty),
+    14px -7px 0 -3px var(--line);
+}
 .mp-empty__title {
   font-family: var(--font-display);
   font-size: var(--fs-title-3);
@@ -173,13 +189,28 @@
 .mp-card--drop-after::after {
   bottom: -8px;
 }
+/* A card lifts a little under the pointer, on a soft shadow; in dark it takes a hairline instead. */
 .mp-card__frame {
-  transition: box-shadow var(--t-fast) var(--ease);
+  --card-lift: 0 1px 2px rgba(24, 24, 27, 0.06), 0 10px 24px -10px rgba(24, 24, 27, 0.32);
+  transition:
+    box-shadow 180ms var(--ease-out),
+    transform 180ms var(--ease-out);
+}
+:root[data-theme="dark"] .mp-card__frame {
+  --card-lift: 0 0 0 1px var(--line-strong), 0 12px 28px -12px rgba(0, 0, 0, 0.9);
 }
 .mp-card__frame:hover {
-  box-shadow:
-    inset 0 0 0 1px var(--content),
-    0 0 0 2px var(--line-strong);
+  transform: translateY(-2px);
+  box-shadow: var(--card-lift);
+}
+.mp-card--dragging .mp-card__frame,
+.mp-card--unpickable .mp-card__frame:hover {
+  transform: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .mp-card__frame:hover {
+    transform: none;
+  }
 }
 .mp-card__open {
   position: absolute;
@@ -539,4 +570,121 @@
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
+}
+
+/* ---------- A card being made ---------- */
+/* A soft band of light moves across the empty frame. Waiting for the GPU, it moves slower and quieter. */
+.mp-making {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: inherit;
+  background:
+    radial-gradient(120% 80% at 50% 110%, var(--banana-soft), transparent 60%),
+    var(--media-empty);
+  pointer-events: none;
+}
+.mp-making::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(100deg, transparent 30%, var(--making-sheen) 50%, transparent 70%);
+  background-size: 250% 100%;
+  animation: mp-making-sweep 1.8s var(--ease) infinite;
+}
+.mp-making--night {
+  background:
+    radial-gradient(120% 80% at 50% 110%, var(--amber-soft), transparent 60%),
+    var(--media-empty);
+}
+.mp-making--waiting {
+  background: var(--media-empty);
+}
+.mp-making--waiting::after {
+  animation-duration: 3.2s;
+  opacity: 0.6;
+}
+:root {
+  --making-sheen: rgba(255, 255, 255, 0.75);
+}
+:root[data-theme="dark"] {
+  --making-sheen: rgba(255, 255, 255, 0.06);
+}
+@keyframes mp-making-sweep {
+  from {
+    background-position: 120% 0;
+  }
+  to {
+    background-position: -20% 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mp-making::after {
+    animation: none;
+  }
+}
+.mp-card__state.mp-card__state--making {
+  flex-direction: column;
+  gap: 6px;
+}
+/* The step in a small chip: a ring with the progress while it renders, a still dot while it waits. */
+.mp-making__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 26px;
+  max-width: 100%;
+  padding: 0 11px 0 9px;
+  border-radius: var(--r-pill);
+  background: var(--raised);
+  box-shadow: var(--btn-shadow), inset 0 0 0 1px var(--line);
+  color: var(--text);
+  font-size: var(--fs-small);
+  font-weight: 500;
+  white-space: nowrap;
+}
+.mp-making__chip .ring::after {
+  background: var(--raised);
+}
+:root[data-theme="dark"] .mp-making__chip {
+  background: var(--inset-2);
+  box-shadow: inset 0 0 0 1px var(--line-strong);
+}
+:root[data-theme="dark"] .mp-making__chip .ring::after {
+  background: var(--inset-2);
+}
+.mp-making__stage {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+.mp-making__time {
+  color: var(--text-3);
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+}
+.mp-making__why {
+  max-width: 220px;
+  color: var(--text-3);
+  font-size: var(--fs-micro);
+  line-height: var(--lh-micro);
+  text-wrap: balance;
+}
+/* Over the old picture the chip turns to dark glass. */
+.mp-card__state--onmedia .mp-making__chip {
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(10px);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12);
+  color: #fff;
+  text-shadow: none;
+}
+.mp-card__state--onmedia .mp-making__chip .ring::after {
+  background: #1b1b1d;
+}
+.mp-card__state--onmedia .mp-making__time,
+.mp-card__state--onmedia .mp-making__why {
+  color: rgba(255, 255, 255, 0.72);
+}
+.mp-card .frame__progress--waiting > div {
+  background: var(--text-4);
 }

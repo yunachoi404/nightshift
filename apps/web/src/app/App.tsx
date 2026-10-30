@@ -39,6 +39,7 @@ function Shell() {
   const sidebar = useSidebar();
   const params = useProjectIdFromPath(loc.pathname);
   const project = useProject(params);
+  const backTo = useProject(useLastProject(params));
   const phase = state.status?.phase;
   const ready = phase === "ready";
   const onSetup = loc.pathname.startsWith("/setup");
@@ -117,7 +118,7 @@ function Shell() {
       <div className={cx("app", onSetup ? "app--single" : sidebar.collapsed && "app--collapsed", sidebar.moving && "app--sidebar-moving")} inert={lost}>
         {!onSetup && <Sidebar collapsed={sidebar.collapsed} onToggle={sidebar.toggle} />}
         <div className="pane">
-          {!onSetup && <Toolbar project={project} onDev={() => setDevOpen((v) => !v)} sidebarCollapsed={sidebar.collapsed} onToggleSidebar={sidebar.toggle} />}
+          {!onSetup && <Toolbar project={project} backTo={backTo} onDev={() => setDevOpen((v) => !v)} sidebarCollapsed={sidebar.collapsed} onToggleSidebar={sidebar.toggle} />}
           <div className="main">
             <Routes>
               {/* Redirect during render: a ready engine whose setup is done never shows the setup screens. */}
@@ -154,6 +155,19 @@ function Shell() {
       )}
     </>
   );
+}
+
+const LAST_PROJECT = "nightshift.lastProject";
+
+/** The project you were last in, kept for the visit, so the queue and settings can lead back to it. */
+function useLastProject(current: string | undefined): string | undefined {
+  const [last, setLast] = useState<string | undefined>(() => sessionStorage.getItem(LAST_PROJECT) ?? undefined);
+  useEffect(() => {
+    if (!current) return;
+    setLast(current);
+    sessionStorage.setItem(LAST_PROJECT, current);
+  }, [current]);
+  return current ?? last;
 }
 
 function useProjectIdFromPath(pathname: string): string | undefined {

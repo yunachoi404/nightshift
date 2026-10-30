@@ -1,6 +1,7 @@
 import type { Project } from "@nightshift/contract";
 import { templates } from "@nightshift/contract";
-import { Plus } from "lucide-react";
+import { ChevronDown, ChevronLeft, Plus } from "lucide-react";
+import type { ReactNode } from "react";
 import { Link, useLocation, useNavigate } from "react-router";
 import { useEngineState, useJobs } from "@/store/engine";
 import { Button, Segmented, cx } from "@/ui/primitives";
@@ -10,11 +11,12 @@ import { plural, shortDuration } from "@/lib/format";
 import { useThisMachine } from "@/store/tier";
 import { SidebarToggle } from "./Sidebar";
 import { modKey } from "./useSidebar";
+import { ComputePopover, useCompute, usePopover } from "./ComputePopover";
 
 /** A project's two areas. The old storyboard, takes and finals pages belong to Media. */
 type Stage = "media" | "editor";
 
-export function Toolbar({ project, onDev, sidebarCollapsed, onToggleSidebar }: { project?: Project; onDev: () => void; sidebarCollapsed: boolean; onToggleSidebar: () => void }) {
+export function Toolbar({ project, backTo, onDev, sidebarCollapsed, onToggleSidebar }: { project?: Project; backTo?: Project; onDev: () => void; sidebarCollapsed: boolean; onToggleSidebar: () => void }) {
   const loc = useLocation();
   const nav = useNavigate();
   const jobs = useJobs();
@@ -32,11 +34,19 @@ export function Toolbar({ project, onDev, sidebarCollapsed, onToggleSidebar }: {
   } else if (loc.pathname === "/settings") title = "Settings";
   else if (loc.pathname === "/new") title = "New project";
   else if (loc.pathname === "/queue") title = "Queue";
+  // The queue and settings lead back to the project you came from.
+  const back = !project && backTo && (loc.pathname === "/queue" || loc.pathname === "/settings") ? backTo : undefined;
 
   return (
     <header className="toolbar drag">
       <div className="toolbar__left">
         {sidebarCollapsed && <SidebarToggle collapsed onToggle={onToggleSidebar} />}
+        {back && (
+          <Link to={`/p/${back.id}`} className="toolbar__back" title={`Back to ${back.name}`}>
+            <ChevronLeft aria-hidden />
+            <span className="toolbar__back-label">Back to {back.name}</span>
+          </Link>
+        )}
         <div className="toolbar__title">
           <div className="toolbar__name">{title}</div>
           {sub.length > 0 && (
@@ -80,53 +90,65 @@ export function Toolbar({ project, onDev, sidebarCollapsed, onToggleSidebar }: {
   );
 }
 
-/** The running job as a small ring and a few words. Opens the queue. */
+/** The running job as a small ring and a few words. Opens what the GPU is doing in place, over the page. */
 function Activity() {
-  const { status, settings, projects } = useEngineState();
-  const jobs = useJobs();
-  const loc = useLocation();
-  const running = jobs.find((j) => j.status === "running");
-  const queued = jobs.filter((j) => j.status === "queued");
-  const remote = status?.mode === "remote" ? settings?.remote : null;
-  const remoteName = remote ? (remote.name ?? remote.url.replace(/^https?:\/\//, "")) : null;
+  const { status, projects } = useEngineState();
+  const { where, remote, away, running, queued } = useCompute();
   const here = useThisMachine();
+  const pop = usePopover<HTMLButtonElement>();
 
   if (!status || status.phase !== "ready") return null;
-  if (!status.comfyui.running && (!running || isGpuJob(running))) {
-    return (
-      <Link to="/queue" className="activity" aria-current={loc.pathname === "/queue" ? "page" : undefined} title={status.error}>
+  let body: ReactNode = null;
+  let night = false;
+  if (away) {
+    body = (
+      <>
         <span className="pulse pulse--idle" />
-        <span>{remoteName ? `Waiting for ${remoteName}` : "Waiting for the GPU"}</span>
-      </Link>
+        <span>{remote ? `Waiting for ${where}` : "Waiting for the GPU"}</span>
+      </>
     );
-  }
-  if (running) {
-    const night = running.mode === "overnight";
-    return (
-      <Link to="/queue" className={cx("activity", night && "activity--night")} aria-current={loc.pathname === "/queue" ? "page" : undefined}>
+  } else if (running) {
+    night = running.mode === "overnight";
+    body = (
+      <>
         <span className={cx("ring", night && "ring--night")} style={{ "--pct": Math.round(running.progress * 100) } as React.CSSProperties} />
-        <ActivityLabel label={jobLabel(running, projects[running.projectId])} where={remoteName ? (isGpuJob(running) ? remoteName : here.lower) : undefined} />
-      </Link>
+        <ActivityLabel label={jobLabel(running, projects[running.projectId])} where={remote ? (isGpuJob(running) ? where : here.lower) : undefined} />
+      </>
     );
-  }
-  if (queued.length) {
-    const night = queued.some((j) => j.mode === "overnight");
-    return (
-      <Link to="/queue" className={cx("activity", night && "activity--night")} aria-current={loc.pathname === "/queue" ? "page" : undefined}>
+  } else if (queued.length) {
+    night = queued.some((j) => j.mode === "overnight");
+    body = (
+      <>
         <span className={cx("pulse", night ? "pulse--night" : "pulse--idle")} />
         <span>{night ? `${queued.length} for tonight` : `${queued.length} queued`}</span>
-      </Link>
+      </>
     );
-  }
-  if (remoteName) {
-    return (
-      <Link to="/settings" className="activity" title={`Work runs on ${remoteName} at ${remote!.url}`}>
+  } else if (remote) {
+    body = (
+      <>
         <span className="pulse pulse--ok" />
-        <span>{remoteName}</span>
-      </Link>
+        <span>{where}</span>
+      </>
     );
   }
-  return null;
+  if (!body) return null;
+  return (
+    <>
+      <button
+        ref={pop.anchor}
+        type="button"
+        className={cx("activity", night && "activity--night", away && "activity--away")}
+        aria-expanded={pop.open}
+        aria-haspopup="dialog"
+        title={away ? status.error : undefined}
+        onClick={pop.toggle}
+      >
+        {body}
+        <ChevronDown className="activity__chev" aria-hidden />
+      </button>
+      <ComputePopover open={pop.open} onClose={pop.close} anchor={pop.anchor} placement="below-end" />
+    </>
+  );
 }
 
 /** The job in a few words. Narrow windows drop the device, then the detail after the comma (see .activity in app.css). */

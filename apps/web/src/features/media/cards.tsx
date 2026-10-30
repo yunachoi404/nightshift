@@ -6,11 +6,11 @@ import type { Job } from "@nightshift/contract";
 import { Brush, Clapperboard, Film, Layers, ListPlus, Maximize2, Mic, Move3d, Music, Pause, Play, Sparkles, Video } from "lucide-react";
 import { useEffect, useRef, useState, type CSSProperties, type DragEvent, type ReactNode } from "react";
 import { Link } from "react-router";
-import { useEngine } from "@/store/engine";
+import { useEngine, useEngineState } from "@/store/engine";
 import { useInstalledTier } from "@/store/tier";
 import { Button, cx, toast } from "@/ui/primitives";
 import { Media } from "@/media/Media";
-import { activeJob, failureText, frameClass, lastFailed, jobStatusLine } from "@/features/project/helpers";
+import { activeJob, failureText, frameClass, isGpuJob, jobElapsed, jobStage, lastFailed } from "@/features/project/helpers";
 import { useNow } from "@/lib/useNow";
 import { plural, timecode } from "@/lib/format";
 import { useMedia, type ImageTool } from "./context";
@@ -78,6 +78,44 @@ const TOOL_STEP_LABEL: Partial<Record<Job["step"], string>> = {
   video_draft: "Video",
 };
 
+/**
+ * A card being made: a soft light moves across the empty frame (or over the old picture, dimmed), with the step, the
+ * time so far and, while the GPU is away, why it waits.
+ */
+function MakingState({ job, onMedia, now }: { job: Job; onMedia: boolean; now: number }) {
+  const { status, settings } = useEngineState();
+  const night = job.mode === "overnight";
+  const stage = jobStage(job);
+  const elapsed = jobElapsed(job, now);
+  const gpuAway = !!status && status.phase === "ready" && !status.comfyui.running && isGpuJob(job);
+  const waiting = gpuAway || stage === "Waiting for the GPU";
+  const remote = status?.mode === "remote" ? settings?.remote : null;
+  const where = remote ? (remote.name ?? remote.url.replace(/^https?:\/\//, "")) : null;
+  const pct = Math.round(job.progress * 100);
+  // While the GPU is away, even a job it had started waits: the chip names what it waits for.
+  const label = gpuAway ? (where ? `Waiting for ${where}` : "Waiting for the GPU") : stage;
+  return (
+    <>
+      {!onMedia && <div className={cx("mp-making", night && "mp-making--night", waiting && "mp-making--waiting")} aria-hidden />}
+      <div className={cx("mp-card__state mp-card__state--making", onMedia && "mp-card__state--onmedia")} role="status">
+        <span className={cx("mp-making__chip", waiting && "mp-making__chip--waiting")}>
+          {waiting ? (
+            <span className={cx("pulse", "pulse--idle")} />
+          ) : (
+            <span className={cx("ring", night && "ring--night")} style={{ "--pct": Math.max(4, pct) } as CSSProperties} />
+          )}
+          <span className="mp-making__stage">{label}</span>
+          {elapsed && !waiting && <span className="mp-making__time">{elapsed}</span>}
+        </span>
+        {gpuAway && <span className="mp-making__why">{where ? "The GPU computer is busy with other work. This starts when it is free." : "This starts when the GPU is free."}</span>}
+      </div>
+      <div className={cx("frame__progress", night && "frame__progress--night", waiting && "frame__progress--waiting")}>
+        <div style={{ width: `${job.progress * 100}%` }} />
+      </div>
+    </>
+  );
+}
+
 export function ShotCard({ item, boardId, index, drop }: CardProps<ShotItem>) {
   const { project, jobs, picking, pickSource, openCard, sourceCardId } = useMedia();
   const { client, still, draft, final } = useEngine();
@@ -118,7 +156,7 @@ export function ShotCard({ item, boardId, index, drop }: CardProps<ShotItem>) {
       className={cx(picking && (pickable ? "mp-card--pickable" : "mp-card--unpickable"), sourceCardId === shot.id && "mp-card--source")}
     >
       <div
-        className={cx("frame mp-card__frame", frameClass(shot.aspect ?? project.aspect), !pick && "frame--empty", job && pick && "frame--working")}
+        className={cx("frame mp-card__frame", frameClass(shot.aspect ?? project.aspect), !pick && "frame--empty", job && pick && "frame--working", job && !pick && "mp-card__frame--making")}
         onMouseEnter={() => setHover(true)}
         onMouseLeave={() => setHover(false)}
       >
@@ -154,17 +192,7 @@ export function ShotCard({ item, boardId, index, drop }: CardProps<ShotItem>) {
             )}
           </div>
         )}
-        {job && (
-          <>
-            <div className={cx("mp-card__state", pick && "mp-card__state--onmedia")}>
-              <span className={cx("pulse", job.mode === "overnight" && "pulse--night")} />
-              <span>{jobStatusLine(job, now)}</span>
-            </div>
-            <div className={cx("frame__progress", job.mode === "overnight" && "frame__progress--night")}>
-              <div style={{ width: `${job.progress * 100}%` }} />
-            </div>
-          </>
-        )}
+        {job && <MakingState job={job} onMedia={!!pick} now={now} />}
         {failed && (
           <div className="mp-card__state mp-card__state--failed" role="alert">
             <span className="mp-card__fail">{failureText(failed)}</span>
