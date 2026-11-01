@@ -90,6 +90,8 @@ describe("the sidebar", () => {
   it("toggles with Cmd or Ctrl and backslash, even from a field", async () => {
     open();
     await screen.findByRole("heading", { name: "Projects" });
+    // Let the page's effects settle first, so the shortcut's listener is there on a slow machine too.
+    await act(async () => undefined);
 
     act(() => void fireEvent.keyDown(window, { key: "\\", metaKey: true }));
     expect(projectRow()).toBeNull();

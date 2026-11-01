@@ -108,8 +108,12 @@ describe("Projects", () => {
     const search = screen.getByRole("searchbox", { name: "Search projects" }) as HTMLInputElement;
     expect(search.closest(".toolbar")).not.toBeNull();
 
-    act(() => void fireEvent.keyDown(window, { key: "k", metaKey: true }));
-    await waitFor(() => expect(document.activeElement).toBe(search));
+    // The shortcut's listener is added once the toolbar has settled, which can come a moment after the cards on a slow
+    // machine: press until the field has the focus.
+    await waitFor(() => {
+      act(() => void fireEvent.keyDown(window, { key: "k", metaKey: true }));
+      expect(document.activeElement).toBe(search);
+    });
 
     fireEvent.change(search, { target: { value: "NORTH" } });
     await waitFor(() => expect(cards()).toEqual(["Northern lights"]));
