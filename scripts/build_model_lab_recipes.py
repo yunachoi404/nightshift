@@ -169,6 +169,14 @@ def catalog():
             if repo.startswith("nvidia/bigvgan"):
                 dest = "audio_vae/bigvgan_vocoder/" + path
             register(repo, path, name, url, dest=dest)
+    # YuE2's weights are non-commercial; m-a-p's YuE code is Apache-2.0 (research/2026-10-31_yue2_music.md).
+    register(
+        "Comfy-Org/YuE2",
+        "checkpoints/yue2_3b_int8_convrot.safetensors",
+        "CC BY-NC 4.0, non-commercial",
+        "https://huggingface.co/m-a-p/YuE2-3B/blob/8f24312f187763b9854adeec87e437e2b03bbff1/LICENSE",
+        "Weights are CC BY-NC 4.0: no commercial use, and credit YuE2-3B with its source, huggingface.co/m-a-p/YuE2-3B. The YuE code is Apache-2.0. ComfyUI runs the model with its built-in nodes.",
+    )
     # Preserve the dated local alias only when it matches the pinned upstream file.
     MODELS["minimax_h3_video_vae_int8_convrot_comfyorg_20260918.safetensors"] = (
         copy.deepcopy(MODELS["minimax_h3_video_vae_int8_convrot.safetensors"])
@@ -220,7 +228,10 @@ def ref(name):
             value = graph[binding["node"]]["inputs"][binding["field"]]
             if isinstance(value, (int, float)):
                 result["params"][key] = value
-    if name.startswith("ltx25_same_take"):
+    if name == "ltx25_same_take_hd":
+        # Two latent upscale and refine passes: the draft at four times its size (research/2026-10-31_hd_final.json).
+        result["params"].update(width=2560, height=1536, fps=24, frames=97)
+    elif name.startswith("ltx25_same_take"):
         result["params"].update(width=1280, height=768, fps=24, frames=97)
     elif name == "video_pixel_upscale":
         result["params"].update(width=768, height=512, fps=24, frames=49)
@@ -255,6 +266,7 @@ def graph_models(steps, breeze):
         graph = json.loads((ROOT / "workflows" / workflow["workflow"]).read_text())
         for node in graph.values():
             for field in [
+                "ckpt_name",
                 "unet_name",
                 "clip_name",
                 "clip_name1",
@@ -361,7 +373,7 @@ MODEL_NAMES = [
     ("diffusion_models-Kandinsky-6.0-Lite", "Kandinsky 6 Lite, video model"),
     ("diffusion_models-minimax_h3", "MiniMax H3, overnight video model"),
     ("diffusion_models-acestep_v1.5_turbo", "ACE-Step 1.5 Turbo, music model"),
-    ("diffusion_models-minimax_music3", "MiniMax Music 3, music model"),
+    ("checkpoints-yue2_3b", "YuE2-3B, music model"),
     ("text_encoders-qwen3vl_4b", "Qwen3-VL 4B, writing model"),
     ("text_encoders-qwen3vl_32b_minimax_h3", "Qwen3-VL 32B, overnight prompt reader"),
     ("text_encoders-qwen3.5_9b", "Qwen 3.5 9B, image prompt reader"),
@@ -371,7 +383,6 @@ MODEL_NAMES = [
     ("text_encoders-clip_l", "CLIP-L, video prompt reader"),
     ("text_encoders-qwen_0.6b_ace15", "Qwen3 0.6B, music prompt reader"),
     ("text_encoders-qwen_1.7b_ace15", "Qwen3 1.7B, music prompt reader"),
-    ("text_encoders-minimax_music3", "MiniMax Music 3, music prompt reader"),
     ("vae-qwen_image_vae", "Qwen-Image, image decoder"),
     ("vae-flux2-vae", "FLUX.2, image decoder"),
     ("vae-ltx-2.5-video-vae", "LTX-2.5, video decoder"),
@@ -380,7 +391,6 @@ MODEL_NAMES = [
     ("vae-minimax_h3_video_vae", "MiniMax H3, video decoder"),
     ("vae-minimax_h3_audio_vae", "MiniMax H3, sound decoder"),
     ("vae-ace_1.5_vae", "ACE-Step 1.5, music decoder"),
-    ("vae-minimax_music3_dav", "MiniMax Music 3, music decoder"),
     ("audio_vae-v1-44", "MMAudio, sound decoder"),
     ("audio_vae-bigvgan_vocoder-bigvgan_generator", "BigVGAN, waveform decoder"),
     ("audio_vae-bigvgan_vocoder-config", "BigVGAN, settings"),
@@ -478,7 +488,7 @@ def main():
         "video_final_same_take": ref("ltx25_same_take"),
         "video_final_remaster": ref("h3_ref2va_final"),
         "voice": ref("breeze_tts2_eager"),
-        "music": ref("minimax_music3"),
+        "music": ref("yue2_music"),
         "text": ref("text_shot_list"),
     }
     # Launch flags for ComfyUI 0.41.3. DynamicVRAM is its default on NVIDIA and stays on:
@@ -504,10 +514,11 @@ def main():
             96,
             None,
             96,
-            {},
+            # The Spark finishes a take at four times the draft's size, 2560x1536.
+            {"video_final_same_take": ref("ltx25_same_take_hd")},
             spark_args,
             {},
-            [36, 44, 48, 44, 12, 24, 8],
+            [36, 44, 48, 44, 12, 10, 8],
         ),
         (
             "apple-64",
@@ -540,7 +551,7 @@ def main():
             {"still": ref("krea2_turbo_nvfp4")},
             ["--lowvram", "--reserve-vram", "3"],
             {},
-            [16, 28, 29, 29, 9, 16, 8],
+            [16, 28, 29, 29, 9, 10, 8],
         ),
         (
             "nvidia-24-offload",
@@ -655,10 +666,8 @@ def main():
             cases = {
                 "still": "krea2_turbo_bf16",
                 "video_draft": "ltx_draft_ok",
-                "video_final_same_take": "ltx_final_v2",
                 "video_final_remaster": "h3_ref2va_final",
                 "voice": "breeze_tts2_eager",
-                "music": "minimax_music3",
                 "text": "text_shot_list",
             }
             # The committed record of the Spark runs (scripts/collect_model_lab_evidence.py), so a checkout without
@@ -672,6 +681,10 @@ def main():
                         "seconds": m["seconds"],
                         "measured": True,
                     }
+            # YuE2: a 30-second instrumental, the mean over the lab's prompts and seeds.
+            estimates.update(research("2026-10-31_yue2_music.json")["estimates"])
+            # The four-times final: its time on the Spark, its memory bounded by the runtime's 56 GB budget.
+            estimates.update(research("2026-10-31_hd_final.json")["estimates"])
         if tier == "nvidia-8":
             # Measured end to end on an RTX 2080 SUPER. Each value sits a little above the slowest full-card job.
             estimates.update(research("2026-10-29_nvidia8_measurements.json")["estimates"])
@@ -704,8 +717,13 @@ def main():
             else:
                 edit_seconds, video_seconds = (15, 35) if tier == "nvidia-32" else (25, 55)
                 recipe["estimates"]["effect_end_frame"] = {"peakGb": 18.8, "seconds": edit_seconds, "measured": False}
-                recipe["estimates"]["video_effect"] = {"peakGb": recipe["estimates"]["video_draft"]["peakGb"], "seconds": video_seconds, "measured": False}
+                # A step's time is the whole job it names: an effect job draws its end frame, then the video.
+                recipe["estimates"]["video_effect"] = {"peakGb": recipe["estimates"]["video_draft"]["peakGb"], "seconds": edit_seconds + video_seconds, "measured": False}
             recipe["referenceStill"] = ref("references_klein4b")
+        if tier == "unified-128-cuda":
+            # A What if? film (361 frames) finishes at twice the draft's size: four times would not fit.
+            recipe["longTakeFinal"] = ref("ltx25_same_take")
+            recipe["longTakeFinal"]["params"]["maxFrames"] = 361  # a What if? film, 15 s at 24 fps
         if tier == "unified-128-cuda":
             # Camera move quick shots: MoGe depth lays out the path, LTX with the layout LoRA renders it
             # (research/2026-10-21_camera_moves.md).
@@ -715,6 +733,11 @@ def main():
             recipe["estimates"].update(research("2026-10-21_camera_measurements.json")["estimates"])
             recipe["steps"]["video_what_if"] = ref("ltx25_what_if")
             recipe["estimates"].update(research("2026-10-28_what_if_measurements.json")["estimates"])
+            # The Nov 1 dogfood night: whole jobs, end to end in the app. Earlier records timed single workflows, some
+            # cold, so stills read 31 s where they take 11, and an effect 2 minutes where it takes 1. Memory keeps the
+            # earlier records' peaks; the night did not sample it.
+            for step, seconds in research("2026-11-01_dogfood_job_times.json")["seconds"].items():
+                recipe["estimates"][step] = {**recipe["estimates"][step], "seconds": seconds}
         recipe["models"] = [named(m) for m in recipe["models"]]
         built_recipes.append(recipe)
         (ROOT / "recipes" / f"{tier}.json").write_text(

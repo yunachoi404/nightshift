@@ -5,9 +5,9 @@ import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 import { RuntimeLostError } from "../src/errors.js";
 import { EventBus } from "../src/events.js";
-import { awaitedBy, isEligible, JobQueue, jobPriority, laneOf, modelKey, nightGroupFor, pickNext, runOrder, WAITING_FOR_GPU, type ExecContext, type QueueHooks, type QueueOptions } from "../src/queue/queue.js";
+import { awaitedBy, HOLD_FOR_USER_MS, isEligible, isInteractive, JobQueue, jobPriority, laneOf, modelKey, nightGroupFor, pickNext, runOrder, WAITING_FOR_GPU, WAITING_FOR_USER, type ExecContext, type QueueHooks, type QueueOptions } from "../src/queue/queue.js";
 import { JobStore, type StoredJob } from "../src/queue/store.js";
-import { DEFAULT_SETTINGS, inWindow } from "../src/settings.js";
+import { DEFAULT_SETTINGS, inWindow, windowEnd } from "../src/settings.js";
 import { sleep } from "../src/util.js";
 
 let n = 0;
@@ -51,6 +51,9 @@ describe("ordering", () => {
     expect(inWindow(at("13:00"), "12:00", "14:00")).toBe(true);
     expect(inWindow(at("14:00"), "12:00", "14:00")).toBe(false);
     expect(inWindow(at("03:00"), "00:00", "00:00")).toBe(true);
+    expect(windowEnd(at("13:00"), "12:00", "14:00")).toEqual(at("14:00"));
+    expect(windowEnd(at("23:30"), "23:00", "07:00")).toEqual(new Date("2026-10-20T07:00:00"));
+    expect(windowEnd(at("03:00"), "00:00", "00:00")).toBeUndefined();
   });
 
   it("jobs the runtime cannot start yet are skipped, not blocking others", () => {
@@ -527,7 +530,7 @@ describe("waiting for the GPU", () => {
   it("an overnight job outside its window says when it runs", async () => {
     const { q } = world("gpu-d.sqlite", "22:00", async () => ({ outputAssetIds: [] }));
     const night = q.enqueue(job("video_final_same_take", "overnight"), {});
-    await until(() => q.get(night.id)?.message === "Runs tonight, 23:00 to 07:00");
+    await until(() => q.get(night.id)?.message === "Runs tonight, 11 pm to 7 am");
     await queue!.stop();
     const off = world("gpu-e.sqlite", "02:00", async () => ({ outputAssetIds: [] }), settings({ enabled: false }));
     const later = off.q.enqueue(job("video_final_same_take", "overnight"), {});
@@ -617,7 +620,7 @@ describe("finals for the night, grouped by model", () => {
     expect(h2.nightGroup).toBe(h1.nightGroup);
     expect(h1.nightGroup).toBeGreaterThan(l1.nightGroup!);
     expect(n.waitingOrder()).toEqual([l1, l2, l3, h1, h2].map((j) => j.id));
-    await until(() => n.q.get(l1.id)?.message === "Runs tonight, 23:00 to 07:00");
+    await until(() => n.q.get(l1.id)?.message === "Runs tonight, 11 pm to 7 am");
     await sleep(40);
     expect(n.order).toEqual([]);
     // The window opens: one model, then the other.
@@ -651,7 +654,14 @@ describe("finals for the night, grouped by model", () => {
     expect(n.order.sort()).toEqual([draft.id, exp.id].sort());
     await n.release(exp.id);
     await n.release(draft.id);
-    for (const id of [now.id, l1.id, l2.id, h1.id]) {
+    await until(() => n.order.at(-1) === now.id);
+    await n.release(now.id);
+    // Finals for the night wait two minutes after the user's draft (see "while the user works" below).
+    await sleep(30);
+    expect(n.order.at(-1)).toBe(now.id);
+    n.w.now = new Date(n.w.now.getTime() + HOLD_FOR_USER_MS);
+    n.q.kick();
+    for (const id of [l1.id, l2.id, h1.id]) {
       await until(() => n.order.length > 0 && n.order.at(-1) === id);
       await n.release(id);
     }
@@ -749,6 +759,46 @@ describe("finals for the night, grouped by model", () => {
     expect(store.all().map((e) => e.job.nightGroup)).toEqual([1, 2, undefined, 1]);
   });
 
+  it("a queued final moves between now and tonight, keeping its place by when it was queued", async () => {
+    const n = night("night-move.sqlite", "21:00");
+    const l1 = n.q.enqueue(ltx(), {});
+    const h1 = n.q.enqueue(h3(), {});
+    const soon = n.q.enqueue(job("video_final_same_take", "now", { model: "LTX-2.5" }), {});
+    const draft = n.q.enqueue(job("video_draft"), {});
+    // To tonight: it joins the LTX-2.5 group that has not started, ahead of the finals queued after it.
+    const moved = n.q.setMode(soon.id, "overnight")!;
+    expect([moved.mode, moved.nightGroup]).toEqual(["overnight", l1.nightGroup]);
+    expect(n.waitingOrder()).toEqual([draft.id, l1.id, soon.id, h1.id]);
+    // Back to now: out of its group, after quick work.
+    const back = n.q.setMode(soon.id, "now")!;
+    expect(back.mode).toBe("now");
+    expect(back.nightGroup).toBeUndefined();
+    expect(n.waitingOrder()).toEqual([draft.id, soon.id, l1.id, h1.id]);
+    // A final for tonight moved to now runs before the window opens, in its place: it was queued before `soon`.
+    expect(n.q.setMode(h1.id, "now")!.nightGroup).toBeUndefined();
+    expect(n.waitingOrder()).toEqual([draft.id, h1.id, soon.id, l1.id]);
+    n.start();
+    await n.drain(3);
+    expect(n.order).toEqual([draft.id, h1.id, soon.id]);
+    // The one for tonight still waits for the window.
+    await until(() => n.q.get(l1.id)?.message === "Runs tonight, 11 pm to 7 am");
+  });
+
+  it("only a final that has not started moves; a missing job is not found", async () => {
+    const n = night("night-move-refused.sqlite", "23:30");
+    const draft = n.q.enqueue(job("video_draft"), {});
+    expect(() => n.q.setMode(draft.id, "overnight")).toThrow(/Only a final that has not started/);
+    const l1 = n.q.enqueue(ltx(), {});
+    n.start();
+    await until(() => n.order.includes(draft.id));
+    await n.release(draft.id);
+    n.w.now = new Date(n.w.now.getTime() + HOLD_FOR_USER_MS);
+    n.q.kick();
+    await until(() => n.order.includes(l1.id));
+    expect(() => n.q.setMode(l1.id, "now")).toThrow(/Only a final that has not started/);
+    expect(n.q.setMode("job_missing", "now")).toBeUndefined();
+  });
+
   it("groups by the model when it is known, else by the step", () => {
     expect(modelKey(ltx())).toBe("LTX-2.5");
     expect(modelKey(job("video_final_remaster", "overnight"))).toBe("video_final_remaster");
@@ -763,3 +813,122 @@ describe("finals for the night, grouped by model", () => {
   });
 });
 
+describe("finals for the night wait while the user works", () => {
+  const dir = mkdtempSync(join(tmpdir(), "ns-hold-"));
+  let queue: JobQueue | undefined;
+  afterEach(async () => {
+    await queue?.stop();
+    queue = undefined;
+  });
+  const flush = async () => {
+    for (let i = 0; i < 6; i++) await new Promise((r) => setImmediate(r));
+  };
+  const plus = (d: Date, seconds: number) => new Date(d.getTime() + seconds * 1000);
+  const final = () => job("video_final_same_take", "overnight", { model: "LTX-2.5" });
+
+  /**
+   * A night on a clock the test moves. Each job runs until the test moves the clock past its end: `lengths` gives its
+   * seconds by step. `step(seconds)` moves the clock, ends the job whose time is up, and lets the queue start the next.
+   */
+  function sim(dbName: string, start: string, o: { window?: [string, string]; lengths: Partial<Record<Job["step"], number>>; estimateSec?: number }) {
+    const w = { now: at(start) };
+    const [startAt, endAt] = o.window ?? ["03:05", "09:00"];
+    queue = new JobQueue(new JobStore(join(dir, dbName)), new EventBus(), { settings: () => settings({ enabled: true, startAt, endAt }), clock: () => w.now, tickMs: 3_600_000 });
+    const q = queue;
+    const started = new Map<string, number>();
+    const ended = new Map<string, number>();
+    let running: { id: string; endsAt: number; done: () => void } | undefined;
+    q.start({
+      execute: (j, _p, ctx) =>
+        new Promise((resolve, reject) => {
+          ctx.signal.addEventListener("abort", () => reject(Object.assign(new Error("aborted"), { name: "AbortError" })));
+          started.set(j.id, w.now.getTime());
+          running = { id: j.id, endsAt: w.now.getTime() + (o.lengths[j.step] ?? 10) * 1000, done: () => resolve({ outputAssetIds: [] }) };
+        }),
+      ...(o.estimateSec ? { estimateSec: (j: Job) => (jobPriority(j) === 2 ? o.estimateSec : undefined) } : {}),
+    });
+    const step = async (seconds: number) => {
+      w.now = plus(w.now, seconds);
+      if (running && running.endsAt <= w.now.getTime()) {
+        ended.set(running.id, running.endsAt);
+        running.done();
+        running = undefined;
+      }
+      await flush();
+      q.kick();
+      await flush();
+    };
+    return { w, q, started, ended, step, running: () => running?.id };
+  }
+
+  it("counts every GPU job but a final as the user's", () => {
+    expect(["still", "video_draft", "video_effect", "video_camera_move", "music", "voice", "text", "video_what_if"].every((step) => isInteractive(job(step as Job["step"])))).toBe(true);
+    expect([job("video_final_same_take"), final(), job("export"), job("music", "now", { analysis: true })].some(isInteractive)).toBe(false);
+  });
+
+  it("holds a final for the night two minutes after the user's last still, saying why, and lets a still queued meanwhile go first", async () => {
+    const n = sim("hold-basic.sqlite", "03:30", { lengths: { still: 10, video_final_same_take: 288 } });
+    const s1 = n.q.enqueue(job("still"), {});
+    const f1 = n.q.enqueue(final(), {});
+    await n.step(0);
+    expect(n.running()).toBe(s1.id);
+    await n.step(10);
+    // The still is done; the final waits, and says so.
+    expect(n.running()).toBeUndefined();
+    expect(n.q.get(f1.id)).toMatchObject({ status: "queued", message: WAITING_FOR_USER });
+    // A minute later the user makes another still: it runs at once, not five minutes behind a final.
+    await n.step(60);
+    const s2 = n.q.enqueue(job("still"), {});
+    await n.step(0);
+    expect(n.running()).toBe(s2.id);
+    await n.step(10);
+    // Two minutes after that still ended, the final starts.
+    await n.step(HOLD_FOR_USER_MS / 1000 - 5);
+    expect(n.running()).toBeUndefined();
+    await n.step(5);
+    expect(n.running()).toBe(f1.id);
+    expect(n.q.get(f1.id)!.message).toBe("Starting");
+  });
+
+  it("does not hold when the rest of the night is only just long enough for the finals", async () => {
+    // Four finals of five minutes, counted a quarter over, need 25 minutes. After a hold to 08:45 they would end at
+    // 09:10, past the window: the hold does not take those two minutes, and the first final starts after the still.
+    const n = sim("hold-late.sqlite", "08:43", { lengths: { still: 10, video_final_same_take: 288 }, estimateSec: 300 });
+    n.q.enqueue(job("still"), {});
+    const finals = [final(), final(), final(), final()].map((f) => n.q.enqueue(f, {}));
+    await n.step(0);
+    await n.step(10);
+    expect(n.running()).toBe(finals[0]!.id);
+  });
+
+  it("holds the same finals earlier in the night, which has room for it", async () => {
+    // At 08:20 they would end by 08:48.
+    const n = sim("hold-edge.sqlite", "08:20", { lengths: { still: 10, video_final_same_take: 288 }, estimateSec: 300 });
+    n.q.enqueue(job("still"), {});
+    const f1 = n.q.enqueue(final(), {});
+    [final(), final(), final()].forEach((f) => n.q.enqueue(f, {}));
+    await n.step(0);
+    await n.step(10);
+    expect(n.q.get(f1.id)!.message).toBe(WAITING_FOR_USER);
+  });
+
+  it("cannot starve the finals: with a still every minute all night, all 25 finals end inside the window", async () => {
+    // The Nov 1 night: 25 LTX finals of 4.8 min, estimated at 4.4. Here the user never stops, from 03:00 to 09:00.
+    const n = sim("hold-night.sqlite", "03:00", { lengths: { still: 10, video_final_same_take: 288 }, estimateSec: 264 });
+    const finals = Array.from({ length: 25 }, () => n.q.enqueue(final(), {}));
+    const stills: { id: string; at: number }[] = [];
+    for (let t = 0; t < 6 * 3600; t += 5) {
+      if (t % 60 === 0) stills.push({ id: n.q.enqueue(job("still"), {}).id, at: n.w.now.getTime() });
+      await n.step(5);
+    }
+    const end = at("09:00").getTime();
+    const firstFinal = Math.min(...finals.map((f) => n.started.get(f.id)!));
+    for (const f of finals) expect(n.ended.get(f.id)).toBeLessThanOrEqual(end);
+    // The hold kept the GPU for the user while the night had room: no still before the first final waited for one.
+    const before = stills.filter((s) => s.at < firstFinal);
+    expect(before.length).toBeGreaterThan(150);
+    for (const s of before) expect(n.started.get(s.id)! - s.at).toBeLessThanOrEqual(15_000);
+    // And let go in time: the finals started hours into the night, not at 03:05.
+    expect(firstFinal).toBeGreaterThan(at("05:00").getTime());
+  }, 60_000);
+});

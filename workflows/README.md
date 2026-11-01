@@ -18,6 +18,11 @@ For the final Kandinsky test, the lab relaunched only our own runtime with `NIGH
 - H3 Ref2VA consumes the draft as reference video through the upstream dynamic `ref_videos.ref_video_0` input. FL2VA uses extracted first and last frames. Neither is an exact motion lock. Preview H3 defaults are 608x352, 124 frames; `h3_ref2va_final` is 1280x768. Their duration differs from the LTX draft.
 - Voice clone graphs take `voiceRef` and use `prompt` for the reference audio's exact transcript. `text` is the new speech. Do not supply a voice description in that transcript field.
 - `video_pixel_upscale` is a plain pixel resize for estimated low tiers. It does not add learned detail.
+- `yue2_music` follows the YuE2 authors' instrumental recipe. The planner (node 12) writes an ABC score from the prompt
+  and section-tag lyrics. `NightshiftYuE2Instrumental` (node 15) moves its vocal melody to the instrument part, and
+  node 4 renders that score with an instrumental style. YuE2 sings lyrics that hold words over the unchanged plan. The
+  song can end before `durationSec` when the plan is shorter. `tests/yue2_music_lab` and `tests/yue2_abc_plan` are
+  the lab's graphs, run by `scripts/spark/music_lab.py` ([record](../research/2026-10-31_yue2_music.md)).
 - TextGenerate writes through our `NightshiftSaveText` node so the SDK receives a downloadable JSON text asset. `tests/echo_text.api.json` checks this path without running a model. The saver preserves raw model output even when the text is invalid JSON, so model-format failures remain inspectable.
 
 ## Mapping catalog
@@ -63,6 +68,7 @@ All rows below are graph inputs, not evidence of a successful generation. See `r
 | [text_shot_list.api.json](text_shot_list.api.json) | `prompt`: `2.prompt`, `system`: `2.system_prompt` | 3 |
 | [text_shot_list_bf16.api.json](text_shot_list_bf16.api.json) | `prompt`: `2.prompt`, `system`: `2.system_prompt` | 3 |
 | [video_pixel_upscale.api.json](video_pixel_upscale.api.json) | `video`: `1.file` | 5 |
+| [yue2_music.api.json](yue2_music.api.json) | `prompt`: `13.value`, `lyrics`: `14.value`, `seed`: `11.value`, `durationSec`: `10.value` | 9 |
 
 ## Sources and validation
 

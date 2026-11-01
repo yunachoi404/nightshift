@@ -57,6 +57,8 @@ export interface EngineOptions {
   editorTools?: ToolOverrides;
   /** Attach and remote mode: how often to check that the proxy and the ComfyUI behind it answer, ms. Default 10 s. */
   attachCheckMs?: number;
+  /** How long finals for the night wait after the user's last interactive job, ms. Default `HOLD_FOR_USER_MS`. */
+  holdForUserMs?: number;
   log?: Logger;
 }
 
@@ -134,7 +136,7 @@ export async function startEngine(opts: EngineOptions): Promise<EngineHandle> {
   const store = new ProjectStore(paths.projects, bus, log);
   await store.load();
   const jobStore = new JobStore(paths.db);
-  const queue = new JobQueue(jobStore, bus, { settings: () => settings.get(), log, otherGpuUse: () => runtime.status().otherGpuUse });
+  const queue = new JobQueue(jobStore, bus, { settings: () => settings.get(), log, otherGpuUse: () => runtime.status().otherGpuUse, ...(opts.holdForUserMs !== undefined ? { holdForUserMs: opts.holdForUserMs } : {}) });
   const editor = new EditorBridge({ store, log, lib: () => editorLib, ...(opts.editorTools ? { tools: opts.editorTools } : {}) });
   const service = new ProjectService({ store, queue, recipes: () => recipeSet, settings, runtime, runner, editor, paths, workflowsDir, log });
   const installer = new Installer({
@@ -178,6 +180,7 @@ export async function startEngine(opts: EngineOptions): Promise<EngineHandle> {
     execute: (j, p, c) => service.execute(j, p, c),
     onSettled: (j, p) => service.onSettled(j, p),
     onRuntimeLost: () => runtime.noteLost(),
+    estimateSec: (j) => (j.step === "export" ? undefined : service.currentRecipe()?.estimates[j.step]?.seconds),
   });
 
   const ctx: EngineContext = { paths, bus, hardware, recipes: () => recipeSet, reloadRecipes, workflowsDir, installer, remote, runtime, settings, store, service, queue, onboarding, log, sseClients: new Set() };

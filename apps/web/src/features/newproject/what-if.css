@@ -1,4 +1,4 @@
 .whatif-examples { display: flex; flex-wrap: wrap; gap: 8px; margin-top: -8px; }
-.whatif-example { border: 1px solid var(--line); border-radius: 6px; background: var(--inset); color: var(--text-2); padding: 7px 10px; font: inherit; font-size: 12px; text-align: left; cursor: pointer; }
-.whatif-example:hover { background: var(--raised); color: var(--text); border-color: var(--line-strong); }
-.whatif-example:focus-visible { box-shadow: var(--focus); border-radius: 6px; }
+.whatif-example { border: 1px solid var(--btn-line); border-radius: var(--r-pill); background: var(--content); color: var(--text-2); padding: 5px 12px; font: inherit; font-size: 12px; line-height: 16px; text-align: left; cursor: pointer; transition: border-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease), background-color var(--t-fast) var(--ease); }
+.whatif-example:hover { background: var(--hover); color: var(--text); border-color: var(--line-hover); }
+.whatif-example:focus-visible { box-shadow: var(--focus); border-radius: var(--r-pill); }

@@ -7,6 +7,7 @@ import {
   ExportRequestSchema,
   FinalRequestSchema,
   HardwareProfileSchema,
+  JobModeRequestSchema,
   InstallRequestSchema,
   ModelScanRequestSchema,
   MakeRequestSchema,
@@ -205,6 +206,12 @@ export function buildRouter(e: EngineContext): Router {
   r.add(routes.listJobs, ({ query }) => e.queue.list(query.get("projectId") ? { projectId: query.get("projectId")! } : {}));
   r.add(routes.cancelJob, async (ctx) => {
     const job = await e.queue.cancel(id(ctx));
+    if (!job) throw notFound(`No job ${ctx.params.id}`);
+    return job;
+  });
+  r.add(routes.jobMode, async (ctx) => {
+    const { mode } = await readBody(ctx.req, JobModeRequestSchema);
+    const job = e.queue.setMode(id(ctx), mode);
     if (!job) throw notFound(`No job ${ctx.params.id}`);
     return job;
   });

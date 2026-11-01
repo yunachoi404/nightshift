@@ -48,7 +48,8 @@ Three features carry the entry. Everything else is the standard studio around th
 ## Templates
 | Template | User gives | Chain | Gets |
 |---|---|---|---|
-| Cinematic shot | A prompt or photo, a camera move | still -> video (with camera move) | A film-looking shot |
+| Micro drama | A premise, the characters' photos, a look and a mood | dialogue shot list -> character stills -> drafts where each character says their line (LTX sound, lip sync) -> subtitles | A short talking scene that ends on a cliffhanger |
+| Cinematic shot (old projects only) | A prompt or photo, a camera move | still -> video (with camera move) | A film-looking shot |
 | Music video | A song, or a prompt for one | music -> beat map -> shot list -> stills -> videos cut on beats | A music video |
 | Product ad | A product photo, product name, tone | script -> voiceover -> shots featuring the product -> captions | A 15 s ad |
 | Talking intro | A script, a voice choice | voice -> visuals per line -> captions | An intro or explainer |
@@ -85,7 +86,7 @@ Model picks (2026-10-19). Opinionated: each tier gets its own lineup and the use
 | Video draft | **LTX 2.5** (22B distilled, fast) | Same-take finals by latent continuation |
 | Video final | **MiniMax H3** (ref2va / fl2va, int8 19.5 GB, bf16 61.7 GB) with 4- and 8-step turbo LoRAs | Higher quality, the overnight model. Remaster guided by the LTX draft |
 | Voice | **Breeze TTS 2** (int8 hybrid 4.5 GB, Apache-2.0 node) and **Fish Audio DRAMA-3** (large, Fish Audio Community License) | DRAMA-3 needs a ComfyUI node from us |
-| Music | **MiniMax Music 3** (4.6 GB DiT + 8.6 GB encoder) and **ACE-Step 1.5** (Apache-2.0, turbo 4.8 GB, XL 10 GB) | Riffusion 2 has no open weights; ACE-Step 1.5 takes its place |
+| Music | **YuE2-3B** (int8 3.96 GB, one file; weights CC BY-NC 4.0) and **ACE-Step 1.5** (Apache-2.0, turbo 4.8 GB, XL 10 GB) | Riffusion 2 has no open weights; ACE-Step 1.5 takes its place. YuE2 replaced MiniMax Music 3 on Oct 31 because it sang less and scored higher, see the [lab](../research/2026-10-31_yue2_music.md) |
 | Low tiers | Kandinsky 6 Lite (video), MOSS-Image (image), Breeze TTS 2 (voice), ACE-Step 1.5 turbo (music) | |
 
 Testing: **only the Spark runs models**, plus the Mac app (UI and install flow on the M4 Max Mac). Every other tier is
@@ -93,9 +94,9 @@ napkin math from measured Spark numbers. No cloud GPUs.
 
 | Tier | Example | Video draft / final | Image | Voice | Music | Status |
 |---|---|---|---|---|---|---|
-| Unified 96 GB+ (CUDA) | DGX Spark | LTX 2.5 int8 / MiniMax H3 int8 + turbo LoRA | Krea 2 bf16 | DRAMA-3, Breeze TTS 2 | MiniMax Music 3 | Tested |
+| Unified 96 GB+ (CUDA) | DGX Spark | LTX 2.5 int8 / MiniMax H3 int8 + turbo LoRA | Krea 2 bf16 | DRAMA-3, Breeze TTS 2 | YuE2-3B | Tested |
 | Apple Silicon 64 GB+ | M4 Max 128 GB | LTX 2.5 / MiniMax H3 (precision TBD on MPS) | Krea 2 | Breeze TTS 2 | ACE-Step 1.5 | Estimated (app tested) |
-| NVIDIA 32 GB | RTX 5090 | LTX 2.5 int8 / MiniMax H3 int8 + turbo, encoders swapped out | Krea 2 nvfp4 | Breeze TTS 2 | MiniMax Music 3 | Estimated |
+| NVIDIA 32 GB | RTX 5090 | LTX 2.5 int8 / MiniMax H3 int8 + turbo, encoders swapped out | Krea 2 nvfp4 | Breeze TTS 2 | YuE2-3B | Estimated |
 | NVIDIA 24 GB + 64 GB RAM | RTX 4090 / 3090 | LTX 2.5 partly offloaded / MiniMax H3 offloaded, overnight only | Krea 2 int8 | Breeze TTS 2 | ACE-Step 1.5 | Estimated |
 | NVIDIA 12-16 GB + 64 GB RAM | RTX 4070 Ti / 4080 | LTX 2.5 heavily offloaded / same take only | MOSS-Image | Breeze TTS 2 | ACE-Step 1.5 turbo | Estimated |
 | NVIDIA 8-16 GB, little RAM | RTX 2070 / 3060 | Kandinsky 6 Lite, low res | MOSS-Image, offloaded | Breeze TTS 2 | ACE-Step 1.5 turbo | Estimated |
@@ -108,7 +109,7 @@ Model choices are a first pass; each needs its license confirmed before it ships
   1920x1088 for 97 frames, peaked at 41.5 GB (process peak).
 - File sizes on disk: LTX 2.5 transformer int8 20.0 GB (bf16 about 44 GB); Gemma 4 12B encoder int8 14.3 GB,
   bf16 24.5 GB; LTX VAEs 1.7 GB; Kandinsky 6 Lite transformer 6-7 GB; Klein 4B fp8 3.8 GB with a 7.5 GB Qwen3 4B
-  encoder; ACE-Step 1.5 turbo 4.8 GB (XL 10 GB); MiniMax Music 3 4.6 GB + 8.6 GB encoder.
+  encoder; ACE-Step 1.5 turbo 4.8 GB (XL 10 GB); YuE2-3B int8 3.96 GB.
 - Peak VRAM is roughly the largest model resident at once plus activations plus about 2 GB, not the sum of all
   models: ComfyUI unloads the text encoder before sampling when memory is tight.
 - Offloading streams the part that doesn't fit from RAM every step. Cost per step is roughly offloaded bytes
@@ -145,7 +146,7 @@ Electron app
   seed, saved latent) -> Finals (job, kind: same take or remaster) -> Timeline (clips, audio, captions, style)
   -> Export.
 - **Queue**: one GPU job at a time, priority to interactive work (stills, drafts) over finals; overnight mode
-  drains finals in order and survives app restarts.
+  drains finals in order and survives app restarts. No final for the night starts while the user is working.
 
 ## Build order
 Spikes first, because each one can change the design:

@@ -61,6 +61,36 @@ export function nextBoardFrame(frames: Iterable<Frame>): Frame {
 }
 
 /**
+ * Room for a board resized from its right edge (`next`, at the same place as its rect in `rects`): the boards to its
+ * right that share its row, and the ones in their row after them, keep their gap to the board before them, so they move
+ * by as much as it grew, or close up by as much as it shrank. A board it already covered is pushed clear as it grows,
+ * a board's gap from it. Boards above, below or to its left stay put. Returns the frames that move.
+ */
+export function makeRoom(rects: ReadonlyMap<string, Rect>, id: string, next: Frame): Map<string, Frame> {
+  const moved = new Map<string, Frame>();
+  const old = rects.get(id);
+  if (!old || next.x !== old.x || next.y !== old.y || next.w === old.w) return moved;
+  const beside = (a: Rect, b: Rect) => a.y < b.y + Math.max(b.h, 1) && b.y < a.y + Math.max(a.h, 1);
+  // The row so far: each board as it was, and where it is now.
+  const row: Array<{ was: Rect; now: Frame }> = [{ was: old, now: next }];
+  // Left to right, so a board joins the row once the board before it has.
+  for (const [other, r] of [...rects].sort(([, a], [, b]) => a.x - b.x)) {
+    if (other === id) continue;
+    let before: { was: Rect; now: Frame } | undefined;
+    for (const b of row) if (r.x > b.was.x && beside(r, b.was) && (!before || b.was.x + b.was.w > before.was.x + before.was.w)) before = b;
+    if (!before) continue;
+    const gap = r.x - (before.was.x + before.was.w);
+    const x = Math.round(before.now.x + before.now.w + (gap >= 0 ? gap : BOARD_GAP));
+    // A board that was already covered only moves to get clear.
+    if (x === r.x || (gap < 0 && x < r.x)) continue;
+    const now = { x, y: r.y, w: r.w };
+    moved.set(other, now);
+    row.push({ was: r, now });
+  }
+  return moved;
+}
+
+/**
  * The view that shows every board with `pad` screen pixels around them, centred. It never zooms in past 100%, so a
  * small board shows at its real size.
  */

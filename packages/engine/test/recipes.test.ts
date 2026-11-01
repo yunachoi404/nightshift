@@ -81,8 +81,9 @@ describe("tier matching", () => {
     const upscale = [{ method: "upscale", scale: 2 }, 2.04];
     // LTX 2.5 drafts 97 frames at 640x384 and renders the saved latent again at 1280x768.
     const rerender = [{ method: "rerender", scale: 2 }, 4.04];
+    // The Spark renders it again twice over, at 2560x1536: four times the draft.
     expect(facts).toEqual({
-      "unified-128-cuda": rerender,
+      "unified-128-cuda": [{ method: "rerender", scale: 4 }, 4.04],
       "apple-64": rerender,
       "nvidia-32": rerender,
       "nvidia-24-offload": rerender,
@@ -117,6 +118,16 @@ describe("tier models", () => {
     expect(models("nvidia-8").video_final_same_take).toBeUndefined();
     expect(models("nvidia-8").video_draft).toBe("Kandinsky 6 Lite");
     expect(models("nvidia-8").effect_end_frame).toBeUndefined();
+  });
+
+  it("summaries name the model a still with references runs, where the recipe has a workflow for those", async () => {
+    const { recipes } = await loadRecipes(defaultRecipesDir(), defaultWorkflowsDir());
+    const list = await tierSummaries(recipes, hw({ vendor: "nvidia", vramGb: 121.7, unifiedMemory: true }, 121.7), defaultWorkflowsDir());
+    const spark = list.find((t) => t.tier === "unified-128-cuda")!;
+    // The dogfood night: the Image tool said Krea 2 Turbo with a reference on, but references run FLUX.2 Klein 4B.
+    expect(spark.models?.still).toBe("Krea 2 Turbo");
+    expect(spark.referenceStillModel).toMatch(/^FLUX\.2 Klein 4B/);
+    for (const r of recipes) expect(list.find((t) => t.tier === r.tier)!.referenceStillModel === undefined).toBe(!r.referenceStill);
   });
 
   it("a step whose workflow is missing names no model, and a changed workflow is read again", async () => {

@@ -17,7 +17,7 @@ const tools = checkTools();
 const PREVIEW: Record<Aspect, [number, number]> = { "16:9": [960, 540], "9:16": [540, 960], "1:1": [540, 540] };
 
 describe.skipIf(!tools.chrome || !tools.ffmpeg)("every template, creation to export", () => {
-  for (const template of ["cinematic_shot", "music_video", "product_ad", "talking_intro"] as TemplateId[]) {
+  for (const template of ["cinematic_shot", "music_video", "product_ad", "talking_intro", "micro_drama"] as TemplateId[]) {
     it.concurrent(template, async () => {
       const dataDir = mkdtempSync(join(tmpdir(), `ns-tpl-${template}-`));
       const engine = await startEngine({ port: 0, dataDir, mock: true, mockSpeed: 0, recipesDir: defaultRecipesDir(), log: () => undefined });
@@ -29,7 +29,11 @@ describe.skipIf(!tools.chrome || !tools.ffmpeg)("every template, creation to exp
           const timeline = project.timeline!;
           expect(timeline.edited).toBeUndefined();
           expect(timeline.captions.length, `${template} ${aspect} has captions`).toBeGreaterThan(0);
-          expect(timeline.overlays?.length, `${template} ${aspect} has cards`).toBeGreaterThan(0);
+          // A micro drama opens on its first shot: no title card, its subtitles are the lines said in the shots.
+          if (template === "micro_drama") {
+            expect(timeline.overlays ?? []).toEqual([]);
+            expect(timeline.captions.map((c) => c.text).join(" ")).toContain("Tonight, I take it back.");
+          } else expect(timeline.overlays?.length, `${template} ${aspect} has cards`).toBeGreaterThan(0);
           const end = Math.max(...timeline.clips.map((c) => c.start + c.out - c.in), ...(timeline.overlays ?? []).map((o) => o.end));
           for (const e of exports) {
             expect(e.job.message).toMatch(/captions/);

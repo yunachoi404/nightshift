@@ -3,7 +3,7 @@
   flex: 1;
   min-height: 0;
   display: grid;
-  grid-template-columns: var(--ed-media-w, 240px) minmax(0, 1fr);
+  grid-template-columns: var(--ed-media-w, 256px) minmax(0, 1fr);
   overflow: hidden;
 }
 .ed__main {
@@ -75,10 +75,11 @@
   stroke-width: 0;
 }
 .ed__time {
+  font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
   color: var(--text);
-  font-size: var(--fs-body);
-  min-width: 96px;
+  font-size: var(--fs-small);
+  min-width: 112px;
   font-weight: 500;
 }
 .ed__time-total {
@@ -223,6 +224,43 @@
 .ed__side {
   min-height: 0;
 }
+/* Export is the end of the work: it sits at the foot of the inspector, whatever is above it. */
+.insp--export {
+  margin-top: auto;
+  border-top: 1px solid var(--line);
+  border-bottom: 0;
+}
+.insp__of {
+  color: var(--text-3);
+  font-weight: 400;
+}
+.insp__len {
+  font-size: var(--fs-small);
+  color: var(--text-3);
+  font-variant-numeric: tabular-nums;
+}
+/* The shot's words in full, a few lines at most. */
+.insp__words {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
+  font-size: var(--fs-small);
+  line-height: 17px;
+  color: var(--text-2);
+  text-wrap: pretty;
+}
+.insp__take {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-3);
+  font-size: var(--fs-small);
+}
+.insp__row .insp__take {
+  color: var(--text-3);
+}
+
 .insp__row .insp__voice {
   flex: 1;
   width: 0;
@@ -230,9 +268,13 @@
 }
 .insp .select,
 .insp .input {
-  min-height: 26px;
-  padding: 3px 24px 3px 7px;
+  min-height: 28px;
+  padding: 4px 24px 4px 8px;
   font-size: var(--fs-small);
+}
+/* Finish the picks tonight: its own size, under the line that says some shots are drafts. */
+.insp__finish {
+  align-self: flex-start;
 }
 .insp__result {
   display: flex;
@@ -332,7 +374,7 @@
 .tl__icon svg {
   width: 13px;
   height: 13px;
-  stroke-width: 2;
+  stroke-width: 1.75;
 }
 .tl__scroll {
   overflow-x: auto;
@@ -356,6 +398,7 @@
   top: 0;
   bottom: 0;
   padding-left: 5px;
+  font-family: var(--font-mono);
   font-size: 10px;
   color: var(--text-3);
   font-variant-numeric: tabular-nums;
@@ -399,6 +442,16 @@
 }
 .tl__clip:hover {
   box-shadow: inset 0 0 0 1px var(--text-3);
+}
+/* Clips that crossfade overlap, and a later clip covers the end of the one before, where its x button sits. The
+   active clip, and above it the one under the pointer or focus, come to the front, so the whole clip, its ring and its
+   x button show. Still under the playhead, which comes later in the track. */
+.tl__clip--on {
+  z-index: 1;
+}
+.tl__clip:hover,
+.tl__clip:focus-within {
+  z-index: 2;
 }
 /* The clip under the playhead is the active one; a clip with keyboard focus shows the focus ring. */
 .tl__clip--on {
@@ -444,7 +497,7 @@
 .tl__clip-x svg {
   width: 12px;
   height: 12px;
-  stroke-width: 2.4;
+  stroke-width: 1.75;
 }
 .tl__clip:hover .tl__clip-x,
 .tl__clip-x:focus-visible,
@@ -453,6 +506,61 @@
 }
 .tl__clip-x:hover {
   background: rgba(20, 20, 22, 0.95);
+}
+/* The clip's end: drag it, or step it with the arrow keys, to set how long the shot plays. A length the user set keeps
+   its grip showing, in the accent. */
+.tl__clip-end {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 10px;
+  display: flex;
+  justify-content: center;
+  cursor: ew-resize;
+  touch-action: none;
+}
+.tl__clip-end::after {
+  content: "";
+  width: 3px;
+  margin: 24px 0 7px;
+  border-radius: 2px;
+  background: #fff;
+  box-shadow: 0 0 0 1px rgba(20, 20, 22, 0.55);
+  opacity: 0;
+  transition: opacity var(--t-fast) var(--ease);
+}
+.tl__clip:hover .tl__clip-end::after,
+.tl__clip-end:focus-visible::after,
+.tl__clip--sizing .tl__clip-end::after,
+.tl__clip-end--set::after {
+  opacity: 1;
+}
+.tl__clip-end--set::after {
+  background: var(--banana-line);
+}
+.tl__clip-end:focus-visible {
+  outline: none;
+}
+.tl__clip:has(.tl__clip-end:focus-visible) {
+  box-shadow: inset 0 0 0 1px var(--content), var(--focus);
+}
+.tl__clip--sizing {
+  z-index: 2;
+}
+/* The length while the end is dragged. */
+.tl__clip-len {
+  position: absolute;
+  right: 14px;
+  bottom: 4px;
+  font-size: 10px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  padding: 1px 5px;
+  border-radius: 3px;
+  background: rgba(20, 20, 22, 0.75);
+  color: #fff;
+  pointer-events: none;
 }
 .tl__filmstrip {
   height: 100%;
@@ -510,8 +618,8 @@
   bottom: 6px;
   border-radius: 3px;
   overflow: hidden;
-  background: var(--ok-soft);
-  box-shadow: inset 0 0 0 1px rgba(31, 138, 76, 0.35);
+  background: var(--inset-2);
+  box-shadow: inset 0 0 0 1px var(--line-strong);
 }
 .tl__audio--voice {
   background: var(--accent-soft);
@@ -527,7 +635,8 @@
 }
 .tl__wave i {
   flex: 1;
-  background: var(--ok);
+  /* A quiet bar: green means done in this app, and the shots above carry the color. */
+  background: var(--text-3);
   opacity: 0.65;
   border-radius: 1px;
   min-width: 1px;
@@ -578,7 +687,7 @@
   gap: 6px;
   padding: 0 10px 0 22px;
   font-size: var(--fs-micro);
-  color: var(--text-4);
+  color: var(--text-3);
   white-space: nowrap;
   pointer-events: none;
 }
@@ -680,10 +789,11 @@
   max-width: 200px;
 }
 
-/* The popover a lane's + opens, beside the lane label, rising over the timeline. */
+/* The popover a lane's + opens, rising over the timeline. It starts right of the transport's play button, time and
+   rung chip (about 240 px from the lane labels' left edge), so the time stays readable while you write. */
 .lane-pop {
   position: absolute;
-  left: calc(100% + 6px);
+  left: calc(100% + 136px);
   bottom: 2px;
   z-index: 30;
   width: 340px;
@@ -704,7 +814,7 @@
 }
 .lane-pop__title {
   font-size: var(--fs-body);
-  font-weight: 600;
+  font-weight: 500;
 }
 .lane-pop .textarea {
   font-size: var(--fs-small);
@@ -765,12 +875,13 @@
 .ed__blank-icon {
   width: 28px;
   height: 28px;
-  stroke-width: 1.4;
+  stroke-width: 1.75;
   color: rgba(255, 255, 255, 0.36);
   margin-bottom: 4px;
 }
 .ed__blank-title {
   font-family: var(--font-display);
+  font-weight: var(--fw-display);
   font-size: var(--fs-title-3);
   line-height: var(--lh-title-3);
   color: #fff;
@@ -798,11 +909,11 @@
   align-items: center;
   justify-content: space-between;
   height: 40px;
-  padding: 0 12px 0 14px;
+  padding: 0 12px;
   border-bottom: 1px solid var(--line);
 }
 .edm__title {
-  font-weight: 600;
+  font-weight: 500;
   font-size: var(--fs-body);
 }
 .edm__open {
@@ -834,7 +945,7 @@
 }
 .edm__tip {
   padding: 8px 4px 0;
-  color: var(--text-4);
+  color: var(--text-3);
   font-size: var(--fs-micro);
   line-height: var(--lh-micro);
 }
@@ -845,7 +956,7 @@
   display: flex;
   align-items: center;
   gap: 4px;
-  height: 30px;
+  height: 32px;
   padding: 0 4px 0 0;
   border-radius: var(--r-s);
   cursor: grab;
@@ -867,9 +978,9 @@
   color: var(--text-3);
 }
 .edm__chev {
-  width: 13px;
-  height: 13px;
-  stroke-width: 2.2;
+  width: 14px;
+  height: 14px;
+  stroke-width: 1.75;
   transition: transform var(--t-fast) var(--ease);
 }
 .edm__chev--open {
@@ -882,18 +993,18 @@
   white-space: nowrap;
   text-overflow: ellipsis;
   font-size: var(--fs-small);
-  font-weight: 600;
+  font-weight: 500;
 }
 .edm__count {
   font-size: var(--fs-micro);
-  color: var(--text-4);
+  color: var(--text-3);
   font-variant-numeric: tabular-nums;
 }
 .edm__grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px 8px;
-  padding: 4px 0 8px;
+  gap: 8px;
+  padding: 4px 0 10px;
 }
 .edm__grid--tall {
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -918,17 +1029,48 @@
   width: 100%;
   height: 100%;
 }
-.edm__label {
-  margin-top: 4px;
+/* The card's name rises over the foot of its picture under the pointer; at rest the picture is the card. */
+.edm__name {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1;
+  padding: 16px 6px 4px;
   font-size: var(--fs-micro);
   line-height: var(--lh-micro);
-  color: var(--text-2);
+  color: #fff;
+  background: linear-gradient(180deg, transparent, rgba(0, 0, 0, 0.78));
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
+  opacity: 0;
+  transition: opacity var(--t-fast) var(--ease);
+  pointer-events: none;
 }
-.edm__card--on .edm__label {
-  color: var(--text);
+.edm__card:hover .edm__name {
+  opacity: 1;
+}
+.edm__card:hover :is(.edm__final, .edm__dur) {
+  opacity: 0;
+}
+/* A clip's length, small, in the corner the name leaves free at rest. */
+.edm__dur {
+  position: absolute;
+  right: 4px;
+  bottom: 4px;
+  height: 16px;
+  padding: 0 5px;
+  display: inline-flex;
+  align-items: center;
+  border-radius: 5px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 400;
+  color: #edebe6;
+  background: rgba(9, 9, 12, 0.72);
+  font-variant-numeric: tabular-nums;
+  transition: opacity var(--t-fast) var(--ease);
 }
 /* On the timeline: a small ink check in the top right corner. */
 .edm__mark {
@@ -948,7 +1090,7 @@
 .edm__mark svg {
   width: 10px;
   height: 10px;
-  stroke-width: 3;
+  stroke-width: 2.5;
 }
 .edm__final {
   position: absolute;
@@ -957,6 +1099,7 @@
   height: 16px;
   padding: 0 5px;
   font-size: 10px;
+  transition: opacity var(--t-fast) var(--ease);
 }
 .edm__busy {
   position: absolute;
@@ -980,9 +1123,9 @@
   transition: opacity var(--t-fast) var(--ease), background-color var(--t-fast) var(--ease);
 }
 .edm__add svg {
-  width: 13px;
-  height: 13px;
-  stroke-width: 2.4;
+  width: 14px;
+  height: 14px;
+  stroke-width: 1.75;
 }
 .edm__card:hover .edm__add,
 .edm__add:focus-visible {
@@ -997,7 +1140,7 @@
   gap: 8px;
   height: 36px;
   margin: 0 0 4px;
-  padding: 0 6px 0 9px;
+  padding: 0 8px;
   border-radius: var(--r-s);
   background: var(--raised);
   box-shadow: inset 0 0 0 1px var(--line);
@@ -1044,7 +1187,7 @@
 .edm__sound-mark svg {
   width: 10px;
   height: 10px;
-  stroke-width: 3;
+  stroke-width: 2.5;
 }
 .edm__add--row {
   position: static;

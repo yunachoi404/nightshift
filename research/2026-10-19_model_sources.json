@@ -2062,5 +2062,46 @@
         }
       }
     ]
+  },
+  "Comfy-Org/YuE2": {
+    "revision": "2f76ca75e6ee094169de899cc7fc99d6887e2196",
+    "metadataLicense": "cc-by-nc-4.0",
+    "files": [
+      {
+        "path": ".gitattributes",
+        "size": 1519
+      },
+      {
+        "path": "README.md",
+        "size": 2009
+      },
+      {
+        "path": "audio_encoders/sheetsage2_bf16.safetensors",
+        "size": 1386868122,
+        "lfs": {
+          "oid": "5fd960ce3df281e3f3a889d174584d88f96247711480cf96377b12d7e8b6adc5",
+          "size": 1386868122,
+          "pointerSize": 135
+        }
+      },
+      {
+        "path": "checkpoints/yue2_3b_bf16.safetensors",
+        "size": 7799983228,
+        "lfs": {
+          "oid": "33765adbf9813c9a50318218760b2fd819a319862460a04884607581961c6fee",
+          "size": 7799983228,
+          "pointerSize": 135
+        }
+      },
+      {
+        "path": "checkpoints/yue2_3b_int8_convrot.safetensors",
+        "size": 3960938800,
+        "lfs": {
+          "oid": "96fe199377309001ed8cd26a944baeee8cc31a20ba7c36d1d3c0a7e1f4149db6",
+          "size": 3960938800,
+          "pointerSize": 135
+        }
+      }
+    ]
   }
 }

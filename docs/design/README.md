@@ -36,18 +36,20 @@ The second design replaced a dark marketing-style page with a desktop window. Th
 Photos, Notes and System Settings: a sidebar, a toolbar in the title area, inspectors on the right, dense
 but calm, system type, native-sized controls.
 
-- Sidebar (224 px): your projects, then Studio: All projects, Queue, Settings. The foot of the sidebar
-  says where work runs and what the machine is doing right now. Under Electron the sidebar is see-through
-  macOS material and the traffic lights sit in its top strip.
-- Toolbar (52 px, in the title area): the project name and a one-line status on the left, a segmented
-  control for Storyboard, Takes, Finals and Editor in the middle, the activity indicator and the new
-  project button on the right. The whole strip drags the window.
+- Sidebar (256 px): the mark's tile and the name, a raised New project button (Cmd+N), Projects and Queue
+  (with its count), then the recent projects with their pictures. When finals wait for tonight, a Tonight
+  card sits above the foot. The foot is one row: the GPU's name and whether it is idle or busy, and a
+  Settings gear. It is the app's only compute status. Under Electron the sidebar is see-through macOS
+  material and the traffic lights sit in its top strip.
+- Top bar (60 px, in the title area): in a project, its name and a one-line status on the left and the
+  Media and Editor switch in the middle. On Projects it holds the search (Cmd+K); on New project, the way
+  back to Projects and the way out (Esc). The whole strip drags the window.
 - Content panes fill the window. There is no centered column and no page-level hero.
 - Inspectors (300 px, inset background, hairline on the left) hold the actions of a screen: Finish on
   Finals, captions, music, voice and export in the editor.
-- Two neutral themes, following the system with a manual override in Settings. Light is white porcelain
-  with zinc ink and black pill buttons. Dark is true black with T3 Code's surfaces and white pills. See
-  `visual-system.md`.
+- Two themes over the same roles, following the system with a manual override in Settings. Dark is the
+  default: near-black surfaces, warm off-white words, banana for the main action. Light is white porcelain
+  with zinc ink. See `visual-system.md`.
 - Keyboard: Cmd+N new project, Cmd+, settings, Cmd+1 to Cmd+4 for the four stages of a project, Space
   plays in the editor, Escape closes panels.
 
@@ -70,12 +72,12 @@ but calm, system type, native-sized controls.
 
 ## Decisions worth knowing
 
-- The system face (SF Pro on a Mac) does the work at macOS sizes; control text is 13 px. Young Serif, one
-  weight, sets the headlines only: setup, page titles, sheets, empty states and a few big numbers. One
-  handwritten note (Sedgwick Ave) exists in the whole app, on the welcome window. Both fonts are bundled.
-- Ink is the accent: the main action is a black pill (a white pill at night), and selection, focus and
-  progress are ink too. Amber means overnight and finals. Green means done. Red means failed. Nothing
-  else gets a color.
+- Inter does the work; control text is 13 to 14 px. Fraunces at 600 sets the headlines only: page titles,
+  the brand name, setup, sheets, empty states and a few big numbers. JetBrains Mono sets keys, counts, time
+  codes and dimensions. One handwritten note (Sedgwick Ave) exists in the whole app, on the welcome window.
+  All are bundled.
+- Banana is the accent: the main action, selection, focus and progress. Amber means overnight and finals.
+  Green means done. Red means failed. Nothing else gets a color.
 - Stills, drafts and finals look the same in their frames. A small tag on the picture says which one it
   is. Frames have a small 6 px corner and a hairline inset: film, not cards.
 - Projects open at the stage they are at. The segmented control in the toolbar moves between stages.
@@ -86,7 +88,7 @@ but calm, system type, native-sized controls.
 - A sample "First shot" project is created during setup and kept, so the user owns something before
   typing a word.
 - Where work runs is a first-class fact: Settings shows This Mac or the GPU computer's name and address
-  with a status dot, the sidebar foot and the toolbar say when it is waiting for that computer.
+  with a status dot, and the sidebar foot says when it is waiting for that computer.
 
 ## Open questions
 

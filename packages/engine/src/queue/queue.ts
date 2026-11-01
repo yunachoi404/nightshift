@@ -10,11 +10,15 @@
  * Finals for the night run grouped by the model they load, so each model loads once a night (see `nightGroupFor` and
  * `runOrder`). Groups keep the user's order, the finals inside one run in the order queued, and a group closes once it
  * starts, so no final waits behind an endless run of one model.
+ *
+ * A final for the night takes minutes and is not stopped for anything, so none starts while the user is at work: one
+ * waits until `HOLD_FOR_USER_MS` have passed with no interactive job queued or running (`userHold`), unless the rest
+ * of the night is only just long enough for the finals still to run.
  */
 import type { Job, OtherGpuUse, Settings } from "@nightshift/contract";
-import { failureMessage, isRuntimeLost, ShutdownError } from "../errors.js";
+import { conflict, failureMessage, isRuntimeLost, ShutdownError } from "../errors.js";
 import type { EventBus } from "../events.js";
-import { inWindow } from "../settings.js";
+import { inWindow, windowEnd } from "../settings.js";
 import { errorMessage, isAbortError, nowIso, type Logger } from "../util.js";
 import type { JobPayload, JobStore, StoredJob } from "./store.js";
 
@@ -33,6 +37,27 @@ export function jobPriority(job: Job): number {
   if (!FINAL_STEPS.has(job.step)) return 0;
   return job.mode === "overnight" ? 2 : 1;
 }
+
+/** Work the user waits on: every GPU job but a final (stills, drafts, edits, effects, camera moves, songs, voices, shot lists). */
+export function isInteractive(job: Job): boolean {
+  return laneOf(job) === "gpu" && jobPriority(job) === 0;
+}
+
+/**
+ * How long a final for the night waits after the user's last interactive job was queued or finished. Two minutes is
+ * about the longest someone looks at a still or a draft before the next step (the Nov 1 dogfood night: 30 to 90 s
+ * between steps), while a final holds the GPU for about five minutes once started. So a final that would start in
+ * that pause would make the next still wait up to five minutes; holding it costs the night at most two minutes of an
+ * idle GPU per pause, and only while the night has that time to spare (see `userHold`).
+ */
+export const HOLD_FOR_USER_MS = 120_000;
+/** A final counts its estimate times this: measured finals ran 4.8 min against the setup's 4.4. */
+export const FINAL_OVERRUN = 1.25;
+/** A final whose step has no estimate counts five minutes, as on the Queue page. */
+const FINAL_FALLBACK_SEC = 300;
+/** The user's share of the GPU is measured over this long, and counted at most this high (see `userHold`). */
+const LOAD_SPAN_MS = 3_600_000;
+const MAX_LOAD = 0.75;
 
 /** Overnight jobs only start inside the overnight window, and only when overnight mode is on. */
 export function isEligible(job: Job, settings: Settings, now: Date): boolean {
@@ -130,6 +155,8 @@ export interface QueueHooks {
   onSettled?(job: Job, payload: JobPayload): Promise<void>;
   /** A job lost its runtime mid-run: look at the runtime again now, so the jobs waiting for it say so at once. */
   onRuntimeLost?(job: Job): void;
+  /** About how long a job runs, in seconds (the setup's estimate for its step), when known. */
+  estimateSec?(job: Job): number | undefined;
 }
 
 export interface QueueOptions {
@@ -145,9 +172,12 @@ export interface QueueOptions {
   maxRuntimeLosses?: number;
   /** What other programs hold on the GPU right now, if the runtime can tell: a GPU job that ran out of memory says so. */
   otherGpuUse?: () => OtherGpuUse | undefined;
+  /** How long finals for the night wait after the user's last interactive job, ms. Default `HOLD_FOR_USER_MS`. */
+  holdForUserMs?: number;
 }
 
 export const WAITING_FOR_GPU = "Waiting for the GPU";
+export const WAITING_FOR_USER = "Waiting while you work, so your stills and drafts go first";
 
 /**
  * When ComfyUI disappears mid-job (a restart, a preemption on a shared GPU box, an ssh tunnel that dropped), the job goes back in
@@ -179,6 +209,12 @@ export class JobQueue {
   private lastPersist = new Map<string, number>();
   /** The night group on the GPU now, or last: it goes on before any other (see runOrder). */
   private nightTurn?: number;
+  /** When an interactive job was last queued or finished, ms since epoch (see `userHold`). */
+  private lastInteractive = 0;
+  /** When interactive jobs ran on the GPU in the last `LOAD_SPAN_MS`, ms since epoch. */
+  private interactiveRuns: { start: number; end: number }[] = [];
+  /** Kicks the queue when the hold on finals for the night runs out. */
+  private holdTimer?: NodeJS.Timeout;
 
   constructor(
     private readonly store: JobStore,
@@ -221,6 +257,7 @@ export class JobQueue {
   async stop(): Promise<void> {
     this.stopped = true;
     if (this.timer) clearInterval(this.timer);
+    clearTimeout(this.holdTimer);
     const running = [...this.active.values()];
     for (const a of running) a.controller.abort(new ShutdownError());
     await Promise.all(running.map((a) => a.done.catch(() => undefined)));
@@ -230,6 +267,7 @@ export class JobQueue {
     const seq = this.store.nextSeq();
     if (jobPriority(job) === 2) job = { ...job, nightGroup: nightGroupFor(job, seq, this.entries.values()) };
     const entry: StoredJob = { job, payload, seq };
+    if (isInteractive(job)) this.lastInteractive = this.now().getTime();
     this.entries.set(job.id, entry);
     this.store.put(entry);
     this.emit(entry, true);
@@ -263,6 +301,25 @@ export class JobQueue {
       active.controller.abort();
       await active.done.catch(() => undefined);
     }
+    return entry.job;
+  }
+
+  /**
+   * Moves a queued final between now and tonight. To tonight it joins its model's group as any final queued for the
+   * night does (see nightGroupFor); to now it leaves its group and runs with the finals to run now. It keeps its place
+   * by when it was queued. Undefined when there is no such job.
+   */
+  setMode(id: string, mode: Job["mode"]): Job | undefined {
+    const entry = this.entries.get(id);
+    if (!entry) return undefined;
+    if (entry.job.status !== "queued" || !FINAL_STEPS.has(entry.job.step)) throw conflict("Only a final that has not started can move between now and tonight.");
+    if (entry.job.mode === mode) return entry.job;
+    const { nightGroup: _, ...rest } = entry.job;
+    entry.job = { ...rest, mode };
+    if (mode === "overnight") entry.job = { ...entry.job, nightGroup: nightGroupFor(entry.job, entry.seq, this.entries.values()) };
+    this.update(entry, {}, true);
+    // Its wait changes (the window, or the GPU), and it may start now.
+    this.kick();
     return entry.job;
   }
 
@@ -317,10 +374,11 @@ export class JobQueue {
     const job = entry.job;
     if (!isEligible(job, settings, now)) {
       const { enabled, startAt, endAt } = settings.overnight;
-      return enabled ? `Runs tonight, ${startAt} to ${endAt}` : "Runs when overnight mode is on";
+      return enabled ? `Runs tonight, ${clock12(startAt)} to ${clock12(endAt)}` : "Runs when overnight mode is on";
     }
     const blocked = this.hooks?.blocked?.(job);
     if (blocked) return blocked;
+    if (jobPriority(job) === 2 && this.userHold(settings, now)) return WAITING_FOR_USER;
     const before = awaitedBy(entry, this.entries.values()).filter((e) => e.job.status === "running" || laneOf(e.job) === "cpu" || this.waitReason(e, settings, now) === undefined);
     if (before.length === 1) {
       const only = before[0]!.job;
@@ -330,6 +388,42 @@ export class JobQueue {
     const wait = notBefore(entry) - now.getTime();
     if (wait > 0) return `The GPU went away. Trying again in ${describeWait(wait)}.`;
     return undefined;
+  }
+
+  /**
+   * Whether finals for the night wait for the user now: an interactive job was queued or finished less than
+   * `holdForUserMs` ago (while one is queued or running, it goes first anyway). The hold ends that long after the last
+   * one, and the queue is kicked then.
+   *
+   * It never spends time the finals need. It holds only while the night left after it still fits every final for the
+   * night still queued: each at its estimate times `FINAL_OVERRUN`, stretched by the share of the GPU the user's own jobs
+   * took over the last hour, since once the hold lets go those still go first between finals. A user who keeps the GPU
+   * busy a sixth of the time has the finals counted at 1.5 times their estimate. So the hold can take only time the
+   * night has to spare: once it has none, the finals run as they did before, between interactive jobs, and finish in
+   * the window as long as the user's share does not grow. The all-day window has no end to keep to: there finals wait
+   * for a pause of `holdForUserMs`.
+   */
+  private userHold(settings: Settings, now: Date): boolean {
+    const until = this.lastInteractive + (this.opts.holdForUserMs ?? HOLD_FOR_USER_MS);
+    if (now.getTime() >= until) return false;
+    const end = windowEnd(now, settings.overnight.startAt, settings.overnight.endAt);
+    if (end) {
+      const finals = [...this.entries.values()].filter((e) => e.job.status === "queued" && jobPriority(e.job) === 2);
+      const estimate = finals.reduce((sum, e) => sum + (this.hooks?.estimateSec?.(e.job) ?? FINAL_FALLBACK_SEC) * 1000, 0);
+      if (until + (estimate * FINAL_OVERRUN) / (1 - this.interactiveLoad(now)) > end.getTime()) return false;
+    }
+    clearTimeout(this.holdTimer);
+    this.holdTimer = setTimeout(() => this.kick(), until - now.getTime() + 50);
+    this.holdTimer.unref();
+    return true;
+  }
+
+  /** The share of the last `LOAD_SPAN_MS` the GPU spent on interactive jobs, at most `MAX_LOAD`. */
+  private interactiveLoad(now: Date): number {
+    const from = now.getTime() - LOAD_SPAN_MS;
+    this.interactiveRuns = this.interactiveRuns.filter((r) => r.end > from);
+    const busy = this.interactiveRuns.reduce((sum, r) => sum + Math.min(r.end, now.getTime()) - Math.max(r.start, from), 0);
+    return Math.min(MAX_LOAD, busy / LOAD_SPAN_MS);
   }
 
   /** Give every queued job the message of what it waits for; clear it once the wait is over. */
@@ -373,6 +467,7 @@ export class JobQueue {
       if (!started(entry)) entry.payload = { ...entry.payload, _started: true };
     }
     this.update(entry, { status: "running", startedAt: nowIso(), progress: 0, message: "Starting" }, true);
+    const began = this.now().getTime();
     try {
       const result = await hooks.execute(entry.job, entry.payload, {
         signal: controller.signal,
@@ -407,6 +502,10 @@ export class JobQueue {
         await hooks.onSettled?.(entry.job, entry.payload).catch(() => undefined);
       }
     } finally {
+      if (isInteractive(entry.job)) {
+        this.lastInteractive = this.now().getTime();
+        this.interactiveRuns.push({ start: began, end: this.lastInteractive });
+      }
       this.active.delete(lane);
       finish();
       this.store.prune(this.opts.keepFinished ?? 1000);
@@ -486,3 +585,10 @@ function describeWait(ms: number): string {
   return ms >= 60_000 ? `${Math.round(ms / 60_000)} min` : `${Math.max(1, Math.round(ms / 1000))} s`;
 }
 
+/** "11:34 pm" from "23:34", and "7 am" from "07:00": the app shows times this way everywhere. */
+export function clock12(hhmm: string): string {
+  const [h = 0, m = 0] = hhmm.split(":").map(Number);
+  const suffix = h >= 12 ? "pm" : "am";
+  const h12 = h % 12 === 0 ? 12 : h % 12;
+  return m === 0 ? `${h12} ${suffix}` : `${h12}:${String(m).padStart(2, "0")} ${suffix}`;
+}

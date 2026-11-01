@@ -33,6 +33,8 @@ export interface MediaCtx {
   boardActions: BoardActions;
   /** Uploads files onto a board: images as references, audio as songs. */
   upload(files: File[], boardId: string, role?: "reference" | "music" | "voice"): Promise<string[]>;
+  /** Asks to rewrite the film's shot list (a confirm first). Absent where there is none to write, or while it is written. */
+  rewriteShotList?: (() => void) | undefined;
 }
 
 export const MediaContext = createContext<MediaCtx | null>(null);

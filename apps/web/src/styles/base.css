@@ -23,6 +23,7 @@ body {
   font-size: var(--fs-body);
   line-height: var(--lh-body);
   font-weight: 400;
+  font-optical-sizing: auto;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
   overflow: hidden;
@@ -50,6 +51,12 @@ ul,
 ol {
   padding: 0;
   list-style: none;
+}
+
+/* One icon set at one stroke. Sizes come from the role: 14 in small controls, 16 in rows and buttons, 18 in tool tabs
+   and the toolbar. */
+.lucide {
+  stroke-width: 1.75;
 }
 
 button,
@@ -127,33 +134,40 @@ canvas {
   background: transparent;
 }
 
-/* Type roles. Titles are set in the display face, which is one weight: size carries the hierarchy. */
+/* Type roles. Titles are set in the display face at its one weight: size carries the hierarchy. */
 .t-display,
 .t-title-1,
 .t-title-2,
 .t-title-3 {
   font-family: var(--font-display);
-  font-weight: 400;
+  font-weight: var(--fw-display);
   letter-spacing: -0.01em;
   font-kerning: normal;
 }
 .t-title-1 {
   font-size: var(--fs-title-1);
   line-height: var(--lh-title-1);
-  letter-spacing: -0.015em;
+  letter-spacing: -0.02em;
 }
 .t-title-2 {
   font-size: var(--fs-title-2);
   line-height: var(--lh-title-2);
+  letter-spacing: -0.015em;
 }
 .t-title-3 {
   font-size: var(--fs-title-3);
   line-height: var(--lh-title-3);
 }
+/* Keys, counts, times and dimensions. */
+.t-mono {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0;
+}
 .t-head {
   font-size: var(--fs-body);
   line-height: var(--lh-body);
-  font-weight: 600;
+  font-weight: 500;
 }
 .t-read {
   font-size: var(--fs-read);

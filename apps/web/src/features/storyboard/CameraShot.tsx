@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import type { Project, StepId } from "@nightshift/contract";
+import { ownShot, type Project, type StepId } from "@nightshift/contract";
 import { useNavigate } from "react-router";
 import { useEngine, useProjectJobs } from "@/store/engine";
 import { Button, Field, Notice, Textarea, toast } from "@/ui/primitives";
@@ -8,9 +8,10 @@ import { failureText, isActive, jobStatusLine } from "@/features/project/helpers
 
 export function CameraShot({ project }: { project: Project }) {
   const { updateProject, draft, client } = useEngine();
-  const jobs = useProjectJobs(project.id);
   const nav = useNavigate();
-  const shot = project.shots[0];
+  // The shot from the photo is the project's own shot. Cards made with the tools in Media, and their jobs, are not its.
+  const shot = ownShot(project);
+  const jobs = useProjectJobs(project.id).filter((j) => !j.shotId || j.shotId === shot?.id);
   const [prompt, setPrompt] = useState(shot?.prompt ?? String(project.brief.prompt ?? ""));
   const [saving, setSaving] = useState(false);
   const saves = useRef(Promise.resolve());
@@ -23,9 +24,9 @@ export function CameraShot({ project }: { project: Project }) {
     setSaving(true);
     const next = saves.current.then(async () => {
       const latest = await client.getProject(project.id);
-      const current = latest.shots[0];
+      const current = ownShot(latest);
       if (!current) return;
-      await updateProject(project.id, { brief: { ...latest.brief, prompt, ...(move ? { move } : {}) }, shots: [{ ...current, prompt, ...(move ? { cameraMove: move } : {}) }] });
+      await updateProject(project.id, { brief: { ...latest.brief, prompt, ...(move ? { move } : {}) }, shots: latest.shots.map((s) => (s.id === current.id ? { ...current, prompt, ...(move ? { cameraMove: move } : {}) } : s)) });
     }).catch((e) => { failed = true; toast({ title: "Couldn't save the shot", text: String(e), tone: "bad" }); });
     saves.current = next;
     await next;

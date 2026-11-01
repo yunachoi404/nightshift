@@ -199,6 +199,15 @@ describe("Card popup", () => {
     expect(engine.patches[0]!.shots?.[0]).toMatchObject({ id: "shot_1", chosenDraftId: "take_2", useStill: false });
   });
 
+  it("holds the shot's still in the viewer while a newly shown version loads, so switching never flashes black", async () => {
+    show(new FakeEngine(ferry()));
+    const { dialog } = await openCard();
+    key(version(PICK), "ArrowLeft");
+    const video = dialog.querySelector(".cd-stage video");
+    expect(video?.getAttribute("src")).toContain("v_take_2");
+    expect(video?.getAttribute("poster")).toContain("still_1");
+  });
+
   it("Left and Right move through the versions from a button, but not from a text field", async () => {
     show(new FakeEngine(ferry()));
     const { dialog } = await openCard();
@@ -285,5 +294,37 @@ describe("Card popup", () => {
     const card = await openCard("Open Camera move, Dolly in");
     expect(within(card.dialog).queryByRole("button", { name: "Edit image" })).toBeNull();
     expect(within(card.dialog).queryByRole("button", { name: "Redraw still" })).toBeNull();
+  });
+});
+
+describe("a micro drama's line", () => {
+  /** The ferry shot as a micro drama's: its character says a line. */
+  function scene(): Project {
+    const p = ferry();
+    return { ...p, template: "micro_drama", aspect: "9:16", shots: [{ ...p.shots[0]!, line: "You fired me. Now I own you." }] };
+  }
+
+  it("sits on its card like a subtitle, and the card's window edits what they say", async () => {
+    const engine = new FakeEngine(scene());
+    show(engine);
+    expect((await screen.findByText("You fired me. Now I own you.")).className).toBe("mp-card__line");
+    await openCard();
+    // The field is looked up each time: the card's window draws it again when the saved project comes back.
+    const field = async () => (await screen.findByLabelText("What they say")) as HTMLInputElement;
+    expect((await field()).value).toBe("You fired me. Now I own you.");
+    fireEvent.change(await field(), { target: { value: "  You fired me. Now I'm your boss. " } });
+    fireEvent.keyDown(await field(), { key: "Enter" });
+    await waitFor(() => expect(engine.patches.at(-1)?.shots?.[0]?.line).toBe("You fired me. Now I'm your boss."));
+
+    // Emptied, the shot says nothing.
+    fireEvent.change(await field(), { target: { value: "" } });
+    fireEvent.blur(await field());
+    await waitFor(() => expect(engine.patches.at(-1)?.shots?.[0]).not.toHaveProperty("line"));
+  });
+
+  it("is not asked for on other templates' cards", async () => {
+    show(new FakeEngine(ferry()));
+    await openCard();
+    expect(screen.queryByLabelText("What they say")).toBeNull();
   });
 });

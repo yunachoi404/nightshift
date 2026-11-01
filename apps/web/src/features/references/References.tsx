@@ -11,6 +11,11 @@ const dragType = "application/x-nightshift-reference";
 export type ShotEdit = Partial<Shot> | ((current: Shot) => Partial<Shot>);
 export type DraftReference = Omit<Reference, "assetId"> & { file: File };
 const kinds: Reference["kind"][] = ["character", "product", "place", "style"];
+
+/** What a new reference most likely is: in a product ad, the product; elsewhere, a character. */
+export function defaultReferenceKind(template: Project["template"] | undefined): Reference["kind"] {
+  return template === "product_ad" ? "product" : "character";
+}
 const nameOf = (file: File) =>
   file.name
     .replace(/\.[^.]+$/, "")
@@ -97,9 +102,11 @@ function ReferenceCard({
 function AddImages({
   disabled,
   onFiles,
+  label = "Add reference",
 }: {
   disabled?: boolean;
   onFiles: (files: File[]) => void;
+  label?: string;
 }) {
   const input = useRef<HTMLInputElement>(null);
   return (
@@ -110,7 +117,7 @@ function AddImages({
         disabled={disabled}
         onClick={() => input.current?.click()}
       >
-        Add reference
+        {label}
       </Button>
       <input
         hidden
@@ -157,7 +164,7 @@ export function References({ project }: { project: Project }) {
         if ((current.references?.length ?? 0) >= 6) {
           toast({
             title: "Six references is the limit",
-            text: "Remove one before adding another.",
+            text: "Remove one before adding another",
           });
           break;
         }
@@ -169,7 +176,7 @@ export function References({ project }: { project: Project }) {
               id: id("ref"),
               assetId: asset.id,
               label: nameOf(file),
-              kind: "character",
+              kind: defaultReferenceKind(project.template),
             },
           ],
         });
@@ -273,7 +280,7 @@ export function referenceDropHandlers(
         if (selected.length >= 3) {
           toast({
             title: "Choose up to three references",
-            text: "Turn one off before adding another.",
+            text: "Turn one off before adding another",
           });
           return {};
         }
@@ -303,7 +310,7 @@ export function ShotReferences({
       if (latest.length >= 3) {
         toast({
           title: "Choose up to three references",
-          text: "Turn one off before adding another.",
+          text: "Turn one off before adding another",
         });
         return {};
       }
@@ -363,9 +370,19 @@ export function ShotReferences({
 export function NewReferences({
   references,
   onChange,
+  heading = "References",
+  hint = "Photos to keep the same people, products or places in every shot",
+  addLabel,
+  template,
 }: {
   references: DraftReference[];
   onChange: (refs: DraftReference[]) => void;
+  /** The project's template, so a new reference starts as what it most likely is. */
+  template?: Project["template"];
+  /** The section's name, line and button, when a preset asks for something more specific (a micro drama's characters). */
+  heading?: string;
+  hint?: string;
+  addLabel?: string;
 }) {
   const [urls, setUrls] = useState<Record<string, string>>({});
   const tier = useInstalledTier();
@@ -379,20 +396,21 @@ export function NewReferences({
   return (
     <section
       className="references references--new"
-      aria-label="Optional project references"
+      aria-label={`Optional ${heading.toLowerCase()}`}
     >
       <div className="references__head">
         <div>
           <h2>
-            References <span>Optional</span>
+            {heading} <span>Optional</span>
           </h2>
           <p>
             {tier?.referenceImageLimit === 0
-              ? "You can save references here, but this setup cannot render from photos."
-              : "Photos to keep the same people, products or places in every shot."}
+              ? "You can save references here, but this setup cannot render from photos"
+              : hint}
           </p>
         </div>
         <AddImages
+          {...(addLabel ? { label: addLabel } : {})}
           disabled={references.length >= 6}
           onFiles={(files) =>
             onChange(
@@ -402,7 +420,7 @@ export function NewReferences({
                   id: id("ref"),
                   file,
                   label: nameOf(file),
-                  kind: "character" as const,
+                  kind: defaultReferenceKind(template),
                 })),
               ].slice(0, 6),
             )

@@ -1,15 +1,15 @@
 /**
- * The editor's media sidebar: the project's boards as small groups of cards, each showing its pick. Drag a card, or a
- * board by its header, onto the timeline. Cards already in the cut carry a check; the rest have a + that adds them at
+ * The editor's media sidebar: the project's boards as small groups of cards, each showing its pick, its name under the
+ * pointer. Drag a card, or a board by its header, onto the timeline. Cards already in the cut carry a check; the rest have a + that adds them at
  * the end. Clicking a card in the cut moves the playhead to it.
  */
 import type { Job, Project } from "@nightshift/contract";
 import { Check, ChevronRight, Mic, Music, Plus } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router";
-import { canvas, setDrag, type CanvasBoard, type CanvasItem } from "@/features/media/items";
+import { canAddToTimeline, canvas, setDrag, soundName, type CanvasBoard, type CanvasItem } from "@/features/media/items";
 import { assetById, frameClass, isActive } from "@/features/project/helpers";
-import { shortDuration } from "@/lib/format";
+import { shortDuration, timecode } from "@/lib/format";
 import { Media } from "@/media/Media";
 import { useEngine } from "@/store/engine";
 import { Tag, cx } from "@/ui/primitives";
@@ -41,7 +41,7 @@ export function MediaSidebar({ project, jobs, onSeekShot, onAdd }: { project: Pr
         ) : (
           boards.map((b) => <BoardGroup key={b.board.id} project={project} group={b} jobs={jobs} open={!closed.has(b.board.id)} onToggle={() => toggle(b.board.id)} onSeekShot={onSeekShot} onAdd={onAdd} />)
         )}
-        {!empty && <p className="edm__tip">Drag a card, or a whole board by its name, onto the timeline.</p>}
+        {!empty && <p className="edm__tip">Drag a card, or a whole board by its name, onto the timeline</p>}
       </div>
     </aside>
   );
@@ -71,25 +71,27 @@ function BoardGroup({ project, group, jobs, open, onToggle, onSeekShot, onAdd }:
           {pictures.length > 0 && (
             <div className={cx("edm__grid", project.aspect === "9:16" && "edm__grid--tall")}>
               {pictures.map((item) => (
-                <Card key={item.id} project={project} item={item} boardId={board.id} busy={item.kind === "shot" && jobs.some((j) => j.shotId === item.id && isActive(j))} onSeekShot={onSeekShot} onAdd={onAdd} />
+                <Card key={item.id} project={project} item={item} boardId={board.id} busy={item.kind === "shot" ? (jobs.some((j) => j.shotId === item.id && j.status === "running") ? "running" : jobs.some((j) => j.shotId === item.id && isActive(j)) ? "queued" : undefined) : undefined} onSeekShot={onSeekShot} onAdd={onAdd} />
               ))}
             </div>
           )}
           {sounds.map((item) => (
-            <Sound key={item.id} item={item} boardId={board.id} onAdd={onAdd} />
+            <Sound key={item.id} item={item} name={soundName(item, sounds)} boardId={board.id} onAdd={onAdd} />
           ))}
-          {!items.length && <p className="edm__none edm__none--board">No cards on this board.</p>}
+          {!items.length && <p className="edm__none edm__none--board">No cards on this board</p>}
         </>
       )}
     </section>
   );
 }
 
-function Card({ project, item, boardId, busy, onSeekShot, onAdd }: { project: Project; item: Exclude<CanvasItem, { kind: "audio" }>; boardId: string; busy: boolean; onSeekShot: (shotId: string) => void; onAdd: (itemIds: string[]) => void }) {
+function Card({ project, item, boardId, busy, onSeekShot, onAdd }: { project: Project; item: Exclude<CanvasItem, { kind: "audio" }>; boardId: string; busy?: "running" | "queued"; onSeekShot: (shotId: string) => void; onAdd: (itemIds: string[]) => void }) {
   const on = item.kind === "shot" && item.onTimeline;
   const blank = item.kind === "shot" && !item.pick;
-  // A What if? film is one shot: an image cannot join it as another.
-  const addable = !(item.kind === "image" && project.template === "what_if");
+  // A What if? film or a quick shot is its own shot: an image or an extra card cannot join it as another.
+  const addable = canAddToTimeline(project, item.id);
+  // A draft or a final is a clip: its length sits on the picture, as on the board.
+  const clip = item.kind === "shot" && item.pick && item.pick.rung !== "still" ? (item.pick.asset.durationSec ?? item.shot.durationSec) : undefined;
   return (
     <div
       className={cx("edm__card", on && "edm__card--on")}
@@ -98,14 +100,17 @@ function Card({ project, item, boardId, busy, onSeekShot, onAdd }: { project: Pr
       onClick={() => on && onSeekShot(item.id)}
       title={item.label}
     >
-      <div className={cx("frame", frameClass(project.aspect), "edm__frame", blank && (busy ? "shimmer" : "frame--empty"))}>
+      <div className={cx("frame", frameClass(project.aspect), "edm__frame", blank && (busy === "running" ? "shimmer" : "frame--empty"))}>
         <Thumb project={project} item={item} />
-        {busy && !blank && <span className="pulse edm__busy" role="img" aria-label="A new version is being made" />}
+        {busy && !blank && <span className={cx("pulse edm__busy", busy === "queued" && "pulse--still")} role="img" aria-label={busy === "running" ? "A new version is being made" : "A new version is waiting"} />}
+        <span className="edm__name">{item.label}</span>
         {item.kind === "shot" && item.final && (
           <Tag tone="night" onMedia className="edm__final">
             Final
           </Tag>
         )}
+        {/* A narrow card has room for one chip at its foot: a final says so, a draft gives its length. */}
+        {clip !== undefined && !(item.kind === "shot" && item.final) && <span className="edm__dur">{timecode(clip, false)}</span>}
         {on && (
           <span className="edm__mark" role="img" aria-label="On the timeline" title="On the timeline">
             <Check />
@@ -117,7 +122,6 @@ function Card({ project, item, boardId, busy, onSeekShot, onAdd }: { project: Pr
           </button>
         )}
       </div>
-      <div className="edm__label">{item.label}</div>
     </div>
   );
 }
@@ -141,14 +145,14 @@ function Thumb({ project, item }: { project: Project; item: Exclude<CanvasItem, 
   return <Filmstrip src={url(pick.asset.id)} kind="video" start={0} duration={length} count={1} ratio={ratio} />;
 }
 
-function Sound({ item, boardId, onAdd }: { item: Extract<CanvasItem, { kind: "audio" }>; boardId: string; onAdd: (itemIds: string[]) => void }) {
+function Sound({ item, name, boardId, onAdd }: { item: Extract<CanvasItem, { kind: "audio" }>; name: string; boardId: string; onAdd: (itemIds: string[]) => void }) {
   const words = item.asset.text?.trim().replace(/\s+/g, " ");
   const length = item.asset.durationSec ? shortDuration(item.asset.durationSec) : "";
   return (
     <div className={cx("edm__sound", item.onTimeline && "edm__sound--on")} draggable onDragStart={(e) => setDrag(e, { items: [item.id], fromBoard: boardId })} title={words || item.label}>
       {item.role === "voice" ? <Mic className="edm__sound-icon" /> : <Music className="edm__sound-icon" />}
       <span className="edm__sound-text">
-        <span className="edm__sound-name">{item.label}</span>
+        <span className="edm__sound-name">{name}</span>
         <span className="edm__sound-sub">{[length, words].filter(Boolean).join(", ")}</span>
       </span>
       {item.onTimeline ? (

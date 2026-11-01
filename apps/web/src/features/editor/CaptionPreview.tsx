@@ -37,6 +37,8 @@ const TEMPLATES: Record<TemplateId, TemplateCaptions> = {
   talking_intro: { look: "clean", font: INTER, text: "#ffffff", accent: "#7DD3FC", accentText: "#0E1116", scrim: "rgba(10,12,16,0.6)", uppercase: false, lower: true, size: 1 },
   product_ad: { look: "boxed", font: '"Archivo Variable", sans-serif', text: "#ffffff", accent: "#FF5A3C", accentText: "#FFF6F1", scrim: "rgba(10,10,14,0.72)", uppercase: false, lower: true, size: 1 },
   music_video: { look: "lyrics", font: '"Bricolage Grotesque Variable", sans-serif', text: "#ffffff", accent: "#D9FF3F", accentText: "#0B0B0B", scrim: "rgba(0,0,0,0.45)", uppercase: true, lower: false, size: 1 },
+  // As the export: large white film subtitles low in the frame, the words the characters say.
+  micro_drama: { look: "serif", font: INTER, text: "#ffffff", accent: "#E7B356", accentText: "#14110C", scrim: "rgba(0,0,0,0.55)", uppercase: false, lower: true, size: 1.45 },
   cinematic_shot: { look: "serif", font: '"Instrument Sans Variable", sans-serif', text: "#F3EEE4", accent: "#E7B356", accentText: "#14110C", scrim: "rgba(0,0,0,0.55)", uppercase: false, lower: false, size: 1 },
   camera_move: { look: "serif", font: '"Instrument Sans Variable", sans-serif', text: "#F3EEE4", accent: "#E7B356", accentText: "#14110C", scrim: "rgba(0,0,0,0.55)", uppercase: false, lower: false, size: 1 },
   vfx_effect: { look: "serif", font: '"Instrument Sans Variable", sans-serif', text: "#F3EEE4", accent: "#E7B356", accentText: "#14110C", scrim: "rgba(0,0,0,0.55)", uppercase: false, lower: false, size: 1 },

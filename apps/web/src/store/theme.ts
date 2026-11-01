@@ -1,6 +1,9 @@
 import { useCallback, useEffect, useState } from "react";
 
-/** The user's choice. "system" follows the OS; the inline script in index.html resolves it before first paint. */
+/**
+ * The user's choice. Dark until they choose: a video tool reads best on black. "system" follows the OS. The inline
+ * script in index.html resolves the saved choice before the first paint.
+ */
 export type ThemeMode = "system" | "light" | "dark";
 export type ResolvedTheme = "light" | "dark";
 
@@ -10,7 +13,7 @@ const media = typeof window !== "undefined" ? window.matchMedia("(prefers-color-
 
 export function readThemeMode(): ThemeMode {
   const v = localStorage.getItem(KEY);
-  return v === "light" || v === "dark" ? v : "system";
+  return v === "light" || v === "system" ? v : "dark";
 }
 
 export function resolveTheme(mode: ThemeMode): ResolvedTheme {
@@ -23,8 +26,7 @@ function paint(mode: ThemeMode) {
 }
 
 export function applyThemeMode(mode: ThemeMode): void {
-  if (mode === "system") localStorage.removeItem(KEY);
-  else localStorage.setItem(KEY, mode);
+  localStorage.setItem(KEY, mode);
   paint(mode);
   // The desktop shell switches the window material and native controls to match.
   void window.nightshiftDesktop?.setTheme?.(mode).catch(() => undefined);

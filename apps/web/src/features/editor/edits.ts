@@ -1,12 +1,13 @@
 /**
- * The editor's saves: cards on and off the timeline, their order, the song and the voiceover, and the timeline's style.
+ * The editor's saves: cards on and off the timeline, their order and length, the song and the voiceover, and the
+ * timeline's style.
  * Each save reads the latest project, changes it and sends one PATCH, one after another, so quick edits never undo each
  * other. The engine cuts the film again after each save and the project event redraws the editor.
  */
 import type { Project, Shot } from "@nightshift/contract";
 import { useCallback, useMemo, useRef } from "react";
 import type { ProjectPatch } from "@/api/client";
-import { changesCut, cutShots, placeOnTimeline, soundOff, takeOffTimeline, type TimelineEdit } from "@/features/media/items";
+import { changesCut, cutShots, placeOnTimeline, shotPatch, soundOff, takeOffTimeline, type TimelineEdit } from "@/features/media/items";
 import { useEngine } from "@/store/engine";
 import { toast } from "@/ui/primitives";
 
@@ -22,6 +23,15 @@ export interface CutEdits {
   takeOff(shotId: string): Promise<void>;
   /** Takes the song or the voiceover off the timeline. */
   soundOff(role: "music" | "voice"): Promise<void>;
+  /** Sets how long the cut shows a shot (`Shot.cutSec`), or with null lets the template decide again. */
+  setLength(shotId: string, seconds: number | null): Promise<void>;
+}
+
+/** The PATCH that sets a shot's length in the cut, or clears it with null; undefined when nothing changes. */
+export function lengthPatch(project: Project, shotId: string, seconds: number | null): ProjectPatch | undefined {
+  const shot = project.shots.find((s) => s.id === shotId);
+  if (!shot || (shot.cutSec ?? null) === seconds) return undefined;
+  return shotPatch(project, shotId, ({ cutSec: _, ...rest }) => (seconds === null ? rest : { ...rest, cutSec: seconds }));
 }
 
 /** The PATCH that puts `items` on the timeline before the first of `before` that stays; undefined when nothing changes. */
@@ -79,6 +89,7 @@ export function useCutEdits(projectId: string): CutEdits {
       place: (items, before) => save((p) => placeBefore(p, items, before)),
       takeOff: (shotId) => save((p) => (cutShots(p).some((s) => s.id === shotId) ? patchOf(takeOffTimeline(p, shotId)) : undefined)),
       soundOff: (role) => save((p) => patchOf(soundOff(p, role))),
+      setLength: (shotId, seconds) => save((p) => lengthPatch(p, shotId, seconds)),
     }),
     [save],
   );

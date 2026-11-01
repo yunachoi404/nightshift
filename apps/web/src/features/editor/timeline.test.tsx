@@ -24,6 +24,14 @@ vi.mock("@/api/config", () => ({
 
 // The filmstrip draws on a canvas, which jsdom lacks.
 HTMLCanvasElement.prototype.getContext = (() => null) as typeof HTMLCanvasElement.prototype.getContext;
+// jsdom has no pointer events either: a mouse event with a pointer id stands in, so a drag carries its position.
+window.PointerEvent ??= class extends MouseEvent {
+  pointerId: number;
+  constructor(type: string, init: PointerEventInit = {}) {
+    super(type, init);
+    this.pointerId = init.pointerId ?? 1;
+  }
+} as unknown as typeof PointerEvent;
 
 const PID = "prj_cut";
 const iso = () => new Date().toISOString();
@@ -168,6 +176,53 @@ describe("the minimal editor", () => {
     expect(order(patch)).toEqual(["shot_1"]);
   });
 
+  it("drags a clip's end to set how long its shot plays, steps it with the arrow keys, and hands it back", async () => {
+    const project = cutProject();
+    const { updateProject } = open(project);
+    const end = await screen.findByRole("slider", { name: "Length of shot 1" });
+    expect(end.getAttribute("aria-valuenow")).toBe("2");
+    // Half a second further: the clip widens while dragged and says how long it is, then the length is saved.
+    fireEvent.pointerDown(end, { clientX: 400, button: 0, pointerId: 1 });
+    fireEvent.pointerMove(end, { clientX: 400 + 97, pointerId: 1 });
+    expect(end.closest<HTMLElement>(".tl__clip")!.style.width).toBe(`${2.5 * 194 - 3}px`);
+    expect(end.closest(".tl__clip")!.textContent).toContain("2.5 s");
+    // The clip after it moves along.
+    expect(screen.getByRole("slider", { name: "Length of shot 2" }).closest<HTMLElement>(".tl__clip")!.style.left).toBe(`${12 + 2.5 * 194}px`);
+    fireEvent.pointerUp(end, { clientX: 400 + 97, pointerId: 1 });
+    await waitFor(() => expect(updateProject).toHaveBeenCalledTimes(1));
+    let shots = updateProject.mock.calls[0]![1].shots!;
+    expect(shots.find((s) => s.id === "shot_1")).toMatchObject({ cutSec: 2.5, durationSec: 2 });
+    expect(shots.find((s) => s.id === "shot_2")!.cutSec).toBeUndefined();
+
+    // Two steps shorter from the keyboard make one save.
+    const second = screen.getByRole("slider", { name: "Length of shot 2" });
+    fireEvent.keyDown(second, { key: "ArrowLeft" });
+    fireEvent.keyDown(second, { key: "ArrowLeft" });
+    expect(second.getAttribute("aria-valuenow")).toBe("1.8");
+    await waitFor(() => expect(updateProject).toHaveBeenCalledTimes(2));
+    shots = updateProject.mock.calls[1]![1].shots!;
+    expect(shots.find((s) => s.id === "shot_2")!.cutSec).toBe(1.8);
+  });
+
+  it("lets the template choose a length again on a double-click, and has no end to drag where the template sets it", async () => {
+    const project = cutProject();
+    project.shots[0]!.cutSec = 1.5;
+    const { updateProject } = open(project);
+    const end = await screen.findByRole("slider", { name: "Length of shot 1" });
+    expect(end.getAttribute("aria-valuetext")).toBe("2 seconds, set by you");
+    fireEvent.doubleClick(end);
+    await waitFor(() => expect(updateProject).toHaveBeenCalledTimes(1));
+    expect(updateProject.mock.calls[0]![1].shots!.find((s) => s.id === "shot_1")).not.toHaveProperty("cutSec");
+  });
+
+  it("ends a product ad with its last shot under the end card, so that clip has no end to drag", async () => {
+    const project = cutProject();
+    project.template = "product_ad";
+    open(project);
+    await screen.findByRole("slider", { name: "Length of shot 1" });
+    expect(screen.queryByRole("slider", { name: "Length of shot 2" })).toBeNull();
+  });
+
   it("puts a song dropped on the Music lane on the timeline", async () => {
     const project = cutProject();
     const { updateProject } = open(project);
@@ -208,8 +263,8 @@ describe("the minimal editor", () => {
     project.shots = project.shots.map((s) => ({ ...s, onTimeline: false }));
     project.timeline = { clips: [], audio: [], captions: [], style: {} };
     const { updateProject } = open(project);
-    await screen.findByText("Nothing on the timeline yet.");
-    screen.getByText("Drag cards here from the Media sidebar.");
+    await screen.findByText("Nothing on the timeline yet");
+    screen.getByText("Drag cards here from the Media sidebar");
     expect(screen.getByRole("link", { name: "Go to Media" }).getAttribute("href")).toBe(`#/p/${PID}/media`);
     within(lane("shots")).getByText("Drag cards here from Media");
     // Every lane is there to drop on.
@@ -226,7 +281,7 @@ describe("the minimal editor", () => {
     project.soundtrack = {};
     project.timeline = null;
     const { updateProject } = open(project);
-    await screen.findByText("Nothing on the timeline yet.");
+    await screen.findByText("Nothing on the timeline yet");
     expect(lane("music").textContent).toBe("Song ready. It plays once shots are on the timeline.");
     // No voiceover yet: its lane still offers one.
     expect(lane("voice").textContent).toContain("Write voiceover");

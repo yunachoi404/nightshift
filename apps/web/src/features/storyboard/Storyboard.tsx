@@ -15,6 +15,7 @@ import { useNow } from "@/lib/useNow";
 import { cameraMoves, fallbackShots, sentenceCase } from "@nightshift/contract";
 import { id as newId } from "@/lib/ids";
 import { plural, roughDuration, shortDuration } from "@/lib/format";
+import { cameraMoveLabel } from "@/features/media/items";
 import { CameraShot } from "./CameraShot";
 import { EffectShot } from "./EffectShot";
 import { References, ShotReferences, referenceDropHandlers, type ShotEdit } from "@/features/references/References";
@@ -347,6 +348,8 @@ function ShotCard({
         </span>
         <span className="shot__spacer" />
         <Select className="shot__move" value={shot.cameraMove ?? "static"} aria-label="Camera move" onChange={(e) => onChange({ cameraMove: e.target.value })} disabled={shot.locked}>
+          {/* A move the writer chose that the list lacks: named, so the select never shows another one. */}
+          {shot.cameraMove && !cameraMoves.some((c) => c.id === shot.cameraMove) && <option value={shot.cameraMove}>{cameraMoveLabel(shot.cameraMove)}</option>}
           {cameraMoves.map((c) => (
             <option key={c.id} value={c.id}>
               {c.label}

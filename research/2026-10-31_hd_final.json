@@ -1,0 +1,21 @@
+{
+  "what": "The DGX Spark's same-take final at four times the draft's size: the draft's latent upscaled 2x and refined (as before, 1280x768), then upscaled 2x again with the same LTX 2.5 spatial upscaler and refined with three sigmas (0.725, 0.4219, 0) at 2560x1536. The first frame is the draft's still at 4x. Same seed, same take, the draft's own sound.",
+  "workflow": "workflows/ltx25_same_take_hd.api.json",
+  "run": {
+    "date": "2026-10-31",
+    "machine": "DGX Spark (GB10), our ComfyUI 0.41.3 on port 8190 with the 56 GB preemptible budget, shared with other jobs in the queue",
+    "clip": "The Ignite effect draft from outputs/showcase-v2 (640x384, 97 frames), project prj_mvue50mp8a994e87ad, take take_mvuew57p5144002e2c",
+    "output": "2560x1536, 97 frames, 4.04 s, with the draft's audio",
+    "executionSeconds": 266.6,
+    "comfyPromptId": "3a06d3ea-a277-4abc-8699-e67ffd3258d6",
+    "review": "Side by side with the 1280x768 final at the same frame: the face, the dress folds and the flames carry real detail where the old final was soft. Frames 40 to 47 are stable, with no flicker. outputs/hd-lab/check/compare-crop.jpg"
+  },
+  "estimates": {
+    "video_final_same_take": {
+      "peakGb": 56,
+      "seconds": 267,
+      "measured": false
+    }
+  },
+  "notes": "Seconds are the measured execution time. Peak memory was not sampled: the run completed inside the runtime's 56 GB budget, so 56 GB is an upper bound, and the estimate is marked unmeasured for that reason."
+}

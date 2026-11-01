@@ -15,6 +15,7 @@ const actions = vi.hoisted(() => ({
   renameBoard: vi.fn(async () => undefined),
   deleteBoard: vi.fn(async () => undefined),
   moveBoard: vi.fn(async () => undefined),
+  moveBoards: vi.fn(async () => undefined),
   moveCardTo: vi.fn(async () => undefined),
 }));
 vi.mock("./boardActions", () => ({ useBoardActions: (): BoardActions => actions }));
@@ -95,7 +96,7 @@ describe("the Media canvas", () => {
     const mood = board("Mood");
     expect(mood.style.transform).toBe("translate(800px, 0px)");
     expect(mood.style.width).toBe("720px");
-    expect(within(screen.getByTestId("body-board_a")).getByText("A ferry at dusk")).toBeTruthy();
+    expect(within(screen.getByTestId("body-board_a")).getByText("Shot 1: A ferry at dusk")).toBeTruthy();
     expect(opening.classList.contains("cvb--current")).toBe(true);
     expect(mood.classList.contains("cvb--current")).toBe(false);
   });
@@ -189,7 +190,27 @@ describe("the Media canvas", () => {
     await act(async () => {
       fireEvent.pointerUp(edge, { pointerId: 5, clientX: 100, clientY: 210 });
     });
-    expect(actions.moveBoard).toHaveBeenCalledWith("board_a", { x: 100, y: 50, w: 360 });
+    // Mood, beside it, closes up by as much.
+    expect(actions.moveBoards).toHaveBeenCalledWith({ board_a: { x: 100, y: 50, w: 360 }, board_b: { x: 660, y: 0, w: 720 } });
+  });
+
+  it("a wider board pushes the board beside it along as it grows, so they never overlap, and saves both", async () => {
+    // The save is still on its way.
+    actions.moveBoards.mockReturnValueOnce(new Promise(() => undefined));
+    const { board } = setup();
+    // Mood has no frame yet: it sits in the second slot of the row, at 800, beside Opening (100 to 600).
+    expect(board("Mood").style.transform).toBe("translate(800px, 0px)");
+    const edge = board("Opening").querySelector(".cvb__resize")!;
+    fireEvent.pointerDown(edge, { button: 0, pointerId: 6, clientX: 600, clientY: 200 });
+    fireEvent.pointerMove(edge, { pointerId: 6, clientX: 900, clientY: 200 });
+    expect(board("Opening").style.width).toBe("800px");
+    expect(board("Mood").style.transform).toBe("translate(1100px, 0px)");
+    await act(async () => {
+      fireEvent.pointerUp(edge, { pointerId: 6, clientX: 900, clientY: 200 });
+    });
+    expect(actions.moveBoards).toHaveBeenCalledWith({ board_a: { x: 100, y: 50, w: 800 }, board_b: { x: 1100, y: 0, w: 720 } });
+    expect(actions.moveBoard).not.toHaveBeenCalled();
+    expect(board("Mood").style.transform).toBe("translate(1100px, 0px)");
   });
 
   it("a click on the title bar without a drag moves nothing", () => {
@@ -223,7 +244,7 @@ describe("the Media canvas", () => {
   it("dragging the background pans; a press on a card does not", () => {
     const { canvasEl, layer } = setup();
     const before = layer.style.transform;
-    fireEvent.pointerDown(screen.getByText("A ferry at dusk"), { button: 0, pointerId: 2, clientX: 0, clientY: 0 });
+    fireEvent.pointerDown(screen.getByText("Shot 1: A ferry at dusk"), { button: 0, pointerId: 2, clientX: 0, clientY: 0 });
     fireEvent.pointerMove(canvasEl, { pointerId: 2, clientX: 80, clientY: 40 });
     expect(layer.style.transform).toBe(before);
 

@@ -19,6 +19,8 @@ export interface BoardActions {
   deleteBoard(boardId: string): Promise<void>;
   /** Places a board on the canvas. */
   moveBoard(boardId: string, frame: NonNullable<Board["frame"]>): Promise<void>;
+  /** Places several boards at once: a resized board and the neighbours that made room for it. */
+  moveBoards(frames: Record<string, NonNullable<Board["frame"]>>): Promise<void>;
   /** Moves a card to a board, at `index` (the end when absent). */
   moveCardTo(itemId: string, boardId: string, index?: number): Promise<void>;
 }
@@ -28,9 +30,16 @@ export interface BoardActions {
  * looks the same after the move, whatever happens to the list later.
  */
 export function placeBoard(boards: Board[], boardId: string, frame: NonNullable<Board["frame"]>): Board[] {
+  return placeBoards(boards, { [boardId]: frame });
+}
+
+/** The boards with each one in `placed` at its frame, and every board never placed pinned where it shows now. */
+export function placeBoards(boards: Board[], placed: Record<string, NonNullable<Board["frame"]>>): Board[] {
   const frames = defaultFrames(boards);
-  const placed = { x: Math.round(frame.x), y: Math.round(frame.y), w: clampWidth(frame.w ?? frames.get(boardId)?.w ?? NaN) };
-  return boards.map((b) => ({ ...b, frame: b.id === boardId ? placed : (b.frame ?? frames.get(b.id)) }));
+  return boards.map((b) => {
+    const f = placed[b.id];
+    return { ...b, frame: f ? { x: Math.round(f.x), y: Math.round(f.y), w: clampWidth(f.w ?? frames.get(b.id)?.w ?? NaN) } : (b.frame ?? frames.get(b.id)) };
+  });
 }
 
 /** The boards with a new, empty one to the right of the rightmost. Unnamed, it takes the next free "Board n". */
@@ -84,6 +93,12 @@ export function useBoardActions(project: Pick<Project, "id">): BoardActions {
         await edit((p) => {
           const boards = projectBoards(p);
           return boards.some((b) => b.id === boardId) ? placeBoard(boards, boardId, frame) : undefined;
+        });
+      },
+      moveBoards: async (frames) => {
+        await edit((p) => {
+          const boards = projectBoards(p);
+          return Object.keys(frames).some((id) => boards.some((b) => b.id === id)) ? placeBoards(boards, frames) : undefined;
         });
       },
       moveCardTo: async (itemId, boardId, index) => {

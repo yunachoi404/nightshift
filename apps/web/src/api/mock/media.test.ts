@@ -3,7 +3,7 @@
  * make new cards that wait on a board out of the cut, in their own shape when asked, an edit redraws a card from an
  * image, every new version becomes its card's pick, and the soundtrack picks the song and the voice the cut uses.
  */
-import { MAIN_BOARD_ID, projectBoards, type Asset, type Project, type Shot } from "@nightshift/contract";
+import { MAIN_BOARD_ID, ownShot, projectBoards, type Asset, type Project, type Shot } from "@nightshift/contract";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { placeOnTimeline, restore, shotHistory, soundOff, takeOffTimeline } from "@/features/media/items";
 import { parseMockUrl } from "@/media/placeholder";
@@ -168,20 +168,34 @@ describe("the tools make new cards", () => {
     expect(project(p.id).shots).toEqual([]);
   });
 
-  it("refuses the tools on a What if? film and on a quick shot, with the engine's words", () => {
-    const expectRefused = (template: Project["template"], message: string) => {
-      const p = engine.createProject({ name: "One film", template, aspect: "16:9", brief: { idea: "What if?" } });
-      const photo = upload(p.id);
-      expect(failure(() => engine.make(p.id, { tool: "image", prompt: "x" }))).toEqual([409, message]);
-      expect(failure(() => engine.make(p.id, { tool: "video", imageAssetId: photo.id }))).toEqual([409, message]);
-      expect(failure(() => engine.make(p.id, { tool: "effect", imageAssetId: photo.id, effect: "freeze" }))).toEqual([409, message]);
-      expect(failure(() => engine.make(p.id, { tool: "camera_move", imageAssetId: photo.id, move: "crane_up" }))).toEqual([409, message]);
-      expect(project(p.id).shots).toEqual(p.shots);
-    };
-    expectRefused("what_if", "A What if? film is one continuous shot. Start a new project to make more.");
-    expectRefused("camera_move", "This project makes one shot from its photo. Start a new project to use the tools.");
-    expectRefused("vfx_effect", "This project makes one shot from its photo. Start a new project to use the tools.");
-    expect(engine.listJobs()).toEqual([]);
+  it("makes extra cards in a What if? film, off its timeline and on the tools' own paths, while the film keeps its own", () => {
+    const film = engine.createProject({ name: "Tide", template: "what_if", aspect: "16:9", brief: { question: "What if the tide never came back?" } });
+    // A card before the story, then the story: the film is first, and the card stays.
+    const kite = engine.make(film.id, { tool: "image", prompt: "A red kite" });
+    drain();
+    engine.storyboard(film.id);
+    drain();
+    const own = ownShot(project(film.id))!;
+    expect(own.keyframes?.every((k) => k.stillAssetId)).toBe(true);
+    expect(project(film.id).shots.map((s) => s.id)).toEqual([own.id, kite.shotId]);
+    const photo = upload(film.id);
+    const video = engine.make(film.id, { tool: "video", imageAssetId: photo.id });
+    const effect = engine.make(film.id, { tool: "effect", imageAssetId: photo.id, effect: "freeze" });
+    drain();
+    expect([kite.step, video.step, effect.step]).toEqual(["still", "video_draft", "video_effect"]);
+    expect(shotOf(film.id, kite.shotId).stillAssetId).toBeTruthy();
+    expect(project(film.id).takes.filter((t) => t.shotId === video.shotId).map((t) => t.guideAssetIds)).toEqual([undefined]);
+    expect(cutShots(film.id)).toEqual([own.id]);
+    // The film takes another take on its path, a card a plain draft; only the film goes on the timeline.
+    expect(engine.draft(film.id, own.id).step).toBe("video_what_if");
+    expect(engine.draft(film.id, kite.shotId!).step).toBe("video_draft");
+    const onTimeline = project(film.id).shots.map((s) => (s.id === kite.shotId ? { ...s, onTimeline: true } : s));
+    expect(failure(() => engine.updateProject(film.id, { shots: onTimeline }))).toEqual([400, "Only this project's own shot goes on its timeline. Cards made with the tools stay in Media."]);
+    expect(failure(() => engine.updateProject(film.id, { shots: project(film.id).shots.filter((s) => s.id !== own.id) }))).toEqual([400, "This project's own shot stays. Only cards made with the tools can be deleted."]);
+
+    // A quick shot makes its own shot from its photo first.
+    const quick = engine.createProject({ name: "Harbor", template: "camera_move", aspect: "16:9", brief: { move: "dolly_in" } });
+    expect(failure(() => engine.make(quick.id, { tool: "image", prompt: "x" }))).toEqual([409, "Make the shot from this project's photo first."]);
   });
 });
 
@@ -305,20 +319,22 @@ describe("image edits", () => {
     expect(engine.listJobs().filter((j) => j.status === "queued")).toEqual([]);
   });
 
-  it("refuses an edit on a What if? film and on a quick shot, with the engine's words", () => {
+  it("refuses an edit of a What if? film's or a quick shot's own shot, with the engine's words, and edits their cards", () => {
+    const keyframes = [0, 1, 2, 3].map((i) => ({ id: `beat-${i}`, prompt: `Beat ${i}`, line: "" }));
     for (const [template, message] of [
-      ["what_if", "A What if? film is one continuous shot. Start a new project to make more."],
-      ["camera_move", "This project makes one shot from its photo. Start a new project to use the tools."],
-      ["vfx_effect", "This project makes one shot from its photo. Start a new project to use the tools."],
+      ["what_if", "A What if? film is drawn from its story. Redraw a beat there instead."],
+      ["camera_move", "This shot starts from your photo. Change the photo to change its still."],
+      ["vfx_effect", "This shot starts from your photo. Change the photo to change its still."],
     ] as const) {
       const p = engine.createProject({ name: "One film", template, aspect: "16:9", brief: { idea: "What if?" } });
       const photo = upload(p.id);
-      const shot: Shot = { id: "sht_one", index: 0, prompt: "One shot", durationSec: 4, locked: false, stillAssetId: photo.id };
+      const shot: Shot = { id: "sht_one", index: 0, prompt: "One shot", durationSec: 4, locked: false, stillAssetId: photo.id, ...(template === "what_if" ? { keyframes } : {}) };
       engine.updateProject(p.id, { shots: [shot] });
-      expect(failure(() => engine.make(p.id, { tool: "edit", imageAssetId: photo.id, prompt: "Make it night" }))).toEqual([409, message]);
       expect(failure(() => engine.still(p.id, shot.id, { editFrom: photo.id, prompt: "Make it night" }))).toEqual([409, message]);
+      const edit = engine.make(p.id, { tool: "edit", imageAssetId: photo.id, prompt: "Make it night" });
+      expect(edit).toMatchObject({ step: "still", editFrom: photo.id });
+      expect(engine.still(p.id, edit.shotId!, { editFrom: photo.id, prompt: "Make it day" }).step).toBe("still");
     }
-    expect(engine.listJobs()).toEqual([]);
   });
 });
 
@@ -495,7 +511,7 @@ describe("the timeline", () => {
     expect(projectBoards(project(p.id)).flatMap((b) => b.items)).toEqual(expect.arrayContaining([effect, move]));
   });
 
-  it("a rewritten shot list keeps a shot with no prompt and a leftover shot with a still, and drops a leftover with neither", () => {
+  it("a rewritten shot list keeps a shot with no prompt in the cut, a leftover shot with a still off it, and drops a leftover with neither", () => {
     const p = engine.createProject({ name: "Hi", template: "talking_intro", aspect: "16:9", brief: { script: "One. Two. Three. Four." } });
     const [a, b, c, d] = p.shots.map((s) => s.id);
     expect(d).toBeDefined();
@@ -507,10 +523,14 @@ describe("the timeline", () => {
     engine.storyboard(p.id);
     drain();
     const cut = cutShots(p.id);
-    expect(cut).toHaveLength(3);
+    expect(cut).toHaveLength(2);
     expect(cut[0]).not.toBe(a);
-    expect(cut.slice(1)).toEqual([b, c]);
+    expect(cut.slice(1)).toEqual([b]);
+    // As the engine does: nothing made is deleted. The shot with a still stays on the board, after the new list.
+    expect(project(p.id).shots.find((s) => s.id === c)?.onTimeline).toBe(false);
+    expect(project(p.id).boards?.[0]?.items.at(-1)).toBe(c);
     expect(project(p.id).shots.some((s) => s.id === d)).toBe(false);
+    expect(project(p.id).shotList).toEqual({ by: "writer" });
   });
 
   it("on a hand-edited cut, a shot sent to the timeline comes in at its place and one taken off goes", () => {

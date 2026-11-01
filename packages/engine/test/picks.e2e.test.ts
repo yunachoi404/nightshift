@@ -47,7 +47,8 @@ let engine: EngineHandle;
 let api: Api;
 
 beforeAll(async () => {
-  engine = await startEngine({ port: 0, dataDir: mkdtempSync(join(tmpdir(), "ns-picks-")), mock: true, mockSpeed: 0, runner, recipesDir: defaultRecipesDir(), log: () => undefined });
+  // Finals for the night start right after the drafts here; the hold while the user works is tested in queue.test.ts.
+  engine = await startEngine({ port: 0, dataDir: mkdtempSync(join(tmpdir(), "ns-picks-")), mock: true, mockSpeed: 0, runner, recipesDir: defaultRecipesDir(), holdForUserMs: 0, log: () => undefined });
   api = new Api(engine.url);
   await api.install("unified-128-cuda");
 });

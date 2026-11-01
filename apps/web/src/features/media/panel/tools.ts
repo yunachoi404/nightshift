@@ -20,11 +20,11 @@ export interface ToolInfo {
 }
 
 export const TOOLS: ToolInfo[] = [
-  { tool: "image", label: "Image", steps: ["still"], modelStep: "still", source: "none", cannot: "This setup cannot draw images." },
-  { tool: "video", label: "Video", steps: ["video_draft"], modelStep: "video_draft", source: "optional", cannot: "This setup cannot make videos." },
-  { tool: "edit", label: "Edit", steps: ["effect_end_frame"], modelStep: "effect_end_frame", source: "required", cannot: "This setup cannot edit images." },
-  { tool: "effect", label: "Effect", steps: ["effect_end_frame", "video_effect"], modelStep: "video_effect", source: "required", cannot: "This setup cannot make effects." },
-  { tool: "camera_move", label: "Camera move", steps: ["camera_layout", "video_camera_move"], modelStep: "video_camera_move", source: "required", cannot: "This setup cannot make camera moves." },
+  { tool: "image", label: "Image", steps: ["still"], modelStep: "still", source: "none", cannot: "This setup cannot draw images" },
+  { tool: "video", label: "Video", steps: ["video_draft"], modelStep: "video_draft", source: "optional", cannot: "This setup cannot make videos" },
+  { tool: "edit", label: "Edit", steps: ["effect_end_frame"], modelStep: "effect_end_frame", source: "required", cannot: "This setup cannot edit images" },
+  { tool: "effect", label: "Effect", steps: ["effect_end_frame", "video_effect"], modelStep: "video_effect", source: "required", cannot: "This setup cannot make effects" },
+  { tool: "camera_move", label: "Camera move", steps: ["camera_layout", "video_camera_move"], modelStep: "video_camera_move", source: "required", cannot: "This setup cannot make camera moves" },
 ];
 
 export function toolInfo(tool: Tool): ToolInfo {
@@ -51,25 +51,35 @@ export function shownTools(tier: TierSummary | null | undefined): ToolInfo[] {
   return TOOLS.filter((t) => t.tool !== "edit" || !toolBlocked(tier, "edit"));
 }
 
-/** The steps a make runs: Video without an image draws its still first. */
-function stepsOf(tool: Tool, fromImage: boolean): StepId[] {
-  return tool === "video" && !fromImage ? ["still", "video_draft"] : toolInfo(tool).steps;
+/**
+ * The jobs a make queues, by the step each is timed by. A recipe's estimate for a step is the whole job it names: an
+ * effect's end frame and a camera move's layout run inside theirs. Video without an image draws its still first, a
+ * job of its own; an edit is timed by the image edit step.
+ */
+function jobStepsOf(tool: Tool, fromImage: boolean): StepId[] {
+  if (tool === "video") return fromImage ? ["video_draft"] : ["still", "video_draft"];
+  return [toolInfo(tool).modelStep];
 }
 
 /** Seconds one make takes on this setup, from the recipe's estimates. Null when it does not say. */
 export function toolSeconds(tier: TierSummary | null | undefined, tool: Tool, fromImage: boolean): number | null {
-  const known = stepsOf(tool, fromImage)
+  const known = jobStepsOf(tool, fromImage)
     .map((s) => tier?.estimates?.[s]?.seconds)
     .filter((s): s is number => typeof s === "number");
   return known.length ? known.reduce((a, b) => a + b, 0) : null;
 }
 
-/** The model a tool runs here, in plain words ("Krea 2 Turbo"). Video without an image names both of its models. */
-export function toolModel(tier: TierSummary | null | undefined, tool: Tool, fromImage: boolean): string | undefined {
+/**
+ * The model a tool runs here, in plain words ("Krea 2 Turbo"). A still drawn with reference photos runs the setup's
+ * reference workflow ("FLUX.2 Klein 4B") where it has one. Video without an image names both of its models.
+ */
+export function toolModel(tier: TierSummary | null | undefined, tool: Tool, fromImage: boolean, withReferences = false): string | undefined {
   const models = tier?.models;
   if (!models) return undefined;
+  const still = (withReferences && tier.referenceStillModel) || models.still;
+  if (tool === "image") return still;
   const main = models[toolInfo(tool).modelStep];
-  if (tool === "video" && !fromImage && models.still && main && models.still !== main) return `${models.still}, then ${main}`;
+  if (tool === "video" && !fromImage && still && main && still !== main) return `${still}, then ${main}`;
   return main;
 }
 
@@ -96,9 +106,9 @@ export function toolNoun(tool: Tool, count = 1): string {
   return count > 1 ? `${count} ${one}s` : one;
 }
 
-/** "About 30 s", "About 2 min", "About a minute": the time of one make, short enough for the Generate bar. */
+/** "About 30 s", "About 2 min", "About a minute", "About 1.5 min": the time of one make, short enough for the Generate bar. */
 export function roughShort(seconds: number): string {
-  const rough = roughDuration(seconds).replace(/ seconds$/, " s").replace(/ minutes$/, " min");
+  const rough = roughDuration(seconds).replace(/ seconds$/, " s").replace(/ minutes$/, " min").replace(/a minute and a half$/, "1.5 min");
   return rough[0]!.toUpperCase() + rough.slice(1);
 }
 
@@ -220,17 +230,17 @@ export function whyNot(state: PanelState, ctx: Omit<MakeContext, "boardId">): st
   const source = sourceImage(ctx.project, state.source);
   switch (state.tool) {
     case "image":
-      return state.prompt.trim() ? undefined : "Write a prompt first.";
+      return state.prompt.trim() ? undefined : "Write a prompt first";
     case "video":
       if (source) return undefined;
-      if (!state.prompt.trim()) return "Write a prompt, or choose an image to start from.";
+      if (!state.prompt.trim()) return "Write a prompt, or choose an image to start from";
       return toolBlocked(ctx.tier, "image") ? "Choose an image to start from. This setup cannot draw one." : undefined;
     case "edit":
-      if (!source) return "Choose the image to change.";
-      return state.instruction.trim() ? undefined : "Say what to change.";
+      if (!source) return "Choose the image to change";
+      return state.instruction.trim() ? undefined : "Say what to change";
     case "effect":
     case "camera_move":
-      return source ? undefined : "Choose an image first.";
+      return source ? undefined : "Choose an image first";
   }
 }
 

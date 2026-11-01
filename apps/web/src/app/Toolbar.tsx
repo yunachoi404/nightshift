@@ -1,17 +1,17 @@
 import type { Project } from "@nightshift/contract";
 import { templates } from "@nightshift/contract";
-import { ChevronDown, ChevronLeft, Plus } from "lucide-react";
-import type { ReactNode } from "react";
-import { Link, useLocation, useNavigate } from "react-router";
-import { useEngineState, useJobs } from "@/store/engine";
+import { ChevronLeft, ChevronRight, Search, X } from "lucide-react";
+import { useEffect, useRef } from "react";
+import { Link, useLocation, useNavigate, useSearchParams } from "react-router";
+import { useJobs } from "@/store/engine";
 import { Button, Segmented, cx } from "@/ui/primitives";
 import { isDevMock } from "@/api/config";
-import { isGpuJob, jobLabel, projectStage, timelineShots, totalDuration } from "@/features/project/helpers";
+import { projectStage, timelineShots, totalDuration } from "@/features/project/helpers";
 import { plural, shortDuration } from "@/lib/format";
-import { useThisMachine } from "@/store/tier";
 import { SidebarToggle } from "./Sidebar";
 import { modKey } from "./useSidebar";
-import { ComputePopover, useCompute, usePopover } from "./ComputePopover";
+import { useCompute } from "./ComputePopover";
+import { useCloseNewProject } from "@/features/newproject/close";
 
 /** A project's two areas. The old storyboard, takes and finals pages belong to Media. */
 type Stage = "media" | "editor";
@@ -20,25 +20,28 @@ export function Toolbar({ project, backTo, onDev, sidebarCollapsed, onToggleSide
   const loc = useLocation();
   const nav = useNavigate();
   const jobs = useJobs();
+  const compute = useCompute();
   const stage: Stage = /^\/p\/[^/]+\/editor/.test(loc.pathname) ? "editor" : "media";
 
-  let title = "Nightshift";
+  // The sidebar's head carries the name; the toolbar says it only while the sidebar is hidden.
+  let title = sidebarCollapsed ? "Nightshift" : "";
   // The subtitle's parts, most important last. Narrow windows drop the first ones (see .toolbar__sub in app.css).
   let sub: string[] = [];
   if (project) {
     title = project.name;
     const t = templates.find((x) => x.id === project.template);
-    const s = projectStage(project, jobs);
+    const s = projectStage(project, jobs, compute.away);
     const cut = timelineShots(project).length;
     sub = [t?.name, cut ? `${plural(cut, "shot")}, ${shortDuration(totalDuration(project))}` : null, s.label].filter((x): x is string => !!x);
-  } else if (loc.pathname === "/settings") title = "Settings";
-  else if (loc.pathname === "/new") title = "New project";
-  else if (loc.pathname === "/queue") title = "Queue";
+  }
+  const home = loc.pathname === "/";
+  const creating = loc.pathname === "/new";
+  // Settings and the queue name themselves in their page titles; the toolbar keeps the app's name, as on Home.
   // The queue and settings lead back to the project you came from.
   const back = !project && backTo && (loc.pathname === "/queue" || loc.pathname === "/settings") ? backTo : undefined;
 
   return (
-    <header className="toolbar drag">
+    <header className={cx("toolbar drag", home && "toolbar--home")}>
       <div className="toolbar__left">
         {sidebarCollapsed && <SidebarToggle collapsed onToggle={onToggleSidebar} />}
         {back && (
@@ -47,18 +50,33 @@ export function Toolbar({ project, backTo, onDev, sidebarCollapsed, onToggleSide
             <span className="toolbar__back-label">Back to {back.name}</span>
           </Link>
         )}
-        <div className="toolbar__title">
-          <div className="toolbar__name">{title}</div>
-          {sub.length > 0 && (
-            <div className="toolbar__sub">
-              {sub.map((part, i) => (
-                <span key={part} className={cx("toolbar__sub-part", i < sub.length - 1 && "toolbar__sub-part--extra")}>
-                  {part}
-                </span>
-              ))}
-            </div>
-          )}
-        </div>
+        {/* New project says where it sits: under Projects. */}
+        {creating && (
+          <nav className="toolbar__crumbs" aria-label="Breadcrumb">
+            <Link to="/" className="toolbar__crumb">
+              Projects
+            </Link>
+            <ChevronRight className="toolbar__crumb-sep" aria-hidden />
+            <span className="toolbar__crumb toolbar__crumb--here" aria-current="page">
+              New project
+            </span>
+          </nav>
+        )}
+        {/* With the way back shown, the page's own title says where you are. */}
+        {!back && !creating && title && (
+          <div className="toolbar__title">
+            <div className="toolbar__name">{title}</div>
+            {sub.length > 0 && (
+              <div className="toolbar__sub">
+                {sub.map((part, i) => (
+                  <span key={part} className={cx("toolbar__sub-part", i < sub.length - 1 && "toolbar__sub-part--extra")}>
+                    {part}
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
       </div>
       <div className="toolbar__center">
         {project && (
@@ -73,92 +91,85 @@ export function Toolbar({ project, backTo, onDev, sidebarCollapsed, onToggleSide
           />
         )}
       </div>
+      {/* Where renders run lives at the foot of the sidebar. The right end holds what the page needs: the search on
+          Projects, the way out of New project. */}
       <div className="toolbar__right">
-        <Activity />
+        {home && <ProjectSearch />}
+        {creating && <CloseNewProject />}
         {isDevMock() && (
           <Button variant="toolbar" size="s" onClick={onDev} title="Mock engine controls (press M)">
             Mock
           </Button>
-        )}
-        {!project && loc.pathname !== "/new" && (
-          <Link to="/new" className="btn btn--toolbar btn--icon" aria-label="New project" title="New project">
-            <Plus />
-          </Link>
         )}
       </div>
     </header>
   );
 }
 
-/** The running job as a small ring and a few words. Opens what the GPU is doing in place, over the page. */
-function Activity() {
-  const { status, projects } = useEngineState();
-  const { where, remote, away, running, queued } = useCompute();
-  const here = useThisMachine();
-  const pop = usePopover<HTMLButtonElement>();
-
-  if (!status || status.phase !== "ready") return null;
-  let body: ReactNode = null;
-  let night = false;
-  if (away) {
-    body = (
-      <>
-        <span className="pulse pulse--idle" />
-        <span>{remote ? `Waiting for ${where}` : "Waiting for the GPU"}</span>
-      </>
+/** Searches the projects by name. The words live in the address (?q=), so Back returns to the same results. Cmd+K. */
+function ProjectSearch() {
+  const [params, setParams] = useSearchParams();
+  const field = useRef<HTMLInputElement>(null);
+  const q = params.get("q") ?? "";
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (!(e.metaKey || e.ctrlKey) || e.altKey || e.shiftKey || e.key.toLowerCase() !== "k") return;
+      if (document.querySelector("dialog[open]")) return;
+      e.preventDefault();
+      field.current?.focus();
+      field.current?.select();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+  const setQuery = (value: string) =>
+    setParams(
+      (prev) => {
+        const next = new URLSearchParams(prev);
+        if (value) next.set("q", value);
+        else next.delete("q");
+        return next;
+      },
+      { replace: true },
     );
-  } else if (running) {
-    night = running.mode === "overnight";
-    body = (
-      <>
-        <span className={cx("ring", night && "ring--night")} style={{ "--pct": Math.round(running.progress * 100) } as React.CSSProperties} />
-        <ActivityLabel label={jobLabel(running, projects[running.projectId])} where={remote ? (isGpuJob(running) ? where : here.lower) : undefined} />
-      </>
-    );
-  } else if (queued.length) {
-    night = queued.some((j) => j.mode === "overnight");
-    body = (
-      <>
-        <span className={cx("pulse", night ? "pulse--night" : "pulse--idle")} />
-        <span>{night ? `${queued.length} for tonight` : `${queued.length} queued`}</span>
-      </>
-    );
-  } else if (remote) {
-    body = (
-      <>
-        <span className="pulse pulse--ok" />
-        <span>{where}</span>
-      </>
-    );
-  }
-  if (!body) return null;
   return (
-    <>
-      <button
-        ref={pop.anchor}
-        type="button"
-        className={cx("activity", night && "activity--night", away && "activity--away")}
-        aria-expanded={pop.open}
-        aria-haspopup="dialog"
-        title={away ? status.error : undefined}
-        onClick={pop.toggle}
-      >
-        {body}
-        <ChevronDown className="activity__chev" aria-hidden />
-      </button>
-      <ComputePopover open={pop.open} onClose={pop.close} anchor={pop.anchor} placement="below-end" />
-    </>
+    <label className="search">
+      <Search className="search__icon" aria-hidden />
+      <input
+        ref={field}
+        id="project-search"
+        type="search"
+        className="search__field"
+        aria-label="Search projects"
+        placeholder="Search projects"
+        autoComplete="off"
+        spellCheck={false}
+        value={q}
+        onChange={(e) => setQuery(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key !== "Escape") return;
+          // Escape clears the words first, then leaves the field.
+          e.preventDefault();
+          if (q) setQuery("");
+          else e.currentTarget.blur();
+        }}
+      />
+      <kbd className="kbd search__keys" aria-hidden>
+        {modKey()}K
+      </kbd>
+    </label>
   );
 }
 
-/** The job in a few words. Narrow windows drop the device, then the detail after the comma (see .activity in app.css). */
-function ActivityLabel({ label, where }: { label: string; where?: string }) {
-  const short = label.split(",")[0]!.trim();
+/** Leaves New project the way Escape does. */
+function CloseNewProject() {
+  const close = useCloseNewProject();
   return (
-    <span className="activity__text">
-      <span className="activity__long">{label}</span>
-      <span className="activity__short">{short}</span>
-      {where && <span className="activity__where"> on {where}</span>}
-    </span>
+    <button type="button" className="toolbar__close" aria-label="Close" title="Close (Esc)" onClick={close}>
+      <kbd className="kbd" aria-hidden>
+        Esc
+      </kbd>
+      <X aria-hidden />
+    </button>
   );
 }

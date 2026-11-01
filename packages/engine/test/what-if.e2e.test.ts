@@ -8,12 +8,25 @@ import { z } from "zod";
 import { startEngine } from "../src/engine.js";
 import { placeholderScene } from "../src/media/png.js";
 import { defaultRecipesDir } from "../src/paths.js";
+import { MockStepRunner } from "../src/runner/mock.js";
+import type { StepRequest, StepRunner } from "../src/runner/types.js";
 import { Api } from "./flow.js";
+
+/** The mock runner, recording every request, so a test can see which workflow a step ran. */
+class Recorder implements StepRunner {
+  readonly requests: StepRequest[] = [];
+  private readonly mock = new MockStepRunner(0);
+  run(req: StepRequest, ctx: Parameters<StepRunner["run"]>[1]) {
+    this.requests.push(req);
+    return this.mock.run(req, ctx);
+  }
+}
 
 describe.skipIf(!checkTools().ffmpeg)("What-if through the real engine API", () => {
   it.each(["9:16", "16:9"] as Aspect[])("makes one %s film with voice, music, captions, redraw and same-take final", async aspect => {
     const dataDir = mkdtempSync(join(tmpdir(), "ns-what-if-flow-"));
-    const engine = await startEngine({ port: 0, dataDir, mock: true, mockSpeed: 0, recipesDir: defaultRecipesDir(), log: () => undefined });
+    const runner = new Recorder();
+    const engine = await startEngine({ port: 0, dataDir, mock: true, mockSpeed: 0, runner, recipesDir: defaultRecipesDir(), log: () => undefined });
     try {
       const api = new Api(engine.url);
       await api.install("unified-128-cuda");
@@ -53,6 +66,8 @@ describe.skipIf(!checkTools().ffmpeg)("What-if through the real engine API", () 
       expect(final.parentTakeId).toBe(draft.id);
       expect(final.guideAssetIds).toEqual(originalIds);
       expect(final.prompt).toBe(draft.prompt);
+      // A 15 s film is too long for the Spark's four-times final: it finishes at twice the draft's size.
+      expect(runner.requests.filter(r => r.step === "video_final_same_take").at(-1)?.ref.workflow).toBe("ltx25_same_take.api.json");
       await api.run(`${base}/shots/${shot.id}/draft`, { seed: 456 });
       project = await api.project(project.id);
       const another = project.takes.filter(take => take.rung === "draft").at(-1)!;

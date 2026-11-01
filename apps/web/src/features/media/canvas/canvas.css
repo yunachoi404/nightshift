@@ -101,7 +101,7 @@
   width: 22px;
   height: 28px;
   border-radius: var(--r-s);
-  color: var(--text-4);
+  color: var(--text-3);
   cursor: grab;
   transition:
     background-color var(--t-fast) var(--ease),
@@ -121,18 +121,19 @@
 .cvb__grip--off,
 .cvb__grip--off:hover {
   background: transparent;
-  color: var(--text-4);
+  color: var(--text-3);
   opacity: 0.5;
   cursor: default;
 }
 .cvb__name {
   min-width: 0;
+  margin: 0;
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
   font-size: var(--fs-body);
   line-height: var(--lh-body);
-  font-weight: 600;
+  font-weight: 500;
   color: var(--text);
 }
 .cvb__rename {
@@ -142,7 +143,7 @@
   height: 28px;
   padding: 3px 8px;
   margin-left: -2px;
-  font-weight: 600;
+  font-weight: 500;
 }
 .cvb__count {
   flex: none;
@@ -181,7 +182,7 @@
 .cvb__off-text small {
   font-size: var(--fs-small);
   line-height: var(--lh-small);
-  color: var(--text-4);
+  color: var(--text-3);
 }
 
 .cvb__body {
@@ -194,13 +195,13 @@
   -webkit-user-select: text;
 }
 
-/* The right edge widens or narrows the board. */
+/* The right edge widens or narrows the board. It keeps 12 screen pixels to grab, and its handle its size, at any zoom. */
 .cvb__resize {
   position: absolute;
   top: calc(40px * var(--cvb-bar, 1));
-  right: -5px;
+  right: calc(-6px / var(--cv-zoom, 1));
   bottom: 0;
-  width: 10px;
+  width: calc(12px / var(--cv-zoom, 1));
   cursor: ew-resize;
   touch-action: none;
 }
@@ -208,11 +209,11 @@
   content: "";
   position: absolute;
   top: 50%;
-  left: 3px;
-  width: 4px;
-  height: 36px;
-  margin-top: -18px;
-  border-radius: 2px;
+  left: 50%;
+  width: calc(4px / var(--cv-zoom, 1));
+  height: calc(36px / var(--cv-zoom, 1));
+  transform: translate(-50%, -50%);
+  border-radius: calc(2px / var(--cv-zoom, 1));
   background: var(--line-strong);
   opacity: 0;
   transition: opacity var(--t-fast) var(--ease);
@@ -247,7 +248,7 @@
   min-width: 48px;
   height: 26px;
   padding: 0 6px;
-  border-radius: var(--r-pill);
+  border-radius: 7px;
   font-size: var(--fs-small);
   font-weight: 500;
   color: var(--text-2);
@@ -262,7 +263,7 @@
   color: var(--text);
 }
 .cv__zoom:focus-visible {
-  border-radius: var(--r-pill);
+  border-radius: 7px;
 }
 
 /* The label a board shows while it is dragged out to the timeline. Lives on <body> for a moment. */

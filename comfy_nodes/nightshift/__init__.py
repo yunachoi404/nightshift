@@ -12,6 +12,7 @@ from safetensors.torch import save_file
 
 from .diagnostics import configure_diagnostics
 from .memory import configure_cap
+from .music import YuE2Instrumental
 from .text import SaveText
 from .video import SaveVideoPreserveAudio
 
@@ -150,3 +151,4 @@ from .memory import RuntimeInfo
 NODE_CLASS_MAPPINGS["NightshiftRuntimeInfo"] = RuntimeInfo
 NODE_CLASS_MAPPINGS["NightshiftSaveText"] = SaveText
 NODE_CLASS_MAPPINGS["NightshiftSaveVideoPreserveAudio"] = SaveVideoPreserveAudio
+NODE_CLASS_MAPPINGS["NightshiftYuE2Instrumental"] = YuE2Instrumental

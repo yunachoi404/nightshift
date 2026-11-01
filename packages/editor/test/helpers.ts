@@ -1,5 +1,6 @@
 import type { Asset, Project, Shot, Take, TemplateId, Timeline } from "@nightshift/contract";
 import type { MediaInfo } from "../src/media/ffmpeg.js";
+import { END_CARD_COVERED } from "../src/render/composition.js";
 
 const NOW = "2026-10-19T00:00:00.000Z";
 
@@ -49,15 +50,20 @@ export function audioAssetOf(id: string, role: "music" | "voice", durationSec: n
   return { id, kind: "audio", path: `${id}.wav`, role, durationSec, createdAt: NOW, ...(text ? { text } : {}) };
 }
 
-/** Every instant of [0, end) is covered by some clip, clips stay inside their media, and they are ordered. */
+/**
+ * Every instant of [0, end) is covered by some clip, clips stay inside their media (the last may hold its last frame
+ * once an end card covers the frame), and they are ordered.
+ */
 export function expectWellFormed(timeline: Timeline, media: Record<string, MediaInfo>, end: number): string[] {
   const problems: string[] = [];
   const clips = timeline.clips;
+  const card = timeline.overlays?.find((o) => o.kind === "end_card");
   for (let i = 0; i < clips.length; i++) {
     const c = clips[i]!;
     const info = media[c.assetId]!;
     if (c.in < -1e-6) problems.push(`clip ${i} starts before its media (in ${c.in})`);
-    if (info.kind !== "image" && c.out > info.durationSec + 1e-6) problems.push(`clip ${i} runs past its media (${c.out} > ${info.durationSec})`);
+    const held = card && i === clips.length - 1 && c.start + info.durationSec - c.in >= card.start + END_CARD_COVERED - 1e-6;
+    if (info.kind !== "image" && c.out > info.durationSec + 1e-6 && !held) problems.push(`clip ${i} runs past its media (${c.out} > ${info.durationSec})`);
     if (c.out - c.in <= 0) problems.push(`clip ${i} is empty`);
     if (i > 0 && c.start < clips[i - 1]!.start) problems.push(`clip ${i} is out of order`);
   }

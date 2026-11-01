@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router";
 import { Clapperboard, PenLine, RefreshCw } from "lucide-react";
-import { whatIfBeatNames, type Keyframe, type Project } from "@nightshift/contract";
+import { ownShot, whatIfBeatNames, type Keyframe, type Project } from "@nightshift/contract";
 import { useEngine, useProjectJobs } from "@/store/engine";
 import { Button, Notice, Textarea, toast } from "@/ui/primitives";
 import { Media } from "@/media/Media";
@@ -9,12 +9,14 @@ import { failureText, frameClass, isActive } from "@/features/project/helpers";
 import "./what-if.css";
 
 export function WhatIfStoryboard({ project }: { project: Project }) {
-  const jobs = useProjectJobs(project.id);
   const { client, updateProject, storyboard, still, draft, audio } = useEngine();
   const nav = useNavigate();
   const saves = useRef(Promise.resolve());
   const [busy, setBusy] = useState(false);
-  const shot = project.shots[0];
+  // The film is the project's own shot. Cards made with the tools in Media, and their jobs, are not the story's.
+  const shot = ownShot(project);
+  const jobs = useProjectJobs(project.id).filter((job) => !job.shotId || job.shotId === shot?.id);
+  const takes = project.takes.filter((take) => take.shotId === shot?.id);
   const active = jobs.filter(isActive);
   const working = busy || active.some(job => job.step !== "video_final_same_take" && job.step !== "video_final_remaster" && job.step !== "export");
   const ready = shot?.keyframes?.every(frame => frame.stillAssetId);
@@ -30,10 +32,11 @@ export function WhatIfStoryboard({ project }: { project: Project }) {
   const save = (id: string, field: "prompt" | "line", value: string) => {
     saves.current = saves.current.then(async () => {
       const current = await client.getProject(project.id);
-      const source = current.shots[0];
+      const source = ownShot(current);
       if (!source?.keyframes) return;
       const keyframes = source.keyframes.map(frame => frame.id === id ? { ...frame, [field]: value } : frame);
-      await updateProject(project.id, { shots: [{ ...source, keyframes, line: keyframes.map(frame => frame.line).join(" ") }] });
+      const film = { ...source, keyframes, line: keyframes.map(frame => frame.line).join(" ") };
+      await updateProject(project.id, { shots: current.shots.map(item => item.id === film.id ? film : item) });
     }).catch(error => toast({ title: "Couldn't save the beat", text: String(error), tone: "bad" }));
   };
 
@@ -45,15 +48,15 @@ export function WhatIfStoryboard({ project }: { project: Project }) {
         {shot && <Button variant="quiet" icon={<RefreshCw />} disabled={busy || active.length > 0} onClick={() => void act(() => storyboard(project.id))}>Rewrite story</Button>}
         {shot && <Button variant="primary" icon={<Clapperboard />} disabled={working || !ready} onClick={() => void act(async () => {
           await draft(project.id, shot.id); nav(`/p/${project.id}/takes`);
-        })}>{project.takes.length ? "Another take" : "Make a film"}</Button>}
-        {!!project.takes.length && <Link className="btn" to={`/p/${project.id}/takes`}>View takes</Link>}
+        })}>{takes.length ? "Another take" : "Make a film"}</Button>}
+        {!!takes.length && <Link className="btn" to={`/p/${project.id}/takes`}>View takes</Link>}
       </div>
     </div>
     {!!active.length && <div className="whatif-status" role="status"><span className="pulse" />{active.map(job => job.message || (job.step === "text" ? "Writing your story" : job.step === "still" ? "Drawing the keyframes" : job.step === "video_final_same_take" ? "Finishing the saved take" : job.step === "export" ? "Exporting your film" : "Making your film")).join(" · ")}</div>}
     {failed && !working && <Notice tone="bad" title="A step needs another try">{failureText(failed)}</Notice>}
     {writer?.message?.includes("starter story") && <p className="t-small t-muted">The writer used a starter story. You can edit any beat below.</p>}
     {!shot?.keyframes ? <div className="empty"><Clapperboard className="empty__icon" /><div className="empty__title">{working ? "Writing your story" : "Your story starts here"}</div>
-      <p className="empty__text">An ordinary moment, an impossible change, then its consequence.</p>
+      <p className="empty__text">An ordinary moment, an impossible change, then its consequence</p>
       {/* A new What if? starts with its question only. Nothing is written until you ask. */}
       {!shot && !active.length && <Button variant="primary" icon={<PenLine />} busy={busy} onClick={() => void act(() => storyboard(project.id))}>Write the story</Button>}</div>
       : <>
@@ -64,7 +67,7 @@ export function WhatIfStoryboard({ project }: { project: Project }) {
         <div className="whatif-foot"><p className="t-small t-muted">Redrawing a beat also redraws the beats after it. Your existing takes stay saved.</p>
           <Button size="s" variant="quiet" disabled={working} onClick={() => void act(async () => {
             const current = await client.getProject(project.id);
-            await audio(project.id, { role: "voice", text: current.shots[0]?.line ?? "", voice: "mara" });
+            await audio(project.id, { role: "voice", text: ownShot(current)?.line ?? "", voice: "mara" });
           })}>Update narration</Button></div>
       </>}
   </div>;

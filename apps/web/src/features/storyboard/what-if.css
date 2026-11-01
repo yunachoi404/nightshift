@@ -6,7 +6,7 @@
 .whatif-grid--tall { gap: 16px; }
 .whatif-grid--tall .frame { width: min(100%, max(233px, calc((100vh - 570px) * 9 / 16))); margin-inline: auto; }
 .whatif-beat { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
-.whatif-beat__head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; font-weight: 600; min-height: 24px; }
+.whatif-beat__head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; font-weight: 500; min-height: 24px; }
 .whatif-beat__head span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .whatif-beat__head .t-micro { font-variant-numeric: tabular-nums; }
 .whatif-beat__label { margin-top: 4px; color: var(--text-2); font-size: var(--fs-small); line-height: var(--lh-small); }

@@ -82,7 +82,7 @@ Each template reads its text from `project.brief`. Every key is optional.
 |---|---|---|---|---|
 | `cinematic_shot` | `title`, `subtitle` | Full shots, 0.8 s dissolves, fade in from and out to black | Title over the first shot | Film subtitles in the letterbox bar, when there is a voice |
 | `music_video` | `title`, `artist`, `durationSec`, `songStartSec` | On beats, pulled towards bar lines, half bars and section changes. Ends on a bar line. Reuses shots with new in-points when the song outlasts them | Title and artist, bottom left | Lyrics, word by word |
-| `product_ad` | `productName`, `tagline`, `cta`, `script`, `productImageAssetId`, `durationSec` | Between the voiceover's sentences, then at word gaps for long sentences. Runs 15 s (or `durationSec`): a voice that ends early gets pauses of up to 0.8 s between its sentences, then the end card holds up to 6 s. A longer voice makes a longer ad | Product name at the start, end card with photo, name and call to action | Chip: an accent block slides from word to word |
+| `product_ad` | `productName`, `tagline`, `cta`, `script`, `productImageAssetId`, `durationSec` | Each shot once, in story order, at least 1.5 s. Cuts fall before the voiceover's sentences, else at commas or between words, near each shot's share of the picture. The voice plays in one take; the end card follows its last word and holds to 15 s (or `durationSec`), 2.6 to 6 s. A longer voice makes a longer ad. Shots play twice only when their videos are too short for the voice | Product name at the start, end card with photo, name and call to action, over the last shot | Chip: an accent block slides from word to word |
 | `talking_intro` | `script` (one line per visual), `title`, `speakerName`, `speakerTitle` | Each script line opens with its own shot | Optional title, lower third with name and role | Karaoke: the accent sweeps across each spoken word |
 
 Only shots on the timeline are cut: a shot with `onTimeline: false` stays on its board. Shots use the best picture
@@ -94,8 +94,10 @@ The song is the project's `soundtrack.music` pick, else the newest audio asset w
 `text` is its script; a song's `text` is its lyrics. Before the voice exists, timing is estimated from the script
 so the timeline still lays out.
 
-A paced product ad plays its voiceover as one audio entry per sentence: the same file, trimmed with `in` and `out`
-from the middle of the silence before the sentence to the middle of the silence after it.
+A shot's `cutSec` (set in the editor's timeline) is how long the cut shows it, within the shot's media: the cinematic,
+micro drama and product ad cuts give it that, a music video pulls its beat cuts towards it, a talking intro cuts on its
+script's lines instead. A product ad's last shot runs on under the end card: once the
+card covers the frame, its last frame holds.
 
 ## Captions
 

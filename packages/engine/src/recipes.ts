@@ -87,7 +87,7 @@ export async function readGraph(path: string): Promise<Graph | undefined> {
 
 async function checkWorkflows(file: string, recipe: Recipe, workflowsDir: string): Promise<RecipeProblem[]> {
   const problems: RecipeProblem[] = [];
-  for (const [step, ref] of [...Object.entries(recipe.steps), ["referenceStill", recipe.referenceStill]] as const) {
+  for (const [step, ref] of [...Object.entries(recipe.steps), ["referenceStill", recipe.referenceStill], ["longTakeFinal", recipe.longTakeFinal]] as const) {
     if (!ref) continue;
     const graph = await readGraph(join(workflowsDir, ref.workflow));
     if (!graph) {
@@ -171,6 +171,7 @@ export async function tierSummaries(recipes: Recipe[], hw: HardwareProfile, work
       referenceImageLimit: ["image", "image2", "image3"].filter(k => (r.referenceStill ?? r.steps.still)?.inputs[k]).length,
       steps: StepIdSchema.options.filter((s) => r.steps[s]),
       ...(workflowsDir === undefined ? {} : { models: await stepModels(r, workflowsDir) }),
+      ...(workflowsDir === undefined ? {} : await referenceStillModel(r, workflowsDir)),
       defaultMemoryLimitGb: defaultMemoryLimitGb(r, hw),
       ...finishFacts(r),
     })),
@@ -187,6 +188,14 @@ export async function stepModels(recipe: Recipe, workflowsDir: string): Promise<
     if (model) models[step] = model;
   }
   return models;
+}
+
+/** The main model of a still drawn with reference photos, when the recipe draws those with a workflow of their own. */
+export async function referenceStillModel(recipe: Recipe, workflowsDir: string): Promise<Pick<TierSummary, "referenceStillModel">> {
+  const ref = recipe.referenceStill;
+  const graph = ref && (await readGraph(join(workflowsDir, ref.workflow)));
+  const model = ref && graph ? workflowModel(recipe, ref, graph) : undefined;
+  return model ? { referenceStillModel: model } : {};
 }
 
 /**

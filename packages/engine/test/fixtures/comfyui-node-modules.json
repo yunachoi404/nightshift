@@ -605,6 +605,7 @@
     "NightshiftSaveAVLatent": "custom_nodes.nightshift",
     "NightshiftSaveText": "custom_nodes.nightshift",
     "NightshiftSaveVideoPreserveAudio": "custom_nodes.nightshift",
+    "NightshiftYuE2Instrumental": "custom_nodes.nightshift",
     "NormalizeImages": "comfy_extras.nodes_dataset",
     "NormalizeVideoLatentStart": "comfy_extras.nodes_kandinsky5",
     "OpenAIChatConfig": "comfy_api_nodes.nodes_openai",

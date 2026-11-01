@@ -96,7 +96,7 @@
 .pw__head {
   font-size: var(--fs-micro);
   line-height: var(--lh-micro);
-  font-weight: 600;
+  font-weight: 500;
   color: var(--text-3);
   padding: 0 9px 6px;
 }
@@ -158,7 +158,7 @@
   text-overflow: ellipsis;
 }
 .pw__title b {
-  font-weight: 600;
+  font-weight: 500;
 }
 .pw__title small {
   font-size: var(--fs-micro);
@@ -171,7 +171,8 @@
   position: relative;
   display: inline-flex;
   padding: 3px;
-  border-radius: var(--r-pill);
+  border-radius: var(--r-control);
+  border: 1px solid var(--seg-line);
   background: var(--seg-track);
 }
 .pw__knob {
@@ -179,7 +180,7 @@
   top: 3px;
   bottom: 3px;
   left: 3px;
-  border-radius: var(--r-pill);
+  border-radius: 7px;
   background: var(--seg-knob);
   box-shadow: var(--seg-knob-shadow);
   transition:
@@ -192,7 +193,7 @@
   white-space: nowrap;
   height: 26px;
   padding: 0 13px;
-  border-radius: var(--r-pill);
+  border-radius: 7px;
   font-weight: 500;
   color: var(--text-2);
   transition: color 300ms var(--ease);
@@ -246,7 +247,7 @@
   gap: 6px;
   height: 28px;
   padding: 0 12px;
-  border-radius: var(--r-pill);
+  border-radius: 7px;
   background: var(--btn-bg);
   border: 1px solid var(--btn-line);
   box-shadow: var(--btn-shadow);
@@ -360,7 +361,7 @@
 }
 .pw-md__label {
   font-size: var(--fs-small);
-  font-weight: 600;
+  font-weight: 500;
 }
 .pw-md__prompt {
   height: 84px;
@@ -412,7 +413,7 @@
   white-space: nowrap;
 }
 .pw-md__head b {
-  font-weight: 600;
+  font-weight: 500;
 }
 .pw-md__head > span:nth-child(2) {
   color: var(--text-3);
@@ -515,7 +516,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   text-align: right;
-  color: var(--text-4);
+  color: var(--text-3);
 }
 
 /* The card, opened over the board: its two takes side by side on the dark viewer, and the ways to go on. */
@@ -595,7 +596,7 @@
   flex: none;
 }
 .pw-take__meta b {
-  font-weight: 600;
+  font-weight: 500;
 }
 .pw-take__meta > span.pw-extra {
   color: rgba(255, 255, 255, 0.5);
@@ -636,6 +637,7 @@
 }
 .pw-cd__title {
   font-family: var(--font-display);
+  font-weight: var(--fw-display);
   font-size: 16px;
   line-height: 21px;
   letter-spacing: -0.01em;
@@ -661,7 +663,7 @@
   border-bottom: 0;
 }
 .pw-cd__h {
-  font-weight: 600;
+  font-weight: 500;
 }
 .pw-cd__row {
   display: flex;
@@ -728,7 +730,7 @@
   gap: 8px;
 }
 .pw-ed__row b {
-  font-weight: 600;
+  font-weight: 500;
 }
 .pw-switch {
   width: 30px;
@@ -750,7 +752,7 @@
 .pw-ed__seg {
   display: inline-flex;
   padding: 2px;
-  border-radius: var(--r-pill);
+  border-radius: 7px;
   background: var(--seg-track);
   font-size: var(--fs-micro);
   font-weight: 500;
@@ -762,7 +764,7 @@
   gap: 3px;
   height: 20px;
   padding: 0 7px;
-  border-radius: var(--r-pill);
+  border-radius: 5px;
 }
 .pw-ed__seg svg {
   width: 11px;
@@ -863,7 +865,7 @@
 }
 .pw-tl__empty {
   font-size: var(--fs-micro);
-  color: var(--text-4);
+  color: var(--text-3);
 }
 .pw-tl__head {
   position: absolute;

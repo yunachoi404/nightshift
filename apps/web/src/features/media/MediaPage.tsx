@@ -1,23 +1,23 @@
 /**
  * Media: everything a project has made, as cards on boards, with the prompt panel on the left that makes new ones. One
  * board (most projects) fills the page: the single board view. More boards sit on a canvas (pan, zoom, boards moved by
- * their title). A strip at the foot says what is on the timeline, and takes drops.
+ * their title).
  */
 import type { Project } from "@nightshift/contract";
-import { Film } from "lucide-react";
-import { useCallback, useEffect, useMemo, useState, type DragEvent } from "react";
-import { Link, useParams } from "react-router";
+import { RefreshCw } from "lucide-react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useParams, useSearchParams } from "react-router";
 import { useEngine, useProject, useProjectJobs } from "@/store/engine";
 import { useInstalledTier } from "@/store/tier";
-import { Tag, cx, toast } from "@/ui/primitives";
-import { plural, timecode } from "@/lib/format";
+import { MenuItem, cx, toast } from "@/ui/primitives";
 import { useBoardActions } from "./canvas/boardActions";
-import { MediaContext, useMedia, useProjectEdit, type ImageTool, type MediaCtx } from "./context";
+import { MediaContext, useProjectEdit, type ImageTool, type MediaCtx } from "./context";
 import { CanvasView } from "./canvas/CanvasView";
 import { BoardView } from "./BoardView";
 import { CardDialog } from "./CardDialog";
 import { PromptPanel, initialPanel, needsSource, sourceImage, toolBlocked, type PanelState } from "./PromptPanel";
-import { canvas, cutDuration, cutShots, isCanvasDrag, makeBlocked, placeOnTimeline, readDrag, soundOnTimeline, type CanvasBoard } from "./items";
+import { canvas, makeBlocked, type CanvasBoard } from "./items";
+import { useRewriteShotList } from "./RewriteShotList";
 import "./mediapage.css";
 
 /** The project's media board and its tools. */
@@ -38,7 +38,13 @@ function ProjectMedia({ project }: { project: Project }) {
   const [current, setCurrent] = useState(boards[0]!.board.id);
   const currentBoardId = boards.some((b) => b.board.id === current) ? current : boards[0]!.board.id;
   const [panel, setPanel] = useState<PanelState>(() => ({ ...initialPanel, tool: (["image", "video", "effect", "camera_move"] as const).find((t) => !toolBlocked(tier, t)) ?? "image" }));
-  const [openId, setOpenId] = useState<string | null>(null);
+  // `?card=<shot>` opens that card, as a finished job in the Queue does. The address forgets it once it is open.
+  const [params, setParams] = useSearchParams();
+  const asked = params.get("card");
+  const [openId, setOpenId] = useState<string | null>(() => (asked && project.shots.some((s) => s.id === asked) ? asked : null));
+  useEffect(() => {
+    if (asked) setParams((p) => (p.delete("card"), p), { replace: true });
+  }, [asked, setParams]);
 
   const tools = !makeBlocked(project) && !toolBlocked(tier, panel.tool);
   const picking = tools && (panel.choosing || (needsSource(panel.tool) && !sourceImage(project, panel.source)));
@@ -60,7 +66,7 @@ function ProjectMedia({ project }: { project: Project }) {
         const audio = file.type.startsWith("audio");
         const image = file.type.startsWith("image");
         if ((!audio && !image) || (role === "reference" && !image) || (role && role !== "reference" && !audio)) {
-          toast({ title: `Couldn't add ${file.name}`, text: role === "reference" ? "Choose an image." : role ? "Choose an audio file." : "Add images, songs or voiceovers.", tone: "bad" });
+          toast({ title: `Couldn't add ${file.name}`, text: role === "reference" ? "Choose an image" : role ? "Choose an audio file" : "Add images, songs or voiceovers", tone: "bad" });
           continue;
         }
         try {
@@ -78,6 +84,25 @@ function ProjectMedia({ project }: { project: Project }) {
 
   // The canvas keeps each board's body until its board changes; the body reads the page through the context.
   const renderBoard = useCallback((b: CanvasBoard) => <BoardView board={b} variant="canvas" header={false} />, []);
+  // The film's shot list is written again from its main board's menu, at any time.
+  const rewrite = useRewriteShotList(project, jobs);
+  const mainBoardId = boards[0]!.board.id;
+  const rewriteOpen = rewrite.open;
+  const boardMenu = useCallback(
+    (b: CanvasBoard, close: () => void) =>
+      b.board.id === mainBoardId && rewriteOpen ? (
+        <MenuItem
+          icon={<RefreshCw />}
+          onClick={() => {
+            close();
+            rewriteOpen();
+          }}
+        >
+          Rewrite shot list
+        </MenuItem>
+      ) : null,
+    [mainBoardId, rewriteOpen],
+  );
 
   const ctx = useMemo<MediaCtx>(
     () => ({
@@ -93,8 +118,9 @@ function ProjectMedia({ project }: { project: Project }) {
       edit,
       boardActions,
       upload,
+      rewriteShotList: rewriteOpen,
     }),
-    [project, jobs, picking, sourceCardId, currentBoardId, edit, boardActions, upload],
+    [project, jobs, picking, sourceCardId, currentBoardId, edit, boardActions, upload, rewriteOpen],
   );
 
   return (
@@ -103,51 +129,12 @@ function ProjectMedia({ project }: { project: Project }) {
         <PromptPanel state={panel} onChange={setPanel} boards={boards} />
         <div className="mp-main">
           <div className={cx("mp-canvas", boards.length > 1 && "mp-canvas--boards")}>
-            {boards.length === 1 ? <BoardView board={boards[0]!} variant="single" /> : <CanvasView project={project} boards={boards} renderBoard={renderBoard} currentBoardId={currentBoardId} onFocusBoard={setCurrent} />}
+            {boards.length === 1 ? <BoardView board={boards[0]!} variant="single" /> : <CanvasView project={project} boards={boards} renderBoard={renderBoard} boardMenu={boardMenu} currentBoardId={currentBoardId} onFocusBoard={setCurrent} />}
           </div>
-          <TimelineStrip />
         </div>
       </div>
       <CardDialog shotId={openId} onClose={() => setOpenId(null)} />
+      {rewrite.dialog}
     </MediaContext.Provider>
-  );
-}
-
-/** What is on the timeline, a way to the editor, and a drop target that adds cards to the end of the cut. */
-function TimelineStrip() {
-  const { project, edit } = useMedia();
-  const [over, setOver] = useState(false);
-  const shots = cutShots(project);
-  const seconds = cutDuration(project);
-  const sound = (role: "music" | "voice") => project.assets.some((a) => a.kind === "audio" && a.role === role && soundOnTimeline(project, a));
-  const onDrop = (e: DragEvent) => {
-    setOver(false);
-    const payload = readDrag(e);
-    if (!payload) return;
-    e.preventDefault();
-    void edit((p) => placeOnTimeline(p, payload.items));
-  };
-  return (
-    <div
-      className={cx("mp-strip", over && "mp-strip--over")}
-      onDragOver={(e) => {
-        if (!isCanvasDrag(e)) return;
-        e.preventDefault();
-        setOver(true);
-      }}
-      onDragLeave={() => setOver(false)}
-      onDrop={onDrop}
-    >
-      <Film className="mp-strip__icon" />
-      <span className="mp-strip__text">
-        On the timeline: {plural(shots.length, "shot")}, {timecode(seconds, false)}
-      </span>
-      {sound("music") && <Tag>Music</Tag>}
-      {sound("voice") && <Tag>Voice</Tag>}
-      <span className="mp-strip__hint">{over ? "Drop to add to the end" : "Drag cards here to add them"}</span>
-      <Link to={`/p/${project.id}/editor`} className="btn btn--s">
-        Open editor
-      </Link>
-    </div>
   );
 }

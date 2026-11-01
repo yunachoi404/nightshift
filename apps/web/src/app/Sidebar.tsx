@@ -1,15 +1,22 @@
 import type { Project } from "@nightshift/contract";
-import { Film, Gpu, ListTodo, PanelLeftClose, PanelLeftOpen, Plus, Settings as SettingsIcon, X } from "lucide-react";
+import { Gpu, LayoutGrid, ListTodo, PanelLeftClose, PanelLeftOpen, Plus, Settings as SettingsIcon, X } from "lucide-react";
+import { Moon } from "@/ui/Moon";
+import { CRESCENT } from "@/ui/mark-svg";
+import { BrandTile } from "@/ui/Mark";
 import { useState } from "react";
 import { Link, NavLink, useLocation } from "react-router";
 import { useEngine, useEngineState, useJobs, useProjectList } from "@/store/engine";
 import { Media } from "@/media/Media";
 import { coverFor, isActive, isGpuJob, jobLabel, jobStage } from "@/features/project/helpers";
+import { tonightTally } from "@/features/queue/tonight";
+import { tonightSeconds } from "@/features/queue/plan";
 import { Button, cx } from "@/ui/primitives";
 import { TemplateIcon } from "@/features/project/TemplateIcon";
-import { clock, gb } from "@/lib/format";
-import { useThisMachine } from "@/store/tier";
-import { sidebarShortcut } from "./useSidebar";
+import { clock, gb, plural, shortDuration } from "@/lib/format";
+import { insideWindow } from "@/lib/overnight";
+import { useNow } from "@/lib/useNow";
+import { useHardware, useInstalledTier, useThisMachine } from "@/store/tier";
+import { modKey, sidebarShortcut } from "./useSidebar";
 import { ComputePopover, useCompute, usePopover } from "./ComputePopover";
 
 /** Opens or closes the sidebar. In the sidebar's title strip when it is open, first in the toolbar when it is not. */
@@ -41,37 +48,51 @@ export function Sidebar({ collapsed, onToggle }: { collapsed: boolean; onToggle:
   return (
     <aside id="app-sidebar" className="sidebar" aria-label="Sidebar" inert={collapsed} aria-hidden={collapsed || undefined}>
       <div className="sidebar__top drag">
+        <Link to="/" className="sidebar__brand" aria-label="Nightshift, all projects">
+          <BrandTile />
+          <span className="sidebar__name">Nightshift</span>
+        </Link>
         <SidebarToggle collapsed={false} onToggle={onToggle} />
       </div>
-      <nav className="sidebar__list">
-        <div className="side__head">Projects</div>
-        {projects.length === 0 && <div className="side__empty">Nothing yet. Start a project.</div>}
-        {projects.map((p) => (
-          <ProjectItem key={p.id} project={p} current={loc.pathname.startsWith(`/p/${p.id}`)} />
-        ))}
-        <Link to="/new" className="side__item side__item--new" aria-current={loc.pathname === "/new" ? "page" : undefined}>
-          <Plus />
-          <span className="side__label">New project</span>
-        </Link>
-
-        <div className="side__head">Studio</div>
-        <NavLink to="/" end className="side__item">
-          <Film />
-          <span className="side__label">All projects</span>
-        </NavLink>
-        <NavLink to="/queue" className="side__item">
-          <ListTodo />
-          <span className="side__label">Queue</span>
-          {active.length > 0 && <span className={cx("side__badge", overnight ? "side__badge--night" : running ? "side__badge--live" : undefined)}>{active.length}</span>}
-        </NavLink>
-        <NavLink to="/settings" className="side__item">
-          <SettingsIcon />
-          <span className="side__label">Settings</span>
-        </NavLink>
-      </nav>
+      <div className="sidebar__body">
+        <nav className="sidebar__nav" aria-label="Studio">
+          <Link to="/new" className="side__new" aria-current={loc.pathname === "/new" ? "page" : undefined} title={`New project (${modKey()}N)`}>
+            <span className="side__new-icon" aria-hidden>
+              <Plus />
+            </span>
+            <span className="side__label">New project</span>
+            <kbd className="kbd kbd--bare side__keys" aria-hidden>
+              {modKey()}N
+            </kbd>
+          </Link>
+          <div className="side__places">
+            <NavLink to="/" end className="side__item">
+              <LayoutGrid />
+              <span className="side__label">Projects</span>
+            </NavLink>
+            <NavLink to="/queue" className="side__item">
+              <ListTodo />
+              <span className="side__label">Queue</span>
+              {active.length > 0 && <span className={cx("side__count", overnight ? "side__count--night" : running ? "side__count--live" : undefined)}>{active.length}</span>}
+            </NavLink>
+          </div>
+        </nav>
+        <nav className="sidebar__list" aria-label="Recent projects">
+          {projects.length > 0 && <div className="side__head">Recent</div>}
+          {projects.map((p) => (
+            <ProjectItem key={p.id} project={p} current={loc.pathname.startsWith(`/p/${p.id}`)} />
+          ))}
+        </nav>
+      </div>
       <div className="sidebar__foot">
         <OtherGpuUse />
-        <ComputeStatus />
+        <Tonight />
+        <div className="side__footrow">
+          <ComputeStatus />
+          <NavLink to="/settings" className="side__gear" aria-label="Settings" title={`Settings (${modKey()},)`}>
+            <SettingsIcon />
+          </NavLink>
+        </div>
       </div>
     </aside>
   );
@@ -84,6 +105,58 @@ function ProjectItem({ project, current }: { project: Project; current: boolean 
     <Link to={`/p/${project.id}`} className="side__item side__item--project" aria-current={current ? "page" : undefined} title={project.name}>
       <span className="side__thumb">{cover ? <Media src={client.assetUrl(project.id, cover.id)} kind={cover.kind === "video" ? "video" : "image"} /> : <TemplateIcon template={project.template} />}</span>
       <span className="side__label">{project.name}</span>
+    </Link>
+  );
+}
+
+/** At most this many marks in tonight's bar; more finals than that read as one bar. */
+const MARKS = 12;
+
+/**
+ * Finals waiting for tonight: a card above the foot with the crescent, when the night starts, how many wait, and a bar of
+ * those done against all of tonight's. It leads to the queue, where the night is laid out on its arc.
+ */
+function Tonight() {
+  const jobs = useJobs();
+  const { settings } = useEngineState();
+  const tier = useInstalledTier();
+  const night = settings?.overnight;
+  const waiting = jobs.some((j) => j.mode === "overnight" && (j.status === "queued" || j.status === "running"));
+  const now = useNow(60_000, waiting);
+  if (!waiting) return null;
+  const tally = tonightTally(jobs, night, now);
+  const left = tally.queued + (tally.running ? 1 : 0);
+  const total = tally.done + left;
+  const on = !!night?.enabled;
+  const open = on && insideWindow(night.startAt, night.endAt, now);
+  const when = !night ? "" : !on ? "Paused" : open ? `until ${clock(night.endAt)}` : clock(night.startAt);
+  // The same words and numbers as the Queue's Tonight.
+  const work = shortDuration(tonightSeconds(jobs, tier, now));
+  const text = !on ? `${plural(left, "final")} queued. The night shift is off in Settings.` : open && total > left ? `${tally.done} of ${plural(total, "final")} done, about ${work} left` : `${plural(left, "final")}, about ${work} of work`;
+  const marks = Array.from({ length: total }, (_, i) => (i < tally.done ? 1 : i === tally.done && tally.running ? tally.running.progress : 0));
+  return (
+    <Link to="/queue" className="side__tonight" aria-label={`Tonight${when ? `, ${when}` : ""}. ${plural(left, "final")} queued. Open the queue`}>
+      <span className="side__tonight-head">
+        <svg className="side__crescent" viewBox="14 14 72 72" aria-hidden focusable="false">
+          <path d={CRESCENT} />
+        </svg>
+        <span className="side__tonight-title">Tonight</span>
+        {when && <span className="side__tonight-when t-mono">{when}</span>}
+      </span>
+      <span className="side__tonight-text">{text}</span>
+      <span className="side__tonight-bar" aria-hidden>
+        {total > MARKS ? (
+          <span className="side__tonight-mark">
+            <span style={{ width: `${((tally.done + (tally.running?.progress ?? 0)) / total) * 100}%` }} />
+          </span>
+        ) : (
+          marks.map((fill, i) => (
+            <span key={i} className="side__tonight-mark">
+              <span style={{ width: `${fill * 100}%` }} />
+            </span>
+          ))
+        )}
+      </span>
     </Link>
   );
 }
@@ -116,57 +189,53 @@ function OtherGpuUse() {
   );
 }
 
-/** Where work runs and what it is doing, in one line at the foot of the sidebar. Opens the details above it. */
+/**
+ * Where work runs and what it is doing, in one line at the foot of the sidebar: the GPU's name and a word for its state.
+ * A render under way shows its moon in place of the dot. Opens the details above it.
+ */
 function ComputeStatus() {
-  const { status, settings, projects } = useEngineState();
+  const { status, projects } = useEngineState();
   const { where, remote, away, running, queued } = useCompute();
   const here = useThisMachine();
+  const hw = useHardware();
   const pop = usePopover<HTMLButtonElement>();
+  const gpu = hw?.gpus[0];
+  // This machine reads as its graphics card when it has one; a GPU computer on the network goes by its name.
+  const name = remote || status?.mode === "attach" || !gpu || gpu.vendor === "none" || !gpu.name ? where : gpu.name;
 
   let dot = "pulse--ok";
-  let text = where;
-  let tone: "night" | undefined;
-  let bar: { value: number; night: boolean } | null = null;
+  let state = "idle";
   if (!status || status.phase !== "ready") {
-    text = status?.phase === "installing" ? "Installing" : status?.phase === "starting" ? "Starting" : status?.phase === "error" ? "Needs attention" : "Not set up";
+    state = status?.phase === "installing" ? "installing" : status?.phase === "starting" ? "starting" : status?.phase === "error" ? "needs attention" : "not set up";
     dot = status?.phase === "error" ? "pulse--bad" : "pulse--idle";
   } else if (away) {
-    text = remote ? `Waiting for ${where}` : "Waiting for the GPU";
+    state = "waiting";
     dot = "pulse--idle";
-  } else if (running) {
-    const night = running.mode === "overnight";
-    text = `${jobLabel(running, projects[running.projectId])}, ${jobStage(running).toLowerCase()}`;
-    dot = night ? "pulse--night" : "";
-    tone = night ? "night" : undefined;
-    bar = { value: running.progress, night };
-  } else if (queued.some((j) => j.mode === "overnight") && settings?.overnight.enabled) {
-    const n = queued.filter((j) => j.mode === "overnight").length;
-    text = `${n} waiting for ${clock(settings.overnight.startAt)}`;
-    dot = "pulse--night";
-    tone = "night";
-  } else if (queued.length) {
-    text = `${queued.length} queued`;
-    dot = "";
+  } else if (running || queued.some((j) => j.mode !== "overnight")) {
+    state = "busy";
+    // Work about to start: the banana dot, holding still until it runs.
+    dot = "pulse--still";
   }
+  const title = running
+    ? `${jobLabel(running, projects[running.projectId])}, ${jobStage(running).toLowerCase()}${isGpuJob(running) ? "" : `. This work runs on ${here.lower}`}`
+    : away
+      ? remote
+        ? `Waiting for ${where}`
+        : "Waiting for the GPU"
+      : remote
+        ? `Generation runs on ${where}`
+        : "Work runs on this computer";
 
   return (
     <>
-      <button
-        ref={pop.anchor}
-        type="button"
-        className={cx("side__status", tone && `side__status--${tone}`)}
-        aria-expanded={pop.open}
-        aria-haspopup="dialog"
-        title={running && !isGpuJob(running) ? `This work runs on ${here.lower}` : remote ? `Generation runs on ${where}` : "Work runs on this computer"}
-        onClick={pop.toggle}
-      >
-        <span className={cx("pulse", dot)} />
-        <span>{text}</span>
-        {bar && (
-          <span className={cx("bar", bar.night && "bar--night")}>
-            <span className="bar__fill" style={{ width: `${bar.value * 100}%` }} />
-          </span>
+      <button ref={pop.anchor} type="button" className="side__status" aria-expanded={pop.open} aria-haspopup="dialog" title={title} onClick={pop.toggle}>
+        {state === "busy" && running ? (
+          <Moon phase={Math.max(0.04, running.progress)} night={running.mode === "overnight"} size={12} label={`${Math.round(running.progress * 100)}% done`} />
+        ) : (
+          <span className={cx("pulse", "side__dot", dot)} />
         )}
+        <span className="side__where">{name}</span>
+        <span className="side__state">· {state}</span>
       </button>
       <ComputePopover open={pop.open} onClose={pop.close} anchor={pop.anchor} placement="above-start" />
     </>

@@ -25,16 +25,15 @@ Every screen, with the states it must handle. "Engine" means the local HTTP serv
 ## Other states
 
 - Overnight waiting: finals queued with mode `overnight` show "Queued for tonight" with the start time,
-  the sidebar badge turns amber and the foot says "n waiting for 11 pm", the toolbar says "n for tonight".
-- Overnight running: amber ring and "Final, same take" in the toolbar, an amber bar in the sidebar foot.
+  the sidebar badge turns amber and the foot says "n waiting for 11 pm".
+- Overnight running: "Final, same take" and an amber bar in the sidebar foot.
 - Morning: an amber banner on All projects and Finals with the count of finished and failed finals.
 - Locked shot: "Locked" tag on the frame, prompt and camera move disabled, Redraw disabled with a tooltip.
 - Remaster not available: the Remaster tile is disabled with one sentence of why.
 - Engine not ready while on a project (only possible if the engine restarts): job starts fail with a
   toast "The engine is not ready yet", the sidebar foot says "Starting".
-- Work on a GPU computer: the sidebar foot and the toolbar show its name with a green dot; the toolbar's
-  running job reads "Still on NVIDIA GB10". Settings' Compute row shows the name, address and "Answering."
-- GPU computer not answering: "Waiting for NVIDIA GB10" in the sidebar foot and toolbar, a red dot,
+- Work on a GPU computer: the sidebar foot shows its name with a green dot. Settings' Compute row shows the name, address and "Answering."
+- GPU computer not answering: "Waiting for NVIDIA GB10" in the sidebar foot, a red dot,
   "Not answering. Queued work waits." and Check again in Settings, "Waiting for the GPU" on every queued job.
 - GPU computer missing nodes or models (the engine's `error` while it answers): an amber dot and the
   engine's message under the computer's name in Settings, with Check again.

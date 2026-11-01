@@ -6,13 +6,15 @@ import { useEngine, useProject, useProjectJobs } from "@/store/engine";
 import { upscaleOnly, useInstalledTier } from "@/store/tier";
 import { Button, Notice, Segmented, Select, Switch, Tag, cx, toast } from "@/ui/primitives";
 import { Media } from "@/media/Media";
+import { Moon } from "@/ui/Moon";
 import { assetById, failureText, frameClass, isActive, jobStatusLine } from "@/features/project/helpers";
-import { cutShots, isCanvasDrag, readDrag, shotLabel } from "@/features/media/items";
+import { cutShots, isCanvasDrag, readDrag, shotHistory, shotLabel, shotWords } from "@/features/media/items";
 import { useNow } from "@/lib/useNow";
 import { noFileToast } from "@/store/demo";
-import { plural, relativeTime, timecode } from "@/lib/format";
-import { scriptLines } from "@nightshift/contract";
+import { plural, relativeTime, shortDuration, timecode } from "@/lib/format";
+import { ownShot, scriptLines } from "@nightshift/contract";
 import { RevealSheet } from "@/features/reveal/RevealSheet";
+import { FinishTonight } from "@/features/finals/FinishTonight";
 import { CaptionPreview, defaultCaptionLook, defaultCaptionSize, type CaptionLook, type CaptionPos } from "./CaptionPreview";
 import { filmExportJobs, revealable } from "@/features/reveal/reveal";
 import "./editor.css";
@@ -46,7 +48,7 @@ function ProjectEditor({ project }: { project: Project }) {
     if (!asset || !shot || (asset.kind !== "image" && asset.kind !== "video")) return [];
     const take = project.takes.find((t) => t.videoAssetId === asset.id);
     return [{ shotId: shot.id, assetId: asset.id, src: client.assetUrl(project.id, asset.id), kind: asset.kind,
-      rung: take?.rung ?? "still", start: cut.start, dur: cut.out - cut.in, in: cut.in, move: shot.cameraMove ?? "static", label: shotLabel(project, shot) }];
+      rung: take?.rung ?? "still", start: cut.start, dur: cut.out - cut.in, in: cut.in, move: shot.cameraMove ?? "static", label: shotWords(project, shot) || shotLabel(project, shot) }];
   }), [project, client]);
   const total = clips.reduce((end, c) => Math.max(end, c.start + c.dur), 0);
   const style = timeline.style as { captions?: boolean; captionLook?: CaptionLook; captionPos?: CaptionPos; captionSize?: number; picture?: Record<string, unknown> & { reframe?: "crop" | "fit_blur" } };
@@ -133,6 +135,14 @@ function ProjectEditor({ project }: { project: Project }) {
   }, [exportedAspect, exportAsset?.id]);
 
   const [exportAspect, setExportAspect] = useState<Aspect>(project.aspect);
+  // An export that lands while the editor is open comes into view: at the inspector's foot it sat below the fold.
+  const exportFile = useRef<HTMLDivElement>(null);
+  const shownExport = useRef(exportAsset?.id);
+  useEffect(() => {
+    if (!exportAsset || exportAsset.id === shownExport.current) return;
+    shownExport.current = exportAsset.id;
+    exportFile.current?.scrollIntoView?.({ block: "nearest", behavior: "smooth" });
+  }, [exportAsset]);
   const ratio = (aspect: Aspect) => { const [w, h] = aspect.split(":").map(Number); return w! / h!; };
   const hasDifferentShape = clips.some((clip) => {
     const asset = assetById(project, clip.assetId);
@@ -140,7 +150,7 @@ function ProjectEditor({ project }: { project: Project }) {
     return Math.abs(Math.log(sourceRatio / ratio(exportAspect))) > Math.log(1.1);
   });
   const voiceText = project.template === "what_if"
-    ? (voiceTrack && assetById(project, voiceTrack.assetId)?.text) ?? project.shots.map((shot) => shot.line ?? "").join(" ")
+    ? (voiceTrack && assetById(project, voiceTrack.assetId)?.text) ?? ownShot(project)?.line ?? ""
     : typeof project.brief.script === "string" ? project.brief.script : scriptLines(project.template, project.brief).join(" ");
   const [busy, setBusy] = useState<string | null>(null);
 
@@ -214,8 +224,8 @@ function ProjectEditor({ project }: { project: Project }) {
                 <div className={cx("frame", frameClass(project.aspect), "ed__blank")}>
                   <div className="ed__blank-body">
                     <Film className="ed__blank-icon" aria-hidden />
-                    <div className="ed__blank-title">Nothing on the timeline yet.</div>
-                    <div className="ed__blank-text">Drag cards here from the Media sidebar.</div>
+                    <div className="ed__blank-title">Nothing on the timeline yet</div>
+                    <div className="ed__blank-text">Drag cards here from the Media sidebar</div>
                     <Link to={media} className="ed__blank-link">
                       Go to Media
                     </Link>
@@ -229,7 +239,6 @@ function ProjectEditor({ project }: { project: Project }) {
               <span className="ed__time">
                 {timecode(time)} <span className="ed__time-total">/ {timecode(total)}</span>
               </span>
-              {current && <Tag tone={current.rung === "final" ? "night" : undefined}>{current.rung === "final" ? "Final" : current.rung === "draft" ? "Draft" : "Still"}</Tag>}
               <span className="ed__spacer" />
               {timeline.edited && <><Tag outline>Edited by hand</Tag><Button size="s" busy={busy === "recut"} onClick={() => void run("recut", updateProject(project.id, { timeline: { ...timeline, edited: false } }))}>Re-cut</Button></>}
               {draftsOnly && (
@@ -241,7 +250,8 @@ function ProjectEditor({ project }: { project: Project }) {
             </div>
           </div>
 
-          <aside className="ed__side inspector" aria-label="Inspector">
+          <aside className="ed__side inspector scroll-fade" aria-label="Inspector">
+            {current && <ShotSection project={project} clip={current} index={clips.indexOf(current)} count={clips.length} media={media} />}
             <section className="insp">
               <div className="insp__head">
                 <span className="insp__title">Captions</span>
@@ -289,7 +299,7 @@ function ProjectEditor({ project }: { project: Project }) {
               )}
             </section>
 
-            <section className="insp">
+            <section className="insp insp--export">
               <div className="insp__head">
                 <span className="insp__title">Export</span>
                 <Segmented
@@ -312,15 +322,16 @@ function ProjectEditor({ project }: { project: Project }) {
                 </Select> : <span>Crop to fill</span>}
               </div>
               <div className="insp__text">{!hasClips
-                ? "Put shots on the timeline to export a video."
+                ? "Put shots on the timeline to export a video"
                 : hasDifferentShape
                   ? "Keep the whole picture if cropping loses your subject. Nearly matching shots still fill the frame."
                   : "The shots match this format. Small differences are cropped to avoid blurred edges."}</div>
               {hasClips && !allFinals && <div className="insp__text">Some shots are stills or drafts. The export uses the best version of each shot.</div>}
+              {hasClips && <FinishTonight project={project} jobs={jobs} quiet className="insp__finish" />}
               {exportJob && isActive(exportJob) ? (
                 <div className="insp__result">
                   <div className="insp__status">
-                    <span className="pulse" />
+                    {exportJob.status === "running" ? <Moon phase={Math.max(0.04, exportJob.progress)} /> : <span className="pulse pulse--still" />}
                     {jobStatusLine(exportJob, now)}
                   </div>
                   <div className="bar">
@@ -342,7 +353,7 @@ function ProjectEditor({ project }: { project: Project }) {
               )}
               {exportJob?.status === "done" && exportJob.message && <p className="insp__text" role="status">{exportJob.message}</p>}
               {exportAsset && (
-                <div className="insp__file">
+                <div className="insp__file" ref={exportFile}>
                   <div className={cx("frame", frameClass(aspectOf(exportAsset.width, exportAsset.height)))}>
                     <Media src={client.assetUrl(project.id, exportAsset.id)} kind="video" playing durationSec={exportAsset.durationSec} />
                   </div>
@@ -373,13 +384,10 @@ function ProjectEditor({ project }: { project: Project }) {
               )}
               {revealShot && (
                 <div className="insp__reveal">
-                  <div className="insp__row">
-                    <span>Share reveal</span>
-                    <Button size="s" icon={<Share2 />} onClick={() => setRevealOpen(true)}>
-                      Share reveal
-                    </Button>
-                  </div>
-                  <div className="insp__text">The draft, a freeze and the finished take on the same frame. 8 to 12 seconds, ready to post.</div>
+                  <div className="insp__text">The draft and its final on one frame, ready to post</div>
+                  <Button size="s" icon={<Share2 />} onClick={() => setRevealOpen(true)}>
+                    Share reveal
+                  </Button>
                   <RevealSheet project={project} shot={revealShot} open={revealOpen} onClose={() => setRevealOpen(false)} />
                 </div>
               )}
@@ -390,6 +398,35 @@ function ProjectEditor({ project }: { project: Project }) {
         <TimelineView project={project} clips={clips} total={total} time={time} onSeek={setTime} current={current} timeline={timeline} jobs={jobs} edits={edits} voiceText={voiceText} />
       </div>
     </div>
+  );
+}
+
+/** The shot under the playhead: its place in the cut, its words in full, the version the cut uses, and its length. */
+function ShotSection({ project, clip, index, count, media }: { project: Project; clip: Clip; index: number; count: number; media: string }) {
+  const shot = project.shots.find((s) => s.id === clip.shotId);
+  const words = shot?.prompt.trim() || clip.label;
+  const versions = shot ? shotHistory(project, shot).length : 0;
+  return (
+    <section className="insp insp--shot" aria-label="Shot">
+      <div className="insp__head">
+        <span className="insp__title">
+          Shot {index + 1} <span className="insp__of">of {count}</span>
+        </span>
+        <span className="insp__len">{shortDuration(clip.dur)}</span>
+      </div>
+      <p className="insp__words" title={words}>
+        {words}
+      </p>
+      <div className="insp__row">
+        <span className="insp__take">
+          <Tag tone={clip.rung === "final" ? "night" : undefined}>{clip.rung === "final" ? "Final" : clip.rung === "draft" ? "Draft" : "Still"}</Tag>
+          {versions > 1 && <span>{plural(versions, "version")}</span>}
+        </span>
+        <Link to={media} className="btn btn--s btn--quiet">
+          Open in Media
+        </Link>
+      </div>
+    </section>
   );
 }
 

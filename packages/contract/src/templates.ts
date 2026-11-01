@@ -7,6 +7,7 @@
  * - music_video: subject, genre, length ("30" | "60")
  * - product_ad: productName, does, tone
  * - talking_intro: script, visuals ("match" | "abstract" | "broll")
+ * - micro_drama: premise, look (a dramaLooks id), mood (a dramaMoods id). Its characters are the project's references.
  * - camera_move: photoAssetId, move (a quickMoves id), prompt (optional, what the scene is)
  * - vfx_effect: photoAssetId, effect (a quickEffects id), prompt (optional)
  * - blank: none. A blank project has no shot list; it fills from the project's tools.
@@ -60,7 +61,7 @@ export interface ToneOption {
 export interface GenreOption {
   id: string;
   label: string;
-  /** Typical tempo. The shot list makes each shot two bars long at it. */
+  /** Typical tempo. A music video's shots are whole half bars at it (`fallbackShots`). */
   bpm: number;
   palette: number;
 }
@@ -83,6 +84,15 @@ export const templates: TemplateMeta[] = [
     gets: "One continuous film with narration, music and captions",
     defaultAspect: "9:16",
     length: "About 15 seconds",
+  },
+  {
+    id: "micro_drama",
+    name: "Micro drama",
+    tagline: "One scene, two characters, a cliffhanger.",
+    gives: "A premise, your characters and a look",
+    gets: "A short episode where the characters say their lines, with subtitles",
+    defaultAspect: "9:16",
+    length: "About 20 seconds",
   },
   {
     id: "cinematic_shot",
@@ -193,6 +203,22 @@ export const looks: LookOption[] = [
   { id: "dawn", label: "Blue dawn", phrase: "cold blue light before sunrise, one warm lamp", palette: 5 },
 ];
 
+/** A micro drama's look: how every shot is drawn and filmed. */
+export const dramaLooks: LookOption[] = [
+  { id: "anime", label: "Anime", phrase: "2D anime film style, cel shading, clean line art, expressive eyes, soft painted backgrounds", palette: 2 },
+  { id: "kdrama", label: "K-drama", phrase: "Korean drama look, live action, soft glowing light, shallow focus, polished and romantic", palette: 1 },
+  { id: "webtoon", label: "Webtoon", phrase: "Korean webtoon art style, crisp digital line art, soft flat shading, bright clean color", palette: 5 },
+  { id: "animated", label: "3D animated", phrase: "3D animated feature film style, soft stylized characters, warm cinematic lighting", palette: 0 },
+];
+
+/** A micro drama's mood: what the scene is about underneath, and the lines it falls back on without a writer. */
+export const dramaMoods: ToneOption[] = [
+  { id: "romance", label: "Romance", hint: "Longing looks, a confession held back" },
+  { id: "revenge", label: "Revenge", hint: "Cold stares, a secret about to break" },
+  { id: "comedy", label: "Comedy", hint: "Quick reactions, a deadpan punchline" },
+  { id: "thriller", label: "Thriller", hint: "Tension, a threat in the room" },
+];
+
 export const voices: VoiceOption[] = [
   { id: "mara", label: "Mara", hint: "Warm and calm" },
   { id: "theo", label: "Theo", hint: "Bright and upbeat" },
@@ -230,11 +256,22 @@ export interface FallbackShot {
 
 type Brief = Record<string, unknown>;
 
+/** The most shots a shot list holds: a 60 second music video's, at one or two bars a shot. */
+export const MAX_SHOTS = 24;
+
+export interface FallbackOptions {
+  /**
+   * The longest shot one draft of this setup makes (`TierSummary.longestShotSec`). A music video plans enough shots of
+   * at most that length to fill its song. Without it, its shots are two bars long.
+   */
+  longestShotSec?: number | undefined;
+}
+
 /**
  * The shot list a template drafts from a brief when no language model writes one. Deterministic: the same brief
  * gives the same shots in the UI's mock engine and in the real one.
  */
-export function fallbackShots(template: TemplateId, brief: Brief): FallbackShot[] {
+export function fallbackShots(template: TemplateId, brief: Brief, o: FallbackOptions = {}): FallbackShot[] {
   const seed = hash(JSON.stringify(brief) + template);
   switch (template) {
     case "blank":
@@ -264,15 +301,14 @@ export function fallbackShots(template: TemplateId, brief: Brief): FallbackShot[
     case "music_video": {
       const subject = sentence(sentenceCase(str(brief.subject, "a late night drive through an empty city")));
       const genre = genres.find((g) => g.id === brief.genre) ?? genres[0]!;
-      const beat = (60 / genre.bpm) * 8; // two bars per shot
-      const total = brief.length === "60" ? 60 : 30;
-      const count = Math.max(6, Math.round(total / beat));
+      const { count, shotSec } = musicVideoShots(brief, o.longestShotSec);
       const look =
         genre.palette === 2 ? "Neon reflections, deep blue shadows" : genre.palette === 1 ? "Warm golden light, grain" : genre.palette === 4 ? "High contrast, black and silver" : "Soft film color, gentle grain";
+      const middle = MUSIC_FRAMING.length - 1;
       return Array.from({ length: count }, (_, i) => ({
-        prompt: `${i === 0 ? "Opening shot" : MUSIC_FRAMING[(i - 1) % MUSIC_FRAMING.length]}. ${subject} ${look}. ${genre.label} mood.`,
+        prompt: `${i === 0 ? "Opening shot" : i === count - 1 ? MUSIC_FRAMING[middle] : MUSIC_FRAMING[(i - 1) % middle]}. ${subject} ${look}. ${genre.label} mood.`,
         cameraMove: pick(MUSIC_MOVES, seed + 11, i),
-        durationSec: Math.round(beat * (i % 3 === 2 ? 0.5 : 1) * 10) / 10,
+        durationSec: shotSec,
       }));
     }
     case "product_ad": {
@@ -294,6 +330,19 @@ export function fallbackShots(template: TemplateId, brief: Brief): FallbackShot[
       });
       return shots;
     }
+    case "micro_drama": {
+      const premise = sentence(sentenceCase(str(brief.premise, "Two rivals are stuck in an elevator on the night of the company party")));
+      const look = sentenceCase(dramaLookPhrase(brief.look));
+      const lines = DRAMA_LINES[str(brief.mood, "romance")] ?? DRAMA_LINES.romance!;
+      // Each shot fits in one clip of the video model. The first sets the scene; the others are close and say a line.
+      return [
+        { prompt: `Establishing shot. ${premise} ${look}.`, cameraMove: "dolly_in", durationSec: 3 },
+        { prompt: `Medium close-up of the first character, facing the other, speaking. ${look}.`, cameraMove: "static", durationSec: 3.5, line: lines[0]! },
+        { prompt: `Close-up of the second character answering, a beat of hesitation in the eyes. ${look}.`, cameraMove: "static", durationSec: 3.5, line: lines[1]! },
+        { prompt: `Two-shot, the two characters face each other, close enough to touch. ${look}.`, cameraMove: "dolly_in", durationSec: 4, line: lines[2]! },
+        { prompt: `Extreme close-up of the first character as the last line lands. ${look}.`, cameraMove: "dolly_in", durationSec: 4, line: lines[3]! },
+      ];
+    }
     case "talking_intro": {
       const script = str(brief.script, "Hi, I'm making a show about things that take time. Each week, one slow idea. Let's start.");
       const visuals = str(brief.visuals, "match");
@@ -312,6 +361,22 @@ export function fallbackShots(template: TemplateId, brief: Brief): FallbackShot[
         });
     }
   }
+}
+
+/**
+ * A music video's shots for its song: as many as fill the chosen length (`lengthSec`, 30 or 60 seconds), so the cut never
+ * runs out of shots and starts them again mid-song. Each shot is as many half bars of the genre's tempo as fit in one
+ * clip (`longestShotSec`), two bars at most, or as many beats where not even a bar fits, so every cut lands on the
+ * beat. The last shot may run past the song's end; the cut ends with the song.
+ */
+export function musicVideoShots(brief: Brief, longestShotSec?: number): { count: number; shotSec: number; lengthSec: number } {
+  const genre = genres.find((g) => g.id === brief.genre) ?? genres[0]!;
+  const beat = 60 / genre.bpm;
+  const fits = (unit: number) => (longestShotSec ? Math.floor((longestShotSec + 1e-6) / unit) : Infinity);
+  const halves = Math.min(4, fits(beat * 2));
+  const shotSec = Math.round((halves >= 2 ? halves * 2 : Math.max(1, fits(beat))) * beat * 100) / 100;
+  const lengthSec = brief.length === "60" ? 60 : 30;
+  return { count: Math.min(MAX_SHOTS, Math.ceil(lengthSec / shotSec - 1e-6)), shotSec, lengthSec };
 }
 
 /** The voiceover a template implies: the talking intro's script sentences (at most eight), the product ad's pitch. */
@@ -409,6 +474,19 @@ const BROLL = ["a window at golden hour", "a desk with a lamp and a notebook", "
 function lookPhrase(id: unknown): string {
   return (looks.find((l) => l.id === id) ?? looks[0]!).phrase;
 }
+
+/** The prompt phrase of a micro drama's look. Anime unless the brief names another. */
+export function dramaLookPhrase(id: unknown): string {
+  return (dramaLooks.find((l) => l.id === id) ?? dramaLooks[0]!).phrase;
+}
+
+/** Four lines a micro drama falls back on per mood, the last one a cliffhanger. */
+const DRAMA_LINES: Record<string, string[]> = {
+  romance: ["You're late. Again.", "I almost didn't come.", "Then why are you here?", "Because I can't stop thinking about you."],
+  revenge: ["You don't remember me, do you?", "Should I?", "Ten years ago, you took everything.", "Tonight, I take it back."],
+  comedy: ["Tell me you didn't send that email.", "Define send.", "The whole company got it.", "Okay. So we move to Canada."],
+  thriller: ["Someone's been in the apartment.", "That's impossible. I locked it.", "Then who left this?", "Don't turn around."],
+};
 
 /** FNV-1a: picks the same places and moves for a brief everywhere. */
 function hash(s: string): number {

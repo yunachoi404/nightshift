@@ -1,75 +1,111 @@
+/*
+ * New project: the presets to start from on the left, the project's head, shape and name on the right, then Blank's
+ * first frame or a preset's own fields, and a foot that says nothing renders yet beside Cancel and Create project.
+ */
 .np {
   flex: 1;
   min-height: 0;
   display: grid;
-  grid-template-columns: 248px minmax(0, 1fr);
+  grid-template-columns: 300px minmax(0, 1fr);
 }
-.np__templates {
+.np__presets {
   border-right: 1px solid var(--line);
-  background: var(--inset);
-  padding: 8px 10px;
+  padding: 24px 14px;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 4px;
   overflow: auto;
 }
+.np__head {
+  padding: 0 10px 10px;
+  font-size: var(--fs-micro);
+  line-height: var(--lh-micro);
+  font-weight: 500;
+  color: var(--text-3);
+}
+/* A preset: its picture, its name and line, and the banana dot when it is the one chosen. */
 .tpl {
-  display: grid;
-  grid-template-columns: 56px 1fr;
-  gap: 10px;
+  display: flex;
   align-items: center;
-  padding: 6px 8px;
-  border-radius: var(--r-s);
+  gap: 14px;
+  padding: 10px;
+  border: 1px solid transparent;
+  border-radius: var(--r-m);
   text-align: left;
   min-width: 0;
-  transition: background-color var(--t-fast) var(--ease);
+  color: var(--text);
+  transition:
+    background-color var(--t-fast) var(--ease),
+    border-color var(--t-fast) var(--ease);
 }
 .tpl:hover {
   background: var(--hover);
 }
+/* The chosen preset: raised a step, on a hairline, so its picture keeps its own colors. */
 .tpl[aria-checked="true"] {
-  background: var(--banana-soft);
-  box-shadow: inset 0 0 0 1px var(--banana-line);
+  background: var(--select);
+  border-color: var(--line-hover);
 }
-.tpl[aria-checked="true"]:focus-visible {
-  box-shadow: inset 0 0 0 1px var(--banana-line), var(--focus);
+.tpl:focus-visible {
+  border-radius: var(--r-m);
 }
 .tpl__thumb {
-  width: 56px;
-  height: 40px;
+  position: relative;
+  width: 76px;
+  height: 44px;
+  flex: none;
+  border-radius: var(--r-s);
+  overflow: hidden;
+  background: var(--media);
+  box-shadow: 0 0 0 1px var(--line);
+}
+.tpl__thumb .media {
+  position: absolute;
+  inset: 0;
+}
+.tpl__thumb--blank {
   display: flex;
   align-items: center;
   justify-content: center;
+  background: transparent;
+  box-shadow: none;
+  border: 1px dashed var(--line-hover);
+  color: var(--text-3);
 }
-.tpl__thumb .frame {
-  height: 40px;
-  width: auto;
-}
-.tpl__thumb .frame--16x9 {
-  width: 56px;
-  height: 32px;
-}
-.tpl__thumb .frame--9x16 {
-  width: 22px;
-}
-.tpl__thumb .frame--1x1 {
-  width: 40px;
-}
-.tpl__blank .tpl-icon svg {
+.tpl__thumb--blank svg {
   width: 14px;
   height: 14px;
-  stroke-width: 1.75;
+  stroke-width: 2;
 }
 .tpl__text {
+  flex: 1;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
 }
 .tpl__name {
+  font-size: var(--fs-ui);
+  line-height: 18px;
   font-weight: 500;
 }
 .tpl__tag {
-  color: var(--text-3);
-  font-size: var(--fs-small);
-  line-height: var(--lh-small);
+  color: var(--text-2);
+  font-size: 12.5px;
+  line-height: 1.4;
+  text-wrap: pretty;
+}
+.tpl__dot {
+  width: 6px;
+  height: 6px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--banana-fill);
+  opacity: 0;
+  transition: opacity var(--t-fast) var(--ease);
+}
+.tpl[aria-checked="true"] .tpl__dot {
+  opacity: 1;
 }
 
 .brief {
@@ -82,42 +118,56 @@
   flex: 1;
   min-height: 0;
   overflow: auto;
-  padding: 20px var(--gutter) 32px;
+  display: flex;
+  flex-direction: column;
+}
+.brief__inner {
+  flex: 1 0 auto;
+  width: 100%;
+  max-width: 880px;
+  display: flex;
+  flex-direction: column;
+  gap: 26px;
+  padding: 32px var(--page-gutter) 32px;
+}
+/* Blank fits its window: the frame's stage takes what is left, between 280 and 440 px. */
+.brief__inner--blank {
+  flex: 1 1 0;
 }
 .brief__head {
-  max-width: 620px;
-  margin-bottom: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 .brief__title {
   font-family: var(--font-display);
-  font-size: var(--fs-title-2);
-  line-height: var(--lh-title-2);
-  font-weight: 400;
-  letter-spacing: -0.01em;
+  font-weight: var(--fw-display);
+  font-size: var(--fs-title-1);
+  line-height: var(--lh-title-1);
+  letter-spacing: -0.02em;
 }
 .brief__lead {
-  color: var(--text-3);
-  margin-top: 6px;
-  font-size: var(--fs-body);
-  line-height: var(--lh-body);
+  max-width: 620px;
+  color: var(--text-2);
+  font-size: 14.5px;
+  line-height: 1.6;
 }
 /* What a preset does on create: it seeds, it renders nothing. */
 .brief__seed {
-  color: var(--text-2);
-  margin-top: 8px;
-  font-size: var(--fs-small);
-  line-height: var(--lh-small);
+  max-width: 620px;
+  color: var(--text-3);
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
 }
 .brief__form {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  max-width: 620px;
+  gap: 20px;
 }
 .brief__row {
   display: flex;
   flex-wrap: wrap;
-  gap: 16px;
+  gap: 16px 20px;
 }
 .brief__row > .field {
   flex: 1 1 200px;
@@ -126,61 +176,268 @@
 .brief__row > .field:has(> .seg) {
   flex: none;
 }
+.brief__row--id {
+  align-items: flex-end;
+}
+.brief__row--id > .field:not(:has(> .seg)) {
+  flex: 1 1 240px;
+}
+/* The form's labels sit a step under the words they label, and a little apart from them. */
+.brief .field {
+  gap: 8px;
+}
+.brief .field__label {
+  color: color-mix(in srgb, var(--text) 86%, var(--content));
+}
+.brief .textarea {
+  padding: 11px 14px;
+  font-size: var(--fs-ui);
+  line-height: 20px;
+}
+.brief .input:not(.input--l) {
+  min-height: 40px;
+  padding: 0 14px;
+  border-radius: var(--r-control);
+  font-size: var(--fs-ui);
+}
+
+/* The format: each option draws its shape, says its name and its ratio in mono. */
+.np-format .seg__opt {
+  color: var(--text-2);
+}
+.np-format .seg__opt[aria-checked="true"] {
+  color: var(--text);
+}
+.np-glyph {
+  flex: none;
+  border: 1.5px solid currentColor;
+  border-radius: 2.5px;
+}
+.np-glyph--wide {
+  width: 16px;
+  height: 11px;
+}
+.np-glyph--tall {
+  width: 10px;
+  height: 15px;
+}
+.np-glyph--square {
+  width: 13px;
+  height: 13px;
+}
+.np-format__ratio {
+  font-family: var(--font-mono);
+  font-size: var(--fs-micro);
+  font-weight: 400;
+  color: var(--text-3);
+}
+
+/* Blank's first frame on its stage. The frame takes the chosen shape and eases to a new one; the stage is always dark,
+   like film. */
+.np-stage {
+  flex: 1 1 0;
+  min-height: 280px;
+  max-height: 440px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 28px;
+  border-radius: var(--r-l);
+  border: 1px solid var(--line);
+  background: color-mix(in srgb, var(--content) 55%, var(--raised));
+  container-type: size;
+}
+.np-frame {
+  --ratio: 1.7778;
+  position: relative;
+  width: min(100cqw, 100cqh * var(--ratio));
+  height: min(100cqh, 100cqw / var(--ratio));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 0 24px;
+  border-radius: 10px;
+  background: #000;
+  box-shadow:
+    0 0 0 1px #262833,
+    0 30px 60px -30px rgba(0, 0, 0, 0.9);
+  overflow: hidden;
+  transition:
+    width 350ms var(--ease),
+    height 350ms var(--ease);
+}
+:root:not([data-theme="dark"]) .np-frame {
+  background: var(--media);
+  box-shadow:
+    0 0 0 1px rgba(24, 24, 27, 0.12),
+    0 24px 48px -28px rgba(24, 24, 27, 0.45);
+}
+.np-frame__corner {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border: 0 solid #3a3d4a;
+}
+.np-frame__corner--tl {
+  left: 12px;
+  top: 12px;
+  border-left-width: 1.5px;
+  border-top-width: 1.5px;
+}
+.np-frame__corner--tr {
+  right: 12px;
+  top: 12px;
+  border-right-width: 1.5px;
+  border-top-width: 1.5px;
+}
+.np-frame__corner--bl {
+  left: 12px;
+  bottom: 12px;
+  border-left-width: 1.5px;
+  border-bottom-width: 1.5px;
+}
+.np-frame__corner--br {
+  right: 12px;
+  bottom: 12px;
+  border-right-width: 1.5px;
+  border-bottom-width: 1.5px;
+}
+.np-frame__name {
+  max-width: 100%;
+  font-family: var(--font-display);
+  font-weight: var(--fw-display);
+  font-size: 30px;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  color: #edebe6;
+  text-align: center;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 4;
+  overflow: hidden;
+}
+.np-frame__size {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  line-height: 15px;
+  color: #8c8f99;
+  white-space: nowrap;
+}
+
+/* The foot: the crescent and what happens on create, then Cancel and Create project with its keys. */
 .brief__foot {
   flex: none;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 10px var(--gutter);
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 14px 24px 14px var(--page-gutter);
   border-top: 1px solid var(--line);
-  background: var(--inset);
+  background: var(--content);
+}
+.brief__note {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+  color: var(--text-2);
+}
+.brief__moon {
+  width: 14px;
+  height: 14px;
+  flex: none;
+  fill: var(--text-4);
+}
+.brief__actions {
+  margin-left: auto;
+  display: flex;
+  gap: 8px;
+}
+.brief__actions > .btn--quiet {
+  color: color-mix(in srgb, var(--text) 78%, var(--content));
+}
+.brief__create {
+  gap: 10px;
+  padding: 0 14px 0 16px;
+  font-weight: 600;
+}
+.brief__keys {
+  display: inline-flex;
+  align-items: center;
+  height: 19px;
+  padding: 0 5px;
+  border-radius: 5px;
+  background: rgba(20, 18, 10, 0.12);
+  font-family: var(--font-mono);
+  font-size: var(--fs-micro);
+  font-weight: 500;
+  line-height: 1;
+}
+.brief__create:disabled .brief__keys {
+  background: transparent;
 }
 
-/* option tiles (camera, look, voice, tone) */
+/* Option tiles (look, mood, tone, voice): a hairline tile; the chosen one is raised a step with the banana dot. */
 .opts {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(128px, 1fr));
-  gap: 6px;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 8px;
 }
 .opt {
+  position: relative;
   display: flex;
   flex-direction: column;
-  gap: 1px;
-  padding: 7px 10px;
-  border-radius: var(--r-s);
+  gap: 2px;
+  padding: 10px 24px 10px 12px;
+  border-radius: var(--r-m);
   border: 1px solid var(--line);
   background: var(--raised);
   text-align: left;
   transition:
     border-color var(--t-fast) var(--ease),
-    background-color var(--t-fast) var(--ease),
-    box-shadow var(--t-fast) var(--ease);
+    background-color var(--t-fast) var(--ease);
 }
 .opt:hover {
   border-color: var(--line-strong);
+  background: var(--hover);
 }
 .opt[aria-checked="true"] {
-  border-color: var(--banana-line);
-  box-shadow: inset 0 0 0 1px var(--banana-line);
-  background: var(--banana-soft);
+  border-color: var(--line-hover);
+  background: var(--select);
 }
-.opt[aria-checked="true"]:focus-visible {
-  box-shadow: inset 0 0 0 1px var(--banana-line), var(--focus);
+.opt::after {
+  content: "";
+  position: absolute;
+  top: 14px;
+  right: 12px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--banana-fill);
+  opacity: 0;
+  transition: opacity var(--t-fast) var(--ease);
 }
-/* Secondary words on a picked tile keep their contrast on the banana wash. */
-.opt[aria-checked="true"] .opt__hint,
-.tpl[aria-checked="true"] .tpl__tag {
-  color: var(--text-2);
+.opt[aria-checked="true"]::after {
+  opacity: 1;
+}
+.opt:focus-visible {
+  border-radius: var(--r-m);
 }
 .opt__name {
-  font-size: var(--fs-small);
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
   font-weight: 500;
 }
 .opt__hint {
-  font-size: var(--fs-micro);
-  line-height: var(--lh-micro);
-  color: var(--text-3);
+  font-size: var(--fs-small);
+  line-height: var(--lh-small);
+  color: var(--text-2);
 }
 
 /* dropzone */
@@ -188,18 +445,21 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 10px 12px;
-  border-radius: var(--r-s);
-  border: 1px dashed var(--line-strong);
-  background: var(--inset);
+  padding: 12px 14px;
+  border-radius: var(--r-m);
+  border: 1px dashed var(--line-hover);
+  background: color-mix(in srgb, var(--content) 55%, var(--raised));
   color: var(--text-2);
-  min-height: 56px;
+  min-height: 64px;
   transition:
     border-color var(--t-fast) var(--ease),
     background-color var(--t-fast) var(--ease);
 }
 .drop:hover {
   border-color: var(--text-4);
+}
+.drop:focus-visible {
+  border-radius: var(--r-m);
 }
 /* A file held over the drop zone: it is the active target. */
 .drop--over {
@@ -213,7 +473,7 @@
 .drop__icon svg {
   width: 20px;
   height: 20px;
-  stroke-width: 1.6;
+  stroke-width: 1.75;
 }
 .drop__thumb {
   width: 56px;
@@ -223,13 +483,27 @@
   background: var(--media);
 }
 .drop__text {
-  font-size: var(--fs-small);
-  line-height: var(--lh-small);
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+  color: var(--text);
 }
 .drop__text small {
   display: block;
+  font-size: var(--fs-small);
+  line-height: var(--lh-small);
   color: var(--text-3);
 }
 .drop input {
   display: none;
+}
+
+/* A narrow window: the preset column narrows, and its pictures with it. */
+@media (max-width: 1080px) {
+  .np {
+    grid-template-columns: 248px minmax(0, 1fr);
+  }
+  .tpl__thumb {
+    width: 64px;
+    height: 38px;
+  }
 }

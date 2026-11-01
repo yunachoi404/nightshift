@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { HashRouter, Navigate, Outlet, Route, Routes, useLocation, useNavigate, useParams } from "react-router";
+import { HashRouter, Navigate, Outlet, Route, Routes, useLocation, useNavigate, useParams, useSearchParams } from "react-router";
 import { useEngine, useEngineState, useProject } from "@/store/engine";
 import { Button, Toaster, cx } from "@/ui/primitives";
 import { Mark } from "@/ui/Mark";
@@ -8,7 +8,7 @@ import { Toolbar } from "./Toolbar";
 import { useSidebar } from "./useSidebar";
 import { Onboarding } from "@/features/onboarding/Onboarding";
 import { Home } from "@/features/home/Home";
-import { NewProject } from "@/features/newproject/NewProject";
+import { NewProject, presetFrom } from "@/features/newproject/NewProject";
 import { Storyboard } from "@/features/storyboard/Storyboard";
 import { Takes } from "@/features/takes/Takes";
 import { Finals } from "@/features/finals/Finals";
@@ -18,6 +18,8 @@ import { SettingsPage } from "@/features/settings/Settings";
 import { QueuePage } from "@/features/queue/QueuePanel";
 import { DevPanel } from "@/features/dev/DevPanel";
 import { isDevMock } from "@/api/config";
+import { useReadyToasts } from "./readyToasts";
+import { useFreshPickWatcher } from "@/features/takes/freshPicks";
 
 export function App() {
   return (
@@ -37,6 +39,8 @@ function Shell() {
   const nav = useNavigate();
   const [devOpen, setDevOpen] = useState(false);
   const sidebar = useSidebar();
+  useReadyToasts();
+  useFreshPickWatcher();
   const params = useProjectIdFromPath(loc.pathname);
   const project = useProject(params);
   const backTo = useProject(useLastProject(params));
@@ -124,7 +128,7 @@ function Shell() {
               {/* Redirect during render: a ready engine whose setup is done never shows the setup screens. */}
               <Route path="/setup" element={ready && onboarded ? <Navigate to="/" replace /> : <Onboarding onDev={() => setDevOpen(true)} />} />
               <Route path="/" element={<Home />} />
-              <Route path="/new" element={<NewProject />} />
+              <Route path="/new" element={<NewProjectRoute />} />
               <Route path="/queue" element={<QueuePage />} />
               <Route path="/settings" element={<SettingsPage />} />
               <Route path="/p/:id" element={<ProjectOutlet />}>
@@ -191,16 +195,27 @@ function ProjectOutlet() {
   return <Outlet />;
 }
 
+/** New project, on the preset the address names (the chips on Projects link to one). Another preset starts it afresh. */
+function NewProjectRoute() {
+  const [params] = useSearchParams();
+  const preset = presetFrom(params.get("preset"));
+  return <NewProject key={preset ?? "blank"} preset={preset} />;
+}
+
 /** A project opens on its media. */
 function ProjectIndexRedirect() {
   const { id } = useParams();
   return <Navigate to={`/p/${id}/media`} replace />;
 }
 
+/** The mark while the engine answers, and the crescent going round under it if that takes more than a moment. */
 function Splash() {
   return (
     <div className="screen">
-      <Mark size={64} label="Nightshift" />
+      <div className="screen__box screen__box--splash">
+        <Mark size={64} label="Nightshift" />
+        <span className="spin spin--l screen__spin" aria-hidden />
+      </div>
     </div>
   );
 }
@@ -232,7 +247,7 @@ function Unreachable({ onRetry }: { onRetry: () => void }) {
             Try again
           </Button>
         </div>
-        <p className="t-small t-muted">Retrying on its own every few seconds.</p>
+        <p className="t-small t-muted">Retrying on its own every few seconds</p>
       </div>
     </div>
   );

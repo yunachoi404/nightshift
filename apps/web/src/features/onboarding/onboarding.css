@@ -97,7 +97,7 @@
 }
 .ob__title {
   font-family: var(--font-display);
-  font-weight: 400;
+  font-weight: var(--fw-display);
   font-size: var(--fs-title-1);
   line-height: var(--lh-title-1);
   letter-spacing: -0.015em;
@@ -145,6 +145,7 @@
   align-items: center;
   gap: 10px;
   font-family: var(--font-display);
+  font-weight: var(--fw-display);
   font-size: 21px;
   line-height: 28px;
   letter-spacing: -0.01em;
@@ -159,7 +160,7 @@
 }
 .ob__hero {
   font-family: var(--font-display);
-  font-weight: 400;
+  font-weight: var(--fw-display);
   font-size: clamp(38px, 4.2vw, 60px);
   line-height: 1.04;
   letter-spacing: -0.025em;
@@ -190,10 +191,9 @@
   margin-top: clamp(18px, 2.8vh, 30px);
   gap: 10px;
 }
-/* Get started: the one thing to click, and the biggest button in the app. A thin light runs around its edge all the
-   time, faint; on hover it brightens, the pill lifts and a soft halo breathes. On the black pill the light rides
-   the pill's own edge; on the white one, a white line can't show, so it runs on a fine ring just outside. Reduced
-   motion holds the light still. */
+/* Get started: the one thing to click, and the biggest button in the app. A thin light rests on its edge, faint; on
+   hover it brightens, the pill lifts a pixel and one sweep of light crosses it. On the black pill the light rides the
+   pill's own edge; on the white one, a white line can't show, so it sits on a fine ring just outside. Nothing loops. */
 @property --go-angle {
   syntax: "<angle>";
   initial-value: 0deg;
@@ -203,8 +203,6 @@
   --btn-h: 58px;
   --btn-px: 44px;
   --go-shadow: 0 1px 2px rgba(0, 0, 0, 0.16), 0 14px 30px -14px rgba(24, 24, 27, 0.55);
-  --go-halo: rgba(24, 24, 27, 0.08);
-  --go-glow: rgba(24, 24, 27, 0.14);
   --go-sheen: rgba(255, 255, 255, 0.22);
   --go-edge: rgba(255, 255, 255, 1);
   --go-tail: rgba(255, 255, 255, 0.28);
@@ -215,7 +213,7 @@
   min-width: 220px;
   border: 0;
   font-size: 17px;
-  font-weight: 600;
+  font-weight: 500;
   letter-spacing: -0.005em;
   isolation: isolate;
   box-shadow: var(--go-shadow);
@@ -226,8 +224,6 @@
 }
 :root[data-theme="dark"] .ob__go {
   --go-shadow: 0 1px 2px rgba(0, 0, 0, 0.5), 0 14px 34px -14px rgba(255, 255, 255, 0.2);
-  --go-halo: rgba(255, 255, 255, 0.07);
-  --go-glow: rgba(255, 255, 255, 0.16);
   --go-sheen: rgba(120, 130, 150, 0.18);
   --go-edge: rgba(255, 255, 255, 1);
   --go-tail: rgba(255, 255, 255, 0.3);
@@ -253,10 +249,8 @@
     linear-gradient(#000 0 0);
   opacity: var(--go-edge-rest);
   pointer-events: none;
-  animation: go-edge 4.2s linear infinite;
-  transition:
-    opacity 320ms var(--ease),
-    padding 320ms var(--ease);
+  --go-angle: 300deg;
+  transition: opacity 320ms var(--ease);
 }
 /* The sheen: one sweep of light across the face on hover, moved inside its own box. */
 .ob__go::after {
@@ -271,11 +265,9 @@
 }
 .ob__go:hover:not(:disabled) {
   transform: translateY(-1px);
-  animation: go-breathe 2.6s ease-in-out infinite;
 }
 .ob__go:hover:not(:disabled)::before {
   opacity: 1;
-  padding: calc(var(--go-edge-width) + 0.5px);
 }
 .ob__go:hover:not(:disabled)::after {
   animation: go-sheen 1.1s var(--ease-out) both;
@@ -295,26 +287,6 @@
     0 0 0 6px var(--content),
     0 0 0 8px var(--accent);
 }
-@keyframes go-edge {
-  to {
-    --go-angle: 360deg;
-  }
-}
-@keyframes go-breathe {
-  0%,
-  100% {
-    box-shadow:
-      var(--go-shadow),
-      0 0 0 0 var(--go-halo),
-      0 0 0 0 transparent;
-  }
-  50% {
-    box-shadow:
-      var(--go-shadow),
-      0 0 0 9px var(--go-halo),
-      0 0 36px 8px var(--go-glow);
-  }
-}
 @keyframes go-sheen {
   from {
     background-position: 130% 0;
@@ -324,16 +296,6 @@
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .ob__go::before {
-    animation: none;
-    --go-angle: 300deg;
-  }
-  .ob__go:hover:not(:disabled) {
-    animation: none;
-    box-shadow:
-      var(--go-shadow),
-      0 0 0 6px var(--go-halo);
-  }
   .ob__go:hover:not(:disabled)::after {
     animation: none;
   }
@@ -400,7 +362,7 @@
   font-size: var(--fs-body);
   color: var(--text-3);
   padding: 2px 8px;
-  border-radius: var(--r-pill);
+  border-radius: 7px;
 }
 .ob__quiet:hover:not(:disabled) {
   color: var(--text);
@@ -519,7 +481,7 @@
 .ob__card-head b {
   display: block;
   font-family: var(--font-display);
-  font-weight: 400;
+  font-weight: var(--fw-display);
   font-size: var(--fs-title-3);
   line-height: var(--lh-title-3);
 }
@@ -567,7 +529,7 @@
 .ob__time b {
   grid-area: v;
   font-family: var(--font-display);
-  font-weight: 400;
+  font-weight: var(--fw-display);
   font-size: 21px;
   line-height: 28px;
   letter-spacing: -0.01em;
@@ -590,7 +552,7 @@
   width: 100%;
 }
 .ob__row-head b {
-  font-weight: 600;
+  font-weight: 500;
   font-size: var(--fs-body);
 }
 .ob__row-head span {
@@ -656,7 +618,7 @@
   stroke-width: 2.25;
 }
 .reuse__found b {
-  font-weight: 600;
+  font-weight: 500;
 }
 .reuse__skip {
   color: var(--bad);
@@ -812,6 +774,7 @@
 }
 .ob__meter-num {
   font-family: var(--font-display);
+  font-weight: var(--fw-display);
   font-size: 96px;
   line-height: 96px;
   letter-spacing: -0.03em;
@@ -859,7 +822,7 @@
   gap: 8px;
 }
 .ob__status b {
-  font-weight: 600;
+  font-weight: 500;
   color: var(--text);
 }
 .ob__notice {
@@ -917,33 +880,26 @@
 .ob__stp-mark {
   width: 36px;
   height: 36px;
-  border-radius: 50%;
   display: grid;
   place-items: center;
-  background: var(--raised);
-  box-shadow: inset 0 0 0 1px var(--line-strong);
-  color: var(--text-4);
 }
-.ob__stp-mark svg {
-  width: 16px;
-  height: 16px;
-  stroke-width: 1.75;
+/* A new moon still shows its edge, so a step to come reads as a moon and not a hole. */
+.ob__stp--next .moon__disc {
+  stroke: var(--line-strong);
+  stroke-width: 0.6;
 }
 .ob__stp--now {
   color: var(--text);
-  font-weight: 600;
+  font-weight: 500;
 }
-.ob__stp--now .ob__stp-mark {
-  box-shadow: inset 0 0 0 1.5px var(--accent);
+.ob__stp--now .moon {
   color: var(--text);
+}
+.ob__stp--now .moon__lit {
+  transition: d var(--t-slow) var(--ease-out);
 }
 .ob__stp--done {
   color: var(--text-2);
-}
-.ob__stp--done .ob__stp-mark {
-  background: var(--ok-soft);
-  box-shadow: none;
-  color: var(--ok);
 }
 
 /* Short windows: the welcome keeps its words and lets the window go first. */

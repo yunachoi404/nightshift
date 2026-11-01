@@ -44,7 +44,8 @@ function harness(recipesDir: string) {
     engine: undefined as EngineHandle | undefined,
     api: undefined as unknown as Api,
     async start() {
-      h.engine = await startEngine({ port: 0, dataDir, mock: true, mockSpeed: 0, recipesDir, runner, log: () => undefined });
+      // Finals for the night start right after the drafts here; the hold while the user works is tested in queue.test.ts.
+      h.engine = await startEngine({ port: 0, dataDir, mock: true, mockSpeed: 0, recipesDir, runner, holdForUserMs: 0, log: () => undefined });
       h.api = new Api(h.engine.url);
     },
     async project(template: Project["template"], aspect: Aspect, brief: Record<string, unknown>): Promise<Project> {

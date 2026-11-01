@@ -26,10 +26,10 @@ to the project list. A lost connection covers the window with "Can't reach the e
 Outside setup, every route renders inside the same window: the sidebar on the left, the toolbar in the
 title strip, the content pane under it.
 
-- Sidebar: Projects (each with a tiny cover), New project, then Studio: All projects, Queue (with a count
-  badge while anything runs or waits, amber when the wait is for tonight), Settings. The foot is one line
-  about compute: "This Mac" or the GPU computer's name with a status dot, or what is running with a small
-  progress bar, or "n waiting for 11 pm".
+- Sidebar: New project, Projects and Queue (with a count badge while anything runs or waits, amber when the
+  wait is for tonight), then Recent: the projects, each with a tiny cover. The foot is one row: compute on the
+  left ("This Mac" or the GPU computer's name with a status dot, or what is running with a small progress bar,
+  or "n waiting for 11 pm"), a Settings gear on the right. It opens what the GPU is doing in place.
 - Toolbar: left, the project name with a one-line status (template, shots, length, stage) or the page
   name; center, the Storyboard, Takes, Finals, Editor segmented control when a project is open; right,
   the Demo tag on the mock, the activity indicator (a progress ring and the running job's name, "on NVIDIA
@@ -106,8 +106,10 @@ setup on the engine. "Open this shot" also jumps to its takes. Making a project 
 
 ## 2. All projects
 
-A grid of projects, newest first, each with its cover, template, shot count, a stage tag and a time. A
-dashed "New project" tile closes the grid. Empty state is an invitation with the four template names.
+Projects as their pictures, all the same size, newest first; a clip plays under the pointer. Each tile carries its
+name, its shots and length, a time and a stage tag on the picture. The first tile is New project: an empty frame the
+size of a project with a banana plus, the page's one banana mark (New project is also the first row of the sidebar).
+No project stands out above the others. Empty state is an invitation with the four template names.
 
 The morning summary appears here when overnight finals finished since the user last looked, as an amber
 banner that links to that project's finals.
@@ -116,8 +118,9 @@ banner that links to that project's finals.
 
 A two-pane view. Left, an inset source list of the four templates with a tiny preview. Right, the brief
 for the chosen template with a footer that holds "Create storyboard". Each brief is short and specific:
-- Cinematic shot: what is in the shot, optional photo, camera move (9 tiles), look (6 tiles), one shot or
-  three.
+- Micro drama: the scene (who, where, what's at stake), look (Anime, K-drama, Webtoon, 3D animated), mood (Romance,
+  Revenge, Comedy, Thriller), and Characters: a named photo of each, so they look the same in every shot. Tall by
+  default. It replaced Cinematic shot, which the tools make from a blank project; old cinematic projects still open.
 - Music video: write a song (a line plus a genre) or upload one, what we see, 30 or 60 seconds.
 - Product ad: name, what it does, photo, tone (4), voice (4).
 - Talking intro: script, voice, visuals (match each line, B-roll, abstract).
@@ -179,7 +182,7 @@ anywhere to seek. Space plays.
 ## 8. Settings
 
 Grouped lists in the System Settings style, 720 px wide:
-- Appearance: System, Light, Dark.
+- Appearance: Dark (the default), Light, System.
 - Compute: where work runs. "This Mac" with the graphics chip and engine state, or the GPU computer's
   name with its address and whether it answers, a status dot (green answering, amber when the engine's
   `error` names missing nodes or models, red when it is away), and the actions: "Use a GPU computer" (or
@@ -208,7 +211,7 @@ Settings, Next up or In line.
 
 - Engine unreachable: full-window state with a Try again button, retrying on its own every few seconds.
 - Waiting for the GPU: when the proxy or the GPU computer stops answering, the engine stays ready and
-  every GPU job waits. The sidebar foot and the toolbar say "Waiting for NVIDIA GB10", Settings shows a red
+  every GPU job waits. The sidebar foot says "Waiting for NVIDIA GB10", Settings shows a red
   dot and "Not answering. Queued work waits."
 - Progress in calm words. A running job shows a stage and the time it has been running ("Generating, 1 min
   20 s"), never ComfyUI's node counts, which sit still through a long model load. The stage comes from the

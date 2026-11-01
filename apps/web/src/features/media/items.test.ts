@@ -4,7 +4,7 @@
  */
 import { MAIN_BOARD_ID, type Asset, type Project, type Shot, type Take } from "@nightshift/contract";
 import { describe, expect, it } from "vitest";
-import { canRestore, canvas, changesCut, cutDuration, cutShots, dropMoves, imageOfCard, makeBlocked, moveCard, moveOnTimeline, placeOnTimeline, restingTime, restore, retryFor, shotHistory, shotPatch, soundOnTimeline, takeOffTimeline, versionLabel, withoutCard } from "./items";
+import { cameraMoveLabel, canAddToTimeline, canRestore, canvas, changesCut, cutDuration, cutShots, dropMoves, imageOfCard, makeBlocked, moveCard, moveOnTimeline, placeOnTimeline, restingTime, restore, retryFor, shotHistory, shotLabel, shotPatch, shotWords, soundOnTimeline, takeOffTimeline, versionLabel, withoutCard } from "./items";
 
 const at = (minute: number) => new Date(Date.UTC(2026, 9, 30, 9, minute)).toISOString();
 const image = (id: string, minute: number, extra: Partial<Asset> = {}): Asset => ({ id, kind: "image", path: `${id}.png`, createdAt: at(minute), ...extra });
@@ -12,6 +12,7 @@ const video = (id: string, minute: number): Asset => ({ id, kind: "video", path:
 const audio = (id: string, role: "music" | "voice", minute: number): Asset => ({ id, kind: "audio", role, path: `${id}.mp3`, createdAt: at(minute) });
 const shot = (id: string, index: number, extra: Partial<Shot> = {}): Shot => ({ id, index, prompt: `Shot ${id}`, cameraMove: "static", durationSec: 4, locked: false, ...extra });
 const take = (id: string, shotId: string, rung: "draft" | "final", videoAssetId: string, extra: Partial<Take> = {}): Take => ({ id, shotId, rung, seed: 1, videoAssetId, jobId: `job_${id}`, ...extra });
+const keyframes = [0, 1, 2, 3].map((i) => ({ id: `beat-${i}`, prompt: `Beat ${i}`, line: "" }));
 
 /** A film made before boards: two shots, the first with two takes and a final, an upload and a song. */
 function film(): Project {
@@ -138,6 +139,23 @@ describe("shotHistory", () => {
     expect(shotHistory(moved, s).find((v) => v.key === "t2")!.tool).toEqual({ kind: "camera_move", move: "dolly_zoom" });
     // Other templates name their plain takes as drafts.
     expect(shotHistory(film(), s1).find((v) => v.key === "t2")!.tool).toBeUndefined();
+  });
+
+  it("names an extra card's takes as any card's: a What if? film's take is the film, a quick shot's its effect or move", () => {
+    const withCardTake = (template: Project["template"], s1: Shot): Project => ({
+      ...film(),
+      template,
+      brief: { effect: "freeze", move: "dolly_in" },
+      shots: [s1, shot("s2", 1, { stillAssetId: "still_2", onTimeline: false })],
+      takes: [...film().takes, take("t4", "s2", "draft", "v_t2")],
+    });
+    for (const [template, own] of [["what_if", "Film"], ["vfx_effect", "Effect, Freeze"], ["camera_move", "Camera move, Dolly in"]] as const) {
+      const s1 = { ...film().shots[1]!, cameraMove: "dolly_in", ...(template === "what_if" ? { keyframes } : {}) };
+      const p = withCardTake(template, s1);
+      const card = p.shots[1]!;
+      expect([versionLabel(p, s1, { rung: "draft" }), versionLabel(p, card, { rung: "draft" })]).toEqual([own, "Draft"]);
+      expect(shotHistory(p, card).find((v) => v.key === "t4")!.tool).toBeUndefined();
+    }
   });
 });
 
@@ -277,20 +295,41 @@ describe("trying again", () => {
     expect(retryFor({ ...p, template: "camera_move" }, s1, "still")).toBeUndefined();
   });
 
-  it("sends a What if? card to its story, where the beat to redraw is chosen", () => {
-    const whatIf = { ...p, template: "what_if" as const };
-    expect(retryFor(whatIf, s1, "still")).toEqual({ kind: "story" });
-    expect(retryFor(whatIf, s1, "video_what_if")).toEqual({ kind: "story" });
+  it("sends a What if? film to its story, where the beat to redraw is chosen, and runs its extra cards again as they were", () => {
+    const filmShot = { ...s1, keyframes };
+    const whatIf = { ...p, template: "what_if" as const, shots: p.shots.map((s) => (s.id === "s1" ? filmShot : s)) };
+    expect(retryFor(whatIf, filmShot, "still")).toEqual({ kind: "story" });
+    expect(retryFor(whatIf, filmShot, "video_what_if")).toEqual({ kind: "story" });
+    const card = p.shots.find((s) => s.id === "s2")!;
+    expect(retryFor(whatIf, card, "still")).toEqual({ kind: "still" });
+    // A quick shot's own shot is its first: s2 is a card there, made on the tools' paths.
+    expect(retryFor({ ...p, template: "camera_move" }, card, "still")).toEqual({ kind: "still" });
+    expect(retryFor({ ...p, template: "vfx_effect" }, card, "video_draft")).toEqual({ kind: "draft" });
   });
 });
 
 describe("making new cards", () => {
-  it("is refused for a What if? film and a quick shot, in plain words", () => {
-    expect(makeBlocked({ template: "what_if" })).toBe("A What if? film is one continuous shot. Start a new project to make more cards.");
-    expect(makeBlocked({ template: "camera_move" })).toBe("This project turns one photo into one shot. Start a new project to use the tools.");
-    expect(makeBlocked({ template: "vfx_effect" })).toBe("This project turns one photo into one shot. Start a new project to use the tools.");
-    expect(makeBlocked({ template: "blank" })).toBeUndefined();
-    expect(makeBlocked({ template: "cinematic_shot" })).toBeUndefined();
+  it("works in every project; a quick shot makes its own shot from its photo first", () => {
+    const { shots } = film();
+    for (const template of ["what_if", "camera_move", "vfx_effect", "blank", "cinematic_shot"] as const) expect(makeBlocked({ template, shots })).toBeUndefined();
+    // A What if? film's cards can come before its story.
+    expect(makeBlocked({ template: "what_if", shots: [] })).toBeUndefined();
+    expect(makeBlocked({ template: "camera_move", shots: [] })).toBe("Make the shot from this project's photo first.");
+    expect(makeBlocked({ template: "vfx_effect", shots: [] })).toBe("Make the shot from this project's photo first.");
+  });
+});
+
+describe("the timeline of a What if? film or a quick shot", () => {
+  it("is the project's own shot and its sound: extra cards and images stay in Media", () => {
+    const quick: Project = { ...film(), template: "camera_move", shots: [shot("own", 0, { stillAssetId: "still_1" }), shot("card", 1, { stillAssetId: "still_2", onTimeline: false })] };
+    expect(["own", "card", "upload", "song"].map((id) => canAddToTimeline(quick, id))).toEqual([true, false, false, true]);
+    const edit = placeOnTimeline(quick, ["card", "upload", "song"]);
+    expect(edit.shots.map((s) => [s.id, s.onTimeline])).toEqual([["own", true], ["card", false]]);
+    expect(edit.soundtrack).toEqual({ music: "song" });
+    const whatIf: Project = { ...quick, template: "what_if", shots: [shot("card", 0, { onTimeline: false }), shot("film", 1, { keyframes })] };
+    expect(["film", "card", "upload"].map((id) => canAddToTimeline(whatIf, id))).toEqual([true, false, false]);
+    // Elsewhere every card can go on the timeline.
+    expect(canAddToTimeline(film(), "upload")).toBe(true);
   });
 });
 
@@ -311,5 +350,48 @@ describe("resting thumbnails", () => {
     expect(imageOfCard(p, "song")).toBeUndefined();
     expect(imageOfCard(p, "s3")).toBeUndefined();
     expect(imageOfCard(p, "nothing")).toBeUndefined();
+  });
+});
+
+describe("what a card is called", () => {
+  // The dogfood night's music video: every prompt began with the same look, so every card read the same.
+  const look = "Claymation stop-motion scene, handmade plasticine with fingerprints, tiny green clay frog in a yellow clay raincoat,";
+  const frog = (): Project => ({
+    ...film(),
+    shots: [
+      shot("a", 0, { prompt: `${look} sailing a paper boat down a flooded street` }),
+      shot("b", 1, { prompt: `${look} paddling a river of stars` }),
+      shot("c", 2, { prompt: `${look} asleep on a pink dawn cloud`, onTimeline: false }),
+    ],
+    takes: [],
+  });
+
+  it("leaves out the start the prompts share, and says its place on a timeline of several shots", () => {
+    const p = frog();
+    expect(p.shots.map((s) => shotLabel(p, s))).toEqual(["Shot 1: Sailing a paper boat down a flooded street", "Shot 2: Paddling a river of stars", "Asleep on a pink dawn cloud"]);
+    expect(shotWords(p, p.shots[1]!)).toBe("Paddling a river of stars");
+  });
+
+  it("keeps a prompt whole when it shares only how prompts begin, or nothing", () => {
+    const p = { ...film(), shots: [shot("a", 0, { prompt: "A woman in a red coat crosses the street" }), shot("b", 1, { prompt: "A woman in a blue hat waves" })], takes: [] };
+    expect(shotWords(p, p.shots[0]!)).toBe("A woman in a red coat crosses the street");
+    // A cut of one shot needs no place.
+    const one = { ...p, shots: [p.shots[0]!] };
+    expect(shotLabel(one, one.shots[0]!)).toBe("A woman in a red coat crosses the street");
+  });
+
+  it("names an effect or a camera move by its tool, and a shot without words by its place", () => {
+    const p: Project = {
+      ...film(),
+      shots: [shot("e", 0, { prompt: "the slice of buttered toast", stillAssetId: "still_1", chosenDraftId: "t1", onTimeline: false }), shot("n", 1, { prompt: "" }), shot("m", 2, { prompt: "" })],
+      takes: [take("t1", "e", "draft", "v_t1", { tool: { kind: "effect", effect: "levitate" } })],
+    };
+    expect(shotLabel(p, p.shots[0]!)).toBe("Effect, Levitate");
+    expect(shotLabel(p, p.shots[1]!)).toBe("Shot 1");
+  });
+
+  it("reads out a camera move the list lacks, never its raw id", () => {
+    expect(cameraMoveLabel("dolly_in")).toBe("Push in");
+    expect(cameraMoveLabel("tilt_down")).toBe("Tilt down");
   });
 });

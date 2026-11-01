@@ -76,6 +76,18 @@ describe("groupCaptions", () => {
     expect(second!.end).toBeCloseTo(1.35, 3);
   });
 
+  it("never shows a caption too briefly to read, even when the voice says its words in a blur", () => {
+    // The Lumi ad's voiceover: whisper heard "Lumi wakes" in 0.15 s, and the old grouping gave it a caption of its own.
+    const words = heard([
+      ["Lumi", 2.55, 2.63], ["wakes", 2.63, 2.7], ["you", 2.7, 2.89], ["with", 2.89, 3.13], ["a", 3.18, 3.22], ["slow", 3.22, 3.45],
+      ["sunrise,", 3.45, 4], ["right", 4.01, 4.32], ["on", 4.32, 4.44], ["your", 4.44, 4.69], ["nightstand.", 4.69, 5.55],
+    ]);
+    const captions = groupCaptions(words, { maxChars: 26 });
+    expect(captions.length).toBeGreaterThan(1);
+    captions.slice(0, -1).forEach((c, i) => expect(captions[i + 1]!.start - c.start).toBeGreaterThanOrEqual(0.7));
+    expect(captions.every((c) => c.text.length <= 26)).toBe(true);
+  });
+
   it("splits sentences", () => {
     const words = estimateWords("One two. Three! Four five?");
     expect(splitSentences(words).map((s) => s.length)).toEqual([2, 1, 2]);

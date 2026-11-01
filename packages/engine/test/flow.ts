@@ -34,7 +34,11 @@ export class Api {
     return this.call("POST", path, JobSchema, body);
   }
 
-  async wait(id: string, ms = 300_000): Promise<Job> {
+  /**
+   * A job's end. Ten minutes by default: under a full parallel test run (every template's flow at once, beside the other
+   * suites) a mock song and its beat analysis took over five minutes on a laptop. Each test's own timeout still bounds it.
+   */
+  async wait(id: string, ms = 600_000): Promise<Job> {
     const end = Date.now() + ms;
     for (;;) {
       const job = (await this.call("GET", "/api/jobs", z.array(JobSchema))).find((j) => j.id === id);
@@ -90,6 +94,7 @@ export const BRIEFS: Record<TemplateId, { name: string; brief: Record<string, un
     name: "Slow ideas",
     brief: { script: "We make time for small things. Each week, one slow idea. Today, how a candle keeps time. Let's start.", visuals: "broll", voice: "june", speakerName: "Ada Park", speakerTitle: "Host" },
   },
+  micro_drama: { name: "Elevator", brief: { premise: "Two rival interns get stuck in the office elevator the night one of them is fired", look: "anime", mood: "revenge" } },
   // Quick shots: one shot each, no storyboard writing.
   camera_move: { name: "Harbor move", brief: { prompt: "a quiet harbor at dawn", move: "dolly_in" } },
   vfx_effect: { name: "Statue effect", brief: { prompt: "a marble statue in a museum", effect: "disintegrate" } },

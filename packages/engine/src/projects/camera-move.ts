@@ -1,10 +1,11 @@
 /** One photo, one explicit camera path. Kept separate from the film storyboard pipeline. */
-import { quickMoves, type Asset, type Project, type Shot } from "@nightshift/contract";
+import { ownShot, quickMoves, type Asset, type Project, type Shot } from "@nightshift/contract";
 import { newId } from "../util.js";
 import { badRequest, conflict } from "../errors.js";
 import type { ExecContext } from "../queue/queue.js";
 import type { JobPayload } from "../queue/store.js";
 import type { StepOutput } from "../runner/types.js";
+import { setOwnShot } from "./own-shot.js";
 import type { ProjectStore } from "./store.js";
 
 export function cameraSource(project: Project, photoId: unknown = project.brief.photoAssetId): Asset {
@@ -43,15 +44,14 @@ export async function cameraLayout(o: {
   return o.store.assetPath(o.project, asset);
 }
 
-/** Prepare the photo shot immediately, even while another project is using the GPU. */
+/** Prepare the photo shot immediately, even while another project is using the GPU. Extra cards stay as they are. */
 export async function prepareCameraProject(project: Project, store: ProjectStore): Promise<Project> {
   const photo = cameraSource(project);
   const move = cameraMove(project.brief.move);
   return store.mutate(project.id, (p) => {
-    const existing = p.shots[0];
-    p.shots = [{ ...(existing ?? { id: newId("shot"), locked: false }), index: 0,
+    const existing = ownShot(p);
+    setOwnShot(p, { ...(existing ?? { id: newId("shot"), locked: false }), index: 0,
       prompt: typeof p.brief.prompt === "string" && p.brief.prompt.trim() ? p.brief.prompt.trim() : "The scene in the photo.",
-      cameraMove: move, durationSec: 4, stillAssetId: photo.id }];
-    p.takes = p.takes.filter((t) => t.shotId === p.shots[0]!.id);
+      cameraMove: move, durationSec: 4, stillAssetId: photo.id });
   });
 }

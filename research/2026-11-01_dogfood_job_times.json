@@ -1,0 +1,304 @@
+{
+  "what": "How long each kind of job took end to end in the app on the DGX Spark, the night of Nov 1 2026: 36 stills, 2 image edits, 3 effects, 1 camera move and 25 same-take finals, made by hand across four projects while dogfooding.",
+  "run": {
+    "date": "2026-11-01",
+    "machine": "DGX Spark (GB10), Nightshift in remote mode on a Mac, our ComfyUI 0.41.3 on port 8190 with the 56 GB preemptible budget, recipe unified-128-cuda",
+    "log": "outputs/dogfood-nov1/LOG.md (gitignored); times read from the engine's job store"
+  },
+  "method": "Each job's startedAt to finishedAt: the time a user waits once the job is on the GPU, model loads and uploads included, time in the queue left out. The mean over the night's finished jobs. A step's estimate is the whole job it names, as the queue and the cards read it: an effect's end frame (when the effect has one) and a camera move's layout run inside their jobs. An image edit is a still job drawn from an image, timed here as effect_end_frame, the step it runs.",
+  "seconds": {
+    "still": 11.4,
+    "effect_end_frame": 9.1,
+    "video_effect": 55.6,
+    "video_camera_move": 79.6,
+    "video_final_same_take": 288
+  },
+  "samples": {
+    "still": [
+      {
+        "jobId": "job_mvxkhyr2e94a961f21",
+        "seconds": 10.6
+      },
+      {
+        "jobId": "job_mvxkhyr22f482d25d9",
+        "seconds": 6.4
+      },
+      {
+        "jobId": "job_mvxkhyr2bfb3de6360",
+        "seconds": 6.7
+      },
+      {
+        "jobId": "job_mvxkhyr25344b74ef2",
+        "seconds": 7.1
+      },
+      {
+        "jobId": "job_mvxkhyr2ff9d99f390",
+        "seconds": 6.8
+      },
+      {
+        "jobId": "job_mvxkk903b25868cd1f",
+        "seconds": 9.4
+      },
+      {
+        "jobId": "job_mvxktpzw30d762c2d3",
+        "seconds": 12.7
+      },
+      {
+        "jobId": "job_mvxktpzw023cbaba6c",
+        "seconds": 12.8
+      },
+      {
+        "jobId": "job_mvxktpzxe6c40f29b5",
+        "seconds": 13.0
+      },
+      {
+        "jobId": "job_mvxktpzx5bcdf38bda",
+        "seconds": 12.9
+      },
+      {
+        "jobId": "job_mvxktpzxf0d6830f93",
+        "seconds": 12.9
+      },
+      {
+        "jobId": "job_mvxktw2d587c4417f2",
+        "seconds": 13.1
+      },
+      {
+        "jobId": "job_mvxktw2d0b4e4f73ab",
+        "seconds": 13.1
+      },
+      {
+        "jobId": "job_mvxktw2d5d786254d6",
+        "seconds": 12.9
+      },
+      {
+        "jobId": "job_mvxktw2d0cc511b138",
+        "seconds": 12.7
+      },
+      {
+        "jobId": "job_mvxktw2d84c4233ec2",
+        "seconds": 13.0
+      },
+      {
+        "jobId": "job_mvxktw2d656ee1023f",
+        "seconds": 12.7
+      },
+      {
+        "jobId": "job_mvxkyrtx9d923f0378",
+        "seconds": 13.2
+      },
+      {
+        "jobId": "job_mvxkz848de28bdc30d",
+        "seconds": 13.1
+      },
+      {
+        "jobId": "job_mvxl0s7k3bfd108d8f",
+        "seconds": 12.8
+      },
+      {
+        "jobId": "job_mvxl167e24cf7c4eb6",
+        "seconds": 13.0
+      },
+      {
+        "jobId": "job_mvxl1fhgd8147072bb",
+        "seconds": 12.9
+      },
+      {
+        "jobId": "job_mvxl8suq586c4c9f59",
+        "seconds": 13.6
+      },
+      {
+        "jobId": "job_mvxl8sv0e596fe7876",
+        "seconds": 13.6
+      },
+      {
+        "jobId": "job_mvxldatdf102e3f8e5",
+        "seconds": 12.8
+      },
+      {
+        "jobId": "job_mvxldkwld9c498d82e",
+        "seconds": 13.0
+      },
+      {
+        "jobId": "job_mvxlk2zwbf6d695905",
+        "seconds": 7.1
+      },
+      {
+        "jobId": "job_mvxlk7n4db32d902cd",
+        "seconds": 6.7
+      },
+      {
+        "jobId": "job_mvxlkar0b8643948ec",
+        "seconds": 9.9
+      },
+      {
+        "jobId": "job_mvxlkduia7c10d762a",
+        "seconds": 6.6
+      },
+      {
+        "jobId": "job_mvxlkgyq3f3921b174",
+        "seconds": 7.0
+      },
+      {
+        "jobId": "job_mvxlnb1uffe205ff01",
+        "seconds": 13.1
+      },
+      {
+        "jobId": "job_mvxlnexiae27da318e",
+        "seconds": 13.5
+      },
+      {
+        "jobId": "job_mvxlni16b22733ed55",
+        "seconds": 13.1
+      },
+      {
+        "jobId": "job_mvxlnlwkcd0126adf3",
+        "seconds": 13.4
+      },
+      {
+        "jobId": "job_mvxlnozy472e692c41",
+        "seconds": 13.3
+      }
+    ],
+    "effect_end_frame": [
+      {
+        "jobId": "job_mvxkm2ft44940854ea",
+        "seconds": 9.3
+      },
+      {
+        "jobId": "job_mvxkn56xcb1000cc50",
+        "seconds": 8.9
+      }
+    ],
+    "video_effect": [
+      {
+        "jobId": "job_mvxlqdng63137f632e",
+        "seconds": 54.4,
+        "effect": "levitate",
+        "endFrame": false
+      },
+      {
+        "jobId": "job_mvxlqpd9de708f1484",
+        "seconds": 57.8,
+        "effect": "gold",
+        "endFrame": true
+      },
+      {
+        "jobId": "job_mvxlqx4kf62fe44023",
+        "seconds": 54.7,
+        "effect": "earth_zoom",
+        "endFrame": false
+      }
+    ],
+    "video_camera_move": [
+      {
+        "jobId": "job_mvxlrke5d5ccb0f134",
+        "seconds": 79.6,
+        "move": "dolly_zoom"
+      }
+    ],
+    "video_final_same_take": [
+      {
+        "jobId": "job_mvxl3wem4a6c8aa238",
+        "seconds": 290.2
+      },
+      {
+        "jobId": "job_mvxl4m8o340a38f3b0",
+        "seconds": 283.3
+      },
+      {
+        "jobId": "job_mvxl5gr8fc3967c8c1",
+        "seconds": 287.7
+      },
+      {
+        "jobId": "job_mvxl64vu1d6805eedd",
+        "seconds": 284.6
+      },
+      {
+        "jobId": "job_mvxl6itz4af65ff3ca",
+        "seconds": 293.3
+      },
+      {
+        "jobId": "job_mvxm3hti2ea3500c6d",
+        "seconds": 286.4
+      },
+      {
+        "jobId": "job_mvxm3y39ae036f79b4",
+        "seconds": 289.3
+      },
+      {
+        "jobId": "job_mvxm4eud7c0aa358d6",
+        "seconds": 289.4
+      },
+      {
+        "jobId": "job_mvxm4v3z90263fea97",
+        "seconds": 293.4
+      },
+      {
+        "jobId": "job_mvxm5n7qe27de88e0c",
+        "seconds": 282.1
+      },
+      {
+        "jobId": "job_mvxm5p2oa29badf591",
+        "seconds": 287.7
+      },
+      {
+        "jobId": "job_mvxm5tvt1b58c0d4c0",
+        "seconds": 290.1
+      },
+      {
+        "jobId": "job_mvxm5z85fe5db43571",
+        "seconds": 284.4
+      },
+      {
+        "jobId": "job_mvxm8btqef22e0c90c",
+        "seconds": 288.1
+      },
+      {
+        "jobId": "job_mvxm8e85bfe508d966",
+        "seconds": 285.5
+      },
+      {
+        "jobId": "job_mvxm8gmld71e905153",
+        "seconds": 288.4
+      },
+      {
+        "jobId": "job_mvxm8lfb89a4a23138",
+        "seconds": 290.0
+      },
+      {
+        "jobId": "job_mvxm8ntt4df2127927",
+        "seconds": 293.3
+      },
+      {
+        "jobId": "job_mvxm8q8552476f8b7f",
+        "seconds": 280.3
+      },
+      {
+        "jobId": "job_mvxmaqey32d8d0fdf1",
+        "seconds": 289.2
+      },
+      {
+        "jobId": "job_mvxmcxjl91db51baa7",
+        "seconds": 292.6
+      },
+      {
+        "jobId": "job_mvxmd03qd9459acfdd",
+        "seconds": 287.9
+      },
+      {
+        "jobId": "job_mvxmd2nq079c54d36c",
+        "seconds": 292.2
+      },
+      {
+        "jobId": "job_mvxmd57t0cb8aafd32",
+        "seconds": 283.6
+      },
+      {
+        "jobId": "job_mvxmd7rk32de1b817b",
+        "seconds": 286.9
+      }
+    ]
+  },
+  "limitations": "One camera move (a dolly zoom). Memory was not sampled, so each step keeps the peak of its earlier record. Stills with and without references are pooled: they took the same 6 to 14 s."
+}

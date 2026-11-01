@@ -29,7 +29,7 @@ import { hardwarePresets, mockTier, rankTiers } from "./data";
 import { nightTurn, tonightGroups } from "@/features/queue/tonight";
 import { firstShot as firstShotSample, isSamplePath, playsRecordedCut, recordedCut, sampleAd, sampleAdExport, sampleForDraft, sampleForPrompt, sampleForStill, sampleUrl } from "./samples";
 import { soundPick } from "./soundtrack";
-import { cameraMoves, fallbackShots, finalFor, isBoardAsset, MAIN_BOARD_ID, mainBoardName, placeItem, quickEffects, quickMoves, scriptLines } from "@nightshift/contract";
+import { boardOf, cameraMoves, fallbackShots, finalFor, isBoardAsset, isExtraCard, isOneShot, MAIN_BOARD_ID, mainBoardName, ownShot, placeItem, quickEffects, quickMoves, scriptLines, shotTemplate } from "@nightshift/contract";
 import { genres, looks } from "@nightshift/contract";
 import type { AudioBody, CreateProjectBody, FinalBody, ProjectPatch } from "../client";
 
@@ -174,7 +174,7 @@ const quickSeconds: Record<StepId | "export", number> = {
 const WAITING_FOR_GPU = "Waiting for the GPU";
 
 /** Presets that start with a shot list drafted from the brief. */
-const FILMS = new Set<Project["template"]>(["cinematic_shot", "music_video", "product_ad", "talking_intro"]);
+const FILMS = new Set<Project["template"]>(["cinematic_shot", "music_video", "product_ad", "talking_intro", "micro_drama"]);
 
 /** Steps that need the GPU. Exports and analysis jobs run on the CPU beside it. */
 const needsGpu = (job: Pick<Job, "step" | "analysis">) => job.step !== "export" && !job.analysis;
@@ -219,8 +219,6 @@ type MockJob = Job & {
   parent?: string;
   keyframeIndex?: number;
   audioBody?: AudioBody;
-  /** A draft made with a tool (an effect, a camera move) on the shot's still. */
-  tool?: DraftTool;
   /** A still that replaces the shot's prompt for this render only. With `editFrom`, the edit's instruction. */
   stillPrompt?: string;
   /** A still drawn as an edit of this image (StillRequest.editFrom, the edit tool): the recipe's effect_end_frame step. */
@@ -559,7 +557,8 @@ export class MockEngine {
 
   /**
    * A project of the user's own: setup is behind them. A film starts with the shot list its preset drafts from the
-   * brief, on one board; a blank project or a What if? film starts empty. Nothing is queued.
+   * brief, on one board, marked as the template's until the writer writes one; a blank project or a What if? film starts
+   * empty. Nothing is queued.
    */
   createProject(body: CreateProjectBody): Project {
     const p = this.makeProject(body, this.presetShots(body));
@@ -571,7 +570,7 @@ export class MockEngine {
   private presetShots(body: CreateProjectBody): Shot[] {
     if (!FILMS.has(body.template)) return [];
     const longest = this.currentTier()?.longestShotSec;
-    return fallbackShots(body.template, body.brief).map((plan, index): Shot => {
+    return fallbackShots(body.template, body.brief, { longestShotSec: longest }).map((plan, index): Shot => {
       const shot: Shot = { id: id("sht"), index, prompt: plan.prompt, cameraMove: plan.cameraMove, durationSec: longest ? Math.min(plan.durationSec, longest) : plan.durationSec, locked: false };
       if (plan.line) shot.line = plan.line;
       return shot;
@@ -591,6 +590,7 @@ export class MockEngine {
       assets: [],
       timeline: null,
       boards: [{ id: MAIN_BOARD_ID, name: mainBoardName(body.template), items: shots.map((s) => s.id) }],
+      ...(FILMS.has(body.template) ? { shotList: { by: "template" as const } } : {}),
       createdAt: t,
       updatedAt: t,
     };
@@ -614,7 +614,7 @@ export class MockEngine {
       if (asset) next.references = [...(next.references ?? []), { id: id("ref"), assetId: asset.id, kind: p.template === "product_ad" ? "product" : "style", label: String(patch.brief.productName || "Reference photo") }];
     }
     if (patch.shots) for (const shot of patch.shots) if (shot.referenceIds && (shot.referenceIds.length > 3 || new Set(shot.referenceIds).size !== shot.referenceIds.length || shot.referenceIds.some(id => !(next.references ?? []).some(r => r.id === id)))) throw new MockHttpError(400, "Choose up to three project references per shot.");
-    if (patch.shots) next.shots = patch.shots.map((s, i) => ({ ...mergedShot(p, s), index: i }));
+    if (patch.shots) next.shots = keptOwnShot(p, patch.shots.map((s, i) => ({ ...mergedShot(p, s), index: i })));
     if (patch.timeline && patch.timeline.edited !== false) {
       const fields = ["clips", "audio", "captions", "overlays", "markers"] as const;
       next.timeline = { ...patch.timeline, edited: p.timeline?.edited || fields.some((key) => JSON.stringify(patch.timeline?.[key] ?? []) !== JSON.stringify(p.timeline?.[key] ?? [])) };
@@ -732,11 +732,13 @@ export class MockEngine {
    * One use of a project tool: a new card. The new shot waits on a board (`onTimeline: false`, at the end of `boardId`,
    * else the first board), in its own shape when the request names one (`aspect`), and its first job is queued: a
    * still, a draft from an image, a still that is drafted when it lands, an effect or a camera move on an image, or an
-   * edit of an image (the new card's still; the image stays where it was).
+   * edit of an image (the new card's still; the image stays where it was). In a What if? film or a quick shot it is an
+   * extra card: it stays off the timeline and takes the tools' own paths.
    */
   make(pid: string, body: MakeRequest): Job {
     const p = this.getProject(pid);
-    refuseTools(p);
+    // As the engine: a quick shot's own shot is its first, made from the photo before any card.
+    if ((p.template === "camera_move" || p.template === "vfx_effect") && !ownShot(p)) throw new MockHttpError(409, "Make the shot from this project's photo first.");
     const prompt = body.prompt?.trim() ?? "";
     const image = body.imageAssetId ? p.assets.find((a) => a.id === body.imageAssetId && a.kind === "image") : undefined;
     if (body.imageAssetId && !image) throw new MockHttpError(404, `No image ${body.imageAssetId} in this project.`);
@@ -814,9 +816,10 @@ export class MockEngine {
    */
   still(pid: string, shotId: string, body?: StillRequest): Job {
     const p = this.getProject(pid);
-    if (!p.shots.some((s) => s.id === shotId)) throw new MockHttpError(404, "Shot not found");
+    const shot = p.shots.find((s) => s.id === shotId);
+    if (!shot) throw new MockHttpError(404, "Shot not found");
     if (body?.editFrom !== undefined) {
-      refuseTools(p);
+      refuseEdit(shotTemplate(p, shot));
       const { image, instruction } = this.editSource(p, body.editFrom, body.prompt);
       return this.enqueue({ projectId: pid, shotId, step: "still", seed: body.seed ?? Math.floor(Math.random() * 1e9), stillPrompt: instruction, editFrom: image.id });
     }
@@ -833,14 +836,17 @@ export class MockEngine {
     if (tool?.kind === "effect" && !quickEffects.some((e) => e.id === tool.effect)) throw new MockHttpError(400, "Choose an effect from the gallery.");
     if (tool?.kind === "camera_move" && !quickMoves.some((m) => m.id === tool.move)) throw new MockHttpError(400, "Choose a camera move from the gallery.");
     if (!shot.stillAssetId) throw new MockHttpError(409, "Make a still for this shot first: the draft starts from it.");
-    const step: StepId = tool ? (tool.kind === "effect" ? "video_effect" : "video_camera_move") : p.template === "what_if" ? "video_what_if" : p.template === "vfx_effect" ? "video_effect" : p.template === "camera_move" ? "video_camera_move" : "video_draft";
+    // A What if? film's or a quick shot's own shot takes its template's path; an extra card a plain draft.
+    const template = shotTemplate(p, shot);
+    const step: StepId = tool ? (tool.kind === "effect" ? "video_effect" : "video_camera_move") : template === "what_if" ? "video_what_if" : template === "vfx_effect" ? "video_effect" : template === "camera_move" ? "video_camera_move" : "video_draft";
     if (tool) this.requireStep(step);
     return this.enqueue({ projectId: pid, shotId, step, seed: body?.seed ?? Math.floor(Math.random() * 1e9), ...(tool ? { tool } : {}) });
   }
 
   final(pid: string, shotId: string, body: FinalBody): Job {
     const p = this.getProject(pid);
-    if (p.template === "what_if" && body.kind === "remaster") throw new MockHttpError(409, "What-if films finish from their saved take.");
+    const shot = p.shots.find((s) => s.id === shotId);
+    if (shot && shotTemplate(p, shot) === "what_if" && body.kind === "remaster") throw new MockHttpError(409, "What-if films finish from their saved take.");
     const take = p.takes.find((t) => t.id === body.draftId);
     if (!take) throw new MockHttpError(404, "Take not found");
     const step: StepId = body.kind === "remaster" ? "video_final_remaster" : "video_final_same_take";
@@ -873,7 +879,7 @@ export class MockEngine {
     const project = this.getProject(pid);
     if (body.kind === "reveal") {
       // One shot's share clip: the job carries the shot and the asset is filed with role "reveal".
-      const shot = body.shotId ? project.shots.find((s) => s.id === body.shotId) : project.shots.length === 1 ? project.shots[0] : undefined;
+      const shot = body.shotId ? project.shots.find((s) => s.id === body.shotId) : (ownShot(project) ?? (project.shots.length === 1 ? project.shots[0] : undefined));
       if (!shot) throw new MockHttpError(400, "Say which shot to reveal (shotId): this project has several.");
       const final = project.takes.find((t) => t.id === shot.chosenFinalId);
       if (!final) throw new MockHttpError(409, "This shot has no final yet. Finish it first, then share the reveal.");
@@ -892,6 +898,18 @@ export class MockEngine {
       return next;
     }
     return job;
+  }
+
+  /** Moves a queued final between now and tonight, as the engine does: to tonight it joins its model's group. */
+  setJobMode(jid: string, mode: Job["mode"]): Job {
+    const job = this.state.jobs.find((j) => j.id === jid);
+    if (!job) throw new MockHttpError(404, "Job not found");
+    if (job.status !== "queued" || (job.step !== "video_final_same_take" && job.step !== "video_final_remaster")) throw new MockHttpError(409, "Only a final that has not started can move between now and tonight.");
+    if (job.mode === mode) return job;
+    const { nightGroup: _, ...rest } = job;
+    const next: Job = mode === "overnight" ? { ...rest, mode, nightGroup: this.nightGroupFor(rest) } : { ...rest, mode };
+    this.setJob(next);
+    return next;
   }
 
   private setJob(next: Job) {
@@ -1092,7 +1110,7 @@ export class MockEngine {
       case "text": {
         // As the engine does: no shot is longer than one draft of this setup makes.
         const longest = this.currentTier()?.longestShotSec;
-        let gen = fallbackShots(p.template, p.brief).map(s => ({ ...s, durationSec: longest ? Math.min(s.durationSec, longest) : s.durationSec, prompt: [s.prompt, ...(p.references ?? []).slice(0, 3).map(r => `Featuring ${r.label}.`)].join(" ") }));
+        let gen = fallbackShots(p.template, p.brief, { longestShotSec: longest }).map(s => ({ ...s, durationSec: longest ? Math.min(s.durationSec, longest) : s.durationSec, prompt: [s.prompt, ...(p.references ?? []).slice(0, 3).map(r => `Featuring ${r.label}.`)].join(" ") }));
         // The First shot sample writes the shot the real one wrote, so its still and draft are the real renders.
         if (p.id === this.state.onboarding.sampleProjectId && gen[0] && p.shots.length === 0) gen = [{ ...gen[0], prompt: firstShotSample.prompt, cameraMove: firstShotSample.cameraMove, durationSec: firstShotSample.durationSec }];
         let planIndex = 0;
@@ -1100,30 +1118,46 @@ export class MockEngine {
         const merged: Shot[] = [];
         // The shot list is the timeline's: shots waiting on a board stay as they are, after it. As the engine does, it
         // writes over only the shots it wrote: locked shots keep their place, and so do shots it did not write (a take
-        // made with a tool, no prompt). A shot left over past the new list stays when it has a still or takes.
+        // made with a tool, no prompt). A film's shot it replaces, or has no room for, that has a still or takes stays
+        // too, off the timeline, after the new list (a quick shot's own shot is replaced: its still is its photo).
         const takesOf = (shot: Shot) => p.takes.filter((t) => t.shotId === shot.id);
         const keeps = (shot: Shot) => shot.locked || !shot.prompt.trim() || takesOf(shot).some((t) => t.tool);
+        const made = (shot: Shot) => FILMS.has(p.template) && (!!shot.stillAssetId || takesOf(shot).length > 0);
         const replaced = new Map<string, string>();
+        const aside: Shot[] = [];
         for (const shot of timelineShots(p)) {
           if (keeps(shot)) merged.push(shot);
           else if (planIndex < gen.length) {
-            const made = fresh(gen[planIndex++]!);
-            replaced.set(shot.id, made.id);
-            merged.push(made);
-          } else if (shot.stillAssetId || takesOf(shot).length) merged.push(shot);
+            const plan = fresh(gen[planIndex++]!);
+            replaced.set(shot.id, plan.id);
+            merged.push(plan);
+            if (made(shot)) aside.push({ ...shot, onTimeline: false });
+          } else if (made(shot)) aside.push({ ...shot, onTimeline: false });
+          else if (shot.stillAssetId || takesOf(shot).length) merged.push(shot);
         }
         while (planIndex < gen.length) merged.push(fresh(gen[planIndex++]!));
         const quickPhoto = (p.template === "camera_move" || p.template === "vfx_effect") && typeof p.brief.photoAssetId === "string" ? { stillAssetId: p.brief.photoAssetId } : {};
-        next.shots = [...merged.map((s) => ({ ...s, ...quickPhoto })), ...boardShots(p)].map((s, index) => ({ ...s, index }));
+        next.shots = [...merged.map((s) => ({ ...s, ...quickPhoto })), ...boardShots(p), ...aside].map((s, index) => ({ ...s, index }));
         next.takes = p.takes.filter((t) => next.shots.some((s) => s.id === t.shotId));
-        // A rewritten shot takes its place on its board.
-        if (p.boards) next.boards = p.boards.map((b) => ({ ...b, items: b.items.map((item) => replaced.get(item) ?? item) }));
+        if (FILMS.has(p.template)) next.shotList = { by: "writer" };
+        // A rewritten shot takes its place on its board; a shot set aside moves to the end of its board. A What if?
+        // film's or a quick shot's first own shot opens the first board.
+        const asideIds = new Set(aside.map((s) => s.id));
+        if (p.boards) {
+          next.boards = p.boards.map((b) => {
+            const items = b.items.flatMap((item) => (replaced.has(item) ? (asideIds.has(item) ? [replaced.get(item)!, item] : [replaced.get(item)!]) : [item]));
+            return { ...b, items: [...items.filter((id) => !asideIds.has(id)), ...items.filter((id) => asideIds.has(id))] };
+          });
+        }
+        const own = ownShot(next);
+        if (next.boards?.length && own && !boardOf(next.boards, own.id)) next.boards = next.boards.map((b, i) => (i ? b : { ...b, items: [own.id, ...b.items] }));
         break;
       }
       case "still": {
         const shot = p.shots.find((s) => s.id === job.shotId);
         if (!shot) break;
-        if (p.template === "what_if" && shot.keyframes) {
+        const template = shotTemplate(p, shot);
+        if (template === "what_if" && shot.keyframes) {
           const assets: Asset[] = [];
           const start = job.keyframeIndex ?? 0;
           const keyframes = shot.keyframes.map((frame, index) => {
@@ -1135,11 +1169,11 @@ export class MockEngine {
             return { ...frame, stillAssetId: image.id };
           });
           next.assets = [...p.assets, ...assets];
-          next.shots = [{ ...shot, keyframes, stillAssetId: keyframes[0]!.stillAssetId }];
+          next.shots = p.shots.map((s) => (s.id === shot.id ? { ...shot, keyframes, stillAssetId: keyframes[0]!.stillAssetId } : s));
           outputs.push(...assets.map(asset => asset.id));
           break;
         }
-        if (p.template === "vfx_effect" && shot.onTimeline !== false) {
+        if (template === "vfx_effect") {
           const photo = p.assets.find((a) => a.id === p.brief.photoAssetId && a.kind === "image");
           if (!photo) break;
           next.shots = p.shots.map((s) => s.id === shot.id ? { ...s, stillAssetId: photo.id } : s);
@@ -1215,7 +1249,7 @@ export class MockEngine {
         if (shot.prompt) take.prompt = shot.prompt;
         if (shot.stillAssetId) take.imageAssetId = shot.stillAssetId;
         if (job.tool) take.tool = job.tool;
-        if (p.template === "what_if") take.guideAssetIds = shot.keyframes?.flatMap(frame => frame.stillAssetId ? [frame.stillAssetId] : []);
+        if (shotTemplate(p, shot) === "what_if") take.guideAssetIds = shot.keyframes?.flatMap(frame => frame.stillAssetId ? [frame.stillAssetId] : []);
         outputs.push(video.id);
         next.assets = [...p.assets, video, latent];
         next.takes = [...p.takes, take];
@@ -1369,20 +1403,21 @@ export class MockEngine {
     this.setJob({ ...job, status: "done", progress: 1, message: doneMessage, finishedAt: now(), outputAssetIds: outputs, peakGb: peak });
 
     // A sensible engine queues stills right after the shot list exists: for the timeline's shots, not the ones waiting on a board.
-    const quickShot = timelineShots(next)[0];
-    if (job.step === "text" && next.template === "camera_move" && quickShot?.stillAssetId) this.draft(next.id, quickShot.id);
+    // A What if? film's or a quick shot's own shot: the template's flow follows it alone, never its extra cards.
+    const own = ownShot(next);
+    if (job.step === "text" && next.template === "camera_move" && own?.stillAssetId) this.draft(next.id, own.id);
     if (job.step === "text") {
       if (p.template === "vfx_effect") {
-        for (const shot of timelineShots(next)) this.draft(p.id, shot.id);
+        if (own) this.draft(p.id, own.id);
       } else {
         for (const s of timelineShots(next).filter((s) => !s.stillAssetId)) this.enqueue({ projectId: p.id, shotId: s.id, step: "still" });
       }
       if (p.template === "what_if") {
-        this.audio(p.id, { role: "voice", text: next.shots[0]?.line ?? "", voice: "mara" });
+        this.audio(p.id, { role: "voice", text: own?.line ?? "", voice: "mara" });
         this.audio(p.id, { role: "music", prompt: "Instrumental cinematic curiosity", durationSec: 15 });
       }
     }
-    if (job.step === "still" && p.template === "what_if" && !p.takes.length && next.shots[0]?.stillAssetId) this.draft(p.id, next.shots[0].id);
+    if (job.step === "still" && p.template === "what_if" && own && job.shotId === own.id && own.stillAssetId && !p.takes.some((t) => t.shotId === own.id)) this.draft(p.id, own.id);
     // A still the video tool drew: its draft follows, from the still that landed.
     const drawn = next.shots.find((s) => s.id === job.shotId);
     if (job.step === "still" && job.autoDraft && drawn?.stillAssetId) this.enqueue({ projectId: p.id, shotId: drawn.id, step: "video_draft", seed: job.seed ?? Math.floor(Math.random() * 1e9) });
@@ -1483,10 +1518,26 @@ function withStill(p: Project, shot: Shot, asset: Asset, prompt: string): Shot {
   return { ...shot, stillAssetId: asset.id, useStill: true, stillHistory: [...history, { assetId: asset.id, ...(prompt ? { prompt } : {}), createdAt: asset.createdAt }] };
 }
 
-/** As the engine: What if? films and quick shots keep their own flow, so the tools (new cards, image edits) refuse them. */
-function refuseTools(p: Project): void {
-  if (p.template === "what_if") throw new MockHttpError(409, "A What if? film is one continuous shot. Start a new project to make more.");
-  if (p.template === "camera_move" || p.template === "vfx_effect") throw new MockHttpError(409, "This project makes one shot from its photo. Start a new project to use the tools.");
+/** As the engine: a What if? film and a quick shot's own shot keep their own flow, so their stills are not edited. */
+function refuseEdit(template: Project["template"]): void {
+  if (template === "what_if") throw new MockHttpError(409, "A What if? film is drawn from its story. Redraw a beat there instead.");
+  if (template === "camera_move" || template === "vfx_effect") throw new MockHttpError(409, "This shot starts from your photo. Change the photo to change its still.");
+}
+
+/**
+ * As the engine: a What if? film's or a quick shot's own shot stays through a PATCH, first, and no extra card goes on
+ * the timeline. Returns the shots in that order, or refuses in the engine's words.
+ */
+function keptOwnShot(p: Project, shots: Shot[]): Shot[] {
+  if (!isOneShot(p.template)) return shots;
+  const own = ownShot(p);
+  const kept = own ? shots.find((s) => s.id === own.id) : undefined;
+  if (own && !kept) throw new MockHttpError(400, "This project's own shot stays. Only cards made with the tools can be deleted.");
+  const next = kept ? [kept, ...shots.filter((s) => s !== kept)].map((s, index) => ({ ...s, index })) : shots;
+  // A shot goes on the timeline: it is on it now, and was not (new, or off it).
+  const joins = (s: Shot) => s.onTimeline !== false && !p.shots.some((b) => b.id === s.id && b.onTimeline !== false);
+  if (next.some((s) => isExtraCard({ template: p.template, shots: next }, s) && joins(s))) throw new MockHttpError(400, "Only this project's own shot goes on its timeline. Cards made with the tools stay in Media.");
+  return next;
 }
 
 /** The light an edit asks for, by the words of its instruction: a placeholder palette (see media/placeholder.ts). */
@@ -1605,6 +1656,8 @@ export function buildTimeline(p: Project): Timeline {
     let dur = asset.durationSec ?? shot.durationSec;
     if (p.template === "music_video" && audio.some((a) => a.role === "music")) dur = Math.max(beat, Math.round(dur / beat) * beat);
     if (perLine) dur = perLine;
+    // A length set in the editor wins, as far as a video runs.
+    if (shot.cutSec !== undefined && p.template !== "talking_intro") dur = asset.kind === "video" && asset.durationSec ? Math.min(shot.cutSec, asset.durationSec) : shot.cutSec;
     clips.push({ shotId: shot.id, assetId: asset.id, start: t, in: 0, out: dur });
     t += dur;
   }
@@ -1671,11 +1724,25 @@ function voiceCaptions(p: Project, voice: Asset, total: number): Caption[] {
  * The script is the brief's, else for a product ad the lines of the timeline's shots, else its pitch.
  */
 function scriptCaptions(p: Project, total: number): Caption[] {
+  if (p.template === "micro_drama") return dramaCaptions(p, total);
   if (p.template !== "product_ad" && p.template !== "talking_intro") return [];
   const script = typeof p.brief.script === "string" ? p.brief.script.trim() : "";
   if (script || p.template === "talking_intro") return captionsFor(splitLines(script), total);
   const lines = timelineShots(p).flatMap((s) => (s.line?.trim() ? [s.line.trim()] : []));
   return captionsFor(lines.length ? lines : scriptLines("product_ad", p.brief), total);
+}
+
+/** A micro drama's subtitles, as the engine's cut makes them: each shot's line over that shot, from just after its cut. */
+function dramaCaptions(p: Project, total: number): Caption[] {
+  const out: Caption[] = [];
+  let t = 0;
+  for (const shot of timelineShots(p)) {
+    const length = Math.min(shot.durationSec, Math.max(0, total - t));
+    const line = shot.line?.trim();
+    if (line && length > 0.8) out.push(...captionsFor([line], length - 0.25).map((c) => ({ ...c, start: c.start + t + 0.1, end: c.end + t, words: c.words?.map((w) => ({ ...w, start: w.start + t + 0.1, end: w.end + t })) })));
+    t += shot.durationSec;
+  }
+  return out;
 }
 
 let engine: MockEngine | null = null;

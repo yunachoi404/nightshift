@@ -17,19 +17,21 @@ interface MediaProps {
   fit?: "cover" | "contain";
   onEnded?: () => void;
   onTime?: (t: number) => void;
+  /** A picture a real video shows until its first frame decodes, so switching to it never flashes black. */
+  poster?: string;
 }
 
 /**
  * Shows an asset. Real engine assets are plain `<img>` or `<video>`. Mock assets (`mock:` URLs) render
  * procedurally so the whole UI works without any media files.
  */
-export function Media({ src, kind, playing = false, loop = true, muted = true, durationSec, time, className, alt = "", fit = "cover", onEnded, onTime }: MediaProps) {
+export function Media({ src, kind, playing = false, loop = true, muted = true, durationSec, time, className, alt = "", fit = "cover", onEnded, onTime, poster }: MediaProps) {
   const spec = parseMockUrl(src);
   if (spec) {
     return <MockCanvas spec={spec} animate={kind === "video"} playing={playing} loop={loop} durationSec={durationSec ?? 4} time={time} className={className} fit={fit} onEnded={onEnded} onTime={onTime} />;
   }
   if (kind === "image") return <img src={src} alt={alt} className={cx("media", className)} style={{ objectFit: fit }} draggable={false} />;
-  return <RealVideo src={src} playing={playing} loop={loop} muted={muted} time={time} className={className} fit={fit} onEnded={onEnded} onTime={onTime} />;
+  return <RealVideo src={src} playing={playing} loop={loop} muted={muted} time={time} className={className} fit={fit} onEnded={onEnded} onTime={onTime} poster={poster} />;
 }
 
 /** How many times a video that fails to load or decode is loaded again before the frame says so, and the waits between. */
@@ -47,7 +49,7 @@ export function describeMediaError(error: { code: number; message?: string } | n
  * hiccup, a file still settling) it loads the same source again a few times before giving up. A video that still
  * fails is not left as a black box: the frame says so and keeps the file reachable through the surrounding controls.
  */
-function RealVideo({ src, playing, loop, muted, time, className, fit, onEnded, onTime }: { src: string; playing: boolean; loop: boolean; muted: boolean; time?: number; className?: string; fit: "cover" | "contain"; onEnded?: () => void; onTime?: (t: number) => void }) {
+function RealVideo({ src, playing, loop, muted, time, className, fit, onEnded, onTime, poster }: { src: string; playing: boolean; loop: boolean; muted: boolean; time?: number; className?: string; fit: "cover" | "contain"; onEnded?: () => void; onTime?: (t: number) => void; poster?: string }) {
   const ref = useRef<HTMLVideoElement>(null);
   const [failed, setFailed] = useState<string | null>(null);
   const attempts = useRef(0);
@@ -100,6 +102,7 @@ function RealVideo({ src, playing, loop, muted, time, className, fit, onEnded, o
       <video
         ref={ref}
         src={src}
+        poster={poster}
         loop={loop}
         muted={muted}
         playsInline

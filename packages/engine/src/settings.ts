@@ -57,6 +57,19 @@ export function parseClock(hhmm: string): number {
   return (h ?? 0) * 60 + (m ?? 0);
 }
 
+/**
+ * When the window `date` falls in ends (local time), or undefined for the all-day window. Windows may cross midnight:
+ * at 23:30 in 23:00 to 07:00 it ends at 07:00 the next day.
+ */
+export function windowEnd(date: Date, startAt: string, endAt: string): Date | undefined {
+  if (parseClock(startAt) === parseClock(endAt)) return undefined;
+  const end = parseClock(endAt);
+  const out = new Date(date);
+  out.setHours(Math.floor(end / 60), end % 60, 0, 0);
+  if (out.getTime() <= date.getTime()) out.setDate(out.getDate() + 1);
+  return out;
+}
+
 /** True when `date` (local time) falls in the [startAt, endAt) window. Windows may cross midnight. */
 export function inWindow(date: Date, startAt: string, endAt: string): boolean {
   const now = date.getHours() * 60 + date.getMinutes();

@@ -24,7 +24,7 @@ let recipes=0;
 for(const file of await readdir(resolve(root,'recipes'))){
  if(!file.endsWith('.json'))continue;
  const recipe=RecipeSchema.parse(await load(resolve(root,'recipes',file)));
- for(const [step,ref] of Object.entries(recipe.steps)){
+ for(const [step,ref] of [...Object.entries(recipe.steps),...(recipe.longTakeFinal?[['longTakeFinal',recipe.longTakeFinal]]:[])]){
   if(step.startsWith('video_') && (!Number.isInteger(ref.params.maxFrames) || ref.params.maxFrames < 1))throw Error(`${file}: missing positive integer ${step} maxFrames`);
   const graph=await load(resolve(root,'workflows',ref.workflow));
   for(const id of ref.outputNodes)if(!graph[id])throw Error(`${file}: missing ${step} output ${id}`);

@@ -28,7 +28,7 @@ export function usePanelDrop({ cards, onImage, onCard }: { cards: boolean; onIma
           e.preventDefault();
           const image = Array.from(e.dataTransfer.files).find((f) => f.type.startsWith("image/"));
           if (image) onImage(image);
-          else toast({ title: "Drop an image", text: "Songs and voiceovers go on the board, or use Upload.", tone: "bad" });
+          else toast({ title: "Drop an image", text: "Songs and voiceovers go on the board, or use Upload", tone: "bad" });
           return;
         }
         const payload = cards ? readDrag(e) : undefined;

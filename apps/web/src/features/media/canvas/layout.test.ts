@@ -1,7 +1,7 @@
 import type { Board } from "@nightshift/contract";
 import { beforeEach, describe, expect, it } from "vitest";
 import { placeBoard, withNewBoard } from "./boardActions";
-import { BOARD_GAP, BOARD_W, clampWidth, clampZoom, defaultFrames, fitView, loadView, nextBoardFrame, revealRect, saveView, stepZoom, zoomAt } from "./layout";
+import { BOARD_GAP, BOARD_W, clampWidth, clampZoom, defaultFrames, fitView, loadView, makeRoom, nextBoardFrame, revealRect, saveView, stepZoom, zoomAt } from "./layout";
 
 const board = (id: string, frame?: Board["frame"]): Board => ({ id, name: id, items: [], ...(frame ? { frame } : {}) });
 
@@ -64,6 +64,46 @@ describe("zoom", () => {
     const after = { x: (at.x - next.x) / next.zoom, y: (at.y - next.y) / next.zoom };
     expect(after).toEqual(before);
     expect(zoomAt(view, 9, at).zoom).toBe(2);
+  });
+});
+
+describe("makeRoom", () => {
+  const rects = new Map([
+    ["a", { x: 0, y: 0, w: 720, h: 400 }],
+    ["b", { x: 800, y: 100, w: 720, h: 400 }],
+    // Beside b only, lower down: it moves because b does.
+    ["c", { x: 1600, y: 450, w: 720, h: 300 }],
+    // Below a, in another row.
+    ["d", { x: 900, y: 900, w: 720, h: 300 }],
+    // To the left of a.
+    ["e", { x: -900, y: 0, w: 720, h: 300 }],
+  ]);
+
+  it("moves the boards beside a widened board, and the ones beside them, by as much as it grew", () => {
+    expect(makeRoom(rects, "a", { x: 0, y: 0, w: 900 })).toEqual(
+      new Map([
+        ["b", { x: 980, y: 100, w: 720 }],
+        ["c", { x: 1780, y: 450, w: 720 }],
+      ]),
+    );
+  });
+
+  it("closes up as a board narrows", () => {
+    expect(makeRoom(rects, "a", { x: 0, y: 0, w: 500 }).get("b")).toEqual({ x: 580, y: 100, w: 720 });
+  });
+
+  it("pushes a board it already covered clear as it grows, and leaves it as it shrinks", () => {
+    const covered = new Map([
+      ["a", { x: 0, y: 0, w: 891, h: 400 }],
+      ["b", { x: 800, y: 0, w: 720, h: 400 }],
+    ]);
+    expect(makeRoom(covered, "a", { x: 0, y: 0, w: 945 })).toEqual(new Map([["b", { x: 945 + BOARD_GAP, y: 0, w: 720 }]]));
+    expect(makeRoom(covered, "a", { x: 0, y: 0, w: 600 }).size).toBe(0);
+  });
+
+  it("moves nothing for a move, or a width that did not change", () => {
+    expect(makeRoom(rects, "a", { x: 10, y: 0, w: 900 }).size).toBe(0);
+    expect(makeRoom(rects, "a", { x: 0, y: 0, w: 720 }).size).toBe(0);
   });
 });
 

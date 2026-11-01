@@ -10,7 +10,9 @@ then shot 4's card with its two versions) and the Editor. Every file is small: t
 | `take-1.mp4`, `take-2.mp4`, and their JPEG posters | Shot 4's two motion drafts, seeds 63031 and 63032, side by side in its card, the second of which was picked and finished. 1.6 s played forward then backward, 480x288, no sound. | The same project's draft assets |
 | `window.mp4`, `window.jpg` | The final on shot 1's card and in the Editor: Northern Lights, shot 1, same-take final. A 2.2 s stretch played forward then backward, 1024x614, no sound. The JPEG is its first frame, for reduced motion. | `outputs/reveal-demo/northern-lights-16x9.mp4`, 8.40 to 10.62 s, cropped to the picture |
 | `chip-whatif.jpg` | The frame beside "What if? films": coffee rising out of a floating cup. 64x64. | The gravity What if? project in `outputs/whatif-demo/app-data`, its third keyframe |
-| `chip-film.jpg`, `chip-music.jpg`, `chip-ad.jpg`, `chip-intro.jpg` | The frames beside the other four words in the welcome sentence: the boat, the bicycle, the mug and the workshop. 64x64. | `docs/media/stills.jpg` |
+| `chip-drama.jpg` | The frame beside "micro dramas": an anime woman in a night elevator, mid-line. 160x160. | A Micro drama test still made on the DGX Spark, `outputs/drama-lab` |
+| `chip-music.jpg`, `chip-ad.jpg`, `chip-intro.jpg` | The frames beside the other three words in the welcome sentence: the bicycle, the mug and the workshop. 64x64. | `docs/media/stills.jpg` |
+| `chip-film.jpg` | The boat, from when the sentence said "cinematic shots". No longer shown. | `docs/media/stills.jpg` |
 | `cover-aurora.jpg`, `cover-ferry.jpg`, `cover-forest.jpg`, `cover-gravity.jpg` | Project covers in the window's sidebar. 64x64. | `window.jpg`, `outputs/reveal-demo/last-ferry-16x9.mp4`, and the coffee-forest and gravity What if? projects in `outputs/whatif-demo/app-data` |
 
 All of it was rendered through the app on a DGX Spark. The `outputs/` folders live in the main checkout and are

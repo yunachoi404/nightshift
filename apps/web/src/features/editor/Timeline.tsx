@@ -1,12 +1,13 @@
 /**
  * The editor's timeline: Shots, Music, Voice and Captions lanes under a ruler. Cards dragged from the media sidebar
- * (or Media) drop onto the Shots lane where the pointer is; clips drag to reorder and come off with their x or Delete.
- * Songs and voiceovers are made on their own lanes, in a small popover, and their progress and failures show there.
+ * (or Media) drop onto the Shots lane where the pointer is; clips drag to reorder, their end drags to set how long they
+ * play, and they come off with their x or Delete. Songs and voiceovers are made on their own lanes, in a small popover,
+ * and their progress and failures show there.
  */
 import type { Job, Project, Timeline } from "@nightshift/contract";
 import { voices } from "@nightshift/contract";
 import { AlertCircle, Plus, X } from "lucide-react";
-import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { isCanvasDrag, readDrag, setDrag, soundOnTimeline } from "@/features/media/items";
 import { assetById, failureText, isActive, jobStatusLine } from "@/features/project/helpers";
 import { roughDuration, timecode } from "@/lib/format";
@@ -16,6 +17,7 @@ import { useInstalledTier } from "@/store/tier";
 import { Bar, Button, Notice, Select, Textarea, cx, toast, usePanelFocus } from "@/ui/primitives";
 import type { CutEdits } from "./edits";
 import { Filmstrip } from "./Filmstrip";
+import { Wave } from "./Wave";
 
 export interface Clip {
   shotId: string;
@@ -33,6 +35,11 @@ export interface Clip {
 
 type Role = "music" | "voice";
 type DropLane = "shots" | Role;
+
+/** The shortest and, for a still, the longest a clip's end drags to, seconds. A video goes as far as it runs. */
+const MIN_LENGTH = 0.5;
+const MAX_STILL = 20;
+const tenths = (seconds: number) => Math.round(seconds * 10) / 10;
 
 export function TimelineView({ project, clips, total, time, onSeek, current, timeline, jobs, edits, voiceText }: {
   project: Project;
@@ -62,8 +69,9 @@ export function TimelineView({ project, clips, total, time, onSeek, current, tim
   const ticks: number[] = [];
   const stepSec = total > 40 ? 5 : total > 15 ? 2 : 1;
   for (let t = 0; t <= total; t += stepSec) ticks.push(t);
-  // The last label aligns leftward at the edge. Leave it room beside the previous label.
-  if (ticks.length > 2 && x(ticks.at(-1)!) > innerW - 40 && (ticks.at(-1)! - ticks.at(-2)!) * pxPerSec < 64) ticks.splice(-2, 1);
+  // The last label aligns leftward at the edge. Without room beside the previous label, its tick goes unlabeled: every
+  // step keeps its time, and the transport says where the film ends.
+  const endLabel = !(ticks.length > 2 && x(ticks.at(-1)!) > innerW - 40 && (ticks.at(-1)! - ticks.at(-2)!) * pxPerSec < 64);
 
   const timeAt = (clientX: number) => {
     const el = scrollRef.current!;
@@ -117,12 +125,43 @@ export function TimelineView({ project, clips, total, time, onSeek, current, tim
       }
       const sounds = payload.items.filter((itemId) => assetById(project, itemId)?.kind === "audio");
       if (!sounds.length) {
-        toast({ title: lane === "music" ? "Drop a song here" : "Drop a voiceover here", text: "Pictures and clips go on the Shots lane." });
+        toast({ title: lane === "music" ? "Drop a song here" : "Drop a voiceover here", text: "Pictures and clips go on the Shots lane" });
         return;
       }
       void edits.place(sounds);
     },
   });
+
+  // ------------------------------------------------------------ clip lengths
+  // A clip's end drags (or steps with the arrow keys) to set how long the cut shows its shot (`Shot.cutSec`); the engine
+  // cuts the film again around it, so the song, the voice and the end card follow. The clip shows its new length until
+  // that cut arrives. A talking intro cuts on its script's lines, and an ad's last shot ends with the ad: no end to drag.
+  const [sizing, setSizing] = useState<{ index: number; length: number } | null>(null);
+  const resize = useRef<{ index: number; from: number; length: number } | null>(null);
+  const settle = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const cutKey = clips.map((c) => `${c.shotId} ${c.start} ${c.dur}`).join(",");
+  useEffect(() => setSizing(null), [cutKey]);
+  useEffect(() => () => clearTimeout(settle.current), []);
+  const sizable = (i: number) => project.template !== "talking_intro" && !(project.template === "product_ad" && i === clips.length - 1);
+  const longest = (c: Clip) => (c.kind === "image" ? MAX_STILL : Math.max(MIN_LENGTH, (assetById(project, c.assetId)?.durationSec ?? c.in + c.dur) - 0.05 - c.in));
+  const fit = (c: Clip, length: number) => Math.max(MIN_LENGTH, Math.min(longest(c), length));
+  /** Saves a clip's new length after `wait` ms, unless another change comes first. */
+  const commit = (index: number, length: number, wait = 0) => {
+    clearTimeout(settle.current);
+    const clip = clips[index];
+    if (!clip) return;
+    settle.current = setTimeout(() => {
+      const seconds = tenths(length);
+      if (Math.abs(seconds - clip.dur) < 0.05) {
+        setSizing(null);
+        return;
+      }
+      void edits.setLength(clip.shotId, seconds);
+      // Should the cut come back unchanged, the clip shows what it has again.
+      settle.current = setTimeout(() => setSizing(null), 4000);
+    }, wait);
+  };
+  const shift = (i: number) => (sizing && i > sizing.index ? sizing.length - clips[sizing.index]!.dur : 0);
 
   // ------------------------------------------------------------ sound lanes
   const music = useSound(project, "music", jobs, total, voiceText);
@@ -132,7 +171,7 @@ export function TimelineView({ project, clips, total, time, onSeek, current, tim
   const musicHead = useRef<HTMLButtonElement>(null);
   const voiceHead = useRef<HTMLButtonElement>(null);
 
-  // A paced voiceover is one entry per sentence (the same file, trimmed); each is drawn at its own start.
+  // A hand-edited cut may play a voiceover in pieces (the same file, trimmed); each is drawn at its own start.
   const entries = (role: Role) =>
     timeline.audio
       .filter((a) => a.role === role)
@@ -172,46 +211,107 @@ export function TimelineView({ project, clips, total, time, onSeek, current, tim
           }} onMouseDown={seekFromEvent}>
             {ticks.map((t) => (
               <span key={t} className={cx("tl__tick", x(t) > innerW - 40 && "tl__tick--end")} style={{ left: x(t) }}>
-                <span>{timecode(t, false)}</span>
+                {(endLabel || t !== ticks.at(-1)) && <span>{timecode(t, false)}</span>}
               </span>
             ))}
           </div>
           <div className={cx("tl__track", "tl__track--shots", drop?.lane === "shots" && "tl__track--drop")} data-lane="shots" onMouseDown={seekFromEvent} {...laneDrop("shots")}>
-            {clips.map((c, i) => (
-              // Keyed by shot, so a moved clip keeps its filmstrip.
-              <div key={clips.findIndex((o) => o.shotId === c.shotId) === i ? c.shotId : `${c.shotId}-${i}`} className={cx("tl__clip", current === c && "tl__clip--on", dragging === c.shotId && "tl__clip--dragging")} style={{ left: x(c.start), width: Math.max(8, c.dur * pxPerSec - 3) }}>
-                <button
-                  type="button"
-                  className="tl__clip-body"
-                  draggable
-                  aria-label={`Shot ${i + 1}, ${c.label}`}
-                  aria-keyshortcuts="Delete"
-                  title={`${c.label}, ${Math.round(c.dur * 100) / 100} s. Drag to move it.`}
-                  onClick={(e) => {
-                    if (e.detail === 0) onSeek(c.start + 0.01);
-                  }}
-                  onMouseDown={(e) => {
-                    e.stopPropagation();
-                    seekFromEvent(e);
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key !== "Delete" && e.key !== "Backspace") return;
-                    e.preventDefault();
-                    void edits.takeOff(c.shotId);
-                  }}
-                  onDragStart={(e) => {
-                    setDrag(e, { items: [c.shotId] });
-                    setDragging(c.shotId);
-                  }}
-                >
-                  <Filmstrip src={c.src} kind={c.kind} start={c.in} duration={c.dur} ratio={ratio} count={Math.max(1, Math.ceil((c.dur * pxPerSec) / (60 * ratio)))} />
-                  <span className={cx("tl__clip-label", c.rung === "final" && "tl__clip-label--final")}>{i + 1}</span>
-                </button>
-                <button type="button" className="tl__clip-x" aria-label={`Take shot ${i + 1} off the timeline`} title="Take off the timeline. It stays in Media." onMouseDown={(e) => e.stopPropagation()} onClick={() => void edits.takeOff(c.shotId)}>
-                  <X />
-                </button>
-              </div>
-            ))}
+            {clips.map((c, i) => {
+              const length = sizing?.index === i ? sizing.length : c.dur;
+              const set = project.shots.find((s) => s.id === c.shotId)?.cutSec !== undefined;
+              return (
+                // Keyed by shot, so a moved clip keeps its filmstrip.
+                <div key={clips.findIndex((o) => o.shotId === c.shotId) === i ? c.shotId : `${c.shotId}-${i}`} className={cx("tl__clip", current === c && "tl__clip--on", dragging === c.shotId && "tl__clip--dragging", sizing?.index === i && "tl__clip--sizing")} style={{ left: x(c.start + shift(i)), width: Math.max(8, length * pxPerSec - 3) }}>
+                  <button
+                    type="button"
+                    className="tl__clip-body"
+                    draggable
+                    aria-label={`Shot ${i + 1}, ${c.label}`}
+                    aria-keyshortcuts="Delete"
+                    title={`${c.label}, ${Math.round(c.dur * 100) / 100} s. Drag to move it.`}
+                    onClick={(e) => {
+                      if (e.detail === 0) onSeek(c.start + 0.01);
+                    }}
+                    onMouseDown={(e) => {
+                      e.stopPropagation();
+                      seekFromEvent(e);
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key !== "Delete" && e.key !== "Backspace") return;
+                      e.preventDefault();
+                      void edits.takeOff(c.shotId);
+                    }}
+                    onDragStart={(e) => {
+                      setDrag(e, { items: [c.shotId] });
+                      setDragging(c.shotId);
+                    }}
+                  >
+                    <Filmstrip src={c.src} kind={c.kind} start={c.in} duration={c.dur} ratio={ratio} count={Math.max(1, Math.ceil((c.dur * pxPerSec) / (60 * ratio)))} />
+                    <span className={cx("tl__clip-label", c.rung === "final" && "tl__clip-label--final")}>{i + 1}</span>
+                  </button>
+                  {sizing?.index === i && <span className="tl__clip-len" aria-hidden>{tenths(length).toFixed(1)} s</span>}
+                  {sizable(i) && (
+                    <span
+                      role="slider"
+                      tabIndex={0}
+                      className={cx("tl__clip-end", set && "tl__clip-end--set")}
+                      aria-label={`Length of shot ${i + 1}`}
+                      aria-valuemin={MIN_LENGTH}
+                      aria-valuemax={tenths(longest(c))}
+                      aria-valuenow={tenths(length)}
+                      aria-valuetext={`${tenths(length)} seconds${set ? ", set by you" : ""}`}
+                      aria-keyshortcuts={set ? "Delete" : undefined}
+                      title={set ? `${tenths(length)} s, set by you. Drag to change it. Double-click to let the template choose.` : "Drag to change how long this shot plays"}
+                      onMouseDown={(e) => e.stopPropagation()}
+                      onPointerDown={(e) => {
+                        if (e.button > 0) return;
+                        e.preventDefault();
+                        e.stopPropagation();
+                        e.currentTarget.setPointerCapture?.(e.pointerId);
+                        clearTimeout(settle.current);
+                        resize.current = { index: i, from: e.clientX, length: c.dur };
+                      }}
+                      onPointerMove={(e) => {
+                        const r = resize.current;
+                        if (r?.index === i) setSizing({ index: i, length: fit(c, r.length + (e.clientX - r.from) / pxPerSec) });
+                      }}
+                      onPointerUp={(e) => {
+                        const r = resize.current;
+                        resize.current = null;
+                        if (r?.index === i) commit(i, fit(c, r.length + (e.clientX - r.from) / pxPerSec));
+                      }}
+                      onPointerCancel={() => {
+                        resize.current = null;
+                        setSizing(null);
+                      }}
+                      onDoubleClick={() => set && void edits.setLength(c.shotId, null)}
+                      onKeyDown={(e) => {
+                        if ((e.key === "Delete" || e.key === "Backspace") && set) {
+                          e.preventDefault();
+                          void edits.setLength(c.shotId, null);
+                          return;
+                        }
+                        if (e.key === "Escape" && sizing) {
+                          clearTimeout(settle.current);
+                          setSizing(null);
+                          return;
+                        }
+                        const step = e.key === "ArrowRight" || e.key === "ArrowUp" ? 1 : e.key === "ArrowLeft" || e.key === "ArrowDown" ? -1 : 0;
+                        if (!step) return;
+                        e.preventDefault();
+                        e.stopPropagation();
+                        const next = fit(c, tenths(length + step * (e.shiftKey ? 0.5 : 0.1)));
+                        setSizing({ index: i, length: next });
+                        commit(i, next, 500);
+                      }}
+                    />
+                  )}
+                  <button type="button" className="tl__clip-x" aria-label={`Take shot ${i + 1} off the timeline`} title="Take off the timeline. It stays in Media." onMouseDown={(e) => e.stopPropagation()} onClick={() => void edits.takeOff(c.shotId)}>
+                    <X />
+                  </button>
+                </div>
+              );
+            })}
             {!clips.length && <div className="tl__empty">Drag cards here from Media</div>}
             {marker !== undefined && <div className="tl__insert" style={{ left: marker }} aria-hidden />}
           </div>
@@ -334,7 +434,7 @@ function SoundTrack({ role, sound, now, entries, waiting, x, pxPerSec, dropping,
   if (sound.job) {
     note = (
       <div className="tl__note" role="status">
-        <span className="pulse" />
+        <span className={cx("pulse", sound.job.status !== "running" && "pulse--still")} />
         <span className="tl__note-text">{jobStatusLine(sound.job, now)}</span>
         <Bar value={sound.job.progress} className="tl__note-bar" />
       </div>
@@ -342,7 +442,7 @@ function SoundTrack({ role, sound, now, entries, waiting, x, pxPerSec, dropping,
   } else if (sound.busy) {
     note = (
       <div className="tl__note" role="status">
-        <span className="pulse" />
+        <span className="pulse pulse--still" />
         <span className="tl__note-text">Starting</span>
       </div>
     );
@@ -463,27 +563,6 @@ function SoundPopover({ sound, anchor, onClose }: { sound: Sound; anchor: React.
         </Button>
       </div>
       {sound.job && <div className="lane-pop__text">One is being made. Wait for it to finish.</div>}
-    </div>
-  );
-}
-
-function Wave({ seed, n, speech }: { seed: number; n: number; speech?: boolean }) {
-  const bars = useMemo(() => {
-    let a = seed * 7919 + 13;
-    const out: number[] = [];
-    for (let i = 0; i < n; i++) {
-      a = (a * 1103515245 + 12345) & 0x7fffffff;
-      const r = (a % 1000) / 1000;
-      const env = speech ? (Math.sin(i / 6) > -0.3 ? 1 : 0.15) : 0.6 + 0.4 * Math.sin(i / 11);
-      out.push(0.15 + r * 0.85 * env);
-    }
-    return out;
-  }, [seed, n, speech]);
-  return (
-    <div className="tl__wave" aria-hidden>
-      {bars.map((h, i) => (
-        <i key={i} style={{ height: `${h * 100}%` }} />
-      ))}
     </div>
   );
 }

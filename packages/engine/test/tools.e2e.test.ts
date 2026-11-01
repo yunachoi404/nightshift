@@ -85,13 +85,13 @@ describe("new projects only create", () => {
     expect(await jobs(p.id)).toEqual([]);
   });
 
-  it("What if? and quick-shot projects keep their own flow: the tools refuse them in plain words", async () => {
+  it("a What if? film starts empty on its Film board; a quick shot makes its own shot from its photo before any card", async () => {
     const whatIf = await create("what_if", BRIEFS.what_if.brief);
     expect(whatIf.shots).toEqual([]);
     expect(whatIf.boards).toEqual([{ id: MAIN_BOARD_ID, name: "Film", items: [] }]);
-    expect((await api.refused("POST", `/api/projects/${whatIf.id}/make`, { tool: "image", prompt: "a moon" })).status).toBe(409);
     const quick = await create("vfx_effect", BRIEFS.vfx_effect.brief);
-    expect((await api.refused("POST", `/api/projects/${quick.id}/make`, { tool: "image", prompt: "a moon" })).status).toBe(409);
+    expect(await api.refused("POST", `/api/projects/${quick.id}/make`, { tool: "image", prompt: "a moon" })).toEqual({ status: 409, error: "Make the shot from this project's photo first." });
+    expect((await api.project(quick.id)).shots).toEqual([]);
   });
 });
 
@@ -113,6 +113,8 @@ describe.skipIf(!hasFfmpeg)("the tools make cards", { timeout: 120_000 }, () => 
 
     const { job, project, shot } = await make(p.id, { tool: "effect", effect: "freeze", imageAssetId: image.id, prompt: "a harbor crane", boardId: "board_mood" });
     expect(job.step).toBe("video_effect");
+    // The job names its tool, so the card says "Effect, Freeze" while it renders, not its subject.
+    expect(job.tool).toEqual({ kind: "effect", effect: "freeze" });
     expect(shot).toMatchObject({ onTimeline: false, stillAssetId: image.id, prompt: "a harbor crane", durationSec: 4 });
     const [take] = takesOf(project, shot.id);
     expect(take).toMatchObject({ rung: "draft", tool: { kind: "effect", effect: "freeze" }, imageAssetId: image.id });
@@ -461,7 +463,7 @@ describe.skipIf(!hasFfmpeg)("image edits", { timeout: 120_000 }, () => {
     expect(shotOf(await api.project(p.id), shotId).stillHistory!.map((h) => h.prompt)).toEqual([first.prompt, "make it snow", "the lighthouse at night"]);
   });
 
-  it("an edit needs a tier with an image edit step, and quick-shot projects refuse it as they refuse the tools", async () => {
+  it("an edit needs a tier with an image edit step; a quick shot's own still is its photo, and an edit of the photo is a new card", async () => {
     const p = await create("blank");
     const image = await photo(p.id);
     await api.install("apple-64");
@@ -478,10 +480,15 @@ describe.skipIf(!hasFfmpeg)("image edits", { timeout: 120_000 }, () => {
     const quick = await create("vfx_effect", BRIEFS.vfx_effect.brief);
     const statue = await photo(quick.id);
     await patch(quick.id, { shots: [{ id: "sht_statue", index: 0, prompt: "a statue", durationSec: 4, locked: false }] });
-    const refusal = { status: 409, error: "This project makes one shot from its photo. Start a new project to use the tools." };
-    expect(await api.refused("POST", `/api/projects/${quick.id}/shots/sht_statue/still`, { editFrom: statue.id, prompt: "make it gold" })).toEqual(refusal);
-    expect(await api.refused("POST", `/api/projects/${quick.id}/make`, { tool: "edit", imageAssetId: statue.id, prompt: "make it gold" })).toEqual(refusal);
+    expect(await api.refused("POST", `/api/projects/${quick.id}/shots/sht_statue/still`, { editFrom: statue.id, prompt: "make it gold" })).toEqual({
+      status: 409,
+      error: "This shot starts from your photo. Change the photo to change its still.",
+    });
     expect(await jobs(quick.id)).toEqual([]);
+    const { job, shot } = await make(quick.id, { tool: "edit", imageAssetId: statue.id, prompt: "make it gold" });
+    expect(requestOf(job, "effect_end_frame").values.prompt).toBe("make it gold");
+    expect(shot).toMatchObject({ onTimeline: false, stillHistory: [{ assetId: shot.stillAssetId, prompt: "make it gold" }] });
+    expect((await api.project(quick.id)).shots.map((s) => s.id)).toEqual(["sht_statue", shot.id]);
   });
 });
 
@@ -500,9 +507,10 @@ describe.skipIf(!hasFfmpeg)("cards in their own shape", { timeout: 120_000 }, ()
     const draft = await api.run(`${base}/draft`, { seed: 5 });
     expect(sized(requestOf(draft, "video_draft"))).toEqual({ size: [512, 512], aspect: "1:1", hinted: [512, 512] });
     const take = takesOf(await api.project(p.id), square.shot.id)[0]!;
-    // The same take renders the draft's latent again at twice its size; the remaster at its own square size.
+    // The same take renders the draft's latent again at four times its size on the Spark; the remaster at its own
+    // square size.
     const same = await api.run(`${base}/final`, { draftId: take.id, kind: "same_take", mode: "now" });
-    expect(requestOf(same, "video_final_same_take").hints).toMatchObject({ aspect: "1:1", width: 1024, height: 1024 });
+    expect(requestOf(same, "video_final_same_take").hints).toMatchObject({ aspect: "1:1", width: 2048, height: 2048 });
     const remaster = await api.run(`${base}/final`, { draftId: take.id, kind: "remaster", mode: "now" });
     expect(sized(requestOf(remaster, "video_final_remaster"))).toEqual({ size: [960, 960], aspect: "1:1", hinted: [960, 960] });
 

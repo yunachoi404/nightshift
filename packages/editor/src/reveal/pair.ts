@@ -6,7 +6,7 @@
  * called a remaster, because a stronger model rendered it again and it can drift. A final whose kind is unknown
  * is not revealed at all.
  */
-import type { Asset, FinalKind, Project, Shot, Take } from "@nightshift/contract";
+import { shotTemplate, type Asset, type FinalKind, type Project, type Shot, type Take } from "@nightshift/contract";
 
 /**
  * What the draft started from, so the clip's first card tells the truth: a photo the user gave, a keyframe
@@ -93,7 +93,8 @@ export function revealPair(project: Project, shotId?: string): RevealPair {
 
   const photoId = typeof project.brief.photoAssetId === "string" ? project.brief.photoAssetId : undefined;
   const source = [shot.stillAssetId, draft.imageAssetId, photoId].map(asset).find((a) => a?.kind === "image");
-  const { kind: sourceKind, opening } = revealOpening(project, source, shotLabel);
+  // An extra card of a What if? film opens as any card does: the question is the film's.
+  const { kind: sourceKind, opening } = revealOpening({ template: shotTemplate(project, shot), brief: project.brief }, source, shotLabel);
 
   return { shot, shotLabel, draft, final, draftAsset, finalAsset, ...(source ? { source, sourceKind } : {}), opening, kind: final.finalKind };
 }

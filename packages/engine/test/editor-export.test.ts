@@ -92,12 +92,13 @@ describe.skipIf(!(await findFfmpeg()))("native aspect shots from the real recipe
     expect(bound.files).toEqual([{ name: "image", node: "10", field: "image", path: request.values.image }]);
     expect(bound.graph["21"]!.inputs.latent).toEqual(["13", 0]);
   });
-  // LTX 2.5's draft is 640x384 (its graph's Primitive nodes), the same take upscales the latent 2x, H3 renders at about the final's size.
+  // LTX 2.5's draft is 640x384 (its graph's Primitive nodes). On the Spark the same take upscales the latent 2x twice,
+  // to four times the draft; H3 renders at about the old final's size.
   // Krea's 768x768 still takes the draft's shape. All LTX sizes sit on the 64 px grid.
   const expected: Record<Aspect, { still: number[]; draft: number[]; final: number[]; remaster: number[] }> = {
-    "16:9": { still: [960, 576], draft: [640, 384], final: [1280, 768], remaster: [1280, 768] },
-    "9:16": { still: [576, 960], draft: [384, 640], final: [768, 1280], remaster: [768, 1280] },
-    "1:1": { still: [768, 768], draft: [512, 512], final: [1024, 1024], remaster: [960, 960] },
+    "16:9": { still: [960, 576], draft: [640, 384], final: [2560, 1536], remaster: [1280, 768] },
+    "9:16": { still: [576, 960], draft: [384, 640], final: [1536, 2560], remaster: [768, 1280] },
+    "1:1": { still: [768, 768], draft: [512, 512], final: [2048, 2048], remaster: [960, 960] },
   };
 
   for (const aspect of ["16:9", "9:16", "1:1"] as const) {
@@ -124,7 +125,10 @@ describe.skipIf(!(await findFfmpeg()))("native aspect shots from the real recipe
       // The mock renders what it is asked for, so the assets show the sizes too.
       expect(dims(still.outputAssetIds[0]!)).toEqual(e.still);
       expect(dims(draft.outputAssetIds[0]!)).toEqual(e.draft);
-      expect(dims(same.outputAssetIds[0]!)).toEqual(e.final);
+      // The final is asked for at four times the draft (the mock draws it no wider than 1280 px).
+      const asked = last("video_final_same_take", p.id).hints;
+      expect([asked.width, asked.height]).toEqual(e.final);
+      expect(dims(same.outputAssetIds[0]!)[0]).toBe(Math.min(1280, e.final[0]!));
       expect(dims(remaster.outputAssetIds[0]!)).toEqual(e.remaster);
     });
   }

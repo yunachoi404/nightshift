@@ -72,67 +72,156 @@
   flex: none;
   display: flex;
   align-items: center;
-  justify-content: flex-end;
-  padding: 0 10px 0 var(--traffic);
+  justify-content: space-between;
+  gap: 4px;
+  padding: 0 12px 0 calc(var(--traffic) + 18px);
 }
-.sidebar__list {
+/* The mark's tile and the name in the display face. */
+.sidebar__brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  height: 32px;
+  border-radius: var(--r-s);
+  font-family: var(--font-display);
+  font-weight: var(--fw-display);
+  font-size: 20px;
+  line-height: 1;
+  letter-spacing: -0.01em;
+  color: var(--text);
+  white-space: nowrap;
+}
+/* Beside the Mac window's traffic lights the brand sits a little tighter, so the toggle still fits the strip. */
+:root[data-desktop-platform="darwin"] .sidebar__top {
+  padding-left: calc(var(--traffic) + 4px);
+}
+:root[data-desktop-platform="darwin"] .sidebar__brand {
+  gap: 8px;
+  font-size: 19px;
+}
+.sidebar__body {
   flex: 1;
   min-height: 0;
   overflow: auto;
-  padding: 2px 10px 12px;
+  padding: 12px 12px 12px;
   display: flex;
   flex-direction: column;
-  gap: 1px;
+  gap: 22px;
+}
+/* The app's places first (a new project, every project, the queue), then the recent projects, the night and the
+   machine at the foot. */
+.sidebar__nav {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+.side__places,
+.sidebar__list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+/* New project: a raised button with the banana plus, the one way to start. */
+.side__new {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 40px;
+  padding: 0 10px 0 8px;
+  border-radius: var(--r-control);
+  border: 1px solid var(--btn-line);
+  background: var(--btn-bg);
+  box-shadow: var(--btn-shadow);
+  color: var(--text);
+  font-size: var(--fs-ui);
+  font-weight: 500;
+  transition:
+    background-color var(--t-fast) var(--ease),
+    border-color var(--t-fast) var(--ease);
+}
+.side__new:hover,
+.side__new[aria-current="page"] {
+  background: var(--btn-bg-hover);
+  border-color: var(--line-hover);
+}
+.side__new:focus-visible {
+  border-radius: var(--r-control);
+}
+.side__new-icon {
+  width: 24px;
+  height: 24px;
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 7px;
+  background: var(--banana);
+  color: var(--on-banana);
+  transition: transform var(--t-fast) var(--ease);
+}
+.side__new:active .side__new-icon {
+  transform: scale(0.94);
+}
+.side__new-icon svg {
+  width: 14px;
+  height: 14px;
+  stroke-width: 2.4;
+}
+.side__keys {
+  flex: none;
 }
 .side__head {
   font-size: var(--fs-micro);
   line-height: var(--lh-micro);
-  font-weight: 600;
+  font-weight: 500;
   color: var(--text-3);
-  padding: 18px 8px 6px;
-}
-.side__head:first-child {
-  padding-top: 4px;
+  padding: 0 10px 8px;
 }
 .side__item {
   display: flex;
   align-items: center;
-  gap: 8px;
-  height: 28px;
+  gap: 12px;
+  height: 38px;
   flex: none;
-  padding: 0 8px;
-  border-radius: var(--r-s);
-  color: var(--text);
-  font-size: var(--fs-body);
+  padding: 0 10px;
+  border-radius: 9px;
+  color: color-mix(in srgb, var(--text) 80%, var(--sidebar));
+  font-size: var(--fs-ui);
   width: 100%;
   text-align: left;
   min-width: 0;
-  transition: background-color var(--t-fast) var(--ease);
+  transition:
+    background-color var(--t-fast) var(--ease),
+    color var(--t-fast) var(--ease);
 }
 .side__item:hover {
   background: var(--hover);
+  color: var(--text);
 }
+/* Where you are: one surface step. */
 .side__item[aria-current="page"],
 .side__item[aria-current="true"] {
   background: var(--select);
+  color: var(--text);
   font-weight: 500;
 }
-.side__item svg {
-  /* A 16px icon in the 20px column the project thumbnails use, so every label starts at the same place. */
-  width: 20px;
+.side__item > svg {
+  width: 16px;
   height: 16px;
-  padding: 0 2px;
   flex: none;
-  color: var(--text-3);
-  stroke-width: 1.8;
+  color: var(--text-2);
+  stroke-width: 1.75;
 }
-.side__item[aria-current="page"] svg,
-.side__item[aria-current="true"] svg {
+.side__item[aria-current="page"] > svg,
+.side__item[aria-current="true"] > svg {
   color: var(--text);
 }
-/* Adding a project is quieter than the projects themselves. */
-.side__item--new {
-  color: var(--text-2);
+.side__item--project {
+  gap: 10px;
+  font-size: 13.5px;
+  color: color-mix(in srgb, var(--text) 86%, var(--sidebar));
 }
 .side__label {
   flex: 1;
@@ -141,68 +230,69 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.side__badge {
+/* A count is a small pill at the end of its row: ink while something renders, the lamp's amber when it waits for
+   tonight. */
+.side__count {
   flex: none;
-  min-width: 18px;
-  height: 18px;
+  min-width: 20px;
+  height: 20px;
   padding: 0 6px;
-  border-radius: 9px;
-  background: var(--select);
-  color: var(--text-2);
-  font-size: var(--fs-micro);
-  font-weight: 600;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  border-radius: var(--r-pill);
+  background: var(--track);
+  color: var(--text-2);
+  font-family: var(--font-mono);
+  font-size: var(--fs-micro);
+  font-weight: 400;
   font-variant-numeric: tabular-nums;
 }
-.side__badge--night {
-  background: var(--amber-soft);
-  color: var(--amber);
-}
-.side__badge--live {
-  background: var(--banana-soft);
+.side__count--live {
   color: var(--text);
 }
+.side__count--night {
+  color: var(--amber);
+}
 .side__thumb {
-  width: 20px;
+  width: 30px;
   height: 20px;
   flex: none;
-  border-radius: 4px;
+  border-radius: 5px;
   overflow: hidden;
   background: var(--media-empty);
-  box-shadow: inset 0 0 0 0.5px var(--line-strong);
+  box-shadow: 0 0 0 1px var(--line);
   position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-3);
 }
 .side__thumb .media {
   position: absolute;
   inset: 0;
 }
-.side__empty {
-  padding: 6px 8px 10px;
-  color: var(--text-4);
-  font-size: var(--fs-small);
-  line-height: var(--lh-small);
+.side__thumb .tpl-icon svg {
+  width: 12px;
+  height: 12px;
 }
 .sidebar__foot {
   flex: none;
-  padding: 8px 10px 10px;
-  border-top: 1px solid var(--line);
+  padding: 4px 12px 14px;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 10px;
 }
 /* Another app holds part of the GPU during a render: a quiet card above the compute status. */
 .side__notice {
   display: flex;
   align-items: flex-start;
   gap: 8px;
-  margin-bottom: 6px;
-  padding: 9px 6px 10px 10px;
-  border-radius: var(--r-m);
+  padding: 10px 8px 10px 12px;
+  border-radius: 14px;
   background: var(--raised);
   background-image: var(--sheen);
-  border: 1px solid var(--line);
+  border: 1px solid var(--btn-line);
   animation: side-notice-in var(--t-med) var(--ease-out);
 }
 @keyframes side-notice-in {
@@ -237,36 +327,134 @@
   --btn-h: 22px;
   margin: -4px 0 0 4px;
 }
+/* Tonight: finals waiting for the night, with the banana crescent, when the night starts and a bar of the night's
+   finals, done against queued. It opens the queue. */
+.side__tonight {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  border-radius: 14px;
+  border: 1px solid var(--btn-line);
+  background: var(--raised);
+  box-shadow: var(--card-shadow);
+  color: var(--text);
+  transition: border-color var(--t-fast) var(--ease);
+}
+.side__tonight:hover {
+  border-color: var(--line-hover);
+}
+.side__tonight:focus-visible {
+  border-radius: 14px;
+}
+.side__tonight-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.side__crescent {
+  width: 16px;
+  height: 16px;
+  flex: none;
+  fill: var(--banana-fill);
+}
+.side__tonight-title {
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+  font-weight: 500;
+}
+.side__tonight-when {
+  margin-left: auto;
+  font-size: var(--fs-micro);
+  color: var(--text-3);
+  white-space: nowrap;
+}
+.side__tonight-text {
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--text-2);
+}
+.side__tonight-bar {
+  display: flex;
+  gap: 4px;
+}
+.side__tonight-mark {
+  position: relative;
+  flex: 1;
+  height: 4px;
+  border-radius: var(--r-pill);
+  background: var(--track);
+  overflow: hidden;
+}
+.side__tonight-mark > span {
+  position: absolute;
+  inset: 0 auto 0 0;
+  border-radius: inherit;
+  background: var(--banana-fill);
+  transition: width var(--t-slow) var(--ease);
+}
+/* The foot's one row: the machine and its state, then Settings as a gear. */
+.side__footrow {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+.side__gear {
+  flex: none;
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--r-s);
+  color: var(--text-3);
+  transition:
+    background-color var(--t-fast) var(--ease),
+    color var(--t-fast) var(--ease);
+}
+.side__gear:hover,
+.side__gear[aria-current="page"] {
+  background: var(--hover);
+  color: var(--text);
+}
+.side__gear svg {
+  width: 16px;
+  height: 16px;
+  stroke-width: 1.75;
+}
 .side__status {
   display: flex;
   align-items: center;
   gap: 8px;
-  height: 28px;
-  padding: 0 8px;
+  height: 32px;
+  padding: 0 8px 0 10px;
   border-radius: var(--r-s);
-  font-size: var(--fs-small);
-  color: var(--text-2);
-  width: 100%;
+  flex: 1;
   text-align: left;
   min-width: 0;
+  transition: background-color var(--t-fast) var(--ease);
 }
-.side__status:hover {
+.side__status:hover,
+.side__status[aria-expanded="true"] {
   background: var(--hover);
-  color: var(--text);
 }
-.side__status--night {
-  color: var(--amber);
+.side__dot.pulse--ok {
+  background: var(--ok-dot);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ok-dot) 15%, transparent);
 }
-.side__status > span:nth-child(2) {
-  flex: 1;
+.side__where {
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  font-size: 12.5px;
+  color: color-mix(in srgb, var(--text) 86%, var(--sidebar));
 }
-.side__status .bar {
-  width: 40px;
+.side__state {
   flex: none;
+  font-size: var(--fs-small);
+  color: var(--text-3);
+  white-space: nowrap;
 }
 
 /* ---------- Content pane ---------- */
@@ -284,7 +472,7 @@
   grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   align-items: center;
   gap: 12px;
-  padding: 0 12px 0 20px;
+  padding: 0 24px 0 32px;
   border-bottom: 1px solid var(--line);
   background: var(--content);
   position: relative;
@@ -294,6 +482,11 @@
 }
 .app--single .toolbar {
   padding-left: calc(var(--traffic) + 20px);
+}
+/* On Projects the search lines up with the right edge of the grid below it, which stops at 1280 px on a wide pane
+   (features/home/home.css). */
+.toolbar--home {
+  padding-right: max(var(--page-gutter), calc(100% - var(--page-gutter) - 1280px));
 }
 /* Collapsed, the toolbar starts with the toggle, clear of the window controls in the desktop app. */
 .app--collapsed .toolbar {
@@ -323,11 +516,12 @@
   justify-content: center;
 }
 .toolbar__name {
-  font-weight: 600;
+  font-size: var(--fs-ui);
+  line-height: var(--lh-ui);
+  font-weight: 500;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  letter-spacing: -0.005em;
 }
 .toolbar__sub {
   font-size: var(--fs-micro);
@@ -343,20 +537,13 @@
 }
 /* Laptop widths: the title and the status must both read in full. Drop detail before truncating. */
 @container toolbar (max-width: 880px) {
-  .toolbar__sub-part--extra:first-child,
-  .activity__where {
+  .toolbar__sub-part--extra:first-child {
     display: none;
   }
 }
 @container toolbar (max-width: 780px) {
   .toolbar__sub-part--extra {
     display: none;
-  }
-  .activity .activity__long {
-    display: none;
-  }
-  .activity .activity__short {
-    display: inline;
   }
 }
 .toolbar__sep {
@@ -382,59 +569,113 @@
   flex: none;
 }
 
-/* activity indicator in the toolbar */
-.activity {
+/* ---------- Search on Projects ---------- */
+.search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 280px;
+  max-width: 100%;
+  height: 36px;
+  padding: 0 8px 0 12px;
+  border: 1px solid var(--btn-line);
+  border-radius: var(--r-control);
+  background: var(--input-bg);
+  color: var(--text-3);
+  cursor: text;
+  transition:
+    border-color var(--t-fast) var(--ease),
+    box-shadow var(--t-fast) var(--ease);
+}
+.search:hover {
+  border-color: var(--line-hover);
+}
+.search:focus-within {
+  border-color: var(--focus-edge);
+  box-shadow: var(--focus-field);
+}
+.search__icon {
+  width: 15px;
+  height: 15px;
+  flex: none;
+  stroke-width: 2;
+}
+.search__field {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: var(--text);
+  font-size: 13.5px;
+  appearance: none;
+}
+.search__field::placeholder {
+  color: var(--text-3);
+}
+.search__field:focus-visible {
+  box-shadow: none;
+}
+.search__field::-webkit-search-cancel-button {
+  display: none;
+}
+.search__keys {
+  flex: none;
+}
+.search:focus-within .search__keys {
+  visibility: hidden;
+}
+
+/* ---------- New project: where it sits, and the way out ---------- */
+.toolbar__crumbs {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  font-size: var(--fs-ui);
+  line-height: var(--lh-ui);
+  white-space: nowrap;
+}
+.toolbar__crumb {
+  color: var(--text-2);
+  border-radius: 6px;
+  transition: color var(--t-fast) var(--ease);
+}
+a.toolbar__crumb:hover {
+  color: var(--text);
+}
+.toolbar__crumb--here {
+  color: var(--text);
+  font-weight: 500;
+}
+.toolbar__crumb-sep {
+  width: 14px;
+  height: 14px;
+  flex: none;
+  color: var(--text-4);
+  stroke-width: 2;
+}
+.toolbar__close {
   display: inline-flex;
   align-items: center;
-  gap: 7px;
-  height: 30px;
-  padding: 0 12px 0 10px;
-  border-radius: var(--r-pill);
-  font-size: var(--fs-small);
+  gap: 8px;
+  height: 32px;
+  padding: 0 8px 0 10px;
+  border-radius: var(--r-s);
   color: var(--text-2);
-  max-width: 260px;
-  min-width: 0;
-  white-space: nowrap;
-  transition: background-color var(--t-fast) var(--ease);
+  transition:
+    background-color var(--t-fast) var(--ease),
+    color var(--t-fast) var(--ease);
 }
-.activity:hover {
+.toolbar__close:hover {
   background: var(--hover);
   color: var(--text);
 }
-.activity[aria-current="page"] {
-  background: var(--select);
-  color: var(--text);
-}
-.activity > span:nth-child(2) {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  min-width: 0;
-}
-.activity__short {
-  display: none;
-}
-.activity--night {
-  color: var(--amber);
-}
-.activity[aria-expanded="true"] {
-  background: var(--select);
-  color: var(--text);
-}
-/* The GPU is away: a quiet hairline pill, so it reads as a state and not an error. */
-.activity--away {
-  box-shadow: inset 0 0 0 1px var(--line);
-}
-.activity__chev {
-  width: 12px;
-  height: 12px;
-  flex: none;
-  margin-left: -2px;
-  color: var(--text-4);
+.toolbar__close svg {
+  width: 16px;
+  height: 16px;
   stroke-width: 2;
-  transition: transform var(--t-med) var(--ease-out);
-}
-.activity[aria-expanded="true"] .activity__chev {
-  transform: rotate(180deg);
 }
 
 /* ---------- The way back from the queue and settings ---------- */
@@ -442,10 +683,10 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  height: 28px;
+  height: 30px;
   padding: 0 10px 0 6px;
   margin-right: 8px;
-  border-radius: var(--r-pill);
+  border-radius: var(--r-s);
   font-size: var(--fs-small);
   font-weight: 500;
   color: var(--text-2);
@@ -463,11 +704,14 @@
   background: var(--btn-bg-hover);
   color: var(--text);
 }
+.toolbar__back:focus-visible {
+  border-radius: var(--r-s);
+}
 .toolbar__back svg {
   width: 14px;
   height: 14px;
   flex: none;
-  stroke-width: 2;
+  stroke-width: 1.75;
 }
 .toolbar__back-label {
   overflow: hidden;
@@ -515,8 +759,7 @@
 .gpu-pop__where {
   flex: 1;
   min-width: 0;
-  font-weight: 600;
-  letter-spacing: -0.005em;
+  font-weight: 500;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -561,7 +804,7 @@
   margin: 0 0 6px;
   font-size: var(--fs-micro);
   line-height: var(--lh-micro);
-  font-weight: 600;
+  font-weight: 500;
   color: var(--text-3);
   font-variant-numeric: tabular-nums;
 }
@@ -633,24 +876,6 @@
   width: 14px;
   height: 14px;
 }
-.ring {
-  width: 14px;
-  height: 14px;
-  flex: none;
-  border-radius: 50%;
-  background: conic-gradient(var(--ring-color, var(--banana-fill)) calc(var(--pct, 0) * 1%), var(--track) 0);
-  position: relative;
-}
-.ring::after {
-  content: "";
-  position: absolute;
-  inset: 3px;
-  border-radius: 50%;
-  background: var(--content);
-}
-.ring--night {
-  --ring-color: var(--amber-fill);
-}
 
 /* ---------- Pages ---------- */
 .main {
@@ -664,36 +889,62 @@
   flex: 1;
   min-height: 0;
   overflow: auto;
-  padding: 0 var(--gutter) 48px;
+  padding: 0 var(--page-gutter) 56px;
   container-type: inline-size;
   container-name: page;
 }
 .page--narrow > * {
   max-width: 720px;
 }
+/* An empty narrow page holds its message in the column, not in the middle of the window. */
+.page--narrow > .empty {
+  margin: 4px 0 0;
+  max-width: 720px;
+  padding: 56px 24px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-l);
+  background: var(--inset);
+}
 .page__head {
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
-  gap: 16px;
-  padding: 28px 0 18px;
+  flex-wrap: wrap;
+  gap: 20px;
+  padding: 40px 0 28px;
   position: sticky;
   top: 0;
   background: var(--content);
   z-index: 2;
 }
+/* Once the page scrolls under it, the sticky head takes a hairline, so what passes beneath it ends cleanly. */
+@supports (animation-timeline: scroll()) {
+  .page__head {
+    animation: page-head-rule linear both;
+    animation-timeline: scroll(nearest);
+    animation-range: 0 16px;
+  }
+}
+@keyframes page-head-rule {
+  from {
+    box-shadow: 0 1px 0 transparent;
+  }
+  to {
+    box-shadow: 0 1px 0 var(--line);
+  }
+}
 .page__title {
   font-family: var(--font-display);
-  font-size: var(--fs-title-2);
-  line-height: var(--lh-title-2);
-  font-weight: 400;
-  letter-spacing: -0.01em;
+  font-size: var(--fs-page);
+  line-height: var(--lh-page);
+  font-weight: var(--fw-display);
+  letter-spacing: -0.02em;
 }
 .page__sub {
-  color: var(--text-3);
-  margin-top: 6px;
-  font-size: var(--fs-body);
-  line-height: var(--lh-body);
+  color: var(--text-2);
+  margin-top: 8px;
+  font-size: 14.5px;
+  line-height: 20px;
   max-width: 64ch;
 }
 .page__actions {
@@ -720,11 +971,11 @@
 }
 .insp {
   flex: none;
-  padding: 16px 18px 18px;
+  padding: 16px 20px 20px;
   border-bottom: 1px solid var(--line);
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
 }
 .insp__head {
   display: flex;
@@ -734,7 +985,7 @@
   min-height: 20px;
 }
 .insp__title {
-  font-weight: 600;
+  font-weight: 500;
   font-size: var(--fs-body);
   line-height: var(--lh-body);
   color: var(--text);
@@ -799,22 +1050,57 @@
   text-align: center;
   gap: 10px;
 }
+/* The splash keeps the mark where it was, dead centre, and lets the loader in below it after a beat. */
+.screen__box--splash {
+  position: relative;
+}
+.screen__spin {
+  position: absolute;
+  top: calc(100% + 24px);
+  left: calc(50% - 10px);
+  animation: screen-spin-in var(--t-slow) var(--ease-out) 600ms both;
+}
+@keyframes screen-spin-in {
+  from {
+    opacity: 0;
+  }
+}
 .screen__title {
   font-family: var(--font-display);
   font-size: var(--fs-title-2);
   line-height: var(--lh-title-2);
-  font-weight: 400;
+  font-weight: var(--fw-display);
   letter-spacing: -0.01em;
 }
 .screen__text {
   color: var(--text-2);
 }
 
+/* The tile beside the wordmark (ui/Mark.tsx, BrandTile): the night tile in light, the day tile at night. */
+.brand-tile {
+  display: inline-flex;
+  flex: none;
+  border-radius: 22.4%;
+}
+.brand-tile > span,
+.brand-tile svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.brand-tile__day,
+:root[data-theme="dark"] .brand-tile__night {
+  display: none !important;
+}
+:root[data-theme="dark"] .brand-tile__day {
+  display: block !important;
+}
+
 /* App mark: the Nightshift tile (see ui/mark-svg.ts). The SVG paints the tile; the span only sizes it and casts the shadow. */
 .mark {
   width: 40px;
   height: 40px;
-  border-radius: 23.4%;
+  border-radius: 22.4%;
   display: inline-flex;
   flex: none;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.18), 0 6px 16px -6px rgba(0, 0, 0, 0.35);
@@ -836,18 +1122,22 @@
   background: var(--amber-soft);
   border: 1px solid var(--amber-line);
 }
-.morning svg {
-  width: 16px;
-  height: 16px;
-  color: var(--amber);
+/* The dawn: the sun half risen on the horizon, drawn in the lamp's amber. */
+.morning__dawn {
+  width: 40px;
+  height: 24px;
   flex: none;
+  fill: none;
+  stroke: var(--amber);
+  stroke-width: 1.5;
+  stroke-linecap: round;
 }
 .morning__body {
   flex: 1;
   min-width: 0;
 }
 .morning__title {
-  font-weight: 600;
+  font-weight: 500;
 }
 .morning__text {
   color: var(--text-2);

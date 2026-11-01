@@ -22,7 +22,7 @@ export function CameraMovePicker({ value, onChange }: { value: string; onChange:
 
 export function cameraPhotoHint(move: string): string {
   return move === "dolly_zoom"
-    ? "Choose a clear foreground subject with a detailed, distant background behind it."
+    ? "Choose a clear foreground subject with a detailed, distant background behind it"
     : move.startsWith("crane_")
       ? "Use an open scene. Nearby ceilings and furniture may block the view."
       : "Leave space around the subject for a close-up. Solid objects work best. Glass and mirrors may change.";

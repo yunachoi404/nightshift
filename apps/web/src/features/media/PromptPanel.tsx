@@ -11,6 +11,7 @@ import { useId, useRef, useState, type ReactNode } from "react";
 import { useEngine } from "@/store/engine";
 import { useHardware, useInstalledTier, useThisMachine } from "@/store/tier";
 import { Button, Menu, MenuItem, Notice, Select, cx, radioGroupKeyDown, toast } from "@/ui/primitives";
+import { Star } from "@/ui/Star";
 import { roughDuration } from "@/lib/format";
 import { EffectPicker } from "@/features/newproject/EffectFields";
 import { CameraMovePicker, cameraPhotoHint } from "@/features/newproject/CameraMoveFields";
@@ -64,7 +65,7 @@ export function PromptPanel({ state, onChange, boards }: { state: PanelState; on
   const set = (patch: Partial<PanelState>) => onChange((s) => ({ ...s, ...patch }));
 
   const board = boards.find((b) => b.board.id === currentBoardId) ?? boards[0]!;
-  // A What if? film and a quick shot make one shot each: the engine makes no new cards there.
+  // A quick shot makes its own shot from its photo before any card. In a What if? film or a quick shot, cards stay in Media.
   const refused = makeBlocked(project);
   const blocked = toolBlocked(tier, state.tool);
   const info = toolInfo(state.tool);
@@ -101,7 +102,7 @@ export function PromptPanel({ state, onChange, boards }: { state: PanelState; on
     onCard: (cardId) => {
       const asset = imageOfCard(project, cardId);
       if (asset) takeSource(asset, cardId);
-      else toast({ title: "No picture to start from", text: "Drop a card that has a picture, or an image.", tone: "bad" });
+      else toast({ title: "No picture to start from", text: "Drop a card that has a picture, or an image", tone: "bad" });
     },
   });
 
@@ -132,7 +133,7 @@ export function PromptPanel({ state, onChange, boards }: { state: PanelState; on
         projectId={project.id}
         required={info.source === "required"}
         role={role}
-        without={info.source === "optional" ? "Without one, a still is drawn first." : hint}
+        without={info.source === "optional" ? "Without one, a still is drawn first" : hint}
         source={source}
         sourceName={source ? nameOf(project, source.id) : undefined}
         choosing={state.choosing || (info.source === "required" && !source)}
@@ -145,8 +146,9 @@ export function PromptPanel({ state, onChange, boards }: { state: PanelState; on
       />
     </Section>
   );
+  // A main prompt takes the room the panel has left, so the words sit close to Generate with no gap between.
   const prompt = (title: string, key: "prompt" | "instruction" | "subject" | "scene", placeholder: string, minRows = 5) => (
-    <Section title={title} htmlFor={`${ids}-prompt`}>
+    <Section title={title} htmlFor={`${ids}-prompt`} grow={minRows >= 4}>
       <PromptBox id={`${ids}-prompt`} value={state[key]} onChange={(v) => set({ [key]: v })} onSubmit={() => void generate()} placeholder={placeholder} minRows={minRows} />
     </Section>
   );
@@ -157,7 +159,8 @@ export function PromptPanel({ state, onChange, boards }: { state: PanelState; on
       aspect={state.aspect ?? project.aspect}
       lengths={lengths}
       length={videoLength(state, tier)}
-      model={toolModel(tier, state.tool, !!source)}
+      // An image is drawn with the references switched on; a video drawn from words, with all of them (up to three).
+      model={toolModel(tier, state.tool, !!source, refLimit > 0 && (state.tool === "image" ? chosen.length > 0 : refs.length > 0))}
     />
   );
 
@@ -200,7 +203,7 @@ export function PromptPanel({ state, onChange, boards }: { state: PanelState; on
 
         {!refused && state.tool === "edit" && (
           <>
-            {well("The image to change", "A clear picture edits best.")}
+            {well("The image to change", "A clear picture edits best")}
             {prompt("What to change", "instruction", "Make it night. Take out the car. Put her in a red coat.", 4)}
             {options}
           </>
@@ -208,7 +211,7 @@ export function PromptPanel({ state, onChange, boards }: { state: PanelState; on
 
         {!refused && state.tool === "effect" && (
           <>
-            {well("The effect starts here", "One clear subject with space around it works best.")}
+            {well("The effect starts here", "One clear subject with space around it works best")}
             <Section title="Effect">
               <EffectPicker compact value={state.effect} onChange={(effect) => set({ effect })} />
             </Section>
@@ -257,7 +260,7 @@ export function PromptPanel({ state, onChange, boards }: { state: PanelState; on
           onClick={() => void generate()}
         >
           <span className="mp-go__action">
-            {busy && <span className="spin" aria-hidden />}
+            {busy ? <span className="spin" aria-hidden /> : <Star className="mp-go__star" />}
             {action}
           </span>
           <span className="mp-go__sub" id={`${ids}-go`}>
@@ -270,9 +273,9 @@ export function PromptPanel({ state, onChange, boards }: { state: PanelState; on
 }
 
 /** A titled group in the panel. */
-function Section({ title, aside, hint, htmlFor, children }: { title: string; aside?: string; hint?: string; htmlFor?: string; children: ReactNode }) {
+function Section({ title, aside, hint, htmlFor, grow, children }: { title: string; aside?: string; hint?: string; htmlFor?: string; grow?: boolean; children: ReactNode }) {
   return (
-    <section className="mp-sec">
+    <section className={cx("mp-sec", grow && "mp-sec--grow")}>
       <div className="mp-sec__head">
         {htmlFor ? (
           <label className="mp-sec__title" htmlFor={htmlFor}>

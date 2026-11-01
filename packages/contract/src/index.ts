@@ -142,6 +142,11 @@ export const RecipeSchema = z.object({
    * references; it takes up to three images (image, image2, image3).
    */
   referenceStill: WorkflowRefSchema.optional(),
+  /**
+   * The same-take final for a take longer than steps.video_final_same_take's `maxFrames` (a What if? film), where that
+   * step renders at a size a long take would not fit in memory. Absent: that step finishes takes of every length.
+   */
+  longTakeFinal: WorkflowRefSchema.optional(),
   /** Peak memory per step. measured=true only for numbers taken on real hardware. */
   estimates: z.partialRecord(StepIdSchema, z.object({ peakGb: z.number(), seconds: z.number().optional(), measured: z.boolean() })),
 });
@@ -158,6 +163,11 @@ export const TierSummarySchema = RecipeSchema.pick({ tier: true, label: true, ma
    * a step whose workflow loads none of the recipe's models.
    */
   models: z.partialRecord(StepIdSchema, z.string()).optional(),
+  /**
+   * The main model of a still drawn with reference photos, in plain words ("FLUX.2 Klein 4B"), when the recipe has a
+   * workflow of its own for those (`Recipe.referenceStill`). Absent: they run the still step's (`models.still`).
+   */
+  referenceStillModel: z.string().optional(),
   /** How many reference images a still accepts. Zero means this tier cannot use references. */
   referenceImageLimit: z.number().int().min(0).max(3).optional(),
   /** The recipe's default memory cap in GB, shown as the slider's starting point. */
@@ -312,8 +322,9 @@ export const RuntimeStatusSchema = z.object({
 /**
  * A project's preset. It seeds the project's flow when it is made: its brief, its default shot list, its look and its
  * captions. "blank" seeds nothing: the project starts empty and fills from the project's tools (see MakeRequest).
- * Films (cinematic_shot, music_video, product_ad, talking_intro) start with the shot list their template drafts from
- * the brief, without the GPU. Quick shots (camera_move, vfx_effect) are older project types, still opened and run:
+ * Films (cinematic_shot, music_video, product_ad, talking_intro, micro_drama) start with the shot list their template
+ * drafts from the brief, without the GPU. A micro drama's shots carry the lines its characters say on screen. Cinematic
+ * shot is no longer offered for new projects; its projects still open and run. Quick shots (camera_move, vfx_effect) are older project types, still opened and run:
  * one photo becomes one shot, the brief carries the photo's asset id (`photoAssetId`) and the preset (`move` or
  * `effect`, ids from the shared tables in templates.ts). New projects make effects and camera moves with the tools.
  */
@@ -326,6 +337,7 @@ export const TemplateIdSchema = z.enum([
   "vfx_effect",
   "what_if",
   "blank",
+  "micro_drama",
 ]);
 export const AspectSchema = z.enum(["16:9", "9:16", "1:1"]);
 export const RungSchema = z.enum(["storyboard", "draft", "final"]);
@@ -398,11 +410,21 @@ export const ShotSchema = z.object({
   index: z.number(),
   prompt: z.string(),
   cameraMove: z.string().optional(), // "dolly_in", "crash_zoom", "orbit_left", ...
-  /** The voiceover or caption line spoken over this shot (talking intro, product ad). */
+  /**
+   * The voiceover or caption line spoken over this shot (talking intro, product ad), or the words the character in it
+   * says on screen (micro drama).
+   */
   line: z.string().optional(),
   /** Which project references appear in this shot (Reference ids). Absent = all of them, up to three. */
   referenceIds: z.array(z.string().min(1)).max(3).optional(),
   durationSec: z.number(),
+  /**
+   * How long the cut shows this shot, in seconds, when the user set it (the editor's timeline: drag a clip's end).
+   * Absent: the template decides. A video plays at most its own length. `durationSec` stays the length new takes are
+   * made at, so a shot can be trimmed in the cut without changing its next take. A talking intro cuts on its script's
+   * lines and leaves it out.
+   */
+  cutSec: z.number().positive().optional(),
   stillAssetId: z.string().optional(),
   chosenDraftId: z.string().optional(),
   /** A final of the picked draft, set by the engine: see `finalFor`. Picking another draft brings that draft's final. */
@@ -413,6 +435,7 @@ export const ShotSchema = z.object({
    * false: the shot is kept on the project's media boards but left out of the cut. Absent or true: it is on the
    * timeline, in shot order. The tools (POST /make) make shots with false; PATCH it to true to send one to the
    * timeline, and back to false to take it off again without losing it. The cut and the export use timeline shots only.
+   * An extra card of a What if? film or a quick shot (`isExtraCard`) stays false: only the project's own shot is cut.
    */
   onTimeline: z.boolean().optional(),
   /**
@@ -543,6 +566,18 @@ export const SoundtrackSchema = z.object({
   voice: z.string().min(1).nullable().optional(),
 });
 
+/**
+ * Who wrote a film's shot list. "template": the template's own list for the brief, as a new film starts, or as the
+ * writer left it when its answer did not fit. "writer": the local language model wrote it from the brief. `note` says,
+ * in plain words, why the writer's last answer was not used; the writer's next list clears it. The UI shows the note
+ * with a way to try again, and sends the shot list back without its note to dismiss it. Absent on projects with no shot
+ * list to write (blank, What if?, quick shots) and on films made before the engine kept it.
+ */
+export const ShotListSchema = z.object({
+  by: z.enum(["template", "writer"]),
+  note: z.string().min(1).optional(),
+});
+
 export const ProjectSchema = z.object({
   id: z.string(),
   name: z.string(),
@@ -559,6 +594,7 @@ export const ProjectSchema = z.object({
   /** The boards on the project's canvas. Absent on projects made before boards: `projectBoards` derives them. */
   boards: z.array(BoardSchema).max(50).optional(),
   soundtrack: SoundtrackSchema.optional(),
+  shotList: ShotListSchema.optional(),
   createdAt: z.string(),
   updatedAt: z.string(),
 });
@@ -590,6 +626,8 @@ export * from "./timeline.js";
 export * from "./what-if.js";
 // The canvas: boards and the items they hold, read the same way by the UI and the engine.
 export * from "./boards.js";
+// A What if? film's or a quick shot's own shot, told apart from the extra cards its tools make.
+export * from "./own-shot.js";
 
 // ---------------------------------------------------------------- jobs
 
@@ -617,6 +655,11 @@ export const JobSchema = z.object({
    * The main model the job loads, in plain words ("LTX-2.5", "MiniMax H3"), when the engine knows it. Set on finals.
    */
   model: z.string().optional(),
+  /**
+   * The tool a draft is made with (an effect, a camera move), on drafts made with one, so a card can say what it is
+   * making before its take lands. The take records it too (`Take.tool`).
+   */
+  tool: DraftToolSchema.optional(),
   /**
    * Finals for the night run in groups that share a model, back to back, so each model loads once a night. Set on
    * finals for the night only. Groups run in the order of this number (lowest first: the group whose first final was
@@ -674,7 +717,7 @@ export const CreateProjectRequestSchema = z.object({
  * another draft gets that draft's final (`finalFor`): the one it names if it belongs to the draft, else the newest.
  */
 export const UpdateProjectRequestSchema = z
-  .object({ name: z.string().min(1), aspect: AspectSchema, brief: z.record(z.string(), z.unknown()), shots: z.array(ShotSchema), references: z.array(ReferenceSchema).max(6), timeline: TimelineSchema.nullable(), boards: z.array(BoardSchema).max(50), soundtrack: SoundtrackSchema })
+  .object({ name: z.string().min(1), aspect: AspectSchema, brief: z.record(z.string(), z.unknown()), shots: z.array(ShotSchema), references: z.array(ReferenceSchema).max(6), timeline: TimelineSchema.nullable(), boards: z.array(BoardSchema).max(50), soundtrack: SoundtrackSchema, shotList: ShotListSchema })
   .partial();
 
 /** Optional body for the still route: a seed, or a prompt that replaces the shot's prompt for this render only. */
@@ -706,6 +749,8 @@ export const DraftRequestSchema = z.object({ seed: z.number().int().nonnegative(
  *   still. Only on recipes with an image edit step.
  * `imageAssetId` is any image in the project: a shot's still, an uploaded photo, a reference. The new shot's still is
  * that image; an effect or camera move is its first draft, made with that tool.
+ * In a What if? film or a quick shot the new card is an extra card (`isExtraCard`): it stays in Media, off the
+ * timeline, and its prompts are used as written. A quick shot makes its own shot from its photo before any other.
  */
 export const MakeRequestSchema = z.object({
   tool: z.enum(["image", "video", "effect", "camera_move", "edit"]),
@@ -724,6 +769,11 @@ export const MakeRequestSchema = z.object({
 });
 
 export const FinalRequestSchema = z.object({ draftId: z.string(), kind: FinalKindSchema, mode: z.enum(["now", "overnight"]) });
+/**
+ * Moves a queued final between now and tonight. To tonight it joins its model's group (`nightGroup`), to now it runs
+ * with the finals to run now. Either way it keeps its place by when it was queued.
+ */
+export const JobModeRequestSchema = z.object({ mode: z.enum(["now", "overnight"]) });
 
 /** music: prompt (+ lyrics). voice: text (+ voiceRefAssetId, an uploaded reference clip). */
 export const AudioRequestSchema = z.object({
@@ -794,6 +844,7 @@ export const routes = {
   exportVideo: "POST /api/projects/:id/export", // ExportRequest -> Job. kind "reveal" makes one shot's share clip (job.shotId set, asset role "reveal")
   listJobs: "GET /api/jobs?projectId=", // -> Job[]: running, then queued in run order, then finished newest first
   cancelJob: "POST /api/jobs/:id/cancel", // -> Job
+  jobMode: "POST /api/jobs/:id/mode", // JobModeRequest -> Job. A queued final only (409 otherwise)
   deleteAsset: "DELETE /api/projects/:id/assets/:assetId", // Delete an uploaded reference and remove its project and shot links
   uploadAsset: "POST /api/projects/:id/assets", // multipart, field "file" (reference photo, song, voice sample) -> Asset. Role: ?role= if given, else "music" for audio in a music_video project, else "reference". ?board= puts it on that board. A song or voiceover queues an analysis job
   asset: "GET /api/projects/:id/assets/:assetId", // -> file bytes (supports Range)
@@ -834,6 +885,7 @@ export type Timeline = z.infer<typeof TimelineSchema>;
 export type Project = z.infer<typeof ProjectSchema>;
 export type Board = z.infer<typeof BoardSchema>;
 export type Soundtrack = z.infer<typeof SoundtrackSchema>;
+export type ShotList = z.infer<typeof ShotListSchema>;
 export type Onboarding = z.infer<typeof OnboardingSchema>;
 export type OnboardingSampleRequest = z.infer<typeof OnboardingSampleRequestSchema>;
 export type OnboardingSample = z.infer<typeof OnboardingSampleSchema>;
@@ -850,6 +902,7 @@ export type StillRequest = z.infer<typeof StillRequestSchema>;
 export type DraftRequest = z.infer<typeof DraftRequestSchema>;
 export type MakeRequest = z.infer<typeof MakeRequestSchema>;
 export type FinalRequest = z.infer<typeof FinalRequestSchema>;
+export type JobModeRequest = z.infer<typeof JobModeRequestSchema>;
 export type AudioRequest = z.infer<typeof AudioRequestSchema>;
 export type ExportRequest = z.infer<typeof ExportRequestSchema>;
 export type ErrorResponse = z.infer<typeof ErrorResponseSchema>;

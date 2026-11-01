@@ -1,3 +1,5 @@
+<img src="docs/brand/nightshift-mark.svg" width="72" height="72" alt="The Nightshift mark: a crescent moon holding a play mark, with a small star">
+
 # Nightshift
 
 **An AI video studio that runs on hardware you own. It sets itself up for your machine, makes quick drafts while
@@ -13,13 +15,13 @@ Apache-2.0.
 ComfyUI node and continues that exact take into the final. On four real projects every final matched its draft frame
 by frame (SSIM 0.91 to 0.96 after downscaling) and its decoded audio was bit-identical.
 
-**[Watch the 2-minute film](https://youtu.be/fk0ZUiMIawY)**
+**[Watch the 2-minute film](https://youtu.be/u7R_uGr-3UM)**
 
 ## Try it
 
 Four ways in, shortest first. Most of them need no GPU and download no models.
 
-1. **Watch the 2-minute film** (2 minutes). [The Nightshift film](https://youtu.be/fk0ZUiMIawY) shows real projects made on a DGX
+1. **Watch the 2-minute film** (2 minutes). [The Nightshift film](https://youtu.be/u7R_uGr-3UM) shows real projects made on a DGX
    Spark, from the first question to the export.
 2. **Try it in your browser** (about 2 minutes, nothing to install). Open
    **[yunachoi404.github.io/nightshift](https://yunachoi404.github.io/nightshift/)** in a desktop browser. Choose
@@ -46,7 +48,7 @@ Four ways in, shortest first. Most of them need no GPU and download no models.
      of them for 56 GB of models. Stills in about 2.4 minutes, drafts with sound in about a minute, 384x256 and about
      2 s a shot. Good for storyboards and animatics. Bigger cards get bigger recipes; those are estimates.
    - **A Mac with a GPU computer on your network.** Tested with a DGX Spark: stills in 31 s, 4-second drafts in 56 s,
-     same-take finals at twice the size, H3 remasters, What if? films, effects and camera moves. The GPU computer needs
+     same-take finals at four times the size (2560x1536), H3 remasters, What if? films, effects and camera moves. The GPU computer needs
      Linux, an NVIDIA GPU and 148 GB of models.
    - **A Mac on its own.** The app installs everything, 63 to 122 GB. Tested on an M4 Max set up as a 16 to 32 GB Mac:
      setup took 22 minutes for 63 GB, stills about 12 minutes, 2-second drafts with sound about 2 minutes, then the
@@ -69,9 +71,10 @@ the app too. All screenshots here are the real app on real projects.</sub>
   [Visual checks and limits](research/2026-10-28_what_if.md).
 - **Draft by day, finish overnight.** Every shot climbs a ladder: a storyboard still in seconds, a motion draft in
   about a minute, then a final. The **same-take final** loads the saved LTX 2.5 latent of the draft you approved,
-  video and sound, and finishes it at twice the resolution. It is the same take, not a new roll of the dice: on four
-  real projects each final matched its draft frame by frame (SSIM 0.91 to 0.96 after downscaling) and its decoded
-  audio was bit-identical. The **remaster** re-renders with MiniMax H3, guided by the draft, and the app says it may
+  video and sound, and finishes it at twice the resolution, or four times on the DGX Spark (2560x1536, two LTX 2.5
+  latent upscale and refine passes, about 4.5 minutes; [measured](research/2026-10-31_hd_final.json)). It is the same
+  take, not a new roll of the dice: on four real projects each 2x final matched its draft frame by frame (SSIM 0.91 to
+  0.96 after downscaling) and its decoded audio was bit-identical. The **remaster** re-renders with MiniMax H3, guided by the draft, and the app says it may
   drift. Queue finals for tonight; the Mac stays awake and tells you when they are done.
 - **Share reveal.** From a finished card in Media, a same-take final becomes a clip of 8 to 12 seconds, vertical or
   wide. The draft plays, freezes on one frame, and the finished take appears on that same frame, then plays on with its
@@ -92,8 +95,10 @@ the app too. All screenshots here are the real app on real projects.</sub>
   references per storyboard still. In the Spark tests, the Solenne bottle and an illustrated character stayed
   recognizable across different compositions. Small details, lettering and skin tone can still drift.
   [Visual checks](research/2026-10-21_references.md).
-- **A project is one video, with two places: Media and Editor.** Start blank, or from a preset (cinematic shot,
-  product ad, music video, talking intro, What if?) that sets up the shot list, look and captions. Creating a project
+- **A project is one video, with two places: Media and Editor.** Start blank, or from a preset (micro drama,
+  product ad, music video, talking intro, What if?) that sets up the shot list, look and captions. A micro drama
+  turns a premise and your characters into a short scene where they say their lines on screen, with lip sync and
+  subtitles, in an anime, K-drama, webtoon or 3D animated look. Creating a project
   renders nothing. Media is a board of cards: one card per shot, showing its pick, with every still, draft, effect,
   camera move and final it had, so any version can be restored. A prompt panel on the left makes new cards (Image,
   Video, Effect, Camera move). Several boards (a scene, a mood board) sit on a canvas. Drag cards into the Editor's
@@ -256,15 +261,15 @@ in the next section.
 | [MOSS-Image](https://github.com/OpenMOSS/MOSS-Image) 5B (int8), Qwen3.5 9B encoder (int8 or GPTQ) | Storyboard stills | nvidia-12-offload, nvidia-8, apple-16 | Apache-2.0 | Allowed |
 | [Kandinsky 6 Lite](https://huggingface.co/kandinskylab/Kandinsky-6.0-Lite-distill-5s-Diffusers), with Qwen2.5-VL 7B, CLIP-L, Hunyuan video VAE, MMAudio audio VAE, BigVGAN | Motion drafts with sound | nvidia-8, apple-16 | MIT, but the MMAudio VAE is CC BY-NC 4.0 and the Hunyuan VAE is under Tencent's community license | Not for commercial use (MMAudio VAE). The Hunyuan license also excludes the EU, UK and South Korea |
 | [Breeze TTS 2](https://huggingface.co/BreezeBlue/Breeze-TTS-2) (int8 hybrid) | Voiceover | every tier | [BreezeBlue Research and Non-Commercial License](https://huggingface.co/BreezeBlue/Breeze-TTS-2/blob/main/LICENSE); the ComfyUI node is Apache-2.0 | Not for commercial use, including the generated audio |
-| [MiniMax Music 3](https://huggingface.co/MiniMaxAI/MiniMax-Music3) (fp16 DiT, int8 text encoder) | Songs and background music | unified-128-cuda, nvidia-32 | [MiniMax-Music3 Community License](https://huggingface.co/MiniMaxAI/MiniMax-Music3/blob/main/LICENSE) (Comfy's repack says Apache-2.0; we follow the upstream terms) | Allowed with conditions: show "MiniMax-Music3" in a commercial UI, permission above $20M revenue, disclose machine-generated output |
+| [YuE2-3B](https://huggingface.co/m-a-p/YuE2-3B) by m-a-p (int8, [Comfy-Org repack](https://huggingface.co/Comfy-Org/YuE2)) | Instrumental songs and background music | unified-128-cuda, nvidia-32 | Weights [CC BY-NC 4.0](https://huggingface.co/m-a-p/YuE2-3B/blob/main/LICENSE); the YuE code is Apache-2.0 | Not for commercial use. Credit YuE2-3B and link its repository |
 | [ACE-Step 1.5](https://huggingface.co/ACE-Step/Ace-Step1.5) turbo | Songs and background music | apple-64, apple-16, nvidia-24-offload, nvidia-12-offload, nvidia-8 | Apache-2.0 | Allowed |
 | [Qwen3-VL 4B Instruct](https://huggingface.co/Qwen/Qwen3-VL-4B-Instruct) (fp8 or bf16) | Writing the shot list, locally | every tier | Apache-2.0 | Allowed |
 | [Whisper](https://huggingface.co/ggerganov/whisper.cpp) large-v3-turbo or small.en (ggml) | Word timings for captions | every tier (on the machine that exports) | MIT | Allowed |
 | [Silero VAD](https://github.com/snakers4/silero-vad) v6.2 (ggml) | Finding speech for caption timing | every tier (on the machine that exports) | MIT | Allowed |
 
-**Several of these licenses restrict commercial use.** Breeze TTS 2 and the MMAudio VAE are non-commercial. LTX 2.5,
-Krea 2, MiniMax H3, MiniMax Music 3 and the Hunyuan VAE are community licenses with revenue limits, labeling rules
-or territory limits. The Nightshift code is Apache-2.0, but a video made with the default models is not
+**Several of these licenses restrict commercial use.** Breeze TTS 2, YuE2-3B and the MMAudio VAE are non-commercial.
+LTX 2.5, Krea 2, MiniMax H3 and the Hunyuan VAE are community licenses with revenue limits, labeling rules or
+territory limits. The Nightshift code is Apache-2.0, but a video made with the default models is not
 automatically cleared for commercial use. Read each license before you publish what you make. Comfy staff
 confirmed that downloadable weights under restricted licenses count as open weights for this contest.
 
@@ -282,20 +287,23 @@ sizes and memory bandwidth ([napkin math](research/2026-10-19_napkin_math.md)), 
 
 | Tier | Example | Still / draft / final models | Download | Still, draft, same-take final, remaster | Status |
 |---|---|---|---|---|---|
-| unified-128-cuda | DGX Spark (GB10, 128 GB unified) | Krea 2 bf16 / LTX 2.5 int8 / same take or H3 remaster; Music 3 | 148 GB | 31 s, 56 s, 81 s, 10 min | **Tested** |
+| unified-128-cuda | DGX Spark (GB10, 128 GB unified) | Krea 2 bf16 / LTX 2.5 int8 / same take or H3 remaster; YuE2 | 137 GB | 31 s, 56 s, 81 s, 10 min | **Tested** |
 | apple-64 | Apple Silicon, 64 GB or more | Krea 2 bf16 / LTX 2.5 bf16 / same take; ACE-Step | 122 GB | ~50 s, ~2 min, ~4 min, none | Estimated |
-| nvidia-32 | RTX 5090 | Krea 2 NVFP4 / LTX 2.5 int8 / same take or H3; Music 3 | 127 GB | ~15 s, ~25 s, ~45 s, ~3.5 min | Estimated |
+| nvidia-32 | RTX 5090 | Krea 2 NVFP4 / LTX 2.5 int8 / same take or H3; YuE2 | 117 GB | ~15 s, ~25 s, ~45 s, ~3.5 min | Estimated |
 | nvidia-24-offload | RTX 4090 or 3090 with 64 GB RAM | Krea 2 int8 / LTX 2.5 int8 offloaded / same take or H3; ACE-Step | 140 GB | ~25 s, ~40 s, ~80 s, ~6 min | Estimated |
 | nvidia-12-offload | 12 to 16 GB card with 64 GB RAM | MOSS-Image / LTX 2.5 int8 heavily offloaded / same take; ACE-Step | 76 GB | ~2 min, ~2 min, ~3.5 min, none | Estimated |
 | nvidia-8 | 8 to 16 GB card with 16 GB RAM, like an RTX 2080 Super | MOSS-Image / Kandinsky 6 Lite / 2x pixel upscale; ACE-Step | 56 GB | 141 to 142 s, 47 to 55 s, under 2 s, none | **Tested** on an RTX 2080 Super |
 | apple-16 | Apple Silicon, 16 to 32 GB | MOSS-Image / Kandinsky 6 Lite / 2x pixel upscale; ACE-Step | 63 GB | ~9 min, ~24 min, seconds, none | Experimental estimate |
 
 The DGX Spark times are single cold jobs through the SDK, with model loading: a 768x768 still, a 640x384 draft of
-97 frames (4 s at 24 fps) with sound, its 1280x768 same-take final, and a 1280x768 H3 remaster. In the four real
+97 frames (4 s at 24 fps) with sound, its same-take final (1280x768 when measured; the Spark now finishes at 2560x1536 in about 267 s), and a 1280x768 H3
+remaster. In the four real
 projects made through the app on the same Spark, shared with other work, a shot list took 4 to 11 s, stills 9 to
 21 s, drafts 46 to 139 s, same-take finals 60 to 91 s (one that waited through a runtime restart took 288 s),
 remasters 4 to 7 minutes, a voice line 7 to 40 s and a song 25 to 147 s. 1080p exports took 8 to 46 s on the Mac.
-Every job is in [docs/qa/real/job_timings.json](docs/qa/real/job_timings.json).
+Every job is in [docs/qa/real/job_timings.json](docs/qa/real/job_timings.json). Those songs came from MiniMax Music 3.
+YuE2-3B replaced it and makes a 30-second song in 24 to 68 s on the Spark, per the
+[lab record](research/2026-10-31_yue2_music.md).
 
 The RTX 2080 Super times are from the local test in [Tested hardware](#tested-hardware), with the card to itself: a
 960x640 still, a 384x256 draft of 49 frames with sound, and its 768x512 same-take final. The `nvidia-8` recipe
@@ -309,6 +317,7 @@ carries these measured times, so the app calls this tier tested.
 | [comfy-api-proxy](https://github.com/Comfy-Org/comfy-api-proxy) 0.1.6 | Comfy's API in front of ComfyUI | MIT |
 | [@comfyorg/sdk](https://www.npmjs.com/package/@comfyorg/sdk) 0.5.0, [comfy-sdk](https://pypi.org/project/comfy-sdk/) | Submitting workflows from the engine and the lab scripts | MIT |
 | Node packs: [ComfyUI-Breeze-TTS-2](https://github.com/Saganaki22/ComfyUI-Breeze-TTS-2), [MOSS-Image](https://github.com/OpenMOSS/MOSS-Image), [kandinsky-6](https://github.com/kandinskylab/kandinsky-6) | Voice, small-tier stills and video, pinned per recipe | Apache-2.0, Apache-2.0, MIT |
+| YuE2 score tools from m-a-p's [yue2-music skill](https://github.com/multimodal-art-projection/YuE/tree/0495110587a44ed00278929a63cb14a618da8992/skills/yue2-music/instrumental), vendored in `comfy_nodes/nightshift/yue2_score` | Move a planned vocal melody to an instrument, so YuE2 songs are instrumental | MIT |
 | [HyperFrames](https://github.com/heygen-com/hyperframes) 0.8 | Renders the editor's HTML compositions (titles, captions, cards) to video | Apache-2.0 |
 | Chrome headless shell, through [@puppeteer/browsers](https://github.com/puppeteer/puppeteer) | The browser HyperFrames renders in | Chromium's BSD-style licenses; @puppeteer/browsers is Apache-2.0 |
 | [FFmpeg](https://ffmpeg.org) | Trims, mixes, muxes and probes media. Run as a separate program, never linked. The Mac app bundles a Homebrew build with its license files | GPL (the bundled build enables GPL parts) |
@@ -326,8 +335,11 @@ carries these measured times, so the app calls this tier tested.
 
 ## Known limits
 
-- **Music is meant to be instrumental.** The form says songs have no sung lyrics, and the app asks for none. Even
-  so, in one test MiniMax Music 3 sang in seven of eight 90-second songs. Orchestral prompts fared better.
+- **Songs are instrumental.** YuE2-3B is a song model, so Nightshift follows its authors' instrumental recipe: plan
+  the song, move the vocal melody to an instrument, then render it. In the lab, Whisper heard words in 1 of 22 songs,
+  against 4 of 10 for MiniMax Music 3, the model it replaced. The song is the opening of a longer plan, and a
+  60-second request can come back a little shorter. A music video then cuts to the song. Smaller machines use
+  ACE-Step, which was checked on fewer songs.
 - **Lettering drifts on products.** Photo-conditioned stills keep the product's shape and color but invent text and
   logos. The end card uses your original photo.
 - **The portrait crop is a heuristic.** Turning a 16:9 shot into 9:16 follows the brightest, busiest area, which can

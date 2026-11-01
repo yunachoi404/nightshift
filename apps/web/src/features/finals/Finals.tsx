@@ -1,15 +1,16 @@
 import type { FinalKind, Job, Project, Shot } from "@nightshift/contract";
-import { Film, Moon, Share2, Sparkles, Sun, Sunrise } from "lucide-react";
+import { Film, Moon, Share2, Sun, Sunrise } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router";
 import { useEngine, useEngineState, useProject, useProjectJobs } from "@/store/engine";
 import { upscaleOnly, useInstalledTier } from "@/store/tier";
 import { Button, Dialog, Notice, Tag, cx, toast, radioGroupKeyDown } from "@/ui/primitives";
+import { Star } from "@/ui/Star";
 import { Media } from "@/media/Media";
 import { activeJob, bestAssetFor, draftsFor, failureText, frameClass, jobLabel, jobStatusLine, lastFailed, takeById, timelineShots } from "@/features/project/helpers";
 import { useNow } from "@/lib/useNow";
 import { clock, clockFromDate, plural, roughDuration, shortDuration } from "@/lib/format";
-import { insideWindow, nextWindowStart } from "@/lib/overnight";
+import { insideWindow, nextWindowStart, tonightStart } from "@/lib/overnight";
 import { useMorningSummary } from "./morning";
 import { RevealSheet } from "@/features/reveal/RevealSheet";
 import { revealable } from "@/features/reveal/reveal";
@@ -78,7 +79,7 @@ function ProjectFinals({ project }: { project: Project }) {
       if (mode === "now") toast({ title: `Finishing ${plural(chosen.length, "shot")}`, text: `${cap(roughDuration(totalSec))} in all. You can keep working.`, tone: "accent" });
       else {
         setNightOpen(false);
-        toast({ title: `${plural(chosen.length, "final")} queued for tonight`, text: `Starts at ${clock(startAt)}.`, tone: "night" });
+        toast({ title: `${plural(chosen.length, "final")} queued for tonight`, text: tonightStart({ startAt, endAt }, Date.now()).text, tone: "night" });
       }
     } catch (e) {
       toast({ title: "Couldn't queue the finals", text: e instanceof Error ? e.message : String(e), tone: "bad" });
@@ -175,7 +176,7 @@ function ProjectFinals({ project }: { project: Project }) {
             <span className="kind__name">
               Remaster
               <Tag tone="night">
-                <Sparkles /> Best quality
+                <Star /> Best quality
               </Tag>
             </span>
             <span className="kind__text">
@@ -244,7 +245,7 @@ function ProjectFinals({ project }: { project: Project }) {
             </div>
             <div className="insp__kv">
               <span>Starts</span>
-              <b>{overnightRunning ? "Running now" : overnightEnabled ? clock(startAt) : "Paused in Settings"}</b>
+              <b>{overnightRunning ? "Running now" : !overnightEnabled ? "Paused in Settings" : insideWindow(startAt, endAt, now) ? "When the GPU is free" : clock(startAt)}</b>
             </div>
             <div className="insp__kv">
               <span>Done by</span>
@@ -289,7 +290,7 @@ function ProjectFinals({ project }: { project: Project }) {
             <div>
               <h2 className="dialog__title">Tonight, while you sleep</h2>
               <p className="dialog__text">
-                At {clock(startAt)} Nightshift renders {plural(chosen.length, "final")} at the heaviest settings this machine allows, one after another. In the morning the finals are here, with a note on how it went.
+                {insideWindow(startAt, endAt, now) ? `The night shift is on until ${clock(endAt)}. Once the GPU is free, Nightshift` : `At ${clock(startAt)} Nightshift`} renders {plural(chosen.length, "final")} at the heaviest settings this machine allows, one after another. In the morning the finals are here, with a note on how it went.
               </p>
             </div>
           </div>

@@ -1,4 +1,5 @@
-// Builds assets/icon.png and assets/icon.icns from assets/icon.svg.
+// Builds assets/icon.png and assets/icon.icns from assets/icon.svg, and the web build's apple-touch-icon.png from
+// assets/touch-icon.svg.
 // The SVG is written from the app's mark source by `node scripts/render_mark.mjs` at the repo root, which also
 // runs this script. Rasterizing uses the editor's headless Chrome (the same one exports use; it is downloaded
 // into artifacts/render-browser when missing). The icns step needs macOS (sips, iconutil).
@@ -18,6 +19,13 @@ await mkdir(resolve(root, 'artifacts'), { recursive: true });
 await writeFile(page, `<!doctype html><html><body style="margin:0;background:transparent"><img src="${pathToFileURL(asset('icon.svg')).href}" width="1024" height="1024" style="display:block"></body></html>`);
 execFileSync(chrome, ['--headless', '--no-sandbox', '--disable-gpu', '--hide-scrollbars', '--default-background-color=00000000', '--force-device-scale-factor=2', '--window-size=1024,1024', `--screenshot=${asset('icon.png')}`, pathToFileURL(page).href], { stdio: 'ignore' });
 await rm(page, { force: true });
+
+// The touch icon for the browser demo and the web build: the full-bleed tile at 180.
+const touchPage = resolve(root, 'artifacts/touch.html');
+const touchPng = resolve(root, '../web/public/apple-touch-icon.png');
+await writeFile(touchPage, `<!doctype html><html><body style="margin:0"><img src="${pathToFileURL(asset('touch-icon.svg')).href}" width="180" height="180" style="display:block"></body></html>`);
+execFileSync(chrome, ['--headless', '--no-sandbox', '--disable-gpu', '--hide-scrollbars', '--force-device-scale-factor=1', '--window-size=180,180', `--screenshot=${touchPng}`, pathToFileURL(touchPage).href], { stdio: 'ignore' });
+await rm(touchPage, { force: true });
 
 if (process.platform !== 'darwin') {
   console.log('wrote', asset('icon.png'), '(icon.icns is built on macOS)');

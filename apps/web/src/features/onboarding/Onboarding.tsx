@@ -1,5 +1,5 @@
 import type { HardwareProfile, InstallPlan, Job, Project, TierSummary } from "@nightshift/contract";
-import { Check, ChevronDown, ChevronRight, Cpu, Film, FolderOpen, HardDrive, Image, MemoryStick, Mic, Monitor, Music, PenLine, Search, Sparkles, Wand2 } from "lucide-react";
+import { Check, ChevronDown, ChevronRight, Cpu, Film, FolderOpen, HardDrive, Image, MemoryStick, Mic, Monitor, Music, Search, Sparkles, Wand2 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useNavigate } from "react-router";
 import { isBrowserDemo, isDevMock } from "@/api/config";
@@ -7,7 +7,8 @@ import { getMockEngine } from "@/api/mock/engine";
 import { ApiError } from "@/api/client";
 import { useEngine, useEngineState, useJobs, useProject } from "@/store/engine";
 import { Button, Field, Input, Notice, Segmented, Select, Slider, Tag, cx, toast } from "@/ui/primitives";
-import { Mark } from "@/ui/Mark";
+import { Mark, BrandTile } from "@/ui/Mark";
+import { Moon } from "@/ui/Moon";
 import { gb, roughDuration, shortDuration } from "@/lib/format";
 import { Media } from "@/media/Media";
 import { demoSwitch, enterDemo, leaveDemo, useDemoMode, useDemoSwitch } from "@/store/demo";
@@ -151,13 +152,13 @@ function Welcome({ onNext }: { onNext: () => void }) {
     <div className="ob__step ob__step--hero">
       <div className="ob__hero-top">
         <Rise i={0} className="ob__brand">
-          <Mark size={28} />
+          <BrandTile />
           <span>Nightshift</span>
         </Rise>
         <Rise i={1} className="ob__head">
-          <h1 className="ob__hero">A night shift for your videos.</h1>
+          <h1 className="ob__hero">A night shift for your videos</h1>
           <p className="ob__sentence">
-            Make <Chip img="whatif" after=",">What if? films</Chip> <Chip img="film" after=",">cinematic shots</Chip> <Chip img="music" after=",">music videos</Chip>
+            Make <Chip img="whatif" after=",">What if? films</Chip> <Chip img="drama" after=",">micro dramas</Chip> <Chip img="music" after=",">music videos</Chip>
             <br className="ob__break" /> <Chip img="ad">product ads</Chip> and <Chip img="intro">talking intros</Chip> on hardware you own.
           </p>
           <p className="ob__promise">Drafts by day. Finals overnight. Nothing leaves your machines.</p>
@@ -166,7 +167,7 @@ function Welcome({ onNext }: { onNext: () => void }) {
           <Button variant="primary" size="l" className="ob__cta ob__go" onClick={onNext}>
             Get started
           </Button>
-          <span className="ob__fine">{demo ? "Sample renders. Nothing is downloaded." : "Setup is mostly one large download."}</span>
+          <span className="ob__fine">{demo ? "Sample renders. Nothing is downloaded." : "Setup is mostly one large download"}</span>
           <DemoChoice />
         </Rise>
       </div>
@@ -228,7 +229,7 @@ function Detect({ onNext, onBack }: { onNext: (hw: HardwareProfile) => void; onB
       const result = await client.hardware();
       setHw(result);
     } catch (e) {
-      setError(e instanceof ApiError ? e.message : "Could not read your hardware.");
+      setError(e instanceof ApiError ? e.message : "Could not read your hardware");
     }
   }, [client]);
 
@@ -276,7 +277,7 @@ function Detect({ onNext, onBack }: { onNext: (hw: HardwareProfile) => void; onB
       </Rise>
       <Rise i={1} className="ob__head">
         <h1 className="ob__title">{where === "remote" ? "A GPU computer on your network" : error || manual ? "Tell Nightshift about this machine" : sample ? "Here's a sample machine" : done ? "Here's what you've got" : "Looking at your machine"}</h1>
-        <p className="ob__lead">{where === "remote" ? "Renders go there. Projects stay here." : error ? "It couldn't read the hardware. Fill in the basics." : manual ? "Models and settings are picked for this exact hardware." : sample ? "A browser can't read your machine. Each of these gets its own setup." : "Models and settings picked for this exact hardware."}</p>
+        <p className="ob__lead">{where === "remote" ? "Renders go there. Projects stay here." : error ? "It couldn't read the hardware. Fill in the basics." : manual ? "Models and settings are picked for this exact hardware" : sample ? "A browser can't read your machine. Each of these gets its own setup." : "Models and settings picked for this exact hardware"}</p>
       </Rise>
       {where === "local" && <SetupAgain />}
 
@@ -470,7 +471,7 @@ function ManualForm({ initial, onSave, onCancel }: { initial: HardwareProfile | 
         </label>
       )}
       {!unified && vendor !== "none" && (
-        <Field label="Graphics memory, GB" hint="Printed on the box, or in your system info.">
+        <Field label="Graphics memory, GB" hint="Printed on the box, or in your system info">
           {(id) => <Input id={id} inputMode="numeric" value={vram} onChange={(e) => setVram(e.target.value)} placeholder="24" />}
         </Field>
       )}
@@ -580,7 +581,7 @@ function Tier({ hardware, choice, onChoose, onInstall, onBack }: { hardware: Har
       <div className="ob__step">
         <Rise i={0} className="ob__head">
           <h1 className="ob__title">Couldn't load the setups</h1>
-          <p className="ob__lead">Nightshift couldn't find its setups.</p>
+          <p className="ob__lead">Nightshift couldn't find its setups</p>
         </Rise>
         <Actions
           step="tier"
@@ -688,7 +689,7 @@ function Tier({ hardware, choice, onChoose, onInstall, onBack }: { hardware: Har
     <div className="ob__step">
       <Rise i={0} className="ob__head">
         <h1 className="ob__title">{tier ? headlineFor(tier, recommended) : ""}</h1>
-        <p className="ob__lead">{tier && tier.tier !== recommended.tier ? "Downloads less, renders a bit softer." : "Nightshift picks the models. You never have to."}</p>
+        <p className="ob__lead">{tier && tier.tier !== recommended.tier ? "Downloads less, renders a bit softer" : "Nightshift picks the models. You never have to."}</p>
       </Rise>
       <SetupAgain />
       {tier && (
@@ -1172,7 +1173,7 @@ function Install({ choice, onInstall, onBack }: { choice: Choice | null; onInsta
       </Rise>
       <Rise i={1} className="ob__head">
         <h1 className="ob__title">{demo ? (error ? "Demo setup stopped" : "Setting up the demo") : remote ? (error ? "Connecting stopped" : `Connecting to ${remoteName}`) : error ? "The download stopped" : checking ? "Checking the models you have" : "Downloading your setup"}</h1>
-        <p className="ob__lead">{demo ? "Nothing is downloaded." : remote ? "Setting up the link. No models are downloaded here." : error ? "Finished files stay on disk. Trying again picks up where it stopped." : checking ? "Each file is read once to make sure it is the right one. Your files are not changed." : "Minimize this window and come back. Finished files stay if you quit."}</p>
+        <p className="ob__lead">{demo ? "Nothing is downloaded" : remote ? "Setting up the link. No models are downloaded here." : error ? "Finished files stay on disk. Trying again picks up where it stopped." : checking ? "Each file is read once to make sure it is the right one. Your files are not changed." : "Minimize this window and come back. Finished files stay if you quit."}</p>
       </Rise>
       {error ? (
         <div className="ob__notice"><Notice tone="bad" title="Stopped">
@@ -1250,7 +1251,7 @@ function Starting() {
       </Rise>
       <Rise i={1} className="ob__head">
         <h1 className="ob__title">Starting the engine</h1>
-        <p className="ob__lead">{demo ? "Preparing your sample shot." : remote ? `Opening the link to ${remoteName}.` : "The first start takes a little longer."}</p>
+        <p className="ob__lead">{demo ? "Preparing your sample shot" : remote ? `Opening the link to ${remoteName}.` : "The first start takes a little longer"}</p>
       </Rise>
       <Rise i={2} className="ob__progress">
         <StepBar frac={null} />
@@ -1340,10 +1341,10 @@ function FirstShot() {
     <div className="ob__step ob__step--wide">
       <Rise i={0} className="ob__head">
         <h1 className="ob__title">{stage === "done" ? (demo ? "Your demo shot" : remoteName ? `${remoteName} made this` : "Your machine made this") : "Your first shot"}</h1>
-        <p className="ob__lead">{stage === "done" ? `${isBrowserDemo() ? "A real still and motion draft, made on an RTX 2080 Super and replayed here." : demo ? `A placeholder still and motion draft, in ${elapsed ? shortDuration(elapsed) : "a few seconds"}.` : `A still, then a motion draft, in ${elapsed ? shortDuration(elapsed) : "under a minute"}.`} ${upscale ? `A final upscales the take you like${upscale.to}` : "A final sharpens the take you like"}, now or overnight.` : `A lighthouse in a storm, camera pushing in. ${isBrowserDemo() ? "Real renders, replayed while you watch." : demo ? "Placeholder renders, made here while you watch." : `Made ${remoteName ? `on ${remoteName}` : "on your machine"} while you watch.`}`}</p>
+        <p className="ob__lead">{stage === "done" ? `${isBrowserDemo() ? "A real still and motion draft, made on an RTX 2080 Super and replayed here" : demo ? `A placeholder still and motion draft, in ${elapsed ? shortDuration(elapsed) : "a few seconds"}.` : `A still, then a motion draft, in ${elapsed ? shortDuration(elapsed) : "under a minute"}.`} ${upscale ? `A final upscales the take you like${upscale.to}` : "A final sharpens the take you like"}, now or overnight.` : `A lighthouse in a storm, camera pushing in. ${isBrowserDemo() ? "Real renders, replayed while you watch" : demo ? "Placeholder renders, made here while you watch" : `Made ${remoteName ? `on ${remoteName}` : "on your machine"} while you watch.`}`}</p>
       </Rise>
       <Rise i={1} className={cx("frame ob__shot", frameClass("16:9"), !best && "frame--empty", showSteps && "shimmer", active && best?.rung !== "draft" && "frame--working", stage === "done" && "ob__shot--done")}>
-        {showSteps && <SampleSteps current={current} done={doneSteps} />}
+        {showSteps && <SampleSteps current={current} done={doneSteps} progress={active?.status === "running" && current === sampleStepOf(active.step) ? active.progress : 0} />}
         {best && <Media src={client.assetUrl(project!.id, best.asset.id)} kind={best.rung === "still" ? "image" : "video"} playing durationSec={shot?.durationSec} />}
         {best && best.rung === "draft" && (
           <div className="frame__corner">
@@ -1409,7 +1410,7 @@ function FirstShot() {
         ) : stage === "done" ? (
           // A dot on this line means something is running; a finished draft and a wait before it have none.
           <span>
-            <b>Draft ready.</b> {upscale ? `The final upscales it${upscale.to}.` : "Soft on purpose. The final sharpens it."}
+            <b>Draft ready</b> {upscale ? `The final upscales it${upscale.to}.` : "Soft on purpose. The final sharpens it."}
           </span>
         ) : (
           <>
@@ -1441,14 +1442,17 @@ function sampleStepOf(step: Job["step"]): SampleStep {
   return step === "text" ? "text" : step === "still" ? "still" : "draft";
 }
 
-const sampleStepNames: Record<SampleStep, { label: string; icon: ReactNode }> = {
-  text: { label: "Shot list", icon: <PenLine /> },
-  still: { label: "Still", icon: <Image /> },
-  draft: { label: "Draft", icon: <Film /> },
+const sampleStepNames: Record<SampleStep, { label: string }> = {
+  text: { label: "Shot list" },
+  still: { label: "Still" },
+  draft: { label: "Draft" },
 };
 
-/** The sample's steps in the empty frame: what is done, what is under way, what comes next. */
-function SampleSteps({ current, done }: { current: SampleStep | undefined; done: SampleStep[] }) {
+/**
+ * The sample's steps in the empty frame, in moon phases: a step done is a full moon, the one under way waxes as its
+ * render goes, and one to come is a new moon.
+ */
+function SampleSteps({ current, done, progress }: { current: SampleStep | undefined; done: SampleStep[]; progress: number }) {
   return (
     <ol className="ob__steps">
       {SAMPLE_STEPS.map((s) => {
@@ -1456,7 +1460,7 @@ function SampleSteps({ current, done }: { current: SampleStep | undefined; done:
         return (
           <li key={s} className={cx("ob__stp", `ob__stp--${state}`)} aria-current={state === "now" ? "step" : undefined}>
             <span className="ob__stp-mark" aria-hidden>
-              {state === "done" ? <Check /> : sampleStepNames[s].icon}
+              <Moon phase={state === "done" ? 1 : state === "now" ? Math.min(0.9, progress) : 0} sliver={state !== "next"} size={28} />
             </span>
             <span className="ob__stp-label">
               {sampleStepNames[s].label}

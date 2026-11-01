@@ -9,7 +9,7 @@ import { resolveTools, type ResolvedTools, type ToolOverrides } from "../media/t
 import { resolveStyle, type TimelineStyle } from "../style.js";
 import { assetPath } from "../timeline/assemble.js";
 import { timelineDuration } from "../timeline/plan.js";
-import { buildComposition, type Scene, type SceneClip } from "./composition.js";
+import { buildComposition, END_CARD_COVERED, type Scene, type SceneClip } from "./composition.js";
 import { installFonts } from "./fonts.js";
 import { grainPng } from "./grain.js";
 import { renderPicture } from "./hyperframes.js";
@@ -222,7 +222,9 @@ export async function buildCompositionFolder(project: Project, timeline: Timelin
       file = `media/s${i}${extname(src) || ".png"}`;
       await copyFile(src, join(compDir, file));
     } else {
-      if (clip.out > info.durationSec + 0.1) warnings.push(`Clip ${i + 1} runs past the end of ${asset.path}; the last frame holds.`);
+      // An ad's last shot runs on under its end card by design: by the time it runs out, the card covers it.
+      const covered = (parsed.overlays ?? []).some((o) => o.kind === "end_card" && clip.start + info.durationSec - clip.in >= o.start + END_CARD_COVERED - 0.05);
+      if (clip.out > info.durationSec + 0.1 && !covered) warnings.push(`Clip ${i + 1} runs past the end of ${asset.path}; the last frame holds.`);
       file = `media/c${i}.mp4`;
       await trimClip(tools, src, join(compDir, file), clip.in, length, fps, { signal });
     }

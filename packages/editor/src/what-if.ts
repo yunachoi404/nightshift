@@ -9,6 +9,6 @@ export const whatIfStyle: TimelineStyle = {
   picture: { reframe: "crop", letterbox: null, vignette: 0.08, grain: 0, stillMotion: 0, videoMotion: 0 },
   transition: { kind: "dissolve", duration: 0, accent: "none", sectionFlash: false, head: 0, tail: 0 },
   beatPulse: 0,
-  captions: { enabled: true, look: "karaoke", position: "lower", size: 1.6, uppercase: false, maxChars: 24 },
+  captions: { enabled: true, look: "karaoke", position: "lower", size: 1.6, uppercase: false, maxChars: 24, pinned: false },
   audio: { targetLufs: -14, voiceLufs: -16, musicLufs: -18, bedLufs: -28, clipLufs: -30, duckDb: -10, musicFadeIn: 0.2, musicFadeOut: 0.8 },
 };

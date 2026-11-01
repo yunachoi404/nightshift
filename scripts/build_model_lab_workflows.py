@@ -21,7 +21,7 @@ def write(name, graph, inputs, outputs, params=None):
     path.with_suffix(".ref.json").write_text(
         json.dumps(
             {
-                "workflow": path.name,
+                "workflow": path.relative_to(ROOT / "workflows").as_posix(),
                 "inputs": {k: {"node": v[0], "field": v[1]} for k, v in inputs.items()},
                 "params": params or {},
                 "outputNodes": outputs,
@@ -475,6 +475,7 @@ def image_music_text():
     a["9"]["inputs"]["filename_prefix"] = "nightshift/ace15"
     ai = dict(mi, prompt=("4", "tags"))
     write("ace15_turbo", a, ai, ["9"])
+    yue2()
     t = {
         "1": node(
             "CLIPLoader",
@@ -565,6 +566,87 @@ def image_music_text():
         },
         ["3"],
     )
+
+
+def yue2():
+    """YuE2-3B, after ComfyUI's "YuE2: Text to Music" template. One checkpoint holds the language model, the
+    acoustic model and the decoder. Empty lyrics ask for an instrumental. The lab graph also carries the template's
+    ABC planner, unlinked; a run links it with `--set 4.abc=["12",0]`."""
+    style = "Instrumental. Warm downtempo beat at 90 BPM, soft piano, rounded bass, quiet crisp drums. A clear two-bar motif, no vocals, no lyrics."
+    y = {
+        "1": node("CheckpointLoaderSimple", ckpt_name="yue2_3b_int8_convrot.safetensors"),
+        "4": node(
+            "YuE2GenerateMusic",
+            clip=["1", 1],
+            style=["13", 0],
+            lyrics=["14", 0],
+            abc="",
+            seed=["11", 0],
+            mode="full",
+            max_duration=["10", 0],
+            temperature=1.0,
+            top_p=0.95,
+            top_k=100,
+            repetition_penalty=1.2,
+        ),
+        "5": node("ConditioningZeroOut", conditioning=["4", 0]),
+        # The language model can end the song before max_duration; the latent takes the length it made.
+        "6": node("EmptyYuE2LatentAudio", seconds=["4", 1], batch_size=1),
+        "7": node(
+            "KSampler",
+            model=["1", 0],
+            positive=["4", 0],
+            negative=["5", 0],
+            latent_image=["6", 0],
+            seed=["11", 0],
+            steps=32,
+            cfg=1,
+            sampler_name="dpm_2",
+            scheduler="sgm_uniform",
+            denoise=1,
+        ),
+        "8": node("VAEDecodeAudio", samples=["7", 0], vae=["1", 2]),
+        "9": node("SaveAudio", audio=["8", 0], filename_prefix="nightshift/yue2"),
+        "10": node("PrimitiveFloat", value=12),
+        "11": node("PrimitiveInt", value=42),
+        "13": node("PrimitiveStringMultiline", value=style),
+        "14": node("PrimitiveStringMultiline", value=""),
+    }
+    inputs = {
+        "prompt": ("13", "value"),
+        "lyrics": ("14", "value"),
+        "seed": ("11", "value"),
+        "durationSec": ("10", "value"),
+    }
+    lab = copy.deepcopy(y)
+    lab["12"] = node(
+        "YuE2GenerateABC",
+        clip=["1", 1],
+        style=["13", 0],
+        lyrics=["14", 0],
+        seed=["11", 0],
+        mode="full",
+        max_abc_tokens=8192,
+        temperature=0.7,
+        top_p=0.9,
+        top_k=30,
+        repetition_penalty=1.005,
+        penalty_window=100,
+    )
+    write("tests/yue2_music_lab", lab, inputs, ["9"])
+    # The shipped graph follows YuE2's own instrumental recipe: the planner lays out a song form from section-tag
+    # lyrics, NightshiftYuE2Instrumental moves its vocal melody to the instrument part, and the score is rendered
+    # with an instrumental style. Lyrics with words go through unchanged and are sung.
+    app = copy.deepcopy(lab)
+    app["14"]["inputs"]["value"] = "[Intro]\n\n[Verse]\n\n[Chorus]\n\n[Outro]\n"  # music.PLAN_LYRICS
+    app["15"] = node("NightshiftYuE2Instrumental", abc=["12", 0], style=["13", 0], lyrics=["14", 0])
+    app["4"]["inputs"].update(style=["15", 1], lyrics=["15", 2], abc=["15", 0])
+    app["10"]["inputs"]["value"] = 30
+    write("yue2_music", app, inputs, ["9"])
+    # The planner alone, saving its ABC score as text for the lab's offline voice transfer.
+    plan = {k: copy.deepcopy(lab[k]) for k in ["1", "11", "12", "13", "14"]}
+    plan["15"] = node("NightshiftSaveText", text=["12", 0], filename_prefix="nightshift/yue2_abc")
+    write("tests/yue2_abc_plan", plan, {k: inputs[k] for k in ["prompt", "lyrics", "seed"]}, ["15"])
 
 
 def optional_workflows():

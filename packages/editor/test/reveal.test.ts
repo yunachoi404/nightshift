@@ -41,6 +41,14 @@ function project(o: { finalKind?: Take["finalKind"]; parent?: string; shots?: nu
   return { id: "p", name: "Ferry", template: "cinematic_shot", aspect: "16:9", brief: o.photo ? { photoAssetId: "photo" } : {}, shots, takes, assets, timeline: null, createdAt: NOW, updatedAt: NOW };
 }
 
+/** The project as a What if? film: its shot is the film, the one with keyframes. */
+function asFilm(p: Project, brief: Project["brief"]): Project {
+  p.template = "what_if";
+  p.brief = brief;
+  p.shots[0]!.keyframes = [0, 1, 2, 3].map((i) => ({ id: `beat-${i}`, prompt: `Beat ${i}`, line: "" }));
+  return p;
+}
+
 describe("pairing", () => {
   it("pairs the final with the draft it was made from, not the draft the shot picked since", () => {
     const pair = revealPair(project());
@@ -74,18 +82,18 @@ describe("pairing", () => {
     uploadedStill.brief = { photoAssetId: "still" };
     expect(revealPair(uploadedStill).opening).toBe("One photo.");
     // A What-if from a typed question opens on the question itself; a long one on "One question."
-    const whatIf = project();
-    whatIf.template = "what_if";
-    whatIf.brief = { question: "What if you fell into Jupiter" };
+    const whatIf = asFilm(project(), { question: "What if you fell into Jupiter" });
     expect(revealPair(whatIf).sourceKind).toBe("question");
     expect(revealPair(whatIf).opening).toBe("What if you fell into Jupiter?");
     whatIf.brief = { question: "What if every lamp post in the city turned into a tree overnight?" };
     expect(revealPair(whatIf).opening).toBe("One question.");
     // A What-if from the user's own photo is still a photo.
-    const whatIfPhoto = project();
-    whatIfPhoto.template = "what_if";
-    whatIfPhoto.brief = { question: "What if gravity stopped?", photoAssetId: "still" };
+    const whatIfPhoto = asFilm(project(), { question: "What if gravity stopped?", photoAssetId: "still" });
     expect(revealPair(whatIfPhoto).opening).toBe("One photo.");
+    // A card made with the tools in a What if? film is not the film: it opens as any card does.
+    const card = asFilm(project(), { question: "What if you fell into Jupiter?" });
+    card.shots[0]!.keyframes = undefined;
+    expect(revealPair(card).opening).toBe("One still.");
     // No picture at all: the shot's name.
     const bare = project({ still: false });
     bare.takes[0]!.imageAssetId = undefined;
@@ -351,9 +359,7 @@ describe.skipIf(!canRender)("a rendered reveal", { timeout: 180_000 }, () => {
       run(tools.ffmpeg, ["-v", "error", "-y", "-f", "lavfi", "-i", `testsrc2=size=${w}x${h}:rate=24:duration=${361 / 24}`, "-frames:v", "361", "-c:v", "libx264", "-pix_fmt", "yuv420p", out]);
     await long(join(dir, "long-draft.mp4"), 192, 320);
     await long(join(dir, "long-final.mp4"), 384, 640);
-    const p = project();
-    p.template = "what_if";
-    p.brief = { question: "What if you fell into Jupiter?" };
+    const p = asFilm(project(), { question: "What if you fell into Jupiter?" });
     p.assets = [
       { id: "still", kind: "image", path: "still.png", createdAt: NOW },
       { id: "dv", kind: "video", path: "long-draft.mp4", width: 192, height: 320, createdAt: NOW },

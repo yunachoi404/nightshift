@@ -30,7 +30,7 @@
   opacity: 0.55;
 }
 .kind__name {
-  font-weight: 600;
+  font-weight: 500;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -97,7 +97,7 @@
   gap: 8px;
 }
 .fn-row__n {
-  font-weight: 600;
+  font-weight: 500;
 }
 .fn-row__prompt {
   color: var(--text-3);
@@ -192,7 +192,7 @@
 .night__row b {
   display: block;
   font-family: var(--font-display);
-  font-weight: 400;
+  font-weight: var(--fw-display);
   font-size: var(--fs-title-3);
   line-height: var(--lh-title-3);
   margin-top: 2px;
@@ -215,4 +215,9 @@
   .fn-row__state {
     grid-column: 3;
   }
+}
+
+/* Finish N shots tonight beside another warm action: plain, its moon in the night's amber. */
+.finish-tonight--quiet svg {
+  color: var(--amber-fill);
 }

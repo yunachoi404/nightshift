@@ -170,6 +170,20 @@ An explainer with an editorial voice.
 
 ![](exports/intro_1x1_name_tag.jpg)
 
+## Micro drama
+
+A scene people binge on a phone: tall by default, hard cuts, the characters' own voices, big subtitles.
+
+- **Picture**: the shots end to end on hard cuts, no letterbox, a light 18% vignette, no grain. No title card: an
+  episode opens on its first shot.
+- **Sound**: each shot plays its own sound up front (`clipLufs` -16), because the video model voiced the character's
+  line in it. A song, if added, sits low under them (-24 LUFS, -30 as a bed).
+- **Subtitles**: each shot's line is one subtitle, Inter Display at 1.45x in white, low in the picture (24% from the
+  bottom on a tall frame), up for the whole shot from just after the cut. The line was said somewhere in the shot, so
+  the subtitle holds while it can be said. They are pinned (`captions.pinned`): they stay on that line in every shot
+  instead of dodging each close-up's face, so they never jump between the top and the bottom, and a scrim keeps them
+  readable over a bright frame.
+
 ## Style is data
 
 Everything above is a default in `packages/editor/src/style.ts`. A timeline's `style` overrides any of it: palette,

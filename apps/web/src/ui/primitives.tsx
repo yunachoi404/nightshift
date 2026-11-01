@@ -110,9 +110,9 @@ export function radioGroupKeyDown(e: KeyboardEvent<HTMLElement>) {
   options[next]?.click();
 }
 
-export function Segmented<T extends string>({ value, onChange, options, label, size }: { value: T; onChange: (v: T) => void; options: SegOption<T>[]; label?: string; size?: "s" | "l" }) {
+export function Segmented<T extends string>({ value, onChange, options, label, size, className }: { value: T; onChange: (v: T) => void; options: SegOption<T>[]; label?: string; size?: "s" | "l"; className?: string }) {
   return (
-    <div className={cx("seg", size && `seg--${size}`)} role="radiogroup" aria-label={label} onKeyDown={radioGroupKeyDown}>
+    <div className={cx("seg", size && `seg--${size}`, className)} role="radiogroup" aria-label={label} onKeyDown={radioGroupKeyDown}>
       {options.map((o) => (
         <button
           key={o.value}
@@ -386,6 +386,10 @@ export interface ToastItem {
   text?: string;
   tone?: "ok" | "bad" | "night" | "accent";
   ttl?: number;
+  /** Shown in place of the tone's dot, such as the mark on a render that is ready. */
+  icon?: ReactNode;
+  /** One way on from the news, such as to the render. Taking it closes the toast. */
+  action?: { label: string; run: () => void };
 }
 
 type ToastListener = (items: ToastItem[]) => void;
@@ -417,12 +421,30 @@ export function Toaster() {
   return (
     <div className="toasts" aria-live="polite">
       {items.map((t) => (
-        <div key={t.id} className="toast">
-          <span className={cx("pulse toast__dot", t.tone === "ok" ? "pulse--ok" : t.tone === "bad" ? "pulse--bad" : t.tone === "night" ? "pulse--night" : t.tone === "accent" ? "" : "pulse--idle")} />
+        <div key={t.id} className={cx("toast", !!t.icon && "toast--icon")}>
+          {t.icon ? (
+            <span className="toast__icon" aria-hidden>
+              {t.icon}
+            </span>
+          ) : (
+            <span className={cx("pulse toast__dot", t.tone === "ok" ? "pulse--ok" : t.tone === "bad" ? "pulse--bad" : t.tone === "night" ? "pulse--night" : t.tone === "accent" ? "" : "pulse--idle")} />
+          )}
           <div style={{ flex: 1, minWidth: 0 }}>
             <div className="toast__title">{t.title}</div>
             {t.text && <div className="toast__text">{t.text}</div>}
           </div>
+          {t.action && (
+            <Button
+              size="s"
+              className="toast__action"
+              onClick={() => {
+                dismissToast(t.id);
+                t.action!.run();
+              }}
+            >
+              {t.action.label}
+            </Button>
+          )}
           <Button variant="quiet" size="s" iconOnly icon={<X />} aria-label="Dismiss" onClick={() => dismissToast(t.id)} />
         </div>
       ))}

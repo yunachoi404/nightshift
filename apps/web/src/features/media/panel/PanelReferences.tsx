@@ -10,6 +10,7 @@ import { useEngine } from "@/store/engine";
 import { id as newId } from "@/lib/ids";
 import { Button, Input, Segmented, cx } from "@/ui/primitives";
 import { Media } from "@/media/Media";
+import { defaultReferenceKind } from "@/features/references/References";
 import { useMedia } from "../context";
 
 /** The engine keeps six references a project. */
@@ -84,7 +85,7 @@ export function PanelReferences({ chosen, limit, boardId, onChosen, pending, onP
           );
         })}
         {!pending && (
-          <button type="button" className="mp-chip mp-chip--add" disabled={full} title={full ? "Six references is the limit." : undefined} onClick={() => input.current?.click()}>
+          <button type="button" className="mp-chip mp-chip--add" disabled={full} title={full ? "Six references is the limit" : undefined} onClick={() => input.current?.click()}>
             <Plus /> Add reference
           </button>
         )}
@@ -102,7 +103,7 @@ export function PanelReferences({ chosen, limit, boardId, onChosen, pending, onP
         />
       </div>
       <p className="mp-sec__hint" id={hintId}>
-        {over ? "Drop to add a reference." : refs.length ? `Up to ${limit} at a time. The picture keeps their look.` : "A character, product, place or style to keep the same in every picture."}
+        {over ? "Drop to add a reference" : refs.length ? `Up to ${limit} at a time. The picture keeps their look.` : "A character, product, place or style to keep the same in every picture"}
       </p>
       {pending && (
         <NewReference
@@ -134,6 +135,7 @@ function useAddReference(boardId: string) {
 }
 
 function NewReference({ file, onCancel, onAdd }: { file: File; onCancel(): void; onAdd(label: string, kind: Reference["kind"]): Promise<void> }) {
+  const { project } = useMedia();
   // A preview of the photo. Made in an effect, so React's double run in development never shows a revoked URL.
   const [url, setUrl] = useState("");
   useEffect(() => {
@@ -143,7 +145,7 @@ function NewReference({ file, onCancel, onAdd }: { file: File; onCancel(): void;
     return () => URL.revokeObjectURL(next);
   }, [file]);
   const [label, setLabel] = useState(() => nameFromFile(file));
-  const [kind, setKind] = useState<Reference["kind"]>("character");
+  const [kind, setKind] = useState<Reference["kind"]>(() => defaultReferenceKind(project.template));
   const [busy, setBusy] = useState(false);
   const labelId = useId();
   const add = async () => {

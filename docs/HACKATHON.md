@@ -44,4 +44,7 @@ Bonuses: LTX VFX $2k cash (LTX core video model), FLUX 3 $1k/$500/$250 credits, 
 One entry can win a main category plus a bonus.
 
 ## Dates
-Submissions close Oct 30, 9am PT. Build nights SF Oct 28, LA Oct 29. Winners Nov 6.
+Submissions close Nov 3, 9am PT (moved from Oct 30; read live 2026-10-31). Build nights SF Oct 28, LA Oct 29, NYC Nov 2.
+Winners Nov 10.
+Resubmissions are accepted until the deadline (Comfy Org on Discord, Oct 30): submit the form again with the updated
+answers.

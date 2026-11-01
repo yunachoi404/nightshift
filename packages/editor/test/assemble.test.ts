@@ -54,15 +54,11 @@ describe("assembleTimeline", () => {
     expect(words[0]!.start).toBe(0);
     expect(words.at(-1)!.end).toBeCloseTo(5, 1);
     expect(result.timeline.captions.length).toBeGreaterThan(0);
-    // A short ad is paced towards its 15 s: the voice plays as one trim of its file per sentence, 0.8 s apart, and the
-    // end card holds its longest, 6 s. Two sentences cannot fill more than that.
-    const voice = result.timeline.audio;
-    expect(voice.map((a) => a.role)).toEqual(["voice", "voice"]);
-    expect(new Set(voice.map((a) => a.assetId)).size).toBe(1);
-    expect(voice[1]!.in).toBeCloseTo(voice[0]!.out!, 3);
+    // The voice plays in one take, and a short ad's end card holds its longest, 6 s.
+    expect(result.timeline.audio).toEqual([{ assetId: "v", role: "voice", start: 0.3, gain: 1 }]);
     const endCard = result.timeline.overlays!.find((o) => o.kind === "end_card")!;
     expect(endCard.end - endCard.start).toBeCloseTo(6, 3);
-    expect(result.durationSec).toBeCloseTo(0.3 + words.at(-1)!.end + 0.8 + 0.35 + 6, 2);
+    expect(result.durationSec).toBeCloseTo(0.3 + words.at(-1)!.end + 0.35 + 6, 2);
   });
 
   it("uses word times it is given instead of measuring them", async () => {

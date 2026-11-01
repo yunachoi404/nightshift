@@ -14,6 +14,7 @@ import type { ExecContext, ExecResult } from "../queue/queue.js";
 import type { JobPayload } from "../queue/store.js";
 import type { StepOutput, StepRequest } from "../runner/types.js";
 import { errorMessage, exists, newId, runStreaming } from "../util.js";
+import { setOwnShot } from "./own-shot.js";
 import type { ProjectStore } from "./store.js";
 import { pickDraft } from "./versions.js";
 
@@ -30,11 +31,13 @@ export function validateWhatIfBrief(brief: Project["brief"]): void {
   if (brief.look !== undefined && !whatIfLooks.some((look) => look.id === brief.look)) throw badRequest("Choose Cinematic or Miniature world.");
 }
 
+/** The film is the one shot with keyframes (`ownShot`). The project's other shots are extra cards made with the tools. */
 export function validateWhatIfProject(project: Project): void {
   if (project.template !== "what_if") return;
   validateWhatIfBrief(project.brief);
-  if (project.shots.length > 1) throw badRequest("A What-if project is one continuous film.");
-  for (const shot of project.shots) {
+  const films = project.shots.filter((shot) => shot.keyframes);
+  if (films.length > 1) throw badRequest("A What-if project is one continuous film.");
+  for (const shot of films) {
     if (shot.keyframes?.length !== 4) throw badRequest("A What-if film needs four keyframes.");
     if (new Set(shot.keyframes.map((frame) => frame.id)).size !== 4) throw badRequest("Keyframe IDs must be unique.");
     for (const frame of shot.keyframes) {
@@ -113,10 +116,8 @@ export async function writeWhatIf(deps: Deps, project: Project, payload: JobPayl
   }
   const id = typeof payload._whatIfShotId === "string" ? payload._whatIfShotId : newId("sht");
   ctx.remember("_whatIfShotId", id);
-  await deps.store.mutate(project.id, (p) => {
-    p.shots = [{ ...plan, id, index: 0, locked: false }];
-    p.takes = p.takes.filter((take) => take.shotId === id);
-  });
+  // The new story is the film: it replaces the old one and its takes. Extra cards made with the tools stay.
+  await deps.store.mutate(project.id, (p) => setOwnShot(p, { ...plan, id, index: 0, locked: false }));
   ctx.remember("_whatIfPreparedShotId", id);
   return { outputAssetIds: [], message, ...(peakGb === undefined ? {} : { peakGb }) };
 }

@@ -24,13 +24,15 @@ import {
 import { Button, Input, Menu, MenuItem, cx } from "@/ui/primitives";
 import { isCanvasDrag, setDrag, type CanvasBoard } from "../items";
 import { useBoardActions, type BoardActions } from "./boardActions";
-import { clampWidth, defaultFrames, fitView, loadView, nextBoardFrame, revealRect, saveView, stepZoom, zoomAt, type Frame, type Rect, type View } from "./layout";
+import { clampWidth, defaultFrames, fitView, loadView, makeRoom, nextBoardFrame, revealRect, saveView, stepZoom, zoomAt, type Frame, type Rect, type View } from "./layout";
 import "./canvas.css";
 
 export interface CanvasViewProps {
   project: Project;
   boards: CanvasBoard[];
   renderBoard: (b: CanvasBoard) => ReactNode;
+  /** More items for a board's menu, after Rename (the main board's "Rewrite shot list"). `close` closes the menu. */
+  boardMenu?: (b: CanvasBoard, close: () => void) => ReactNode;
   currentBoardId?: string;
   onFocusBoard?: (boardId: string) => void;
 }
@@ -43,7 +45,7 @@ const EDGE_STEP = 14;
 /** A board's height before it is measured. */
 const GUESS_H = 320;
 
-export function CanvasView({ project, boards, renderBoard, currentBoardId, onFocusBoard }: CanvasViewProps) {
+export function CanvasView({ project, boards, renderBoard, boardMenu, currentBoardId, onFocusBoard }: CanvasViewProps) {
   const actions = useBoardActions(project);
   const viewportRef = useRef<HTMLDivElement>(null);
   const boardEls = useRef(new Map<string, HTMLElement>());
@@ -57,6 +59,8 @@ export function CanvasView({ project, boards, renderBoard, currentBoardId, onFoc
   const hover = useRef(false);
   /** Frames moved here and not saved yet, so a board stays where it was dropped while the save goes out. */
   const [placed, setPlaced] = useState<Record<string, Frame>>({});
+  /** While a board is resized: where the boards beside it have moved to make room. */
+  const [pushed, setPushed] = useState<Map<string, Frame> | null>(null);
 
   const frames = useMemo(() => {
     const out = defaultFrames(boards.map((b) => b.board));
@@ -78,6 +82,14 @@ export function CanvasView({ project, boards, renderBoard, currentBoardId, onFoc
     return f && { ...f, h: boardEls.current.get(id)?.offsetHeight || GUESS_H };
   };
   const fitAll = useCallback(() => [...framesRef.current.keys()].flatMap((id) => rect(id) ?? []), []);
+  const rects = useCallback(() => {
+    const out = new Map<string, Rect>();
+    for (const id of framesRef.current.keys()) {
+      const r = rect(id);
+      if (r) out.set(id, r);
+    }
+    return out;
+  }, []);
 
   // The view this project had in this session, else all its boards in sight. Saved again when the canvas goes.
   useLayoutEffect(() => {
@@ -208,18 +220,25 @@ export function CanvasView({ project, boards, renderBoard, currentBoardId, onFoc
     apply({ ...v, x: v.x + dx * EDGE_STEP, y: v.y + dy * EDGE_STEP });
   };
 
+  /** A board resized from its right edge pushes the boards beside it along, live (`frame`), or lets go (null). */
+  const resizing = useCallback((boardId: string, frame: Frame | null) => setPushed(frame ? makeRoom(rects(), boardId, frame) : null), [rects]);
+
   const place = useCallback(
     (boardId: string, frame: Frame) => {
-      setPlaced((p) => ({ ...p, [boardId]: frame }));
-      void actions.moveBoard(boardId, frame).finally(() =>
+      // A resized board's neighbours keep their gap to it; a moved board moves alone.
+      const all: Record<string, Frame> = { [boardId]: frame, ...Object.fromEntries(makeRoom(rects(), boardId, frame)) };
+      setPushed(null);
+      setPlaced((p) => ({ ...p, ...all }));
+      const save = Object.keys(all).length > 1 ? actions.moveBoards(all) : actions.moveBoard(boardId, frame);
+      void save.finally(() =>
         setPlaced((p) => {
-          if (p[boardId] !== frame) return p;
-          const { [boardId]: _, ...rest } = p;
+          const rest = { ...p };
+          for (const [id, f] of Object.entries(all)) if (rest[id] === f) delete rest[id];
           return rest;
         }),
       );
     },
-    [actions],
+    [actions, rects],
   );
 
   const addBoard = async () => {
@@ -267,15 +286,17 @@ export function CanvasView({ project, boards, renderBoard, currentBoardId, onFoc
           <BoardFrame
             key={b.board.id}
             cb={b}
-            frame={frames.get(b.board.id)!}
+            frame={pushed?.get(b.board.id) ?? frames.get(b.board.id)!}
             current={b.board.id === currentBoardId}
             canDelete={multi && !b.items.length}
             lastBoard={!multi}
             viewRef={viewRef}
             actions={actions}
             renderBoard={renderBoard}
+            boardMenu={boardMenu}
             onFocus={onFocusBoard}
             onPlace={place}
+            onResizing={resizing}
             register={register}
           />
         ))}
@@ -309,12 +330,14 @@ interface BoardFrameProps {
   viewRef: RefObject<View>;
   actions: BoardActions;
   renderBoard: (b: CanvasBoard) => ReactNode;
+  boardMenu: ((b: CanvasBoard, close: () => void) => ReactNode) | undefined;
   onFocus: ((boardId: string) => void) | undefined;
   onPlace: (boardId: string, frame: Frame) => void;
+  onResizing: (boardId: string, frame: Frame | null) => void;
   register: (boardId: string, el: HTMLElement | null) => void;
 }
 
-const BoardFrame = memo(function BoardFrame({ cb, frame, current, canDelete, lastBoard, viewRef, actions, renderBoard, onFocus, onPlace, register }: BoardFrameProps) {
+const BoardFrame = memo(function BoardFrame({ cb, frame, current, canDelete, lastBoard, viewRef, actions, renderBoard, boardMenu, onFocus, onPlace, onResizing, register }: BoardFrameProps) {
   const { board, items } = cb;
   const id = board.id;
   const body = useMemo(() => renderBoard(cb), [renderBoard, cb]);
@@ -342,6 +365,7 @@ const BoardFrame = memo(function BoardFrame({ cb, frame, current, canDelete, las
     const next = d.mode === "move" ? { ...d.from, x: Math.round(d.from.x + dx), y: Math.round(d.from.y + dy) } : { ...d.from, w: clampWidth(d.from.w + dx) };
     liveRef.current = next;
     setLive(next);
+    if (d.mode === "resize") onResizing(id, next);
   };
   const endDrag = (e: PointerEvent<HTMLElement>) => {
     const d = drag.current;
@@ -350,6 +374,7 @@ const BoardFrame = memo(function BoardFrame({ cb, frame, current, canDelete, las
     const next = liveRef.current;
     liveRef.current = null;
     if (d.moved && next && e.type === "pointerup") onPlace(id, next);
+    else if (d.mode === "resize") onResizing(id, null);
     setLive(null);
   };
 
@@ -441,9 +466,9 @@ const BoardFrame = memo(function BoardFrame({ cb, frame, current, canDelete, las
             }}
           />
         ) : (
-          <span className="cvb__name" title="Double click to rename">
+          <h2 className="cvb__name" title="Double click to rename">
             {name}
-          </span>
+          </h2>
         )}
         <span className="cvb__count" aria-label={`${items.length} ${items.length === 1 ? "card" : "cards"}`}>
           {items.length}
@@ -470,6 +495,7 @@ const BoardFrame = memo(function BoardFrame({ cb, frame, current, canDelete, las
             >
               Rename
             </MenuItem>
+            {boardMenu?.(cb, closeMenu)}
             {canDelete ? (
               <MenuItem
                 danger

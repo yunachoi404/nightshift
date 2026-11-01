@@ -2,19 +2,24 @@
  * A shot card, opened. On the left the selected version large, what it is and its prompt under it, and every version
  * in a row below (oldest first, the pick marked). On the right the card's edits: its prompt, a new version, the final,
  * and the timeline. Each new version (a redrawn or edited still, another take, an effect, a camera move) becomes the
- * pick when it lands; Restore makes an older one the pick again. The arrow keys move through the versions, Enter
+ * pick when it lands; Restore makes an older one the pick again. A take that replaced a picked take says so, with the
+ * one before a press away. The arrow keys move through the versions, Enter
  * restores the selected one, and Escape closes an open tool first, then the card.
  */
-import { cameraMoves, quickEffects, quickMoves, sentenceCase, type FinalKind, type Shot } from "@nightshift/contract";
+import { cameraMoves, isExtraCard, isOneShot, quickEffects, quickMoves, sentenceCase, shotTemplate, type Shot } from "@nightshift/contract";
 import { Check, ChevronDown, Clapperboard, ListMinus, ListPlus, Moon, Move3d, Pause, Play, RefreshCw, RotateCcw, Share2, Sparkles, SquarePen, Sun, Trash2, X } from "lucide-react";
 import { useEffect, useId, useMemo, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
 import { Link } from "react-router";
 import { useEngine, useEngineState } from "@/store/engine";
 import { upscaleOnly, useInstalledTier } from "@/store/tier";
-import { Button, Dialog, Input, Notice, Select, Tag, Textarea, cx, toast } from "@/ui/primitives";
+import { Button, Dialog, Input, Notice, Select, Textarea, cx, toast } from "@/ui/primitives";
+import { Moon as MoonPhase } from "@/ui/Moon";
 import { Media } from "@/media/Media";
 import { activeJob, failureText, frameClass, jobStatusLine, lastFailed } from "@/features/project/helpers";
 import { useNow } from "@/lib/useNow";
+import { tonightStart } from "@/lib/overnight";
+import { finalKindFor } from "@/features/finals/finishAll";
+import { clearFreshPick, useFreshPick } from "@/features/takes/freshPicks";
 import { clock, plural, relativeTime, roughDuration } from "@/lib/format";
 import { EffectPicker } from "@/features/newproject/EffectFields";
 import { CameraMovePicker, cameraPhotoHint } from "@/features/newproject/CameraMoveFields";
@@ -22,7 +27,7 @@ import { RevealSheet } from "@/features/reveal/RevealSheet";
 import { revealable } from "@/features/reveal/reveal";
 import { useMedia } from "./context";
 import { ownsArrowKeys, versionKey } from "./dialogKeys";
-import { CARD_STEPS, FINAL_STEPS, TAKE_STEPS, canRestore, placeOnTimeline, restingTime, restore, shotHistory, shotLabel, shotPatch, takeOffTimeline, versionLabel, withoutCard, type Version } from "./items";
+import { CARD_STEPS, FINAL_STEPS, TAKE_STEPS, cameraMoveLabel, canAddToTimeline, canRestore, placeOnTimeline, restingTime, restore, shotHistory, shotLabel, shotPatch, takeOffTimeline, versionLabel, withoutCard, type Version } from "./items";
 import { toolBlocked } from "./PromptPanel";
 import "./carddialog.css";
 
@@ -33,9 +38,14 @@ export function CardDialog({ shotId, onClose }: { shotId: string | null; onClose
   useEffect(() => {
     if (shotId && !shot) onClose();
   }, [shotId, shot, onClose]);
+  // A card looked at has seen its new take: the note on it goes once it closes.
+  const close = () => {
+    if (shotId) clearFreshPick(shotId);
+    onClose();
+  };
   return (
-    <Dialog open={!!shot} onClose={onClose} width={1120} className="cd">
-      {shot && <CardBody key={shot.id} shot={shot} onClose={onClose} />}
+    <Dialog open={!!shot} onClose={close} width={1120} className="cd">
+      {shot && <CardBody key={shot.id} shot={shot} onClose={close} />}
     </Dialog>
   );
 }
@@ -50,14 +60,23 @@ function CardBody({ shot, onClose }: { shot: Shot; onClose: () => void }) {
   const tier = useInstalledTier();
   const history = useMemo(() => shotHistory(project, shot), [project, shot]);
   const pick = history.find((v) => v.pick);
+  // A take that landed and replaced the pick: the card says so, with the one before a press away.
+  const fresh = useFreshPick(shot);
+  const replaced = fresh ? history.find((v) => v.take?.id === (fresh.previous.chosenFinalId ?? fresh.previous.chosenDraftId)) : undefined;
   const [selectedKey, setSelectedKey] = useState(pick?.key);
   // A version that lands becomes the pick: show it.
   useEffect(() => setSelectedKey(pick?.key), [pick?.key]);
   const selected = history.find((v) => v.key === selectedKey) ?? pick;
   const selectedIndex = selected ? history.indexOf(selected) : -1;
-  const label = shotLabel(project, shot, history);
-  const whatIf = project.template === "what_if";
-  const quick = project.template === "vfx_effect" || project.template === "camera_move";
+  // A card made with a tool is named by it while its first take renders, as on the board.
+  const firstTake = history.some((v) => v.rung !== "still") ? undefined : activeJob(jobs, shot.id, TAKE_STEPS);
+  const label = shotLabel(project, shot, history, firstTake?.tool);
+  // A What if? film's or a quick shot's own shot follows its template. An extra card of theirs is like any card.
+  const template = shotTemplate(project, shot);
+  const whatIf = template === "what_if";
+  const quick = template === "vfx_effect" || template === "camera_move";
+  // The project's own shot stays: only the cards made with the tools can be deleted.
+  const own = isOneShot(project.template) && !isExtraCard(project, shot);
   const onTimeline = shot.onTimeline !== false;
   const aspect = frameClass(shot.aspect ?? project.aspect);
   const promptId = useId();
@@ -71,6 +90,11 @@ function CardBody({ shot, onClose }: { shot: Shot; onClose: () => void }) {
 
   const [prompt, setPrompt] = useState(shot.prompt);
   useEffect(() => setPrompt(shot.prompt), [shot.prompt]);
+  // A micro drama's shot says a line: what the character in it says out loud, and its subtitle.
+  const lineId = useId();
+  const speaks = project.template === "micro_drama";
+  const [line, setLine] = useState(shot.line ?? "");
+  useEffect(() => setLine(shot.line ?? ""), [shot.line]);
   const [open, setOpen] = useState<Open>(null);
   const toggles = useRef<Partial<Record<NonNullable<Open>, HTMLButtonElement | null>>>({});
   const toggle = (what: NonNullable<Open>) => setOpen(open === what ? null : what);
@@ -105,6 +129,16 @@ function CardBody({ shot, onClose }: { shot: Shot; onClose: () => void }) {
   const savePrompt = async () => {
     if (prompt !== shot.prompt) await change({ prompt });
   };
+  const saveLine = async () => {
+    const next = line.trim();
+    if (next === (shot.line ?? "")) return;
+    await edit((p) =>
+      shotPatch(p, shot.id, (s) => {
+        const { line: _old, ...rest } = s;
+        return next ? { ...rest, line: next } : rest;
+      }),
+    );
+  };
   const restoreSelected = () => {
     if (!selected || !canRestore(shot, selected)) return;
     const version = selected;
@@ -112,13 +146,13 @@ function CardBody({ shot, onClose }: { shot: Shot; onClose: () => void }) {
   };
 
   // Finals: same take where the setup has it, else a remaster.
-  const finalKind: FinalKind | null = !tier?.steps || tier.steps.includes("video_final_same_take") ? "same_take" : tier.steps.includes("video_final_remaster") ? "remaster" : null;
+  const finalKind = finalKindFor(tier);
   const finalStep = finalKind === "remaster" ? "video_final_remaster" : "video_final_same_take";
   const finalSec = (tier?.estimates?.[finalStep]?.seconds ?? 0) * (whatIf ? 15 / 4 : 1);
   const upscale = upscaleOnly(tier);
   const canFinish = pick?.rung === "draft" && shot.chosenDraftId === pick.take?.id && !!finalKind;
-  const startAt = settings?.overnight.startAt ?? "23:00";
-  const overnightOn = settings?.overnight.enabled ?? true;
+  const night = settings?.overnight ?? { enabled: true, startAt: "23:00", endAt: "07:00" };
+  const overnightOn = night.enabled;
   const reveal = revealable(project, shot);
 
   const finish = (mode: "now" | "overnight") =>
@@ -130,8 +164,8 @@ function CardBody({ shot, onClose }: { shot: Shot; onClose: () => void }) {
       }
       await final(project.id, shot.id, { draftId: shot.chosenDraftId, kind: finalKind, mode });
       setOpen(null);
-      if (mode === "now") toast({ title: "Finishing the shot", text: finalSec ? `${sentenceCase(roughDuration(finalSec))}. You can keep working.` : "You can keep working.", tone: "accent" });
-      else toast({ title: "Final queued for tonight", text: `Starts at ${clock(startAt)}.`, tone: "night" });
+      if (mode === "now") toast({ title: "Finishing the shot", text: finalSec ? `${sentenceCase(roughDuration(finalSec))}. You can keep working.` : "You can keep working", tone: "accent" });
+      else toast({ title: "Final queued for tonight", text: tonightStart(night, Date.now()).text, tone: "night" });
     });
 
   const takeLabel = history.some((v) => v.take) ? "Another take" : whatIf ? "Make the film" : "Make video";
@@ -145,7 +179,7 @@ function CardBody({ shot, onClose }: { shot: Shot; onClose: () => void }) {
   // following a short instruction. Quick shots and What if? films keep their own flow and have no edit.
   const canEdit = !quick && !whatIf && !!tier?.steps?.includes("effect_end_frame");
   const editFrom = selected?.rung === "still" ? selected.asset.id : shot.stillAssetId;
-  const editBlocked = shot.locked ? "This shot is locked." : !editFrom ? "Draw the still first." : drawing ? "Wait for the still on its way." : undefined;
+  const editBlocked = shot.locked ? "This shot is locked" : !editFrom ? "Draw the still first" : drawing ? "Wait for the still on its way" : undefined;
   const editSec = tier?.estimates?.effect_end_frame?.seconds;
   const editModel = tier?.models?.effect_end_frame;
   const editCost = editSec && editModel ? `${sentenceCase(roughDuration(editSec))} with ${editModel}.` : editSec ? `${sentenceCase(roughDuration(editSec))}.` : editModel ? `Made with ${editModel}.` : "";
@@ -197,7 +231,14 @@ function CardBody({ shot, onClose }: { shot: Shot; onClose: () => void }) {
 
   const status = job ? (
     <>
-      <span className={cx("pulse", job.mode === "overnight" && "pulse--night")} aria-hidden />
+      {/* A version under way waxes as a moon; a final waiting for tonight wears the crescent. */}
+      {job.status === "running" ? (
+        <MoonPhase phase={Math.max(0.04, job.progress)} night={job.mode === "overnight"} />
+      ) : job.mode === "overnight" ? (
+        <Moon className="cd-status__tonight" aria-hidden />
+      ) : (
+        <span className="pulse pulse--still" aria-hidden />
+      )}
       <span className="cd-status__text">{jobStatusLine(job, now)}</span>
       {job === finishing && (
         <Button size="s" variant="quiet" onClick={() => void cancelJob(job.id).catch(() => undefined)}>
@@ -224,13 +265,15 @@ function CardBody({ shot, onClose }: { shot: Shot; onClose: () => void }) {
                 playing={!paused}
                 durationSec={shot.durationSec}
                 fit="contain"
+                // A take starts from the shot's still, so the still holds the frame while a new version loads.
+                {...(shot.stillAssetId ? { poster: client.assetUrl(project.id, shot.stillAssetId) } : {})}
               />
             )}
             {!selected && (
               <div className="cd-stage__empty">
                 {drawing ? (
                   <>
-                    <span className="pulse" aria-hidden />
+                    {drawing.status === "running" ? <MoonPhase phase={Math.max(0.04, drawing.progress)} /> : <span className="pulse pulse--still" aria-hidden />}
                     <span>{jobStatusLine(drawing, now)}</span>
                   </>
                 ) : (
@@ -289,7 +332,7 @@ function CardBody({ shot, onClose }: { shot: Shot; onClose: () => void }) {
             ))}
             {job && (
               <div className="cd-ver cd-ver--working" role="listitem">
-                <div className={cx("frame shimmer cd-ver__frame", aspect)}>
+                <div className={cx("frame cd-ver__frame", job.status === "running" ? "shimmer" : "frame--empty", aspect)}>
                   <div className={cx("cd-ver__progress", job.mode === "overnight" && "cd-ver__progress--night")}>
                     <div style={{ width: `${job.progress * 100}%` }} />
                   </div>
@@ -313,7 +356,21 @@ function CardBody({ shot, onClose }: { shot: Shot; onClose: () => void }) {
           <Button variant="quiet" size="s" iconOnly icon={<X />} aria-label="Close" className="cd-close" onClick={onClose} />
         </header>
 
-        <div className="cd-body">
+        <div className="cd-body scroll-fade">
+          {fresh && replaced && (
+            <Notice
+              title="New take, now the pick"
+              actions={
+                canRestore(shot, replaced) ? (
+                  <Button size="s" icon={<RotateCcw />} busy={busy === "restore"} onClick={() => void run("restore", () => edit((p) => shotPatch(p, shot.id, (s) => restore(s, replaced))))}>
+                    Use version {history.indexOf(replaced) + 1} again
+                  </Button>
+                ) : undefined
+              }
+            >
+              It replaced version {history.indexOf(replaced) + 1}{replaced.rung === "final" ? ", a final" : ""}. The cut uses the new take now.
+            </Notice>
+          )}
           {failed && (
             <Notice tone="bad" title="The last try didn't work">
               {failureText(failed)}
@@ -377,6 +434,29 @@ function CardBody({ shot, onClose }: { shot: Shot; onClose: () => void }) {
                   </Button>
                 )}
               </div>
+              {speaks && (
+                <div className="cd-line">
+                  <label className="cd-sec__title" htmlFor={lineId}>
+                    What they say
+                  </label>
+                  <Input
+                    id={lineId}
+                    value={line}
+                    disabled={shot.locked}
+                    maxLength={200}
+                    placeholder="Nothing. The shot has no line."
+                    onChange={(e) => setLine(e.target.value)}
+                    onBlur={() => void run("line", saveLine)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        void run("line", saveLine);
+                      }
+                    }}
+                  />
+                  <p className="cd-text">The character in the shot says it in the next take. It is also the subtitle.</p>
+                </div>
+              )}
               {open === "edit" && (
                 <form
                   className="cd-tool"
@@ -404,7 +484,7 @@ function CardBody({ shot, onClose }: { shot: Shot; onClose: () => void }) {
             {!quick && !whatIf && (
               <div className="cd-fields">
                 <Select aria-label="Camera" value={shot.cameraMove ?? "static"} disabled={shot.locked} onChange={(e) => void change({ cameraMove: e.target.value })}>
-                  {cameraMoves.some((m) => m.id === (shot.cameraMove ?? "static")) ? null : <option value={shot.cameraMove}>{shot.cameraMove}</option>}
+                  {cameraMoves.some((m) => m.id === (shot.cameraMove ?? "static")) ? null : <option value={shot.cameraMove}>{cameraMoveLabel(shot.cameraMove!)}</option>}
                   {cameraMoves.map((m) => (
                     <option key={m.id} value={m.id}>
                       {m.label}
@@ -460,7 +540,7 @@ function CardBody({ shot, onClose }: { shot: Shot; onClose: () => void }) {
                       {askSubject ? (
                         <Input aria-label="Subject" value={subject} onChange={(e) => setSubject(e.target.value)} placeholder="Optional. What should change." />
                       ) : (
-                        shot.prompt.trim() && <p className="cd-text">The effect follows the prompt above.</p>
+                        shot.prompt.trim() && <p className="cd-text">The effect follows the prompt above</p>
                       )}
                       <div className="cd-row cd-row--end">
                         <Button
@@ -518,20 +598,23 @@ function CardBody({ shot, onClose }: { shot: Shot; onClose: () => void }) {
                 </>
               )}
             </div>
-            {!takeReady && !taking && <p className="cd-text">{whatIf ? "Draw the story's beats first." : "Draw the still first. Every version starts from it."}</p>}
+            {!takeReady && !taking && <p className="cd-text">{whatIf ? "Draw the story's beats first" : "Draw the still first. Every version starts from it."}</p>}
           </Section>
 
-          <Section title="Final" aside={pick?.rung === "final" && <Tag tone="night">{pick.take?.finalKind === "remaster" ? "Final, remaster" : "Final, same take"}</Tag>}>
+          <Section title="Final">
             {pick?.rung === "final" ? (
               <>
-                <p className="cd-text">{upscale && pick.take?.finalKind !== "remaster" ? `Upscaled${upscale.to}.` : "Full quality."} The editor shows it.</p>
-                {reveal && (
-                  <div>
+                {/* The version's own name is under the picture and on its tile: here, in words, what the pick is. */}
+                <div className="cd-final">
+                  <p className="cd-text">
+                    {pick.take?.finalKind === "remaster" ? "The pick is a remaster, at full quality." : upscale ? `The pick is the same take, upscaled${upscale.to}.` : "The pick is the same take, at full quality."} The editor shows it.
+                  </p>
+                  {reveal && (
                     <Button size="s" icon={<Share2 />} onClick={() => setRevealOpen(true)}>
                       Share reveal
                     </Button>
-                  </div>
-                )}
+                  )}
+                </div>
               </>
             ) : canFinish ? (
               <>
@@ -561,7 +644,9 @@ function CardBody({ shot, onClose }: { shot: Shot; onClose: () => void }) {
                 {open === "tonight" && (
                   <div className="cd-night">
                     <b>Tonight, while you sleep</b>
-                    <p>At {clock(startAt)} Nightshift renders this final at the heaviest settings this machine allows. In the morning it is here.</p>
+                    <p>
+                      {tonightStart(night, Date.now()).open ? `The night shift is on until ${clock(night.endAt)}. Once the GPU is free, Nightshift` : `At ${clock(night.startAt)} Nightshift`} renders this final at the heaviest settings this machine allows. In the morning it is here.
+                    </p>
                     <p className="cd-night__quiet">Keep the computer awake and plugged in. The desktop app keeps it awake for you.{overnightOn ? "" : " This turns overnight runs on. Pause them in Settings."}</p>
                     <div className="cd-row cd-row--end">
                       <Button size="s" variant="quiet" onClick={() => setOpen(null)}>
@@ -575,7 +660,7 @@ function CardBody({ shot, onClose }: { shot: Shot; onClose: () => void }) {
                 )}
               </>
             ) : (
-              <p className="cd-text">{!finalKind ? "This setup cannot make finals." : pick?.rung === "still" ? "Pick a take to finish it. A still goes into the cut as it is." : "Make a take first, then finish it."}</p>
+              <p className="cd-text">{!finalKind ? "This setup cannot make finals" : pick?.rung === "still" ? "Pick a take to finish it. A still goes into the cut as it is." : "Make a take first, then finish it"}</p>
             )}
           </Section>
         </div>
@@ -609,13 +694,15 @@ function CardBody({ shot, onClose }: { shot: Shot; onClose: () => void }) {
               <Button icon={<ListMinus />} busy={busy === "timeline"} onClick={() => void run("timeline", () => edit((p) => takeOffTimeline(p, shot.id)))}>
                 Take off the timeline
               </Button>
-            ) : (
+            ) : canAddToTimeline(project, shot.id) ? (
               <Button variant="primary" icon={<ListPlus />} busy={busy === "timeline"} onClick={() => void run("timeline", () => edit((p) => placeOnTimeline(p, [shot.id])))}>
                 Add to timeline
               </Button>
+            ) : (
+              <p className="cd-text">{project.template === "what_if" ? "Only the film goes on the timeline. This card stays in Media." : "Only the shot from your photo goes on the timeline. This card stays in Media."}</p>
             )}
             <span className="cd-row__gap" />
-            {!whatIf && (
+            {!own && (
               <Button
                 ref={(el) => {
                   toggles.current.delete = el;

@@ -72,7 +72,7 @@
   width: 14px;
   height: 14px;
   color: var(--ok);
-  stroke-width: 2.4;
+  stroke-width: 1.75;
 }
 
 .tk-main {
@@ -171,7 +171,7 @@
   max-width: 56ch;
 }
 .tk-empty__title {
-  font-weight: 600;
+  font-weight: 500;
 }
 .tk-empty__text {
   color: var(--text-3);
@@ -252,8 +252,8 @@
 .tk-arrow svg {
   width: 18px;
   height: 18px;
-  stroke-width: 1.8;
-  color: var(--text-4);
+  stroke-width: 1.75;
+  color: var(--text-3);
 }
 .tk-stage--single .tk-grid,
 .tk-stage--single .tk-grid--tall,

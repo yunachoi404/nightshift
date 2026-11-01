@@ -26,7 +26,7 @@
 /* ---------- Tools: icon over label, one row; each tab as wide as its label needs, the rest shared ---------- */
 .mp-panel__tools {
   flex: none;
-  padding: 10px 10px 9px;
+  padding: 8px;
   border-bottom: 1px solid var(--line);
 }
 .mp-tools {
@@ -41,7 +41,7 @@
   justify-content: center;
   gap: 3px;
   min-width: 0;
-  height: 50px;
+  height: 52px;
   padding: 0 6px;
   border-radius: var(--r-m);
   font-size: var(--fs-small);
@@ -74,14 +74,12 @@
   color: var(--text-2);
 }
 .mp-tool[aria-checked="true"] {
-  background: var(--banana-soft);
+  background: var(--select);
+  box-shadow: inset 0 0 0 1px var(--line);
   color: var(--text);
 }
 .mp-tool[aria-checked="true"] svg {
   color: var(--text);
-}
-:root[data-theme="dark"] .mp-tool[aria-checked="true"] svg {
-  color: var(--banana);
 }
 .mp-tool:focus-visible {
   border-radius: var(--r-m);
@@ -89,6 +87,13 @@
 }
 .mp-tool:disabled {
   opacity: 0.4;
+}
+/* A tool that cannot run is not shown as chosen. */
+.mp-tool:disabled[aria-checked="true"] {
+  background: transparent;
+}
+:root[data-theme="dark"] .mp-tool:disabled[aria-checked="true"] svg {
+  color: var(--text-3);
 }
 
 /* ---------- Body ---------- */
@@ -111,6 +116,18 @@
     background-color var(--t-fast) var(--ease),
     box-shadow var(--t-fast) var(--ease);
 }
+/* The main prompt fills the room left in the panel, up to a comfortable writing size. */
+.mp-sec--grow {
+  flex: 1 0 auto;
+  max-height: 300px;
+}
+.mp-sec--grow .mp-prompt {
+  flex: 1;
+  min-height: 0;
+}
+.mp-sec--grow .mp-prompt__field {
+  flex: 1;
+}
 /* The references light up when a photo dropped on the panel would become one. */
 .mp-sec--over {
   background: var(--banana-soft);
@@ -125,7 +142,7 @@
 .mp-sec__title {
   font-size: var(--fs-small);
   line-height: var(--lh-small);
-  font-weight: 600;
+  font-weight: 500;
   color: var(--text-2);
 }
 .mp-sec__aside {
@@ -299,15 +316,15 @@
 .mp-chips {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 8px;
 }
 .mp-chip {
   display: inline-flex;
   align-items: center;
   gap: 6px;
   max-width: 100%;
-  height: 30px;
-  padding: 0 11px 0 3px;
+  height: 32px;
+  padding: 0 12px 0 4px;
   border: 1px solid var(--line);
   border-radius: var(--r-pill);
   background: var(--raised);
@@ -325,9 +342,16 @@
 }
 .mp-chip--on,
 .mp-chip--on:hover:not(:disabled) {
-  border-color: var(--banana-line);
-  background: var(--banana-soft);
+  border-color: var(--line-strong);
+  background: var(--select);
   color: var(--text);
+}
+.mp-chip:not(.mp-chip--on):not(.mp-chip--add) {
+  background: transparent;
+  color: var(--text-3);
+}
+.mp-chip:not(.mp-chip--on):not(.mp-chip--add) .mp-chip__thumb {
+  opacity: 0.5;
 }
 .mp-chip:focus-visible {
   border-radius: var(--r-pill);
@@ -339,8 +363,8 @@
 .mp-chip__thumb {
   position: relative;
   flex: none;
-  width: 22px;
-  height: 22px;
+  width: 24px;
+  height: 24px;
   border-radius: 50%;
   overflow: hidden;
   background: var(--media);
@@ -362,8 +386,8 @@
   background: transparent;
 }
 .mp-chip--add svg {
-  width: 13px;
-  height: 13px;
+  width: 14px;
+  height: 14px;
 }
 
 .mp-newref {
@@ -461,7 +485,7 @@
   grid-template-columns: 68px minmax(0, 1fr);
   align-items: center;
   gap: 8px;
-  min-height: 30px;
+  min-height: 32px;
 }
 .mp-opt__label {
   font-size: var(--fs-small);
@@ -484,7 +508,7 @@
   padding-top: 2px;
   padding-bottom: 2px;
   font-size: var(--fs-small);
-  border-radius: var(--r-pill);
+  border-radius: 7px;
 }
 .mp-opt__select {
   width: 100%;
@@ -540,8 +564,8 @@
   flex: none;
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  padding: 10px 16px 16px;
+  gap: 12px;
+  padding: 12px 16px 16px;
   border-top: 1px solid var(--line);
 }
 .mp-go__row {
@@ -549,7 +573,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  min-height: 26px;
+  min-height: 28px;
 }
 .mp-go__into {
   display: flex;
@@ -570,11 +594,11 @@
 .mp-go__board {
   width: auto;
   max-width: 168px;
-  min-height: 26px;
+  min-height: 28px;
   padding-top: 2px;
   padding-bottom: 2px;
   font-size: var(--fs-small);
-  border-radius: var(--r-pill);
+  border-radius: 7px;
 }
 .mp-upload {
   position: relative;
@@ -595,25 +619,21 @@
   gap: 1px;
   width: 100%;
   min-height: 52px;
-  padding: 7px 18px;
-  border-radius: var(--r-pill);
+  padding: 8px 20px;
+  border-radius: var(--r-m);
   background: var(--banana);
   color: var(--on-banana);
-  /* A lit top edge, a crisp rim and a warm shadow under it, so the one main action sits above the panel. */
+  /* A lit top edge and a crisp rim. The color is the emphasis; nothing glows. */
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.55),
-    inset 0 0 0 1px var(--banana-line),
-    0 1px 2px rgba(120, 92, 0, 0.16),
-    0 6px 16px -8px rgba(196, 150, 0, 0.55);
+    inset 0 0 0 1px var(--banana-line);
   transition:
     background-color var(--t-fast) var(--ease),
     box-shadow 180ms var(--ease-out),
     transform 180ms var(--ease-out);
 }
 :root[data-theme="dark"] .mp-go__bar {
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.45),
-    0 8px 24px -10px rgba(255, 225, 79, 0.45);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45);
 }
 .mp-go__bar:hover:not(:disabled) {
   background: var(--banana-hover);
@@ -624,7 +644,7 @@
   transform: scale(0.99);
 }
 .mp-go__bar:focus-visible {
-  border-radius: var(--r-pill);
+  border-radius: var(--r-m);
   box-shadow: var(--focus);
 }
 .mp-go__action {
@@ -634,7 +654,6 @@
   font-size: 14px;
   line-height: 18px;
   font-weight: 600;
-  letter-spacing: -0.005em;
 }
 .mp-go__sub {
   max-width: 100%;
@@ -650,15 +669,20 @@
   display: none;
 }
 .mp-go__bar .spin {
-  border-color: color-mix(in srgb, currentColor 30%, transparent);
-  border-top-color: currentColor;
+  color: inherit;
 }
-/* Not ready: quiet, and the line under the action says why. Busy keeps the banana. */
+/* The mark's star leads the main action; the loader takes its place while the request goes out. */
+.mp-go__star {
+  width: 14px;
+  height: 14px;
+  flex: none;
+}
+/* Not ready: an outline with crisp words, and the line under the action says why. Busy keeps the banana. */
 .mp-go__bar:disabled:not([aria-busy="true"]) {
-  background: var(--press);
-  box-shadow: none;
-  color: var(--text-3);
+  background: transparent;
+  box-shadow: inset 0 0 0 1px var(--line-strong);
+  color: var(--text-2);
 }
 .mp-go__bar:disabled:not([aria-busy="true"]) .mp-go__sub {
-  color: var(--text-2);
+  color: var(--text-3);
 }

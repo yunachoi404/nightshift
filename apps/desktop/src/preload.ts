@@ -3,7 +3,7 @@ import type { DesktopBridge } from './types.js';
 
 const bridge: DesktopBridge = {
   platform: process.platform,
-  titlebarHeight: 52,
+  titlebarHeight: 60,
   vibrancy: process.platform === 'darwin',
   getStatus: () => ipcRenderer.invoke('desktop:status'),
   setTheme: mode => ipcRenderer.invoke('desktop:theme', mode),

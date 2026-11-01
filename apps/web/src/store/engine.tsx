@@ -119,7 +119,12 @@ export interface EngineActions {
   audio(id: string, body: AudioBody): Promise<Job>;
   exportVideo(id: string, aspect: Aspect, quality?: ExportRequest["quality"], extra?: Pick<ExportRequest, "kind" | "shotId">): Promise<Job>;
   cancelJob(id: string): Promise<Job>;
+  /** Moves a queued final between now and tonight. */
+  setJobMode(id: string, mode: Job["mode"]): Promise<Job>;
 }
+
+/** How long a tab stays in the background before it lets go of its live stream. */
+export const BACKGROUND_RELEASE_MS = 15_000;
 
 const StateCtx = createContext<EngineState>(initial);
 const ActionsCtx = createContext<EngineActions | null>(null);
@@ -154,37 +159,60 @@ export function EngineProvider({ children, client: given }: { children: ReactNod
   useEffect(() => {
     void reload();
     let wasConnected = false;
-    const off = client.events(
-      (e) => {
-        switch (e.type) {
-          case "runtime":
-            dispatch({ type: "status", status: e.status });
-            if (e.status.phase === "ready") void refreshSetup().catch(() => undefined);
-            break;
-          case "install":
-            dispatch({ type: "install", progress: { ...e.progress, updatedAt: Date.now() } });
-            break;
-          case "job":
-            dispatch({ type: "job", job: e.job });
-            break;
-          case "project":
-            dispatch({ type: "project", project: e.project });
-            break;
-          case "onboarding":
-            dispatch({ type: "onboarding", onboarding: e.onboarding });
-            break;
-        }
-      },
-      (connected) => {
-        dispatch({ type: "connection", connected });
-        // Coming back after a drop: resync everything we may have missed.
-        if (connected && !wasConnected) void reload();
-        // A drop may mean the engine is gone. Probe it; a failed probe shows the unreachable screen.
-        if (!connected && wasConnected) window.setTimeout(() => void reload(), 1500);
-        wasConnected = connected;
-      },
-    );
-    return off;
+    let off: (() => void) | null = null;
+    const listen = () => {
+      off ??= client.events(
+        (e) => {
+          switch (e.type) {
+            case "runtime":
+              dispatch({ type: "status", status: e.status });
+              if (e.status.phase === "ready") void refreshSetup().catch(() => undefined);
+              break;
+            case "install":
+              dispatch({ type: "install", progress: { ...e.progress, updatedAt: Date.now() } });
+              break;
+            case "job":
+              dispatch({ type: "job", job: e.job });
+              break;
+            case "project":
+              dispatch({ type: "project", project: e.project });
+              break;
+            case "onboarding":
+              dispatch({ type: "onboarding", onboarding: e.onboarding });
+              break;
+          }
+        },
+        (connected) => {
+          dispatch({ type: "connection", connected });
+          // Coming back after a drop: resync everything we may have missed.
+          if (connected && !wasConnected) void reload();
+          // A drop may mean the engine is gone. Probe it; a failed probe shows the unreachable screen.
+          if (!connected && wasConnected) window.setTimeout(() => void reload(), 1500);
+          wasConnected = connected;
+        },
+      );
+    };
+    // A browser keeps only six connections open to one address, and every open tab's stream holds one. So a tab that
+    // stays in the background lets go of its stream, and a seventh tab still loads. Back in front, it listens again
+    // and catches up with everything it missed.
+    let idle: number | undefined;
+    const onVisibility = () => {
+      window.clearTimeout(idle);
+      if (document.visibilityState === "visible") return listen();
+      idle = window.setTimeout(() => {
+        off?.();
+        off = null;
+        wasConnected = false;
+      }, BACKGROUND_RELEASE_MS);
+    };
+    listen();
+    onVisibility();
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => {
+      document.removeEventListener("visibilitychange", onVisibility);
+      window.clearTimeout(idle);
+      off?.();
+    };
   }, [client, reload, refreshSetup]);
 
   const actions = useMemo<EngineActions>(
@@ -285,6 +313,11 @@ export function EngineProvider({ children, client: given }: { children: ReactNod
       },
       cancelJob: async (jid) => {
         const j = await client.cancelJob(jid);
+        dispatch({ type: "job", job: j });
+        return j;
+      },
+      setJobMode: async (jid, mode) => {
+        const j = await client.setJobMode(jid, mode);
         dispatch({ type: "job", job: j });
         return j;
       },

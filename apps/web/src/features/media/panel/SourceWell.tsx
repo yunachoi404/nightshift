@@ -84,7 +84,7 @@ export function SourceWell({ projectId, required, role, without, source, sourceN
         ) : choosing ? (
           <>
             <b>Click a card on the board</b>
-            <small>Or drop an image here.</small>
+            <small>Or drop an image here</small>
           </>
         ) : (
           <>

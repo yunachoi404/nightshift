@@ -1,6 +1,7 @@
 import { Check, Clapperboard, Download, Film, Image as ImageIcon, Moon, Move3d, Play, Plus, RectangleHorizontal, RectangleVertical, RotateCcw, SkipBack, Sparkles, Square, Sun, Video, X } from "lucide-react";
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { cx } from "@/ui/primitives";
+import { Star } from "@/ui/Star";
 import "./welcome-tour.css";
 import { publicUrl } from "@/lib/publicUrl";
 
@@ -247,7 +248,7 @@ function MediaStage({ picked, open, playing }: { picked: boolean; open: boolean;
             Into <b>Shots</b>
           </div>
           <span className="pw-btn pw-btn--ink pw-md__generate">
-            <Sparkles />
+            <Star />
             Generate
           </span>
         </div>

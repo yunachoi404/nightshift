@@ -1,8 +1,8 @@
 .settings {
   display: flex;
   flex-direction: column;
-  gap: 22px;
-  max-width: 640px;
+  gap: 24px;
+  max-width: 720px;
   padding-bottom: 24px;
 }
 .settings__actions {
@@ -25,7 +25,7 @@
   display: flex;
   justify-content: space-between;
   font-size: var(--fs-micro);
-  color: var(--text-4);
+  color: var(--text-3);
   margin-top: -6px;
 }
 .settings__foot {
@@ -34,6 +34,13 @@
   line-height: var(--lh-small);
   padding: 6px 2px 0;
 }
+/* Room for "07:00 AM" and the clock: narrower, the field scrolled and cut its first digit. */
 .settings__time {
-  width: 112px;
+  width: 132px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* The night shift's arc heads its group. */
+.settings__night {
+  padding: 16px 16px 12px;
 }

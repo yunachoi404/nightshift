@@ -86,7 +86,7 @@ try {
     const modules = Object.fromEntries(Object.keys(info).sort().map((cls) => [cls, info[cls]!.python_module ?? "?"]));
     const file = join(import.meta.dirname, "..", "test", "fixtures", "comfyui-node-modules.json");
     const fixture = { comfyui: COMFY_REF, packs: packs.map((p) => `${p.name}@${p.ref}`), madeBy: "pnpm --filter @nightshift/engine verify-install -- --tier all --write-fixture", modules };
-    writeFileSync(file, JSON.stringify(fixture, null, 1) + "\n");
+    writeFileSync(file, JSON.stringify(fixture, null, 2) + "\n");
     say(`wrote ${Object.keys(modules).length} node types to ${file}`);
   }
 } finally {

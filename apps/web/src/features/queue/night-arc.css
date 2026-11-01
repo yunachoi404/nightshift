@@ -1,0 +1,60 @@
+/*
+ * The night shift as an arc from dusk to dawn: hairlines for the sky's path and the horizon, faint points for the
+ * hours, tonight's finals as the lamp's amber dots, and the moon at now. No fills behind it, no glow.
+ */
+.night-arc {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.night-arc svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+.night-arc__horizon {
+  stroke: var(--line);
+  stroke-width: 1;
+}
+.night-arc__path {
+  fill: none;
+  stroke: var(--line-strong);
+  stroke-width: 1;
+  stroke-dasharray: 2 4;
+}
+.night-arc__hour {
+  fill: var(--text-4);
+}
+.night-arc__final {
+  fill: var(--amber-fill);
+  stroke: var(--content);
+  stroke-width: 2;
+}
+.night-arc__moon-disc {
+  fill: var(--moon-dim);
+}
+.night-arc__moon-lit {
+  fill: var(--moon);
+}
+.night-arc__label {
+  font-family: var(--font);
+  font-size: 11px;
+  fill: var(--text-3);
+  font-variant-numeric: tabular-nums;
+}
+.night-arc__label--now {
+  fill: var(--moon);
+  font-weight: 500;
+}
+.night-arc__caption {
+  font-size: var(--fs-small);
+  line-height: var(--lh-small);
+  color: var(--text-2);
+  font-variant-numeric: tabular-nums;
+}
+.night-arc--paused .night-arc__path,
+.night-arc--paused .night-arc__final {
+  opacity: 0.45;
+}

@@ -1,4 +1,4 @@
-import type { Asset, Job, Project, Shot, Take } from "@nightshift/contract";
+import { shotTemplate, type Asset, type Job, type Project, type Shot, type Take } from "@nightshift/contract";
 
 /** What a shot's reveal clip compares: its same-take final and the draft that final was made from. */
 export interface Revealable {
@@ -35,7 +35,8 @@ export function revealable(p: Project, shot: Shot): Revealable | undefined {
   const source = [shot.stillAssetId, draft.imageAssetId, photoId].map(asset).find((a) => a?.kind === "image");
   if (!source) return { shot, draft, final, draftAsset, finalAsset };
   const question = typeof p.brief.question === "string" && p.brief.question.trim();
-  const sourceKind = source.role === "reference" || source.id === photoId ? "photo" : p.template === "what_if" && question ? "question" : "still";
+  // An extra card of a What if? film opens as any card does: the question is the film's.
+  const sourceKind = source.role === "reference" || source.id === photoId ? "photo" : shotTemplate(p, shot) === "what_if" && question ? "question" : "still";
   return { shot, draft, final, draftAsset, finalAsset, source, sourceKind };
 }
 

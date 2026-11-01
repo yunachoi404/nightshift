@@ -1,6 +1,7 @@
 /**
- * New project only creates: a name, a format and a preset. It queues nothing on the GPU, never writes a shot list, and
- * opens the project's Media. A project has two areas, Media and Editor, and opens on Media.
+ * New project creates: a name, a format and a preset, and opens the project's Media. It queues nothing on the GPU,
+ * except the writer: a film whose brief has words gets its shot list written as soon as its photos and references are
+ * in. A project has two areas, Media and Editor, and opens on Media.
  */
 import type { Event, Job, Project, TierSummary } from "@nightshift/contract";
 import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
@@ -42,6 +43,8 @@ const FULL: TierSummary = {
   referenceImageLimit: 3,
 };
 const NO_WHAT_IF: TierSummary = { ...FULL, steps: FULL.steps!.filter((s) => s !== "video_what_if") };
+/** A setup with no writer: its films keep their template's shot list. */
+const NO_WRITER: TierSummary = { ...FULL, steps: FULL.steps!.filter((s) => s !== "text") };
 
 /** Every call that would put work on the GPU or write a shot list. None should happen on create. */
 const WORK = ["storyboard", "make", "still", "draft", "final", "audio", "exportVideo"] as const;
@@ -59,6 +62,11 @@ function engine(tier: TierSummary, projects: Project[] = []) {
     listProjects: () => answer(() => [...store.values()]),
     listJobs: () => answer((): Job[] => []),
     getProject: (id) => answer(() => store.get(id)!),
+    storyboard: (id) =>
+      answer((): Job => {
+        calls.push({ method: "storyboard", args: [id] });
+        return { id: "job_text", projectId: id, step: "text", mode: "now", status: "queued", progress: 0, outputAssetIds: [], createdAt: iso() };
+      }),
     createProject: (body: CreateProjectBody) =>
       answer(() => {
         calls.push({ method: "createProject", args: [body] });
@@ -115,18 +123,19 @@ afterEach(() => {
 });
 
 describe("new project", () => {
-  it("offers Blank first, the film presets, and What if? last; no Effect or Camera move", async () => {
+  it("offers Blank first, the film presets, and What if? last; no Cinematic shot, Effect or Camera move", async () => {
     const full = open("#/new", engine(FULL).client);
     await screen.findByRole("radiogroup", { name: "Preset" });
-    expect(presetNames()).toEqual(["Blank", "Cinematic shot", "Product ad", "Music video", "Talking intro", "What if?"]);
+    expect(presetNames()).toEqual(["Blank", "Micro drama", "Product ad", "Music video", "Talking intro", "What if?"]);
     expect(screen.getByRole("radio", { name: /^Blank/ }).getAttribute("aria-checked")).toBe("true");
+    expect(screen.queryByRole("radio", { name: /^Cinematic shot/ })).toBeNull();
     expect(screen.queryByRole("radio", { name: /^Effect/ })).toBeNull();
     expect(screen.queryByRole("radio", { name: /^Camera move/ })).toBeNull();
     full.unmount();
 
     const small = open("#/new", engine(NO_WHAT_IF).client);
     await screen.findByRole("radiogroup", { name: "Preset" });
-    expect(presetNames()).toEqual(["Blank", "Cinematic shot", "Product ad", "Music video", "Talking intro"]);
+    expect(presetNames()).toEqual(["Blank", "Micro drama", "Product ad", "Music video", "Talking intro"]);
     small.unmount();
   });
 
@@ -148,7 +157,7 @@ describe("new project", () => {
     const e = engine(FULL);
     const { unmount } = open("#/new", e.client);
     fireEvent.click(await screen.findByRole("radio", { name: /^Product ad/ }));
-    expect(await screen.findByText("The preset only sets up the shot list, the look and the captions. Every field is optional. Nothing renders until you ask.")).toBeTruthy();
+    expect(await screen.findByText("The writer turns your brief into a shot list, then draws a still for each shot. Every field is optional.")).toBeTruthy();
     expect(screen.getByText(/You get a 15 second ad with voiceover and captions\.$/)).toBeTruthy();
     // The seeded shot list, as the contract drafts it: five shots, each within a 4 s clip.
     expect(screen.getByText("5 shots, 15 seconds. Nothing renders yet.")).toBeTruthy();
@@ -158,6 +167,48 @@ describe("new project", () => {
     expect(body.template).toBe("product_ad");
     expect(body.aspect).toBe("9:16");
     expect(e.work()).toEqual([]);
+    unmount();
+  });
+
+  it("writes the shot list from a brief with words once its photo is in, then opens Media", async () => {
+    const e = engine(FULL);
+    const { unmount } = open("#/new", e.client);
+    fireEvent.click(await screen.findByRole("radio", { name: /^Product ad/ }));
+    expect(await screen.findByText("5 shots, 15 seconds. Nothing renders yet.")).toBeTruthy();
+    fireEvent.change(screen.getByLabelText("Product name"), { target: { value: "Lumi sunrise lamp" } });
+    expect(screen.getByText("5 shots, 15 seconds. The writer starts when you create the project.")).toBeTruthy();
+    const input = document.querySelector<HTMLInputElement>('.drop input[type="file"]')!;
+    fireEvent.change(input, { target: { files: [new File(["x"], "lamp.png", { type: "image/png" })] } });
+    fireEvent.click(screen.getByRole("button", { name: "Create project" }));
+    await waitFor(() => expect(window.location.hash).toBe("#/p/prj_new/media"));
+    // The writer comes last, so it sees the product photo.
+    expect(e.calls.map((c) => c.method).filter((m) => m !== "hardware")).toEqual(["createProject", "uploadAsset", "updateProject", "storyboard"]);
+    expect(e.work().map((c) => c.method)).toEqual(["storyboard"]);
+    unmount();
+  });
+
+  it("leaves the template's list for Media on a setup with no writer", async () => {
+    const e = engine(NO_WRITER);
+    const { unmount } = open("#/new", e.client);
+    fireEvent.click(await screen.findByRole("radio", { name: /^Micro drama/ }));
+    fireEvent.change(await screen.findByLabelText("The scene"), { target: { value: "A night clerk catches a ghost eating the last melon bun" } });
+    expect(screen.getByText("The preset only sets up the shot list, the look and the captions. Every field is optional. Nothing renders until you ask.")).toBeTruthy();
+    expect(screen.getByText(/^5 shots, .*\. Nothing renders yet\.$/)).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Create project" }));
+    await waitFor(() => expect(window.location.hash).toBe("#/p/prj_new/media"));
+    expect(e.work()).toEqual([]);
+    unmount();
+  });
+
+  it("plans a music video's shots to fill the length chosen", async () => {
+    const { unmount } = open("#/new", engine(FULL).client);
+    fireEvent.click(await screen.findByRole("radio", { name: /^Music video/ }));
+    // Indie pop at 118 bpm in 4 s clips: ten shots of a bar and a half fill 30 seconds.
+    expect(await screen.findByText("10 shots, 30 seconds. Nothing renders yet.")).toBeTruthy();
+    fireEvent.click(screen.getByRole("radio", { name: /^Lo-fi/ }));
+    expect(screen.getByText("11 shots, 30 seconds. Nothing renders yet.")).toBeTruthy();
+    fireEvent.click(screen.getByRole("radio", { name: "60 seconds" }));
+    expect(screen.getByText("21 shots, 60 seconds. Nothing renders yet.")).toBeTruthy();
     unmount();
   });
 
@@ -192,6 +243,97 @@ describe("new project", () => {
     fireEvent.click(create);
     await waitFor(() => expect(window.location.hash).toBe("#/p/prj_new/media"));
     expect(e.work()).toEqual([]);
+    unmount();
+  });
+});
+
+describe("new project's keys and way out", () => {
+  it("Cmd+Enter creates the project from anywhere on the page, a field included", async () => {
+    const e = engine(FULL);
+    const { unmount } = open("#/new", e.client);
+    const name = (await screen.findByLabelText("Project name")) as HTMLInputElement;
+    fireEvent.change(name, { target: { value: "Harbour at night" } });
+    // The button says its keys; its name stays plain.
+    expect(screen.getByRole("button", { name: "Create project" }).textContent).toMatch(/↵$/);
+    fireEvent.keyDown(name, { key: "Enter", metaKey: true });
+    await waitFor(() => expect(window.location.hash).toBe("#/p/prj_new/media"));
+    expect(e.calls.filter((c) => c.method === "createProject").map((c) => (c.args[0] as CreateProjectBody).name)).toEqual(["Harbour at night"]);
+    unmount();
+  });
+
+  it("Cmd+Enter does nothing until the form can create", async () => {
+    const e = engine(FULL);
+    const { unmount } = open("#/new", e.client);
+    fireEvent.click(await screen.findByRole("radio", { name: /^What if\?/ }));
+    fireEvent.keyDown(screen.getByLabelText("What if?"), { key: "Enter", ctrlKey: true });
+    await new Promise((r) => setTimeout(r, 20));
+    expect(e.calls.find((c) => c.method === "createProject")).toBeUndefined();
+    expect(window.location.hash).toBe("#/new");
+    unmount();
+  });
+
+  it("Escape leaves a field first, then New project, back to where it was opened", async () => {
+    const { unmount } = open("#/", engine(FULL).client);
+    await screen.findByRole("heading", { name: "Projects" });
+    fireEvent.click(within(screen.getByRole("navigation", { name: "Studio" })).getByRole("link", { name: /^New project/ }));
+    const name = (await screen.findByLabelText("Project name")) as HTMLInputElement;
+    // New project sits under Projects in the top bar.
+    const crumbs = screen.getByRole("navigation", { name: "Breadcrumb" });
+    expect(crumbs.textContent).toBe("ProjectsNew project");
+
+    name.focus();
+    fireEvent.keyDown(name, { key: "Escape" });
+    expect(document.activeElement).not.toBe(name);
+    expect(window.location.hash).toBe("#/new");
+
+    fireEvent.keyDown(document.body, { key: "Escape" });
+    await waitFor(() => expect(window.location.hash).toBe("#/"));
+    expect(await screen.findByRole("heading", { name: "Projects" })).toBeTruthy();
+    unmount();
+  });
+
+  it("the top bar's Close and the foot's Cancel leave New project", async () => {
+    const first = open("#/new", engine(FULL).client);
+    fireEvent.click(await screen.findByRole("button", { name: "Close" }));
+    await waitFor(() => expect(window.location.hash).toBe("#/"));
+    first.unmount();
+
+    const second = open("#/new", engine(FULL).client);
+    fireEvent.click(await screen.findByRole("button", { name: "Cancel" }));
+    await waitFor(() => expect(window.location.hash).toBe("#/"));
+    second.unmount();
+  });
+
+  it("opens on the preset the address names, and blank for one it doesn't know", async () => {
+    const drama = open("#/new?preset=product_ad", engine(FULL).client);
+    expect(await screen.findByRole("heading", { name: "Product ad" })).toBeTruthy();
+    expect(screen.getByRole("radio", { name: /^Product ad/ }).getAttribute("aria-checked")).toBe("true");
+    expect(screen.getByRole("radio", { name: "Tall" }).getAttribute("aria-checked")).toBe("true");
+    drama.unmount();
+
+    const unknown = open("#/new?preset=cinematic_shot", engine(FULL).client);
+    expect(await screen.findByRole("heading", { name: "Blank" })).toBeTruthy();
+    unknown.unmount();
+
+    // What if? needs a setup that can make one.
+    const small = open("#/new?preset=what_if", engine(NO_WHAT_IF).client);
+    await screen.findByRole("radiogroup", { name: "Preset" });
+    await waitFor(() => expect(screen.getByRole("radio", { name: /^Blank/ }).getAttribute("aria-checked")).toBe("true"));
+    small.unmount();
+  });
+
+  it("previews a blank project's first frame in the chosen shape, with its name and size", async () => {
+    const { unmount } = open("#/new", engine(FULL).client);
+    const size = () => document.querySelector(".np-frame__size")?.textContent;
+    await waitFor(() => expect(size()).toBe("Wide · 1920 × 1080"));
+    fireEvent.click(screen.getByRole("radio", { name: "Tall" }));
+    expect(size()).toBe("Tall · 1080 × 1920");
+    fireEvent.change(screen.getByLabelText("Project name"), { target: { value: "Pier" } });
+    expect(document.querySelector(".np-frame__name")?.textContent).toBe("Pier");
+    // A preset has its own fields instead.
+    fireEvent.click(screen.getByRole("radio", { name: /^Micro drama/ }));
+    await screen.findByLabelText("The scene");
+    expect(document.querySelector(".np-frame")).toBeNull();
     unmount();
   });
 });

@@ -4,7 +4,7 @@
  * edits that restore a version, put cards on the timeline or take them off. Shared by the Media canvas and the Editor's
  * media sidebar, so a drag means the same in both.
  */
-import { projectBoards, quickEffects, quickMoves, type Asset, type Board, type DraftTool, type Job, type Project, type Shot, type Soundtrack, type StepId, type Take } from "@nightshift/contract";
+import { cameraMoves, isExtraCard, isOneShot, ownShot, projectBoards, quickEffects, quickMoves, shotTemplate, type Asset, type Board, type DraftTool, type Job, type Project, type Shot, type Soundtrack, type StepId, type Take } from "@nightshift/contract";
 import { id as newId } from "@/lib/ids";
 
 /** One version in a shot's history: a still it had, a draft (plain, an effect or a camera move), or a final. */
@@ -127,20 +127,65 @@ export function restore(shot: Shot, version: Version): Shot {
   return next;
 }
 
-/** What a card is called: the pick's tool, else the start of the shot's prompt, else its place. */
-export function shotLabel(project: Project, shot: Shot, history = shotHistory(project, shot)): string {
-  const tool = history.find((v) => v.pick)?.tool ?? templateTool(project, shot);
-  if (tool) return toolLabel(tool);
-  const words = shot.prompt.trim().replace(/\s+/g, " ");
-  if (words) return words.length > 60 ? `${words.slice(0, 60).replace(/\s+\S*$/, "")}...` : words;
-  return `Shot ${shot.index + 1}`;
+/**
+ * What a card is called. On a timeline of several shots it says its place first ("Shot 3: Paddling a river of stars"),
+ * then `shotWords`. Without words, its place alone.
+ */
+export function shotLabel(project: Project, shot: Shot, history = shotHistory(project, shot), making?: DraftTool): string {
+  const cut = cutShots(project);
+  const at = shot.onTimeline !== false && cut.length > 1 ? cut.findIndex((s) => s.id === shot.id) : -1;
+  const place = at >= 0 ? `Shot ${at + 1}` : undefined;
+  const words = shotWords(project, shot, history, making);
+  if (place && words) return `${place}: ${words}`;
+  return words || place || `Shot ${shot.index + 1}`;
 }
 
-/** What a quick shot's takes are made with when they record no tool: the template's effect or camera move. */
-function templateTool(project: Pick<Project, "template" | "brief">, shot: Shot): DraftTool | undefined {
-  if (project.template === "vfx_effect" && typeof project.brief.effect === "string") return { kind: "effect", effect: project.brief.effect };
-  if (project.template === "camera_move") return { kind: "camera_move", move: String(shot.cameraMove ?? project.brief.move ?? "") };
+/**
+ * A card's words: the pick's tool ("Effect, Levitate"), or the tool its first take is being made with (`making`), else
+ * the words of its prompt that set it apart. A start its prompt shares with another card's (a look or a character
+ * pasted on every shot) is left out, so cards whose prompts all begin "Claymation stop-motion scene, handmade
+ * plasticine..." never read the same. Empty without either.
+ */
+export function shotWords(project: Project, shot: Shot, history = shotHistory(project, shot), making?: DraftTool): string {
+  const tool = history.find((v) => v.pick)?.tool ?? making ?? templateTool(project, shot);
+  if (tool) return toolLabel(tool);
+  const words = shot.prompt.trim().split(/\s+/).filter(Boolean);
+  if (!words.length) return "";
+  let shared = 0;
+  for (const other of project.shots) {
+    if (other.id === shot.id) continue;
+    const theirs = other.prompt.trim().split(/\s+/);
+    let n = 0;
+    while (n < words.length && n < theirs.length && words[n]!.toLowerCase() === theirs[n]!.toLowerCase()) n++;
+    shared = Math.max(shared, n);
+  }
+  // A phrase pasted on each ends at a comma or a full stop, and has a few words: "A woman in a" is how prompts begin.
+  while (shared > 0 && !/[,.;:]$/.test(words[shared - 1]!)) shared--;
+  const own = shared >= 4 && shared < words.length ? words.slice(shared).join(" ") : words.join(" ");
+  const text = own ? own[0]!.toUpperCase() + own.slice(1) : words.join(" ");
+  return text.length > 60 ? `${text.slice(0, 60).replace(/\s+\S*$/, "")}...` : text;
+}
+
+/**
+ * What a quick shot's own takes are made with when they record no tool: the template's effect or camera move. An extra
+ * card's take without one is a plain draft.
+ */
+function templateTool(project: Pick<Project, "template" | "brief" | "shots">, shot: Shot): DraftTool | undefined {
+  const template = shotTemplate(project, shot);
+  if (template === "vfx_effect" && typeof project.brief.effect === "string") return { kind: "effect", effect: project.brief.effect };
+  if (template === "camera_move") return { kind: "camera_move", move: String(shot.cameraMove ?? project.brief.move ?? "") };
   return undefined;
+}
+
+/**
+ * A shot's prompt-guided camera move in words: its label in `cameraMoves`, else the id read out ("tilt_down" is "Tilt
+ * down"). The writer may choose a move the list lacks; the engine still films it, so it is named, never shown raw.
+ */
+export function cameraMoveLabel(id: string): string {
+  const known = cameraMoves.find((m) => m.id === id)?.label;
+  if (known) return known;
+  const words = id.replace(/[_-]+/g, " ").trim().toLowerCase();
+  return words ? words[0]!.toUpperCase() + words.slice(1) : "Still camera";
 }
 
 /** "Effect, Freeze", "Camera move, Dolly in". */
@@ -232,9 +277,21 @@ function ordered(project: Pick<Project, "shots">, cut: Shot[]): Shot[] {
 }
 
 /**
+ * Whether a card can go on the timeline. In a What if? film or a quick shot the timeline is the project's own shot and
+ * its sound: an extra card or an image stays in Media. Elsewhere every card can.
+ */
+export function canAddToTimeline(project: Pick<Project, "template" | "shots" | "assets">, itemId: string): boolean {
+  if (!isOneShot(project.template)) return true;
+  const shot = project.shots.find((s) => s.id === itemId);
+  if (shot) return !isExtraCard(project, shot);
+  return project.assets.find((a) => a.id === itemId)?.kind !== "image";
+}
+
+/**
  * Put cards on the timeline at `at` (a position among its shots; the end when absent), in the order given. A shot goes
  * there (moved, if it was on it already). An image becomes a new shot of that still, filed after the image on its
- * board. A song or a voiceover becomes the soundtrack's pick for its role.
+ * board. A song or a voiceover becomes the soundtrack's pick for its role. Cards that cannot go there
+ * (`canAddToTimeline`) are left out.
  */
 export function placeOnTimeline(project: Project, itemIds: string[], at?: number): TimelineEdit {
   let boards = projectBoards(project);
@@ -243,6 +300,7 @@ export function placeOnTimeline(project: Project, itemIds: string[], at?: number
   const shots = new Map(project.shots.map((s) => [s.id, s]));
   const incoming: Shot[] = [];
   for (const itemId of itemIds) {
+    if (!canAddToTimeline(project, itemId)) continue;
     const shot = shots.get(itemId);
     if (shot) {
       if (!incoming.some((s) => s.id === shot.id)) incoming.push(shot);
@@ -301,13 +359,13 @@ export function moveCard(project: Project, itemId: string, boardId: string, inde
 // ---------------------------------------------------------------- card helpers
 
 /** What a version is, in a word or two: "Still", "Draft", "Effect, Freeze", "Camera move, Dolly in", "Final, same take". */
-export function versionLabel(project: Pick<Project, "template" | "brief">, shot: Shot, version: Pick<Version, "rung" | "tool" | "take">): string {
+export function versionLabel(project: Pick<Project, "template" | "brief" | "shots">, shot: Shot, version: Pick<Version, "rung" | "tool" | "take">): string {
   if (version.rung === "still") return "Still";
   if (version.rung === "final") return version.take?.finalKind === "remaster" ? "Final, remaster" : "Final, same take";
   // Quick shots made before the tools: their takes are the template's effect or camera move.
   const tool = version.tool ?? templateTool(project, shot);
   if (tool) return toolLabel(tool);
-  if (project.template === "what_if") return "Film";
+  if (shotTemplate(project, shot) === "what_if") return "Film";
   return "Draft";
 }
 
@@ -367,14 +425,15 @@ export type Retry = { kind: "still" } | { kind: "draft" } | { kind: "final"; fin
 
 /**
  * How to run a failed job again. Only what is known exactly runs again: a still or a plain draft of a shot, a final of
- * its picked draft. A What if? card goes to its story, where each beat and the film are made. Undefined when the job
+ * its picked draft. A What if? film goes to its story, where each beat and the film are made. Undefined when the job
  * carried a choice it does not record (an effect, a camera move, a quick shot's own take): the card opens, so the user
- * chooses again.
+ * chooses again. An extra card of a What if? film or a quick shot runs again like any card.
  */
-export function retryFor(project: Pick<Project, "template">, shot: Shot, step: Job["step"]): Retry | undefined {
-  if (project.template === "what_if") return { kind: "story" };
+export function retryFor(project: Pick<Project, "template" | "shots">, shot: Shot, step: Job["step"]): Retry | undefined {
+  const template = shotTemplate(project, shot);
+  if (template === "what_if") return { kind: "story" };
   // A quick shot's still is its photo, and its takes are the template's effect or camera move, or a tool's.
-  const quick = project.template === "camera_move" || project.template === "vfx_effect";
+  const quick = template === "camera_move" || template === "vfx_effect";
   switch (step) {
     case "still":
       return quick ? undefined : { kind: "still" };
@@ -389,12 +448,12 @@ export function retryFor(project: Pick<Project, "template">, shot: Shot, step: J
 }
 
 /**
- * Why the project's tools cannot make new cards, or undefined when they can. The engine refuses `make` for a What if?
- * film and for a quick shot, which each make one shot.
+ * Why the project's tools cannot make new cards, or undefined when they can. Every project makes cards; a quick shot
+ * makes its own shot from its photo first (its first shot is its own, `ownShot`), and the engine refuses `make` until
+ * then. In a What if? film or a quick shot the cards are extras: they stay in Media, off the timeline.
  */
-export function makeBlocked(project: Pick<Project, "template">): string | undefined {
-  if (project.template === "what_if") return "A What if? film is one continuous shot. Start a new project to make more cards.";
-  if (project.template === "camera_move" || project.template === "vfx_effect") return "This project turns one photo into one shot. Start a new project to use the tools.";
+export function makeBlocked(project: Pick<Project, "template" | "shots">): string | undefined {
+  if ((project.template === "camera_move" || project.template === "vfx_effect") && !ownShot(project)) return "Make the shot from this project's photo first.";
   return undefined;
 }
 
@@ -404,11 +463,17 @@ export function makeBlocked(project: Pick<Project, "template">): string | undefi
  */
 export function changesCut(project: Pick<Project, "shots">, patch: { shots?: Shot[] | undefined }): boolean {
   if (!patch.shots) return false;
-  const key = (shots: Shot[]) => JSON.stringify(cutShots({ shots }).map((s) => [s.id, s.durationSec, s.stillAssetId ?? null, !!s.useStill, s.chosenDraftId ?? null, s.chosenFinalId ?? null]));
+  const key = (shots: Shot[]) => JSON.stringify(cutShots({ shots }).map((s) => [s.id, s.durationSec, s.cutSec ?? null, s.stillAssetId ?? null, !!s.useStill, s.chosenDraftId ?? null, s.chosenFinalId ?? null]));
   return key(patch.shots) !== key(project.shots);
 }
 
 /** The shots with one shot changed, for a PATCH. */
 export function shotPatch(project: Pick<Project, "shots">, shotId: string, change: Partial<Shot> | ((shot: Shot) => Shot)): { shots: Shot[] } {
   return { shots: project.shots.map((s) => (s.id === shotId ? (typeof change === "function" ? change(s) : { ...s, ...change }) : s)) };
+}
+
+/** "Music", or "Music 2" when a board has more than one song, in the order they were made. */
+export function soundName(item: Extract<CanvasItem, { kind: "audio" }>, all: ReadonlyArray<Extract<CanvasItem, { kind: "audio" }>>): string {
+  const same = all.filter((x) => x.role === item.role).sort((a, b) => a.asset.createdAt.localeCompare(b.asset.createdAt));
+  return same.length > 1 ? `${item.label} ${same.indexOf(item) + 1}` : item.label;
 }

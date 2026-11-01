@@ -6,13 +6,15 @@ export function gb(n: number, digits = 0): string {
   return `${digits ? n.toFixed(digits) : Math.round(n)} GB`;
 }
 
-/** "about 40 seconds", "about 3 minutes", "about 1 h 20 min". Rough on purpose. */
+/** "about 40 seconds", "about a minute and a half", "about 3 minutes", "about 1 h 20 min". Rough on purpose. */
 export function roughDuration(seconds: number): string {
   if (!Number.isFinite(seconds) || seconds <= 0) return "a moment";
   if (seconds < 8) return "a few seconds";
   if (seconds < 55) return `about ${Math.round(seconds / 5) * 5} seconds`;
   const min = seconds / 60;
-  if (min < 1.5) return "about a minute";
+  if (min < 1.25) return "about a minute";
+  // 80 seconds is not "about a minute" (a camera move on the Spark), nor yet "about 2 minutes".
+  if (min < 1.75) return "about a minute and a half";
   if (min < 10) return `about ${Math.round(min)} minutes`;
   if (min < 55) return `about ${Math.round(min / 5) * 5} minutes`;
   const h = Math.floor(min / 60);

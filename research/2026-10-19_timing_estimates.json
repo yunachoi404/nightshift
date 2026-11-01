@@ -15,7 +15,7 @@
       "seconds": 35,
       "stored": {
         "peakGb": 32.9,
-        "seconds": 31.39965441916138,
+        "seconds": 11.4,
         "measured": true
       }
     },
@@ -40,7 +40,7 @@
     },
     "video_final_same_take": {
       "representative": "GB10",
-      "workflow": "ltx25_same_take.api.json",
+      "workflow": "ltx25_same_take_hd.api.json",
       "baselineSeconds": 121.59279858903028,
       "computeRatio": 1.0,
       "bandwidthRatio": 1.0,
@@ -52,9 +52,9 @@
       "initialCopySeconds": 0,
       "seconds": 125,
       "stored": {
-        "peakGb": 46.2,
-        "seconds": 121.59279858903028,
-        "measured": true
+        "peakGb": 56,
+        "seconds": 288,
+        "measured": false
       }
     },
     "video_final_remaster": {
@@ -97,20 +97,20 @@
     },
     "music": {
       "representative": "GB10",
-      "workflow": "minimax_music3.api.json",
-      "baselineSeconds": 51.490641582990065,
+      "workflow": "yue2_music.api.json",
+      "baselineSeconds": 34.3,
       "computeRatio": 1.0,
       "bandwidthRatio": 1.0,
       "kernelPressureMargin": 1.0,
-      "computeFraction": 0.5,
+      "computeFraction": 0.3,
       "weightReadRatio": 1.0,
       "streamedGbPerStep": 0,
       "transferSeconds": 0,
       "initialCopySeconds": 0,
-      "seconds": 55,
+      "seconds": 35,
       "stored": {
-        "peakGb": 21.3,
-        "seconds": 51.490641582990065,
+        "peakGb": 10.1,
+        "seconds": 34.3,
         "measured": true
       }
     },
@@ -348,20 +348,20 @@
     },
     "music": {
       "representative": "RTX 5090",
-      "workflow": "minimax_music3.api.json",
-      "baselineSeconds": 51.490641582990065,
+      "workflow": "yue2_music.api.json",
+      "baselineSeconds": 34.3,
       "computeRatio": 3.0,
       "bandwidthRatio": 6.564102564102564,
       "kernelPressureMargin": 1.2,
-      "computeFraction": 0.5,
+      "computeFraction": 0.3,
       "weightReadRatio": 1.0,
       "streamedGbPerStep": 0,
       "transferSeconds": 0.0,
-      "initialCopySeconds": 0.19655999999999998,
-      "seconds": 20,
+      "initialCopySeconds": 0.15844,
+      "seconds": 15,
       "stored": {
-        "peakGb": 16,
-        "seconds": 20,
+        "peakGb": 10,
+        "seconds": 15,
         "measured": false
       }
     },

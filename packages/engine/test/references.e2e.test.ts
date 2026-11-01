@@ -267,9 +267,12 @@ it("sends selected references in order, supports an empty selection, and gives n
       ),
     );
     const saved = (await send(base, undefined, "GET")) as Project;
+    const timeline = saved.shots.filter((s) => s.onTimeline !== false);
     expect(
-      saved.shots.every((s) => refs.every((r) => s.prompt.includes(r.label))),
+      timeline.length > 0 && timeline.every((s) => refs.every((r) => s.prompt.includes(r.label))),
     ).toBe(true);
+    // The shots the new list replaced had stills: they stay as cards, off the timeline.
+    expect(saved.shots.filter((s) => s.onTimeline === false).map((s) => s.id)).toEqual(["selected", "empty", "all"]);
     await send("/api/install", { tier: "apple-64", memoryLimitGb: null });
     await waitFor(
       async () =>

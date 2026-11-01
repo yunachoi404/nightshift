@@ -13,6 +13,8 @@ export function suggestName(template: TemplateId, brief: Record<string, unknown>
       return trim(sentenceCase(str(brief.subject, "Music video")));
     case "product_ad":
       return `${str(brief.productName, "Product")} ad`;
+    case "micro_drama":
+      return trim(sentenceCase(str(brief.premise, "Micro drama")));
     case "talking_intro": {
       const s = str(brief.script, "Talking intro");
       return trim(sentenceCase(s.split(/[.!?]/)[0] ?? s), 30);

@@ -312,43 +312,18 @@
       }
     },
     {
-      "id": "diffusion_models-minimax_music3_dit_fp16",
-      "name": "MiniMax Music 3, music model",
-      "folder": "diffusion_models",
-      "filename": "minimax_music3_dit_fp16.safetensors",
-      "url": "https://huggingface.co/Comfy-Org/MiniMax-Music-3/resolve/9e364ccd290a401561091fb441ed19cd7de92550/diffusion_models/minimax_music3_dit_fp16.safetensors",
-      "sizeGb": 4.914197682,
+      "id": "checkpoints-yue2_3b_int8_convrot",
+      "name": "YuE2-3B, music model",
+      "folder": "checkpoints",
+      "filename": "yue2_3b_int8_convrot.safetensors",
+      "url": "https://huggingface.co/Comfy-Org/YuE2/resolve/2f76ca75e6ee094169de899cc7fc99d6887e2196/checkpoints/yue2_3b_int8_convrot.safetensors",
+      "sizeGb": 3.9609388,
       "license": {
-        "name": "MiniMax-Music3 Community License, restricted",
-        "url": "https://huggingface.co/MiniMaxAI/MiniMax-Music3/blob/main/LICENSE"
+        "name": "CC BY-NC 4.0, non-commercial",
+        "url": "https://huggingface.co/m-a-p/YuE2-3B/blob/8f24312f187763b9854adeec87e437e2b03bbff1/LICENSE",
+        "commercialNote": "Weights are CC BY-NC 4.0: no commercial use, and credit YuE2-3B with its source, huggingface.co/m-a-p/YuE2-3B. The YuE code is Apache-2.0. ComfyUI runs the model with its built-in nodes."
       },
-      "sha256": "45494a2b6b69af115902ff28eaf54118d19067aa54da01000f3e3efce7ba0e34"
-    },
-    {
-      "id": "text_encoders-minimax_music3_text_encoder_pruned_int8_convrot",
-      "name": "MiniMax Music 3, music prompt reader",
-      "folder": "text_encoders",
-      "filename": "minimax_music3_text_encoder_pruned_int8_convrot.safetensors",
-      "url": "https://huggingface.co/Comfy-Org/MiniMax-Music-3/resolve/9e364ccd290a401561091fb441ed19cd7de92550/text_encoders/minimax_music3_text_encoder_pruned_int8_convrot.safetensors",
-      "sizeGb": 9.196611886,
-      "license": {
-        "name": "MiniMax-Music3 Community License, restricted",
-        "url": "https://huggingface.co/MiniMaxAI/MiniMax-Music3/blob/main/LICENSE"
-      },
-      "sha256": "010b7416d2336a08c711bc22ee65849c9623069ddb7d89bec011a75699e52014"
-    },
-    {
-      "id": "vae-minimax_music3_dav",
-      "name": "MiniMax Music 3, music decoder",
-      "folder": "vae",
-      "filename": "minimax_music3_dav.safetensors",
-      "url": "https://huggingface.co/Comfy-Org/MiniMax-Music-3/resolve/9e364ccd290a401561091fb441ed19cd7de92550/vae/minimax_music3_dav.safetensors",
-      "sizeGb": 0.216696128,
-      "license": {
-        "name": "MiniMax-Music3 Community License, restricted",
-        "url": "https://huggingface.co/MiniMaxAI/MiniMax-Music3/blob/main/LICENSE"
-      },
-      "sha256": "2a32155b769be01445fcc2a8663b910fc9e1751e18dc1c3ec528064512d9ef0c"
+      "sha256": "96fe199377309001ed8cd26a944baeee8cc31a20ba7c36d1d3c0a7e1f4149db6"
     },
     {
       "id": "diffusion_models-flux-2-klein-4b-fp8",
@@ -591,15 +566,15 @@
       ]
     },
     "music": {
-      "workflow": "minimax_music3.api.json",
+      "workflow": "yue2_music.api.json",
       "inputs": {
         "prompt": {
-          "node": "4",
-          "field": "caption"
+          "node": "13",
+          "field": "value"
         },
         "lyrics": {
-          "node": "4",
-          "field": "lyrics"
+          "node": "14",
+          "field": "value"
         },
         "seed": {
           "node": "11",
@@ -737,8 +712,8 @@
       "measured": false
     },
     "music": {
-      "peakGb": 16,
-      "seconds": 20,
+      "peakGb": 10,
+      "seconds": 15,
       "measured": false
     },
     "text": {
@@ -753,7 +728,7 @@
     },
     "video_effect": {
       "peakGb": 28,
-      "seconds": 35,
+      "seconds": 50,
       "measured": false
     }
   },

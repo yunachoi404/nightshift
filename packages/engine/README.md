@@ -34,7 +34,8 @@ their `dist` is missing or older than their source. The desktop app has its own 
 
 Code that embeds the engine calls `startEngine({ port, dataDir, webDir?, comfyBaseUrl?, mock? })`, which
 returns `{ url, stop }`. It also takes `host`, `recipesDir`, `workflowsDir`, `nodesDir`, `comfyDir`,
-`mockSpeed`, `attachCheckMs` (how often attach and remote mode check the proxy and ComfyUI, default 10 s) and `log`. The job
+`mockSpeed`, `attachCheckMs` (how often attach and remote mode check the proxy and ComfyUI, default 10 s),
+`holdForUserMs` (how long finals for the night wait after the user's last interactive job, default 2 min) and `log`. The job
 store uses `node:sqlite`, which works in Electron 44 (Node 24).
 
 Writes (POST, PATCH, DELETE) that carry an `Origin` header must come from a loopback origin or the engine's own
@@ -218,6 +219,12 @@ read. Run it after changing a pin, a patch or ComfyUI's version.
   words to align. Exports are real renders.
 - Finals with `mode: "overnight"` wait until overnight mode is on and the clock is between `startAt` and
   `endAt`. Interactive work always runs first, then finals to run now.
+- A final once started is not stopped, so a final for the night does not start while the user works: it waits until
+  two minutes pass with no still, draft, edit, effect, camera move, song, voice or shot list queued or running, and
+  says "Waiting while you work, so your stills and drafts go first". The hold only takes time the night can spare: it
+  holds while the rest of the window still fits every final for the night left, each at its recipe estimate times
+  1.25, stretched by the GPU share the user's own jobs took over the last hour. Once that time runs short, finals run
+  between interactive jobs as before.
 - Finals for the night run grouped by the model they load, so each model loads once a night. Every final carries
   `model`, the main model its workflow loads in plain words ("LTX-2.5", "MiniMax H3"); a step whose workflow loads
   none of the recipe's models (the small tiers' same take, a resize) has none and is grouped by its step. A final for
@@ -382,8 +389,10 @@ An explicit `prompt` on a voice request overrides that instruction, for example 
 ## Node packs
 
 A local install gets exactly the packs the chosen recipe lists, plus Nightshift's own (`comfy_nodes/nightshift`,
-linked from the repo, or from the app's resources). Core ComfyUI v0.41.3 has every LTX, H3, Krea, ACE, MiniMax Music and
-TextGenerate node the recipes use, so LTXVideo, VideoHelperSuite and KJNodes are no longer installed.
+linked from the repo, or from the app's resources). Core ComfyUI v0.41.3 has every LTX, H3, Krea, ACE, YuE2 and
+TextGenerate node the recipes use, so LTXVideo, VideoHelperSuite and KJNodes are no longer installed. Nightshift's own
+pack adds `NightshiftYuE2Instrumental`, which moves a YuE2 plan's vocal melody to an instrument with the YuE2 authors'
+MIT score tools (`comfy_nodes/nightshift/yue2_score`).
 
 | Pack | Pinned commit | License | Fix applied | Tiers |
 |---|---|---|---|---|

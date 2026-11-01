@@ -648,7 +648,8 @@ describe("other setups", () => {
     expect(screen.getByText(why)).toBeTruthy();
     expect(screen.getByRole("heading", { name: "A lighter setup" })).toBeTruthy();
     await waitFor(() => expect((screen.getByRole("slider", { name: "Memory limit" }) as HTMLInputElement).value).toBe("24"));
-    expect(screen.getByRole("button", { name: "Download 63 GB" })).toBeTruthy();
+    // The download's size comes back with the setup's plan, a moment after the setup itself.
+    expect(await screen.findByRole("button", { name: "Download 63 GB" })).toBeTruthy();
   });
 
   it("after an install that fails, try again and go back with the setup and limit the user chose", async () => {
@@ -794,7 +795,7 @@ describe("the demo", () => {
     engine.status = { ...engine.status, phase: "not_installed", tier: null, comfyui: DOWN };
     open(engine, "#/setup");
     await screen.findByRole("button", { name: /Get started/ });
-    expect(screen.getByText("Setup is mostly one large download.")).toBeTruthy();
+    expect(screen.getByText("Setup is mostly one large download")).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "Look around first, with sample renders" }));
     // The page reloads into the in-browser demo; the engine is not asked for anything.
     expect(localStorage.getItem("nightshift.api")).toBe("demo");

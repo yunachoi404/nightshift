@@ -1,18 +1,18 @@
 /*
- * Nightshift design tokens. Two neutral themes. Light is white porcelain: a near-white canvas, white cards,
- * zinc hairlines and zinc ink, with very soft shadows. Dark is true black with T3 Code's surfaces. The pictures
- * carry the color; the chrome is ink, white and hairlines. Banana yellow marks the one main action of a context,
- * selection, focus, active states and progress, and nothing else. Amber marks the overnight work. The effective
- * theme is `data-theme` on <html>, resolved from the user's choice (System, Light, Dark) and the system setting
- * by an inline script in index.html before the first paint, and kept in sync by store/theme.ts.
+ * Nightshift design tokens. Two themes over the same roles. Dark is the edit suite at night: near-black surfaces with
+ * a faint ink of night sky, warm off-white words, and pictures on true black. Light is white porcelain: a near-white
+ * canvas, white cards, zinc hairlines and zinc ink, with very soft shadows. The pictures carry the color. Banana marks
+ * the one main action of a context, selection, focus, active states and progress, and nothing else. Amber marks the
+ * overnight work. The effective theme is `data-theme` on <html>, resolved from the user's choice (System, Light, Dark)
+ * and the system setting by an inline script in index.html before the first paint, and kept in sync by store/theme.ts.
+ *
+ * Three faces, all bundled: Inter does the work, Fraunces sets the headlines, JetBrains Mono the keys, counts, times
+ * and dimensions. Sedgwick Ave is the one handwritten note, on the welcome window.
  */
-@font-face {
-  font-family: "Young Serif";
-  src: url("./fonts/young-serif-latin.woff2") format("woff2");
-  font-weight: 400;
-  font-style: normal;
-  font-display: block;
-}
+@import "@fontsource-variable/inter/opsz.css";
+@import "@fontsource-variable/fraunces/opsz.css";
+@import "@fontsource-variable/jetbrains-mono/wght.css";
+
 @font-face {
   font-family: "Sedgwick Ave";
   src: url("./fonts/sedgwick-ave-latin.woff2") format("woff2");
@@ -37,9 +37,10 @@
   --media: #111113;
   --media-empty: #efeff1;
 
-  /* Lines: zinc hairlines, two strengths. */
+  /* Lines: zinc hairlines, two strengths, and the edge of a card under the pointer. */
   --line: #e4e4e7;
   --line-strong: #d4d4d8;
+  --line-hover: #c4c4ca;
 
   /* Text: zinc ink. */
   --text: #18181b;
@@ -48,26 +49,35 @@
   --text-4: #a1a1aa;
 
   /* Banana: the one warm accent. Only the main action of a context, selection, focus, active states and progress.
-     Always dark text on it, never yellow text on white. Both themes use the same values. */
-  --banana: #ffe14f;
-  --banana-hover: #ffd829;
-  --banana-press: #f5cb00;
-  --on-banana: #1a1600;
-  --banana-soft: rgba(255, 225, 79, 0.22);
-  --banana-line: #e8be00;
-  /* Thin fills (progress, sliders, switches) take the deeper banana on porcelain so they read on the pale track. */
-  --banana-fill: #f5cb00;
+     Always dark text on it, never yellow text on white. */
+  --banana: #f4d35e;
+  --banana-hover: #f1cb45;
+  --banana-press: #e8c13a;
+  --on-banana: #14120a;
+  --banana-soft: rgba(244, 211, 94, 0.24);
+  --banana-line: #d9b02c;
+  /* Thin fills (progress, sliders, switches) and small marks take the deeper banana on porcelain so they read. */
+  --banana-fill: #e2b62c;
   /* Keyboard focus: an ink ring with a banana halo. Fields draw the inner ring with their own border. */
-  --focus: 0 0 0 2px #18181b, 0 0 0 5px rgba(255, 225, 79, 0.8);
+  --focus: 0 0 0 2px #18181b, 0 0 0 5px rgba(244, 211, 94, 0.8);
   --focus-edge: #18181b;
-  --focus-field: 0 0 0 1px #18181b, 0 0 0 4px rgba(255, 225, 79, 0.8);
+  --focus-field: 0 0 0 1px #18181b, 0 0 0 4px rgba(244, 211, 94, 0.7);
 
-  /* Ink: text and quiet UI. Black on light, white on dark. */
+  /* Ink: text and quiet UI. Black on light, warm white on dark. */
   --accent: #18181b;
   --accent-2: #27272a;
   --accent-soft: rgba(24, 24, 27, 0.06);
   --accent-line: rgba(24, 24, 27, 0.5);
   --on-accent: #ffffff;
+
+  /* Moonlight: the moon that keeps time for the night shift. A render waxes from new to full in it; the night's arc and
+     its now are drawn in it. Ink on porcelain, silver at night. */
+  --moon: #5b6271;
+  --moon-dim: rgba(91, 98, 113, 0.16);
+  /* The mark's glyph without its tile: night ink by day, moonlight cream at night (ui/mark-svg.ts). */
+  --mark-glyph: #0b1026;
+  /* The mark's crescent as a mask, framed to its disc so it turns about its own centre: the loader and the switch. */
+  --crescent: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='14 14 72 72'%3E%3Cpath d='M51.18 14.02A36 36 0 1 0 83.67 62.75A30 30 0 1 1 51.18 14.02Z'/%3E%3C/svg%3E");
 
   /* Amber, a street lamp at night: overnight and finals only. */
   --amber: #c26a00;
@@ -78,12 +88,13 @@
   --amber-line: rgba(245, 165, 36, 0.45);
 
   --ok: #16803d;
+  --ok-dot: #22a355;
   --ok-soft: rgba(22, 128, 61, 0.1);
   --bad: #d4321f;
   --bad-soft: rgba(212, 50, 31, 0.08);
   --bad-line: rgba(212, 50, 31, 0.3);
 
-  /* Controls: white porcelain pills on a crisp hairline, with a whisper of shadow. */
+  /* Controls: white porcelain on a crisp hairline, with a whisper of shadow. */
   --btn-bg: #ffffff;
   --btn-bg-hover: #fafafa;
   --btn-bg-press: #f4f4f5;
@@ -92,7 +103,8 @@
   --btn-sheen: none;
   --input-bg: #ffffff;
   --input-line: #d4d4d8;
-  --seg-track: rgba(24, 24, 27, 0.055);
+  --seg-track: #f1f1f3;
+  --seg-line: #e4e4e7;
   --seg-knob: #ffffff;
   --seg-knob-shadow: 0 1px 2px rgba(24, 24, 27, 0.1), 0 0 0 0.5px rgba(24, 24, 27, 0.08);
   --sheen: none;
@@ -102,28 +114,38 @@
   --scrim: rgba(24, 24, 27, 0.32);
   --thumb: #ffffff;
   --track: rgba(24, 24, 27, 0.1);
-  --kbd-bg: rgba(24, 24, 27, 0.06);
+  /* A key's label (⌘K, Esc): mono on a hairline. */
+  --kbd-bg: transparent;
+  --kbd-line: #d4d4d8;
   /* Older name for the focus ring. */
   --focus-ring: var(--focus);
   --selection: rgba(24, 24, 27, 0.12);
 
-  /* Radii: frames are film, controls are pills and soft fields, groups and sheets are rounder. */
+  /* Radii: frames are film, controls are soft rectangles, cards and sheets are rounder, tags and counts are pills. */
   --r-frame: 6px;
   --r-s: 8px;
+  --r-control: 10px;
   --r-m: 12px;
+  --r-card: 16px;
   --r-l: 18px;
   --r-pill: 999px;
 
-  /* Type: the system face at macOS sizes; Young Serif for headlines only; one handwritten note. */
-  --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", "Segoe UI", Roboto, sans-serif;
-  --font-display: "Young Serif", "Iowan Old Style", Georgia, serif;
+  /* Type: Inter for the work, Fraunces for headlines only, JetBrains Mono for keys, counts, times and dimensions, and
+     one handwritten note. */
+  --font: "Inter Variable", -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", "Segoe UI", Roboto, sans-serif;
+  --font-display: "Fraunces Variable", "Iowan Old Style", Georgia, serif;
+  --font-mono: "JetBrains Mono Variable", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
   --font-hand: "Sedgwick Ave", "Marker Felt", cursive;
+  /* Fraunces is set at one weight; size carries the hierarchy. */
+  --fw-display: 600;
   --fs-micro: 11px;
   --lh-micro: 14px;
   --fs-small: 12px;
   --lh-small: 16px;
   --fs-body: 13px;
   --lh-body: 18px;
+  --fs-ui: 14px;
+  --lh-ui: 20px;
   --fs-read: 15px;
   --lh-read: 22px;
   --fs-title-3: 19px;
@@ -131,7 +153,9 @@
   --fs-title-2: 26px;
   --lh-title-2: 31px;
   --fs-title-1: 36px;
-  --lh-title-1: 42px;
+  --lh-title-1: 40px;
+  --fs-page: 40px;
+  --lh-page: 42px;
 
   /* Spacing on a 4px grid */
   --s-1: 4px;
@@ -144,16 +168,18 @@
   --s-10: 40px;
 
   /* Chrome */
-  --toolbar-h: 52px;
-  --sidebar-w: 224px;
+  --toolbar-h: 60px;
+  --sidebar-w: 256px;
   --inspector-w: 300px;
   --gutter: 28px;
+  --page-gutter: 40px;
   --traffic: 0px;
 
   /* Motion */
-  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
-  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
-  --t-fast: 110ms;
+  /* One easing curve for everything; the two names are kept for the rules that use them. */
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --t-fast: 140ms;
   --t-med: 200ms;
   --t-slow: 380ms;
 }
@@ -161,37 +187,46 @@
 :root[data-theme="dark"] {
   color-scheme: dark;
 
-  /* T3 Code's dark surfaces: black, a #111 card, #191a1d for hover and selection, #0a0a0a for muted fills. */
-  --window: #0a0a0a;
-  --sidebar: #0a0a0a;
-  --content: #000000;
-  --raised: #111111;
-  --inset: #0a0a0a;
-  --inset-2: #191a1d;
-  --hover: #191a1d;
-  --press: #222327;
-  --select: #191a1d;
+  /* An edit suite at night: near-black surfaces with a faint ink of night sky, so the chrome recedes and the pictures,
+     which always sit on true black, carry the color. Each step is still read as grey. */
+  --window: #0e0f13;
+  --sidebar: #0e0f13;
+  --content: #09090c;
+  --raised: #111217;
+  --inset: #0e0f13;
+  --inset-2: #16171d;
+  --hover: #16171d;
+  --press: #1f2129;
+  --select: #1a1c23;
   --media: #000000;
-  --media-empty: #111111;
+  --media-empty: #111217;
 
-  --line: #ffffff14;
-  --line-strong: #ffffff2e;
+  --line: #1c1e26;
+  --line-strong: #2a2c36;
+  --line-hover: #34374a;
 
-  --text: #f1f3f7;
-  --text-2: #a3a3a3;
-  --text-3: #7c7c80;
-  --text-4: #505055;
+  /* Three text roles: primary, secondary, muted. The fourth is for strokes and disabled marks, never for words. */
+  --text: #edebe6;
+  --text-2: #9a9ca6;
+  --text-3: #8c8f99;
+  --text-4: #5e616c;
 
-  --banana-fill: #ffe14f;
-  --focus: 0 0 0 2px #ffe14f;
-  --focus-edge: #ffe14f;
-  --focus-field: 0 0 0 1px #ffe14f;
+  --banana-soft: rgba(244, 211, 94, 0.12);
+  --banana-line: rgba(244, 211, 94, 0.7);
+  --banana-fill: #f4d35e;
+  --focus: 0 0 0 2px #f4d35e;
+  --focus-edge: rgba(244, 211, 94, 0.7);
+  --focus-field: 0 0 0 4px rgba(244, 211, 94, 0.1);
 
-  --accent: #f1f3f7;
+  --accent: #edebe6;
   --accent-2: #ffffff;
-  --accent-soft: rgba(255, 255, 255, 0.08);
-  --accent-line: rgba(255, 255, 255, 0.5);
-  --on-accent: #000000;
+  --accent-soft: rgba(237, 235, 230, 0.08);
+  --accent-line: rgba(237, 235, 230, 0.5);
+  --on-accent: #09090c;
+
+  --moon: #dfe3ea;
+  --moon-dim: rgba(223, 227, 234, 0.16);
+  --mark-glyph: #fff7e0;
 
   --amber: #ffb547;
   --amber-fill: #f5a524;
@@ -200,33 +235,36 @@
   --amber-soft: rgba(245, 165, 36, 0.14);
   --amber-line: rgba(245, 165, 36, 0.4);
 
-  --ok: #4ade80;
-  --ok-soft: rgba(74, 222, 128, 0.12);
+  --ok: #5bd68a;
+  --ok-dot: #5bd68a;
+  --ok-soft: rgba(91, 214, 138, 0.12);
   --bad: #ff6b5b;
   --bad-soft: rgba(255, 107, 91, 0.12);
   --bad-line: rgba(255, 107, 91, 0.38);
 
-  /* Controls: a #111 card on the input border, lighter on hover. */
-  --btn-bg: #111111;
-  --btn-bg-hover: #191a1d;
-  --btn-bg-press: #0a0a0a;
-  --btn-line: #ffffff2e;
+  /* Controls: a raised step on a hairline, a lighter one on hover, no shadow. */
+  --btn-bg: #15161c;
+  --btn-bg-hover: #1a1c23;
+  --btn-bg-press: #111217;
+  --btn-line: #262833;
   --btn-shadow: none;
   --btn-sheen: none;
-  --input-bg: #0a0a0a;
-  --input-line: #ffffff2e;
-  --seg-track: #111111;
-  --seg-knob: #26272b;
-  --seg-knob-shadow: inset 0 0 0 1px #ffffff14;
+  --input-bg: #111217;
+  --input-line: #2a2c36;
+  --seg-track: #0f1014;
+  --seg-line: #1e2028;
+  --seg-knob: #1f2129;
+  --seg-knob-shadow: none;
   --sheen: none;
   --card-shadow: none;
-  --panel-shadow: 0 18px 48px rgba(0, 0, 0, 0.6), 0 0 0 1px #ffffff14;
-  --sheet-shadow: 0 30px 80px rgba(0, 0, 0, 0.7), 0 0 0 1px #ffffff1f;
+  --panel-shadow: 0 18px 48px rgba(0, 0, 0, 0.6), 0 0 0 1px #23252e;
+  --sheet-shadow: 0 30px 80px rgba(0, 0, 0, 0.7), 0 0 0 1px #262833;
   --scrim: rgba(0, 0, 0, 0.62);
-  --thumb: #f1f3f7;
-  --track: rgba(255, 255, 255, 0.14);
-  --kbd-bg: rgba(255, 255, 255, 0.08);
-  --selection: rgba(255, 255, 255, 0.22);
+  --thumb: #edebe6;
+  --track: #23252e;
+  --kbd-bg: transparent;
+  --kbd-line: #2a2c36;
+  --selection: rgba(244, 211, 94, 0.22);
 }
 
 /* Keep a trace of the native material, without letting wallpaper colour dominate the sidebar. */
@@ -234,5 +272,5 @@
   --sidebar: rgba(246, 246, 247, 0.96);
 }
 :root[data-desktop-vibrancy][data-theme="dark"] {
-  --sidebar: rgba(10, 10, 10, 0.96);
+  --sidebar: rgba(14, 15, 19, 0.96);
 }

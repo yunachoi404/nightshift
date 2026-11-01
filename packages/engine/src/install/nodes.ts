@@ -335,7 +335,7 @@ function isInside(dir: string, path: string): boolean {
 /** Every node class a recipe's workflows use, with the workflows that use it. Unreadable workflows are skipped. */
 export async function workflowNodeClasses(recipe: Recipe, workflowsDir: string): Promise<Map<string, string[]>> {
   const classes = new Map<string, string[]>();
-  for (const ref of [...Object.values(recipe.steps), recipe.referenceStill]) {
+  for (const ref of [...Object.values(recipe.steps), recipe.referenceStill, recipe.longTakeFinal]) {
     if (!ref) continue;
     const graph = await readJson<Record<string, { class_type?: unknown }>>(join(workflowsDir, ref.workflow)).catch(() => undefined);
     for (const node of Object.values(graph ?? {})) {

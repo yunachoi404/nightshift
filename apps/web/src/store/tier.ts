@@ -4,6 +4,11 @@ import { useEngine, useEngineState } from "./engine";
 
 /** Cached per compute location: this machine, or the GPU computer on the network. */
 let hwCache: { key: string; profile: HardwareProfile } | null = null;
+/**
+ * The question in flight for a location. Every row, tile and status line that names the machine reads the hardware;
+ * they share one request instead of each asking while the first answer is on its way.
+ */
+let hwPending: { key: string; client: object; profile: Promise<HardwareProfile> } | null = null;
 
 export function useTiers(): TierSummary[] | null {
   return useEngineState().tiers;
@@ -27,10 +32,23 @@ export function useHardware(): HardwareProfile | null {
       return;
     }
     let active = true;
-    client
-      .hardware()
+    let pending = hwPending;
+    if (pending?.key !== key || pending.client !== client) {
+      const asked = { key, client, profile: client.hardware() };
+      hwPending = pending = asked;
+      asked.profile.then(
+        (h) => {
+          hwCache = { key, profile: h };
+          if (hwPending === asked) hwPending = null;
+        },
+        // A failed question is asked again by the next reader.
+        () => {
+          if (hwPending === asked) hwPending = null;
+        },
+      );
+    }
+    pending.profile
       .then((h) => {
-        hwCache = { key, profile: h };
         if (active) setHw(h);
       })
       .catch(() => undefined);

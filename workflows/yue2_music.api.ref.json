@@ -1,0 +1,25 @@
+{
+  "workflow": "yue2_music.api.json",
+  "inputs": {
+    "prompt": {
+      "node": "13",
+      "field": "value"
+    },
+    "lyrics": {
+      "node": "14",
+      "field": "value"
+    },
+    "seed": {
+      "node": "11",
+      "field": "value"
+    },
+    "durationSec": {
+      "node": "10",
+      "field": "value"
+    }
+  },
+  "params": {},
+  "outputNodes": [
+    "9"
+  ]
+}

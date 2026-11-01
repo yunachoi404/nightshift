@@ -1,8 +1,3 @@
 <svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
-<g transform="translate(100 100) scale(12.875)">
-<rect width="64" height="64" rx="15" fill="#0b0b0c"/><rect x="0.5" y="0.5" width="63" height="63" rx="14.5" fill="none" stroke="rgba(255,255,255,0.12)"/>
-<g transform="translate(10.4 10.4) scale(1.8)">
-<path class="mark__frame" fill="#f5f5f7" fill-rule="evenodd" d="M4 4.5 H20 Q22 4.5 22 6.5 V17.5 Q22 19.5 20 19.5 H4 Q2 19.5 2 17.5 V6.5 Q2 4.5 4 4.5 Z M 11.50975 6.76452 A 5.25 5.25 0 1 0 15.97093 15.31512 A 4.85 4.85 0 0 1 11.50975 6.76452 Z"/>
-</g>
-</g>
+<g transform="translate(100 100) scale(8.24)"><rect width="100" height="100" rx="22.4" fill="#0b1026"/><g transform="matrix(0.6 0 0 0.6 20 20)"><path d="M51.18 14.02 A36 36 0 1 0 83.67 62.75 A30 30 0 1 1 51.18 14.02 Z" fill="#fff7e0"/><polygon points="52,34 52,55 70,44.5" fill="#fff7e0" stroke="#fff7e0" stroke-width="3" stroke-linejoin="round"/><path d="M0 -1 C0.12 -0.12 0.12 -0.12 1 0 C0.12 0.12 0.12 0.12 0 1 C-0.12 0.12 -0.12 0.12 -1 0 C-0.12 -0.12 -0.12 -0.12 0 -1 Z" transform="matrix(4.4 0 0 4.4 85 16)" fill="#fff7e0"/></g></g>
 </svg>

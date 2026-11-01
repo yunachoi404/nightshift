@@ -1,28 +1,28 @@
 /**
  * One board: its cards laid out in columns (masonry, so wide and tall pictures sit together without gaps), a drop
- * target for cards from other boards and files from the desktop, and the board's first steps (draw the stills, write
- * the story) when the project is new.
+ * target for cards from other boards and files from the desktop, and the board's first steps (write the shot list, draw
+ * the stills, write the story) when the project is new.
  */
-import { fallbackShots, projectBoards, sentenceCase, type Job, type Project, type Shot } from "@nightshift/contract";
-import { Check, Clapperboard, Pencil, Plus, RefreshCw, Wand2 } from "lucide-react";
-import { useLayoutEffect, useRef, useState, type DragEvent, type RefObject } from "react";
+import { fallbackShots, isOneShot, ownShot, projectBoards, sentenceCase, type Job, type Project, type Shot } from "@nightshift/contract";
+import { Check, Clapperboard, MoreHorizontal, PenLine, Pencil, Plus, RefreshCw, Wand2 } from "lucide-react";
+import { useCallback, useLayoutEffect, useRef, useState, type DragEvent, type RefObject } from "react";
 import { useEngine } from "@/store/engine";
 import { useInstalledTier } from "@/store/tier";
-import { Button, Dialog, Input, Notice, cx, toast } from "@/ui/primitives";
-import { failureText, frameClass, isActive, jobElapsed, jobStatusLine, timelineShots } from "@/features/project/helpers";
+import { Button, Input, Menu, MenuItem, Notice, cx, toast } from "@/ui/primitives";
+import { activeJob, failureText, frameClass, isActive, jobElapsed, jobStatusLine, timelineShots } from "@/features/project/helpers";
 import { useNow } from "@/lib/useNow";
 import { plural, roughDuration } from "@/lib/format";
+import { FinishTonight } from "@/features/finals/FinishTonight";
+import { finalKindFor, unfinishedPicks } from "@/features/finals/finishAll";
 import { useMedia } from "./context";
 import { AudioTile, ImageCard, PlaceholderCard, ShotCard, imageRatio, type DropMark } from "./cards";
-import { dropMoves, isCanvasDrag, makeBlocked, readDrag, type CanvasBoard, type CanvasItem } from "./items";
-
-/** Films start with a shot list from their brief. */
-const FILMS = new Set<Project["template"]>(["cinematic_shot", "music_video", "product_ad", "talking_intro"]);
+import { CARD_STEPS, dropMoves, isCanvasDrag, makeBlocked, readDrag, soundName, type CanvasBoard, type CanvasItem } from "./items";
+import { FILMS } from "./RewriteShotList";
 
 const ASPECT_RATIO: Record<Project["aspect"], number> = { "16:9": 16 / 9, "9:16": 9 / 16, "1:1": 1 };
 /** The narrowest a column gets, by the project's shape: tall frames can be narrower. */
 const MIN_COLUMN: Record<Project["aspect"], number> = { "16:9": 260, "9:16": 170, "1:1": 210 };
-const GAP = 14;
+const GAP = 16;
 
 export interface BoardViewProps {
   board: CanvasBoard;
@@ -37,13 +37,14 @@ export interface BoardViewProps {
 
 export function BoardView({ board, variant = "single", header = true }: BoardViewProps) {
   const { project, jobs, boardActions, focusBoard, upload } = useMedia();
+  const tier = useInstalledTier();
   const ref = useRef<HTMLElement>(null);
   const columns = useColumns(ref, MIN_COLUMN[project.aspect]);
   const [dropAt, setDropAt] = useState<number | null>(null);
   const [filesOver, setFilesOver] = useState(false);
   const all = projectBoards(project);
   const main = board.board.id === all[0]?.id;
-  const steps = firstSteps(project, jobs, main);
+  const steps = firstSteps(project, jobs, main, tier?.steps?.includes("text") ?? true);
   const ids = board.items.map((i) => i.id);
 
   const onDragOver = (e: DragEvent<HTMLElement>) => {
@@ -84,8 +85,11 @@ export function BoardView({ board, variant = "single", header = true }: BoardVie
   const ratio = ASPECT_RATIO[project.aspect];
   const placeholders = steps.writing && !project.shots.length && main ? fallbackShots(project.template, project.brief).length : 0;
   // While the shot list is written: one frame per shot the brief asks for.
-  const entries: Entry[] = board.items.length ? board.items.map((item, index) => ({ item, index })) : Array.from({ length: placeholders }, (_, k) => ({ placeholder: k }));
-  const laid = masonry(entries, columns, (e) => ("item" in e ? cardHeight(e.item, ratio) : 1 / ratio + 0.16));
+  // Pictures and clips pack in columns; songs and voiceovers sit on their own shelf under them.
+  const indexed = board.items.map((item, index) => ({ item, index }));
+  const sounds = indexed.filter((e): e is { item: Extract<CanvasItem, { kind: "audio" }>; index: number } => e.item.kind === "audio");
+  const entries: Entry[] = board.items.length ? indexed.filter((e) => e.item.kind !== "audio") : Array.from({ length: placeholders }, (_, k) => ({ placeholder: k }));
+  const laid = masonry(entries, columns, (e) => ("item" in e ? cardHeight(e.item, ratio) : 1 / ratio));
 
   return (
     <section
@@ -97,22 +101,35 @@ export function BoardView({ board, variant = "single", header = true }: BoardVie
       onDragLeave={onDragLeave}
       onDrop={onDrop}
     >
-      <BoardHead board={board} variant={variant} title={header} steps={steps} />
+      <BoardHead board={board} variant={variant} title={header} steps={steps} main={main} />
       {steps.writing && main && <WritingLine job={steps.writing} project={project} />}
       {steps.failedText && main && (
         <FailedText job={steps.failedText} project={project} />
       )}
-      {entries.length > 0 ? (
+      {steps.writerNote && <WriterNote note={steps.writerNote} project={project} stills={steps.noteStills} />}
+      {entries.length > 0 && (
         <div className="mp-masonry" style={{ gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` }}>
           {laid.map((column, c) => (
             <div key={c} className="mp-col">
-              {column.map((e) => ("item" in e ? <Card key={e.item.id} item={e.item} index={e.index} boardId={board.board.id} drop={mark(e.index)} ratio={ratio} /> : <PlaceholderCard key={e.placeholder} aspect={frameClass(project.aspect)} />))}
+              {column.map((e) => ("item" in e ? <Card key={e.item.id} item={e.item} index={e.index} boardId={board.board.id} drop={mark(e.index)} ratio={ratio} /> : <PlaceholderCard key={e.placeholder} aspect={frameClass(project.aspect)} rendering={steps.writing?.status === "running"} />))}
             </div>
           ))}
         </div>
-      ) : (
-        <EmptyBoard project={project} main={main} single={variant === "single"} steps={steps} />
       )}
+      {sounds.length > 0 && (
+        <div className="mp-sound" role="group" aria-label="Sound">
+          <div className="mp-sound__head">
+            <h3 className="mp-sound__title">Sound</h3>
+            <span className="mp-board__count">{sounds.length}</span>
+          </div>
+          <div className="mp-sound__grid">
+            {sounds.map((e) => (
+              <AudioTile key={e.item.id} item={e.item} index={e.index} boardId={board.board.id} drop={mark(e.index)} name={soundName(e.item, sounds.map((x) => x.item))} />
+            ))}
+          </div>
+        </div>
+      )}
+      {!board.items.length && !entries.length && <EmptyBoard project={project} main={main} single={variant === "single"} steps={steps} />}
     </section>
   );
 }
@@ -122,20 +139,26 @@ type Entry = { item: CanvasItem; index: number } | { placeholder: number };
 function Card({ item, index, boardId, drop, ratio }: { item: CanvasItem; index: number; boardId: string; drop: DropMark; ratio: number }) {
   if (item.kind === "shot") return <ShotCard item={item} index={index} boardId={boardId} drop={drop} />;
   if (item.kind === "image") return <ImageCard item={item} index={index} boardId={boardId} drop={drop} fallbackRatio={ratio} />;
-  return <AudioTile item={item} index={index} boardId={boardId} drop={drop} />;
+  return null;
 }
 
 // ---------------------------------------------------------------- header
 
-function BoardHead({ board, variant, title, steps }: { board: CanvasBoard; variant: "single" | "canvas"; title: boolean; steps: FirstSteps }) {
-  const { project, boardActions, focusBoard } = useMedia();
+function BoardHead({ board, variant, title, steps, main }: { board: CanvasBoard; variant: "single" | "canvas"; title: boolean; steps: FirstSteps; main: boolean }) {
+  const { project, jobs, boardActions, focusBoard, rewriteShotList } = useMedia();
   const { still, draft, storyboard } = useEngine();
   const tier = useInstalledTier();
   const [renaming, setRenaming] = useState(false);
   const [name, setName] = useState(board.board.name);
-  const [rewriteOpen, setRewriteOpen] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [menu, setMenu] = useState(false);
+  const menuRef = useRef<HTMLButtonElement>(null);
+  const closeMenu = useCallback(() => setMenu(false), []);
   const count = board.items.length;
+  // The single board is the main one: its More menu rewrites the shot list. On the canvas, the board's frame has it.
+  const rewrite = variant === "single" ? rewriteShotList : undefined;
+  // Tonight's finals for every pick the cut has: on the main board, which stands for the project.
+  const finish = main && !!finalKindFor(tier) && unfinishedPicks(project, jobs).length > 0;
 
   const save = () => {
     setRenaming(false);
@@ -156,17 +179,17 @@ function BoardHead({ board, variant, title, steps }: { board: CanvasBoard; varia
     run(async () => {
       for (const s of shots) await still(project.id, s.id);
       const each = tier?.estimates?.still?.seconds;
-      toast({ title: `Drawing ${plural(shots.length, "still")}`, text: each ? `${sentenceCase(roughDuration(each * shots.length))} in all.` : "They land here one by one.", tone: "accent" });
+      toast({ title: `Drawing ${plural(shots.length, "still")}`, text: each ? `${sentenceCase(roughDuration(each * shots.length))} in all` : "They land here one by one", tone: "accent" });
     }, "Couldn't start the stills");
 
   const makeVideos = (shots: Shot[]) =>
     run(async () => {
       for (const s of shots) await draft(project.id, s.id);
       const each = tier?.estimates?.video_draft?.seconds;
-      toast({ title: `Making ${plural(shots.length, "video")}`, text: each ? `${sentenceCase(roughDuration(each * shots.length))} in all. Each lands on its card.` : "Each lands on its card.", tone: "accent" });
+      toast({ title: `Making ${plural(shots.length, "video")}`, text: each ? `${sentenceCase(roughDuration(each * shots.length))} in all. Each lands on its card.` : "Each lands on its card", tone: "accent" });
     }, "Couldn't start the videos");
 
-  const anySteps = !!(steps.drawStills || steps.makeVideos || steps.rewrite || steps.writeList || steps.writeStory);
+  const anySteps = !!(steps.writeFirst || steps.drawStills || steps.makeVideos || steps.writeList || steps.writeStory || finish);
   // On the canvas the board's frame carries its name: only the first steps show here, when there are any.
   if (!title && !anySteps) return null;
   return (
@@ -200,19 +223,19 @@ function BoardHead({ board, variant, title, steps }: { board: CanvasBoard; varia
         {renaming && <Button size="s" variant="quiet" iconOnly icon={<Check />} aria-label="Save the name" onMouseDown={(e) => e.preventDefault()} onClick={save} />}
       </div>}
       <div className="mp-board__actions">
+        {steps.writeFirst && (
+          <Button size="s" variant="primary" icon={<PenLine />} busy={busy} onClick={() => void run(() => storyboard(project.id), "Couldn't write the shot list")}>
+            Write the shot list
+          </Button>
+        )}
         {steps.drawStills && (
-          <Button size="s" variant="primary" icon={<Wand2 />} busy={busy} onClick={() => void drawStills(steps.drawStills!)}>
+          <Button size="s" variant={steps.writeFirst ? "quiet" : "primary"} icon={<Wand2 />} busy={busy} onClick={() => void drawStills(steps.drawStills!)}>
             Draw the stills
           </Button>
         )}
         {steps.makeVideos && (
           <Button size="s" variant="primary" icon={<Clapperboard />} busy={busy} onClick={() => void makeVideos(steps.makeVideos!)}>
             {steps.makeVideos.length === 1 ? "Make the video" : "Make the videos"}
-          </Button>
-        )}
-        {steps.rewrite && (
-          <Button size="s" variant="quiet" icon={<RefreshCw />} disabled={busy} onClick={() => setRewriteOpen(true)}>
-            Rewrite shot list
           </Button>
         )}
         {steps.writeList && (
@@ -225,7 +248,10 @@ function BoardHead({ board, variant, title, steps }: { board: CanvasBoard; varia
             Write the story
           </Button>
         )}
-        {variant === "single" && (
+        {/* The project's picks, all finished overnight in one press. */}
+        {finish && <FinishTonight project={project} jobs={jobs} />}
+        {/* A project that makes no new cards has nothing to sort onto another board. */}
+        {variant === "single" && !makeBlocked(project) && (
           <Button
             size="s"
             variant="quiet"
@@ -238,28 +264,33 @@ function BoardHead({ board, variant, title, steps }: { board: CanvasBoard; varia
             New board
           </Button>
         )}
+        {title && rewrite && (
+          <span className="mp-board__more">
+            <Button
+              ref={menuRef}
+              size="s"
+              variant="quiet"
+              iconOnly
+              icon={<MoreHorizontal />}
+              aria-label={`More for ${board.board.name}`}
+              aria-haspopup="menu"
+              aria-expanded={menu}
+              onClick={() => setMenu((v) => !v)}
+            />
+            <Menu open={menu} onClose={closeMenu} anchor={menuRef}>
+              <MenuItem
+                icon={<RefreshCw />}
+                onClick={() => {
+                  setMenu(false);
+                  rewrite();
+                }}
+              >
+                Rewrite shot list
+              </MenuItem>
+            </Menu>
+          </span>
+        )}
       </div>
-      <Dialog open={rewriteOpen} onClose={() => !busy && setRewriteOpen(false)} width={480}>
-        <h2 className="dialog__title">Rewrite the shot list?</h2>
-        <p className="dialog__text">Locked shots keep their place, stills and takes. The new shot list fills the other slots, then adds any remaining shots. Takes for replaced shots are removed.</p>
-        <div className="dialog__actions">
-          <Button onClick={() => setRewriteOpen(false)} disabled={busy}>
-            Cancel
-          </Button>
-          <Button
-            variant="primary"
-            busy={busy}
-            onClick={() =>
-              void run(async () => {
-                await storyboard(project.id);
-                setRewriteOpen(false);
-              }, "Couldn't rewrite the shot list")
-            }
-          >
-            Rewrite shot list
-          </Button>
-        </div>
-      </Dialog>
     </header>
   );
 }
@@ -269,9 +300,62 @@ function WritingLine({ job, project }: { job: Job; project: Project }) {
   const what = project.template === "what_if" ? "Writing your story" : "Writing the shot list";
   return (
     <div className="mp-board__status" role="status">
-      <span className="pulse" />
+      <span className={cx("pulse", job.status !== "running" && "pulse--still")} />
       {/* A running text job's stage is "Writing" too, so only its time follows. */}
       {job.status === "queued" ? jobStatusLine(job) : [what, jobElapsed(job, now)].filter(Boolean).join(", ")}
+    </div>
+  );
+}
+
+/**
+ * The writer's last answer was not used: why, as the engine noted it (`Project.shotList`), with a way to try again. A
+ * film that still has the template's shots says so, and can use them: the note goes and their stills are drawn. One
+ * whose own list stayed can dismiss the note.
+ */
+function WriterNote({ note, project, stills = [] }: { note: string; project: Project; stills?: Shot[] | undefined }) {
+  const { storyboard, updateProject, still } = useEngine();
+  const tier = useInstalledTier();
+  const [busy, setBusy] = useState(false);
+  const by = project.shotList?.by ?? "writer";
+  const use = async () => {
+    await updateProject(project.id, { shotList: { by } });
+    for (const s of stills) await still(project.id, s.id);
+    const each = tier?.estimates?.still?.seconds;
+    if (stills.length) toast({ title: `Drawing ${plural(stills.length, "still")}`, text: each ? `${sentenceCase(roughDuration(each * stills.length))} in all` : "They land here one by one", tone: "accent" });
+  };
+  const act = async (what: () => Promise<unknown>, failTitle: string) => {
+    setBusy(true);
+    try {
+      await what();
+    } catch (e) {
+      toast({ title: failTitle, text: e instanceof Error ? e.message : String(e), tone: "bad" });
+    } finally {
+      setBusy(false);
+    }
+  };
+  return (
+    <div className="mp-board__notice">
+      <Notice
+        title={by === "template" ? "These are the template's shots, not your brief's" : "The shot list was not rewritten"}
+        actions={
+          <>
+            <Button size="s" variant="primary" icon={<RefreshCw />} busy={busy} onClick={() => void act(() => storyboard(project.id), "Couldn't start the writer")}>
+              Try again
+            </Button>
+            {by === "template" ? (
+              <Button size="s" variant="quiet" icon={<Wand2 />} disabled={busy} onClick={() => void act(use, "Couldn't start the stills")}>
+                Use these shots
+              </Button>
+            ) : (
+              <Button size="s" variant="quiet" disabled={busy} onClick={() => void act(() => updateProject(project.id, { shotList: { by } }), "Couldn't save")}>
+                Dismiss
+              </Button>
+            )}
+          </>
+        }
+      >
+        {note}
+      </Notice>
     </div>
   );
 }
@@ -300,7 +384,7 @@ function EmptyBoard({ project, main, single, steps }: { project: Project; main: 
     return (
       <div className="mp-empty">
         <div className="mp-empty__title">{steps.writing ? "Writing your story" : "Your story starts here"}</div>
-        <p className="mp-empty__text">An ordinary moment, an impossible change, then its consequence.</p>
+        <p className="mp-empty__text">An ordinary moment, an impossible change, then its consequence</p>
       </div>
     );
   if (main && FILMS.has(project.template) && !project.shots.length)
@@ -314,8 +398,8 @@ function EmptyBoard({ project, main, single, steps }: { project: Project; main: 
     return (
       <div className="mp-empty">
         <div className="mp-empty__title">Nothing here yet</div>
-        {/* A quick shot whose shot was deleted makes no new ones: only uploads land here. */}
-        <p className="mp-empty__text">{makeBlocked(project) ? "Upload a photo, a song or a voiceover with the panel on the left." : "Write a prompt on the left to make your first image, or upload a photo."}</p>
+        {/* A quick shot without its own shot makes no cards until it has one: only uploads land here. */}
+        <p className="mp-empty__text">{makeBlocked(project) ? "Upload a photo, a song or a voiceover with the panel on the left" : "Write a prompt on the left to make your first image, or upload a photo"}</p>
       </div>
     );
   return <div className="mp-empty mp-empty--drop">Drop cards here</div>;
@@ -326,31 +410,57 @@ function EmptyBoard({ project, main, single, steps }: { project: Project; main: 
 interface FirstSteps {
   writing?: Job;
   failedText?: Job;
-  /** Timeline shots that have words but no still yet. */
+  /** Why the writer's last answer was not used (`Project.shotList`), shown with a way to try again. */
+  writerNote?: string;
+  /**
+   * With a note on the template's shots: the stills that using them draws. They are offered beside trying again, not
+   * as the board's first step.
+   */
+  noteStills?: Shot[];
+  /** The template's shot list, untouched: writing it from the brief is the board's main action. */
+  writeFirst?: boolean;
+  /** Timeline shots that have words but no still yet, and none on its way. */
   drawStills?: Shot[];
-  /** Timeline shots with a still and no video yet, once every still is drawn. */
+  /** Timeline shots with a still and no video yet, none on its way, once every still is drawn. */
   makeVideos?: Shot[];
-  rewrite?: boolean;
   writeList?: boolean;
   writeStory?: boolean;
 }
 
-/** What a new project's main board offers before anything else: the stills of its shot list, or its story. */
-export function firstSteps(project: Project, jobs: Job[], main: boolean): FirstSteps {
+/**
+ * What a new project's main board offers before anything else: its shot list written from the brief, the stills of
+ * its shot list, or its story. `writer`: this setup has a writer (a text step).
+ */
+export function firstSteps(project: Project, jobs: Job[], main: boolean, writer = true): FirstSteps {
   if (!main) return {};
   const writing = jobs.find((j) => j.step === "text" && isActive(j));
-  const running = jobs.some(isActive);
   const film = FILMS.has(project.template);
-  const missing = timelineShots(project).filter((s) => !s.stillAssetId && s.prompt.trim());
-  const stillOnly = timelineShots(project).filter((s) => s.stillAssetId && !project.takes.some((t) => t.shotId === s.id));
-  const failedText = !writing && !project.shots.length ? jobs.filter((j) => j.step === "text" && j.status !== "cancelled").at(-1) : undefined;
+  const shots = timelineShots(project);
+  // Only a shot's own work holds its step back: a song or a voiceover on its way makes no still or take of it.
+  const busy = (s: Shot) => !!activeJob(jobs, s.id, CARD_STEPS);
+  const missing = shots.filter((s) => !s.stillAssetId && s.prompt.trim());
+  const drawable = missing.filter((s) => !busy(s));
+  const stillOnly = shots.filter((s) => s.stillAssetId && !project.takes.some((t) => t.shotId === s.id) && !busy(s));
+  // A What if? film or a quick shot is written once it has its own shot: cards made with the tools do not count.
+  const unwritten = isOneShot(project.template) ? !ownShot(project) : !project.shots.length;
+  const failedText = !writing && unwritten ? jobs.filter((j) => j.step === "text" && j.status !== "cancelled").at(-1) : undefined;
+  // The template's list, before the writer wrote one: until a still or a take is made from it, the writer comes first.
+  const template = film && writer && project.shotList?.by === "template";
+  const untouched = !shots.some((s) => s.stillAssetId || project.takes.some((t) => t.shotId === s.id));
+  const writerNote = film && !writing ? project.shotList?.note : undefined;
+  const writeFirst = template && !writing && !writerNote && untouched;
+  // The template's shots the note offers to use: those with no still yet, nor one on its way.
+  const noteStills = template && writerNote ? missing.filter((s) => !jobs.some((j) => j.shotId === s.id && isActive(j))) : undefined;
   return {
     ...(writing ? { writing } : {}),
     ...(failedText?.status === "failed" ? { failedText } : {}),
-    ...(film && !running && missing.length ? { drawStills: missing, rewrite: true } : {}),
-    ...(film && !running && !missing.length && stillOnly.length ? { makeVideos: stillOnly } : {}),
+    ...(writerNote ? { writerNote } : {}),
+    ...(noteStills ? { noteStills } : {}),
+    ...(writeFirst ? { writeFirst } : {}),
+    ...(film && !writing && drawable.length && !noteStills ? { drawStills: drawable } : {}),
+    ...(film && !writing && !missing.length && stillOnly.length ? { makeVideos: stillOnly } : {}),
     writeList: film && !project.shots.length && !writing,
-    writeStory: project.template === "what_if" && !project.shots.length && !writing,
+    writeStory: project.template === "what_if" && unwritten && !writing,
   };
 }
 
@@ -379,11 +489,11 @@ function useColumns(ref: RefObject<HTMLElement | null>, min: number): number {
   return columns;
 }
 
-/** A card's height in column widths: its picture (a shot in its own shape) and its caption line. */
+/** A card's height in column widths: its picture, a shot in its own shape. */
 function cardHeight(item: CanvasItem, ratio: number): number {
-  if (item.kind === "audio") return 0.3;
+  if (item.kind === "audio") return 0;
   const r = item.kind === "image" ? imageRatio(item, ratio) : item.shot.aspect ? ASPECT_RATIO[item.shot.aspect] : ratio;
-  return 1 / r + 0.16;
+  return 1 / r;
 }
 
 /**

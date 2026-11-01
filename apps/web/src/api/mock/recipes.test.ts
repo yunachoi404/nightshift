@@ -5,7 +5,7 @@
 import { StepIdSchema, type Recipe, type StepId, type WorkflowRef } from "@nightshift/contract";
 import { describe, expect, it } from "vitest";
 import { hardwarePresets } from "./data";
-import { mockTier, rankTiers, recipes, recommendTier, stepModels } from "./recipes";
+import { mockTier, rankTiers, recipes, recommendTier, referenceStillModel, stepModels } from "./recipes";
 
 const preset = (key: string) => hardwarePresets[key]!.profile;
 
@@ -32,7 +32,7 @@ describe("the mock's setups", () => {
     expect(spark.estimates?.still).toEqual(recipe.estimates.still);
     expect(spark.estimates?.video_draft?.measured).toBe(true);
     expect(spark.steps).toContain("video_what_if");
-    expect(spark.sameTake).toEqual({ method: "rerender", scale: 2 });
+    expect(spark.sameTake).toEqual({ method: "rerender", scale: 4 });
     expect(spark.longestShotSec).toBe(4.04);
 
     const small = mockTier("nvidia-8")!;
@@ -48,7 +48,7 @@ describe("the mock's setups", () => {
       video_draft: "LTX-2.5",
       video_final_same_take: "LTX-2.5",
       video_final_remaster: "MiniMax H3",
-      music: "MiniMax Music 3",
+      music: "YuE2-3B",
       camera_layout: "MoGe 2",
       video_camera_move: "LTX-2.5",
       effect_end_frame: "FLUX.2 Klein 4B",
@@ -62,6 +62,14 @@ describe("the mock's setups", () => {
 
   it("name for every recipe and step the model the engine reads from the step's workflow", () => {
     for (const recipe of recipes) expect({ tier: recipe.tier, models: stepModels(recipe) }).toEqual({ tier: recipe.tier, models: modelsFromWorkflows(recipe) });
+  });
+
+  it("name the model a still with references runs, as the engine reads it from that workflow", () => {
+    for (const recipe of recipes) {
+      const ref = recipe.referenceStill;
+      expect({ tier: recipe.tier, model: referenceStillModel(recipe).referenceStillModel }).toEqual({ tier: recipe.tier, model: ref ? modelOf(recipe, ref) : undefined });
+    }
+    expect(mockTier("unified-128-cuda")!.referenceStillModel).toBe("FLUX.2 Klein 4B");
   });
 });
 
@@ -82,19 +90,24 @@ function modelsFromWorkflows(recipe: Recipe): Partial<Record<StepId, string>> {
   const out: Partial<Record<StepId, string>> = {};
   for (const step of StepIdSchema.options) {
     const ref = recipe.steps[step];
-    const source = ref && workflow(ref.workflow);
     if (!ref) continue;
-    expect(source, `${recipe.tier} ${step}: ${ref.workflow}`).toBeDefined();
-    const named = new Set<string>();
-    for (const node of Object.values(withParams(source!, ref))) for (const value of Object.values(node.inputs ?? {})) if (typeof value === "string") named.add(value.replaceAll("\\", "/"));
-    const base = (path: string) => path.split("/").at(-1)!;
-    const names = new Set([...named].map(base));
-    const used = recipe.models.filter((m) => named.has(m.filename) || names.has(base(m.filename)));
-    const main = used.find((m) => MAIN_MODEL_FOLDERS.has(m.folder)) ?? used[0];
-    const name = main && (main.name?.split(",")[0]?.trim() || base(main.filename).replace(/\.[^.]+$/, ""));
+    const name = modelOf(recipe, ref, `${recipe.tier} ${step}`);
     if (name) out[step] = name;
   }
   return out;
+}
+
+/** The main model one of the recipe's workflows loads. */
+function modelOf(recipe: Recipe, ref: WorkflowRef, what = recipe.tier): string | undefined {
+  const source = workflow(ref.workflow);
+  expect(source, `${what}: ${ref.workflow}`).toBeDefined();
+  const named = new Set<string>();
+  for (const node of Object.values(withParams(source!, ref))) for (const value of Object.values(node.inputs ?? {})) if (typeof value === "string") named.add(value.replaceAll("\\", "/"));
+  const base = (path: string) => path.split("/").at(-1)!;
+  const names = new Set([...named].map(base));
+  const used = recipe.models.filter((m) => named.has(m.filename) || names.has(base(m.filename)));
+  const main = used.find((m) => MAIN_MODEL_FOLDERS.has(m.folder)) ?? used[0];
+  return main && (main.name?.split(",")[0]?.trim() || base(main.filename).replace(/\.[^.]+$/, ""));
 }
 
 /** The workflow with the step's params set, as the engine's binder sets them. */

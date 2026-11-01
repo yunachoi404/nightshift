@@ -42,7 +42,7 @@ let activeJobs = 0;
 let lastNotification = 'none';
 type ThemeMode = 'system' | 'light' | 'dark';
 const themeModes: ThemeMode[] = ['system', 'light', 'dark'];
-let themeMode: ThemeMode = 'system';
+let themeMode: ThemeMode = 'dark';
 let statusWrites: Promise<void> = Promise.resolve();
 const notices = new Set<Notification>();
 const state: DesktopStatus = { engineUrl: '', engineState: 'starting', eventsConnected: false, keepingAwake: false, activeOvernightJobs: 0, notificationsSupported: false, mode: launch.mode, canSwitchDemo: launch.canSwitchDemo };
@@ -124,7 +124,9 @@ async function applyTheme(mode: unknown): Promise<void> {
 }
 async function restoreTheme(): Promise<void> {
   const saved = await readFile(join(dataDir, 'desktop-theme.json'), 'utf8').then(value => JSON.parse(value) as { theme?: string }).catch(() => ({} as { theme?: string }));
-  if (themeModes.includes(saved.theme as ThemeMode)) { themeMode = saved.theme as ThemeMode; nativeTheme.themeSource = themeMode; }
+  // Dark until the user chooses, like the UI.
+  if (themeModes.includes(saved.theme as ThemeMode)) themeMode = saved.theme as ThemeMode;
+  nativeTheme.themeSource = themeMode;
 }
 function installIpc(): void {
   ipcMain.handle('desktop:status', event => { trusted(event); return { ...state }; });
@@ -197,7 +199,7 @@ function createWindow(): void {
     title: 'Nightshift',
     // The UI draws its own toolbar in the title area and keeps the traffic lights in the sidebar's top strip.
     titleBarStyle: 'hiddenInset',
-    trafficLightPosition: { x: 14, y: 20 },
+    trafficLightPosition: { x: 16, y: 24 },
     // The sidebar is see-through: the window paints the macOS sidebar material behind the page.
     ...(process.platform === 'darwin' ? { vibrancy: 'sidebar' as const, visualEffectState: 'followWindow' as const, backgroundColor: '#00000000' } : { backgroundColor: nativeTheme.shouldUseDarkColors ? '#000000' : '#fcfcfc' }),
     webPreferences: { preload: join(__dirname, 'preload.cjs'), sandbox: true, contextIsolation: true, nodeIntegration: false, webviewTag: false },

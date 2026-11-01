@@ -1,6 +1,6 @@
 .references {
   border: 1px solid var(--line);
-  border-radius: 9px;
+  border-radius: var(--r-m);
   background: var(--inset);
   padding: 16px;
   margin-bottom: 24px;
@@ -14,7 +14,7 @@
 .references h2 {
   font-size: 13px;
   line-height: 18px;
-  font-weight: 600;
+  font-weight: 500;
   margin: 0;
 }
 .references h2 span {

@@ -68,6 +68,7 @@ function summary(recipe: Recipe, hw: HardwareProfile | null, best: Recipe | unde
     steps: StepIdSchema.options.filter((s) => recipe.steps[s]),
     defaultMemoryLimitGb: recipe.defaultMemoryLimitGb ?? (hw ? Math.round(hw.ramGb * 0.8) : undefined),
     models: stepModels(recipe),
+    ...referenceStillModel(recipe),
     ...finishFacts(recipe),
     files: recipe.models,
   };
@@ -109,6 +110,13 @@ const STEP_ROLE: Partial<Record<StepId, string>> = {
   video_effect: "video model",
   video_what_if: "video model",
 };
+
+/** The main model of a still drawn with reference photos (TierSummary.referenceStillModel), where the recipe has one. */
+export function referenceStillModel(recipe: Recipe): Pick<TierSummary, "referenceStillModel"> {
+  if (!recipe.referenceStill) return {};
+  const name = recipe.models.find((m) => m.name?.split(",").slice(1).join(",").trim() === "photo reference model")?.name?.split(",")[0]?.trim();
+  return name ? { referenceStillModel: name } : {};
+}
 
 /**
  * The main model each of the recipe's steps loads, in plain words (TierSummary.models): "Krea 2 Turbo" for the still,

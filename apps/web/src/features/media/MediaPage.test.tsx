@@ -12,6 +12,7 @@ import { EngineProvider } from "@/store/engine";
 import { Toaster } from "@/ui/primitives";
 import { MediaPage } from "./MediaPage";
 import { DRAG_TYPE } from "./items";
+import { useFreshPickWatcher } from "@/features/takes/freshPicks";
 
 vi.mock("@/api/config", () => ({
   API_KEY: "nightshift.api",
@@ -83,11 +84,21 @@ class FakeEngine {
   stills: Array<{ shotId: string; body: StillRequest | undefined }> = [];
   patches: ProjectPatch[] = [];
   uploads: Array<{ name: string; role?: string; boardId?: string }> = [];
+  storyboards = 0;
   jobs: Job[] = [];
   tier: TierSummary = TIER;
   settings: Settings = { tier: "apple-64", memoryLimitGb: null, overnight: { enabled: false, startAt: "23:00", endAt: "07:00" }, remote: null } as Settings;
 
+  /** Plays an event to the page, as the engine's stream does. */
+  emit: (e: Event) => void = () => undefined;
+
   constructor(public project: Project) {}
+
+  /** The project changed on the engine (a take landed): the page hears it. */
+  land(project: Project) {
+    this.project = project;
+    act(() => this.emit({ type: "project", project: structuredClone(project) }));
+  }
 
   client(): NightshiftClient {
     const answer = <T,>(fn: () => T): Promise<T> => Promise.resolve().then(() => structuredClone(fn()));
@@ -118,6 +129,11 @@ class FakeEngine {
           this.drafts.push({ shotId, body: structuredClone(body) });
           return job("video_draft", shotId);
         }),
+      storyboard: () =>
+        answer(() => {
+          this.storyboards++;
+          return job("text");
+        }),
       still: (_id, shotId, body) =>
         answer(() => {
           this.stills.push({ shotId, body: structuredClone(body) });
@@ -136,7 +152,8 @@ class FakeEngine {
           return asset;
         }),
       assetUrl: (pid, aid) => `/api/projects/${pid}/assets/${aid}`,
-      events: (_onEvent: (e: Event) => void, onConnection) => {
+      events: (onEvent: (e: Event) => void, onConnection) => {
+        this.emit = onEvent;
         queueMicrotask(() => onConnection?.(true));
         return () => undefined;
       },
@@ -148,9 +165,16 @@ class FakeEngine {
   }
 }
 
+/** What the app's shell runs beside every page: the watch for takes that replace a pick. */
+function Shell() {
+  useFreshPickWatcher();
+  return null;
+}
+
 function open(engine: FakeEngine) {
   return render(
     <EngineProvider client={engine.client()}>
+      <Shell />
       <MemoryRouter initialEntries={[`/p/${PID}/media`]}>
         <Routes>
           <Route path="/p/:id/media" element={<MediaPage />} />
@@ -202,17 +226,22 @@ const option = (group: string, name: string) => within(screen.getByRole("radiogr
 const photo = (name = "rae_portrait-2.png") => new File(["png"], name, { type: "image/png" });
 
 describe("Media", () => {
-  it("a blank project shows the prompt panel, its one board and where to start", async () => {
+  it("a blank project shows the prompt panel, its one board filling the page and where to start", async () => {
     open(new FakeEngine(blank()));
     expect(await screen.findByText("Nothing here yet")).toBeTruthy();
-    expect(screen.getByText("Write a prompt on the left to make your first image, or upload a photo.")).toBeTruthy();
+    expect(screen.getByText("Write a prompt on the left to make your first image, or upload a photo")).toBeTruthy();
     expect(screen.getByRole("heading", { name: "Board 1" })).toBeTruthy();
     await waitFor(() => expect(tool("Image").getAttribute("aria-checked")).toBe("true"));
     expect(bar().disabled).toBe(true);
-    expect(screen.getByText("Write a prompt first.")).toBeTruthy();
+    expect(screen.getByText("Write a prompt first")).toBeTruthy();
     // The model the tool runs here, in plain words.
     expect(await screen.findByText("Krea 2 Turbo")).toBeTruthy();
-    expect(screen.getByText("On the timeline: 0 shots, 0:00")).toBeTruthy();
+    // One board fills the page, without the canvas: New board in its header makes the second. No strip for the
+    // timeline: the editor has its own way in.
+    expect(screen.getByRole("button", { name: "New board" })).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "Fit all boards" })).toBeNull();
+    expect(screen.queryByText("Nothing on the timeline yet")).toBeNull();
+    expect(screen.queryByRole("link", { name: "Open editor" })).toBeNull();
   });
 
   it("an image prompt makes a new card on the board, from the bar or with Cmd+Enter", async () => {
@@ -288,12 +317,13 @@ describe("Media", () => {
     await waitFor(() => expect(tool("Effect").hasAttribute("disabled")).toBe(false));
     fireEvent.click(tool("Effect"));
     expect(bar("Apply effect").disabled).toBe(true);
-    expect(screen.getByText("Choose an image first.")).toBeTruthy();
+    expect(screen.getByText("Choose an image first")).toBeTruthy();
     expect(screen.getByText("Click a card on the board")).toBeTruthy();
 
     fireEvent.click(screen.getByRole("button", { name: "Use Upload" }));
     await waitFor(() => expect(bar("Apply effect").disabled).toBe(false));
-    expect(screen.getByText("About a minute on this computer")).toBeTruthy();
+    // An effect is one job, its end frame drawn inside it: the effect step's time is the whole of it.
+    expect(screen.getByText("About 40 s on this computer")).toBeTruthy();
     fireEvent.click(bar("Apply effect"));
     await waitFor(() => expect(engine.makes).toEqual([{ tool: "effect", boardId: "board_main", imageAssetId: "photo", effect: quickEffects[0]!.id }]));
   });
@@ -322,7 +352,7 @@ describe("Media", () => {
     fireEvent.click(await screen.findByRole("button", { name: "Edit from Upload" }));
     expect(tool("Edit").getAttribute("aria-checked")).toBe("true");
     expect(bar("Make the edit").disabled).toBe(true);
-    expect(screen.getByText("Say what to change.")).toBeTruthy();
+    expect(screen.getByText("Say what to change")).toBeTruthy();
     expect(screen.getByText("FLUX.2 Klein 4B")).toBeTruthy();
     fireEvent.change(screen.getByLabelText("What to change"), { target: { value: "Make it night" } });
     fireEvent.click(bar("Make the edit"));
@@ -381,6 +411,21 @@ describe("Media", () => {
     await waitFor(() => expect(engine.makes[0]).toMatchObject({ tool: "image", referenceIds: [saved.id] }));
   });
 
+  it("a reference added in a product ad starts as a Product, elsewhere as a Character", async () => {
+    // The dogfood night: the lamp's photo, added in a product ad, defaulted to Character.
+    const ad = new FakeEngine({ ...blank(), name: "Lumi ad", template: "product_ad" });
+    const first = open(ad);
+    fireEvent.change(await screen.findByLabelText("Reference photo"), { target: { files: [photo()] } });
+    let form = await screen.findByRole("group", { name: "New reference" });
+    expect(within(form).getByRole("radio", { name: "Product" }).getAttribute("aria-checked")).toBe("true");
+    first.unmount();
+
+    open(new FakeEngine(blank()));
+    fireEvent.change(await screen.findByLabelText("Reference photo"), { target: { files: [photo()] } });
+    form = await screen.findByRole("group", { name: "New reference" });
+    expect(within(form).getByRole("radio", { name: "Character" }).getAttribute("aria-checked")).toBe("true");
+  });
+
   it("opening a card shows its history, oldest first, with the pick marked", async () => {
     open(new FakeEngine(ferry()));
     fireEvent.click((await screen.findAllByRole("button", { name: "Open A ferry leaves the pier at dusk" }))[0]!);
@@ -403,6 +448,42 @@ describe("Media", () => {
     expect(engine.patches[0]!.shots?.[0]).toMatchObject({ id: "shot_1", chosenDraftId: "take_2", useStill: false });
   });
 
+  it("a take that lands and replaces the pick says so on the card, and the card offers the one before", async () => {
+    // The dogfood night: another take became the pick on its own, silently replacing one the user may have liked.
+    const project = ferry();
+    project.shots[0] = { ...project.shots[0]!, chosenFinalId: undefined };
+    project.takes = project.takes.filter((t) => t.rung === "draft");
+    const engine = new FakeEngine(project);
+    open(engine);
+    const card = await screen.findByRole("group", { name: "A ferry leaves the pier at dusk" });
+    expect(within(card).queryByText("New take")).toBeNull();
+
+    const landed = structuredClone(engine.project);
+    landed.takes.push({ id: "take_3", shotId: "shot_1", rung: "draft", seed: 3, videoAssetId: "v_take_3", jobId: "job_4" });
+    landed.assets.push({ id: "v_take_3", kind: "video", path: "v_take_3.mp4", durationSec: 4, createdAt: iso(8) });
+    landed.shots[0] = { ...landed.shots[0]!, chosenDraftId: "take_3" };
+    engine.land(landed);
+    expect(await within(card).findByText("New take")).toBeTruthy();
+
+    fireEvent.click(within(card).getAllByRole("button", { name: "Open A ferry leaves the pier at dusk" })[0]!);
+    const note = (await screen.findByText("New take, now the pick")).closest(".notice") as HTMLElement;
+    expect(note.textContent).toContain("It replaced version 2.");
+    fireEvent.click(within(note).getByRole("button", { name: "Use version 2 again" }));
+    await waitFor(() => expect(engine.patches.at(-1)?.shots?.[0]).toMatchObject({ id: "shot_1", chosenDraftId: "take_1", useStill: false }));
+  });
+
+  it("a first take, a take after a still, or a pick made by hand needs no note", async () => {
+    const engine = new FakeEngine(ferry());
+    open(engine);
+    const card = await screen.findByRole("group", { name: "A ferry leaves the pier at dusk" });
+    // Restore picks a take the project had: the user chose it.
+    const restored = structuredClone(engine.project);
+    restored.shots[0] = { ...restored.shots[0]!, chosenDraftId: "take_2", chosenFinalId: undefined };
+    engine.land(restored);
+    await act(async () => undefined);
+    expect(within(card).queryByText("New take")).toBeNull();
+  });
+
   it("Finish tonight queues the picked take's final for tonight", async () => {
     const project = ferry();
     project.shots[0] = { ...project.shots[0]!, chosenFinalId: undefined };
@@ -417,30 +498,56 @@ describe("Media", () => {
     expect(engine.settings.overnight.enabled).toBe(true);
   });
 
-  it("a What if? film offers no tools: the engine makes no new cards there, and its photo is the film's, not a card", async () => {
-    open(new FakeEngine(whatIf()));
-    expect(await screen.findByText("A What if? film is one continuous shot. Start a new project to make more cards.")).toBeTruthy();
-    await waitFor(() => expect(tool("Image").hasAttribute("disabled")).toBe(true));
-    expect(bar().disabled).toBe(true);
-    expect(screen.queryByLabelText("Prompt")).toBeNull();
-    // The opening photo shows on the film card only. The other upload has no tools and cannot join the one-shot film.
+  it("a What if? film has the prompt panel and every tool: a prompt makes a card, and its photo is the film's, not a card", async () => {
+    const engine = new FakeEngine(whatIf());
+    open(engine);
+    fireEvent.change(await screen.findByLabelText("Prompt"), { target: { value: "A red kite over the empty bay" } });
+    for (const name of ["Image", "Video", "Edit", "Effect", "Camera move"]) await waitFor(() => expect(tool(name).hasAttribute("disabled")).toBe(false));
+    expect(screen.queryByText(/Start a new project/)).toBeNull();
+    await waitFor(() => expect(bar().disabled).toBe(false));
+    fireEvent.click(bar());
+    await waitFor(() => expect(engine.makes).toEqual([{ tool: "image", boardId: "board_main", prompt: "A red kite over the empty bay" }]));
+    // The opening photo shows on the film card only. The other upload starts a tool, but cannot join the one-shot film.
     expect(screen.getAllByRole("group", { name: "Upload" })).toHaveLength(1);
-    expect(screen.queryByRole("button", { name: "Effect from Upload" })).toBeNull();
+    expect(screen.getByRole("button", { name: "Effect from Upload" })).toBeTruthy();
     expect(screen.queryByRole("button", { name: "Add Upload to the timeline" })).toBeNull();
   });
 
-  it("a quick shot offers no tools, no redraw of its photo, and makes another take on its own path", async () => {
+  it("a card made in a What if? film is like any card, kept in Media; the film keeps its story and cannot be deleted", async () => {
+    const project = whatIf();
+    project.shots.push({ id: "kite", index: 1, prompt: "A red kite over the empty bay", durationSec: 4, stillAssetId: "kite_still", locked: false, onTimeline: false });
+    project.assets.push({ id: "kite_still", kind: "image", path: "kite.png", createdAt: iso(3) });
+    const engine = new FakeEngine(project);
+    open(engine);
+    const card = await screen.findByRole("group", { name: "A red kite over the empty bay" });
+    expect(within(card).queryByRole("button", { name: /Add to timeline/ })).toBeNull();
+    fireEvent.click(within(card).getAllByRole("button", { name: "Open A red kite over the empty bay" })[0]!);
+    expect(await screen.findByRole("button", { name: "Redraw still" })).toBeTruthy();
+    expect(screen.queryByRole("link", { name: "Edit the story" })).toBeNull();
+    expect(screen.getByText("Only the film goes on the timeline. This card stays in Media.")).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "Add to timeline" })).toBeNull();
+    expect(screen.getByRole("button", { name: "Delete" })).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Make video" }));
+    await waitFor(() => expect(engine.drafts).toEqual([{ shotId: "kite", body: {} }]));
+  });
+
+  it("a quick shot has the tools beside its own shot, which keeps its photo and makes another take on its own path", async () => {
     const engine = new FakeEngine(cameraShot());
     open(engine);
-    expect(await screen.findByText("This project turns one photo into one shot. Start a new project to use the tools.")).toBeTruthy();
-    await waitFor(() => expect(tool("Effect").hasAttribute("disabled")).toBe(true));
-    expect(bar().disabled).toBe(true);
-    expect(screen.queryByRole("button", { name: "Camera move from Upload" })).toBeNull();
-    expect(screen.getByRole("button", { name: "Add Upload to the timeline" })).toBeTruthy();
+    await waitFor(() => expect(tool("Effect").hasAttribute("disabled")).toBe(false));
+    expect(screen.queryByText(/Start a new project/)).toBeNull();
+    // An upload starts a tool, and stays in Media: only the shot from the photo goes on the timeline.
+    expect(screen.queryByRole("button", { name: "Add Upload to the timeline" })).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "Camera move from Upload" }));
+    await waitFor(() => expect(bar("Make camera move").disabled).toBe(false));
+    fireEvent.click(bar("Make camera move"));
+    await waitFor(() => expect(engine.makes).toMatchObject([{ tool: "camera_move", imageAssetId: "upload" }]));
 
     fireEvent.click((await screen.findAllByRole("button", { name: "Open Camera move, Dolly in" }))[0]!);
     expect(await screen.findByRole("button", { name: "Version 2, Camera move, Dolly in, the pick" })).toBeTruthy();
     expect(screen.queryByRole("button", { name: "Redraw still" })).toBeNull();
+    // Its own shot stays: only cards made with the tools can be deleted.
+    expect(screen.queryByRole("button", { name: "Delete" })).toBeNull();
     fireEvent.click(screen.getByRole("button", { name: "Another take" }));
     // Its old take records no tool: the engine makes the project's own move again.
     await waitFor(() => expect(engine.drafts).toEqual([{ shotId: "shot_1", body: {} }]));
@@ -452,7 +559,7 @@ describe("Media", () => {
     fireEvent.click((await screen.findAllByRole("button", { name: "Open A ferry leaves the pier at dusk" }))[0]!);
     fireEvent.click(await screen.findByRole("button", { name: "Effect" }));
     expect(screen.queryByRole("textbox", { name: "Subject" })).toBeNull();
-    expect(screen.getByText("The effect follows the prompt above.")).toBeTruthy();
+    expect(screen.getByText("The effect follows the prompt above")).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "Apply effect" }));
     await waitFor(() => expect(engine.drafts).toEqual([{ shotId: "shot_1", body: { tool: { kind: "effect", effect: quickEffects[0]!.id } } }]));
     expect(engine.patches).toEqual([]);
@@ -470,6 +577,22 @@ describe("Media", () => {
     fireEvent.click(screen.getByRole("button", { name: "Apply effect" }));
     await waitFor(() => expect(engine.drafts).toHaveLength(1));
     expect(engine.patches[0]!.shots?.[0]).toMatchObject({ id: "shot_2", prompt: "The amber bottle" });
+  });
+
+  it("cards made with the Effect tool are named by their effect while they render, not by the subject they share", async () => {
+    // The dogfood night: three effects on one toast photo all read "the slice of buttered toast" until they landed.
+    const project = blank();
+    project.assets = [{ id: "toast", kind: "image", role: "reference", path: "toast.jpg", createdAt: iso(1) }];
+    const card = (n: number) => ({ id: `fx_${n}`, index: n, prompt: "the slice of buttered toast", durationSec: 4, stillAssetId: "toast", locked: false, onTimeline: false });
+    project.shots = [card(0), card(1)];
+    project.boards = [{ id: "board_main", name: "Board 1", items: ["toast", "fx_0", "fx_1"] }];
+    const engine = new FakeEngine(project);
+    const rendering = (n: number, effect: string, status: Job["status"]): Job => ({ id: `job_fx_${n}`, projectId: PID, shotId: `fx_${n}`, step: "video_effect", tool: { kind: "effect", effect }, mode: "now", status, progress: 0.3, outputAssetIds: [], createdAt: iso(2) });
+    engine.jobs = [rendering(0, "levitate", "running"), rendering(1, "gold", "queued")];
+    open(engine);
+    expect(await screen.findByRole("group", { name: "Effect, Levitate" })).toBeTruthy();
+    expect(screen.getByRole("group", { name: "Effect, Solid gold" })).toBeTruthy();
+    expect(screen.queryByRole("group", { name: "The slice of buttered toast" })).toBeNull();
   });
 
   it("a locked card's effect never writes to it", async () => {
@@ -529,5 +652,132 @@ describe("Media", () => {
     expect(story.getAttribute("href")).toBe(`/p/${PID}/storyboard`);
     expect(screen.queryByRole("button", { name: "Try again" })).toBeNull();
     expect(film.stills).toEqual([]);
+  });
+});
+
+/** A product ad as created: the template's two shots, before the writer wrote its own. */
+function lumi(o: Partial<Project> = {}): Project {
+  return {
+    ...blank(),
+    name: "Lumi ad",
+    template: "product_ad",
+    aspect: "9:16",
+    brief: { productName: "Lumi sunrise lamp", does: "wakes you up with a slow sunrise" },
+    shots: [
+      { id: "shot_1", index: 0, prompt: "Lumi sunrise lamp alone on a surface, slow reveal from darkness", cameraMove: "dolly_in", durationSec: 3, locked: false },
+      { id: "shot_2", index: 1, prompt: "Extreme close-up of Lumi sunrise lamp", cameraMove: "pan_right", durationSec: 2.5, locked: false },
+    ],
+    shotList: { by: "template" },
+    ...o,
+  };
+}
+
+/** A setup with a writer. */
+const WRITER = { ...TIER, steps: [...TIER.steps!, "text"] } as TierSummary;
+
+describe("a film's shot list on the board", () => {
+  it("a new film's main action is writing its shot list; the template's stills come second", async () => {
+    const engine = new FakeEngine(lumi());
+    engine.tier = WRITER;
+    open(engine);
+    const write = await screen.findByRole("button", { name: "Write the shot list" });
+    await waitFor(() => expect(write.className).toMatch(/btn--primary/));
+    expect(screen.getByRole("button", { name: "Draw the stills" }).className).not.toMatch(/btn--primary/);
+    fireEvent.click(write);
+    await waitFor(() => expect(engine.storyboards).toBe(1));
+    expect(engine.stills).toEqual([]);
+  });
+
+  it("without a writer, or once written, drawing the stills is the main action", async () => {
+    const none = new FakeEngine(lumi());
+    const first = open(none);
+    await waitFor(() => expect(screen.getByRole("button", { name: "Draw the stills" }).className).toMatch(/btn--primary/));
+    expect(screen.queryByRole("button", { name: "Write the shot list" })).toBeNull();
+    first.unmount();
+
+    const written = new FakeEngine(lumi({ shotList: { by: "writer" } }));
+    written.tier = WRITER;
+    open(written);
+    await waitFor(() => expect(screen.getByRole("button", { name: "Draw the stills" }).className).toMatch(/btn--primary/));
+    expect(screen.queryByRole("button", { name: "Write the shot list" })).toBeNull();
+  });
+
+  it("says when the writer's list was not used, and tries again or uses the template's shots", async () => {
+    const note = "The writer tried 3 times, but its shot list did not fit this template.";
+    const engine = new FakeEngine(lumi({ shotList: { by: "template", note } }));
+    engine.tier = WRITER;
+    const first = open(engine);
+    expect(await screen.findByText("These are the template's shots, not your brief's")).toBeTruthy();
+    expect(screen.getByText(note)).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "Write the shot list" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Draw the stills" })).toBeNull();
+    // Trying again puts the writer to work: the note gives way to it.
+    fireEvent.click(screen.getByRole("button", { name: "Try again" }));
+    await waitFor(() => expect(engine.storyboards).toBe(1));
+    expect(await screen.findByText(/^Waiting|^Writing the shot list|^Queued/)).toBeTruthy();
+    expect(screen.queryByText(note)).toBeNull();
+    first.unmount();
+
+    const keep = new FakeEngine(lumi({ shotList: { by: "template", note } }));
+    keep.tier = WRITER;
+    open(keep);
+    // Using the template's shots draws their stills, and the note goes.
+    fireEvent.click(await screen.findByRole("button", { name: "Use these shots" }));
+    await waitFor(() => expect(keep.stills.map((s) => s.shotId)).toEqual(["shot_1", "shot_2"]));
+    expect(keep.patches).toEqual([{ shotList: { by: "template" } }]);
+    await waitFor(() => expect(screen.queryByText(note)).toBeNull());
+  });
+
+  it("a rewrite that missed keeps the written list, says so, and can be dismissed", async () => {
+    const note = "The writer failed: the language model ran out of memory.";
+    const engine = new FakeEngine(lumi({ shotList: { by: "writer", note } }));
+    engine.tier = WRITER;
+    open(engine);
+    const notice = (await screen.findByText("The shot list was not rewritten")).closest<HTMLElement>(".notice")!;
+    expect(within(notice).getByText(note)).toBeTruthy();
+    fireEvent.click(within(notice).getByRole("button", { name: "Dismiss" }));
+    await waitFor(() => expect(engine.patches).toEqual([{ shotList: { by: "writer" } }]));
+  });
+
+  it("rewrites the shot list from the board's menu at any time, saying what it keeps", async () => {
+    const drawn = lumi({ shotList: { by: "writer" } });
+    drawn.shots = drawn.shots.map((s, i) => ({ ...s, stillAssetId: `still_${i}` }));
+    drawn.assets = drawn.shots.map((s, i) => ({ id: `still_${i}`, kind: "image" as const, path: `still_${i}.png`, createdAt: iso(i) }));
+    const engine = new FakeEngine(drawn);
+    engine.tier = WRITER;
+    open(engine);
+    fireEvent.click(await screen.findByRole("button", { name: "More for Shots" }));
+    fireEvent.click(screen.getByRole("menuitem", { name: "Rewrite shot list" }));
+    const dialog = await screen.findByRole("dialog");
+    expect(within(dialog).getByText("The writer drafts new shots from your brief, then draws a still for each one.")).toBeTruthy();
+    expect(within(dialog).getByText(/^Locked shots keep their place, their stills and their takes\. Any other shot with a still or a video stays on the board, off the timeline, so nothing you made is deleted\.$/)).toBeTruthy();
+    fireEvent.click(within(dialog).getByRole("button", { name: "Rewrite shot list" }));
+    await waitFor(() => expect(engine.storyboards).toBe(1));
+  });
+
+  it("offers no rewrite where there is no shot list to write, or while the writer works", async () => {
+    const first = open(new FakeEngine(blank()));
+    await screen.findByText("Nothing here yet");
+    expect(screen.queryByRole("button", { name: /^More for/ })).toBeNull();
+    first.unmount();
+
+    const engine = new FakeEngine(lumi({ shotList: { by: "writer" } }));
+    engine.jobs = [{ id: "job_text", projectId: PID, step: "text", mode: "now", status: "running", progress: 0.3, outputAssetIds: [], createdAt: iso() }];
+    open(engine);
+    expect(await screen.findByText(/^Writing the shot list/)).toBeTruthy();
+    expect(screen.queryByRole("button", { name: /^More for/ })).toBeNull();
+  });
+
+  it("on the canvas, the main board's menu rewrites the shot list; another board's does not", async () => {
+    const engine = new FakeEngine(lumi({ shotList: { by: "writer" }, boards: [{ id: "main", name: "Shots", items: ["shot_1", "shot_2"] }, { id: "moods", name: "Moods", items: [] }] }));
+    engine.tier = WRITER;
+    open(engine);
+    fireEvent.click(await screen.findByRole("button", { name: "More for Moods" }));
+    expect(screen.queryByRole("menuitem", { name: "Rewrite shot list" })).toBeNull();
+    fireEvent.keyDown(document.activeElement ?? document.body, { key: "Escape" });
+    fireEvent.click(screen.getByRole("button", { name: "More for Shots" }));
+    fireEvent.click(screen.getByRole("menuitem", { name: "Rewrite shot list" }));
+    fireEvent.click(within(await screen.findByRole("dialog")).getByRole("button", { name: "Rewrite shot list" }));
+    await waitFor(() => expect(engine.storyboards).toBe(1));
   });
 });

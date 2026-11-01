@@ -2,8 +2,10 @@
  * The cards on a board: a shot (its pick, with its versions behind it), an uploaded image, a song or a voiceover.
  * Every card can be dragged to another board or onto the editor's timeline.
  */
-import type { Job } from "@nightshift/contract";
-import { Brush, Clapperboard, Film, Layers, ListPlus, Maximize2, Mic, Move3d, Music, Pause, Play, Sparkles, Video } from "lucide-react";
+import { shotTemplate, type Job } from "@nightshift/contract";
+import { Brush, Clapperboard, Film, Layers, ListPlus, Maximize2, Mic, Moon as MoonIcon, Move3d, Music, Pause, Play, Sparkles, Video } from "lucide-react";
+import { Moon } from "@/ui/Moon";
+import { Star } from "@/ui/Star";
 import { useEffect, useRef, useState, type CSSProperties, type DragEvent, type ReactNode } from "react";
 import { Link } from "react-router";
 import { useEngine, useEngineState } from "@/store/engine";
@@ -15,7 +17,9 @@ import { useNow } from "@/lib/useNow";
 import { plural, timecode } from "@/lib/format";
 import { useMedia, type ImageTool } from "./context";
 import { toolBlocked } from "./panel/tools";
-import { CARD_STEPS, makeBlocked, placeOnTimeline, restingTime, retryFor, setDrag, type CanvasItem } from "./items";
+import { CARD_STEPS, canAddToTimeline, makeBlocked, placeOnTimeline, restingTime, retryFor, setDrag, shotLabel, type CanvasItem } from "./items";
+import { Wave } from "@/features/editor/Wave";
+import { useFreshPick } from "@/features/takes/freshPicks";
 
 type ShotItem = Extract<CanvasItem, { kind: "shot" }>;
 type ImageItem = Extract<CanvasItem, { kind: "image" }>;
@@ -53,11 +57,18 @@ function CardShell({ id, boardId, index, drop, className, children, label }: { i
   );
 }
 
-/** A card the cut uses: a quiet film mark, the words on hover. */
-function OnTimeline() {
+/** A card the cut uses: a quiet film mark, with its words on a picture. */
+function OnTimeline({ onMedia = true }: { onMedia?: boolean }) {
+  if (!onMedia)
+    return (
+      <span className="mp-card__ontl" role="img" aria-label="On the timeline" title="On the timeline">
+        <Film />
+      </span>
+    );
   return (
-    <span className="mp-card__ontl" role="img" aria-label="On the timeline" title="On the timeline">
+    <span className="mp-onmedia mp-onmedia--quiet" role="img" aria-label="On the timeline" title="On the timeline">
       <Film />
+      <span aria-hidden>On the timeline</span>
     </span>
   );
 }
@@ -80,7 +91,8 @@ const TOOL_STEP_LABEL: Partial<Record<Job["step"], string>> = {
 
 /**
  * A card being made: a soft light moves across the empty frame (or over the old picture, dimmed), with the step, the
- * time so far and, while the GPU is away, why it waits.
+ * time so far and a moon that waxes from new to full as it renders. A card that waits for tonight wears the crescent;
+ * while the GPU is away it says why it waits.
  */
 function MakingState({ job, onMedia, now }: { job: Job; onMedia: boolean; now: number }) {
   const { status, settings } = useEngineState();
@@ -88,7 +100,8 @@ function MakingState({ job, onMedia, now }: { job: Job; onMedia: boolean; now: n
   const stage = jobStage(job);
   const elapsed = jobElapsed(job, now);
   const gpuAway = !!status && status.phase === "ready" && !status.comfyui.running && isGpuJob(job);
-  const waiting = gpuAway || stage === "Waiting for the GPU";
+  // Not rendering yet: waiting for the GPU, or queued behind other work. It reads still, without the warm glow or a ring.
+  const waiting = gpuAway || stage === "Waiting for the GPU" || job.status === "queued";
   const remote = status?.mode === "remote" ? settings?.remote : null;
   const where = remote ? (remote.name ?? remote.url.replace(/^https?:\/\//, "")) : null;
   const pct = Math.round(job.progress * 100);
@@ -100,18 +113,21 @@ function MakingState({ job, onMedia, now }: { job: Job; onMedia: boolean; now: n
       <div className={cx("mp-card__state mp-card__state--making", onMedia && "mp-card__state--onmedia")} role="status">
         <span className={cx("mp-making__chip", waiting && "mp-making__chip--waiting")}>
           {waiting ? (
-            <span className={cx("pulse", "pulse--idle")} />
+            night && !gpuAway ? <MoonIcon className="mp-making__tonight" aria-hidden /> : <span className={cx("pulse", "pulse--idle")} />
           ) : (
-            <span className={cx("ring", night && "ring--night")} style={{ "--pct": Math.max(4, pct) } as CSSProperties} />
+            <Moon phase={Math.max(0.04, job.progress)} night={night} label={`${pct}% done`} />
           )}
           <span className="mp-making__stage">{label}</span>
           {elapsed && !waiting && <span className="mp-making__time">{elapsed}</span>}
         </span>
-        {gpuAway && <span className="mp-making__why">{where ? "The GPU computer is busy with other work. This starts when it is free." : "This starts when the GPU is free."}</span>}
+        {gpuAway && <span className="mp-making__why">{where ? "The GPU computer is busy or can't be reached. This starts when it is free." : "This starts when the GPU is free"}</span>}
       </div>
-      <div className={cx("frame__progress", night && "frame__progress--night", waiting && "frame__progress--waiting")}>
-        <div style={{ width: `${job.progress * 100}%` }} />
-      </div>
+      {/* A waiting job's old progress would read as work happening: the line shows only while it renders. */}
+      {!waiting && (
+        <div className={cx("frame__progress", night && "frame__progress--night")}>
+          <div style={{ width: `${job.progress * 100}%` }} />
+        </div>
+      )}
     </>
   );
 }
@@ -122,15 +138,20 @@ export function ShotCard({ item, boardId, index, drop }: CardProps<ShotItem>) {
   const addToTimeline = useAddToTimeline();
   const [hover, setHover] = useState(false);
   const { shot, pick, history } = item;
+  const fresh = useFreshPick(shot);
   const job = activeJob(jobs, shot.id, CARD_STEPS);
   const failed = job ? undefined : lastFailed(jobs, shot.id, CARD_STEPS);
   const now = useNow(1000, job?.status === "running");
   const pickable = picking && !!shot.stillAssetId;
   const versions = history.length;
-  // A card without words of its own (an effect or a camera move on an image) says what is making it until its take lands.
-  const making = !shot.prompt.trim() && !history.some((v) => v.rung !== "still") && job ? TOOL_STEP_LABEL[job.step] : undefined;
+  // Until its first take lands, a card made with a tool is named by it ("Effect, Levitate"), not by the subject it was
+  // given; a card without words says what is making it.
+  const firstTake = !history.some((v) => v.rung !== "still") && job ? job : undefined;
+  const making = firstTake?.tool ? shotLabel(project, shot, history, firstTake.tool) : firstTake && !shot.prompt.trim() ? TOOL_STEP_LABEL[firstTake.step] : undefined;
   const label = making ?? item.label;
   const resting = pick ? restingTime(pick, shot.durationSec) : undefined;
+  // A draft or a final is a clip: its length shows on the picture, so it never reads as a still.
+  const clip = pick && pick.rung !== "still" ? (pick.asset.durationSec ?? shot.durationSec) : undefined;
   // What "Try again" runs: the failed request when it is known exactly, else the card opens to choose again.
   const again = failed ? retryFor(project, shot, failed.step) : undefined;
 
@@ -179,7 +200,7 @@ export function ShotCard({ item, boardId, index, drop }: CardProps<ShotItem>) {
         />
         {!pick && !job && !failed && (
           <div className="mp-card__state">
-            {project.template === "what_if" ? (
+            {shotTemplate(project, shot) === "what_if" ? (
               <Link to={`/p/${project.id}/storyboard`} className="btn btn--s">
                 Open the story
               </Link>
@@ -208,10 +229,22 @@ export function ShotCard({ item, boardId, index, drop }: CardProps<ShotItem>) {
             )}
           </div>
         )}
-        {(pick?.rung === "final" || versions > 1) && (
+        {(pick?.rung === "final" || versions > 1 || fresh) && (
           <div className="mp-card__marks">
-            {pick?.rung === "final" && <span className="mp-mark mp-mark--final">Final</span>}
-            {versions > 1 && (
+            {/* A take that landed and replaced the pick says so until the card is opened. */}
+            {fresh && (
+              <span className="mp-mark mp-mark--new" title="A new take landed and is now the pick. Open the card to keep the one before.">
+                New take
+              </span>
+            )}
+            {pick?.rung === "final" && (
+              <span className="mp-mark mp-mark--final">
+                <Star />
+                Final
+              </span>
+            )}
+            {/* New take says there is more than one; the count would crowd the clip's length on a narrow card. */}
+            {versions > 1 && !fresh && (
               <span className="mp-mark" title={plural(versions, "version")}>
                 <Layers aria-hidden />
                 {versions}
@@ -220,33 +253,49 @@ export function ShotCard({ item, boardId, index, drop }: CardProps<ShotItem>) {
             )}
           </div>
         )}
-        {versions > 1 && (
-          <div className="mp-card__dots" aria-hidden>
-            {history.map((v) => (
-              <span key={v.key} className={cx("mp-card__dot", v.pick && "mp-card__dot--pick", v.rung === "final" && "mp-card__dot--final")} />
-            ))}
+        {clip !== undefined && (
+          <div className="mp-card__marks mp-card__marks--end">
+            <span className="mp-mark mp-mark--clip" title={`A ${pick?.rung === "final" ? "final" : "draft"} clip`}>
+              <Play aria-hidden />
+              {timecode(clip, false)}
+              <span className="visually-hidden"> video</span>
+            </span>
           </div>
         )}
+        {/* A micro drama's line, set on its picture like the subtitle it becomes. */}
+        {project.template === "micro_drama" && pick && shot.line?.trim() && !picking && <p className="mp-card__line">{shot.line.trim()}</p>}
         {picking ? (
           pickable && <div className="mp-card__pickhint">Use this still</div>
         ) : (
-          <div className="mp-card__hover">
-            {!item.onTimeline && (
-              <button type="button" className="mp-onmedia" onClick={() => addToTimeline([shot.id])}>
-                <ListPlus /> Add to timeline
+          // Under the pointer: the card's words, its versions and what it can do. At rest the picture is the card.
+          <div className="mp-card__band">
+            <div className="mp-card__band-text">
+              {versions > 1 && (
+                <div className="mp-card__dots" aria-hidden>
+                  {history.map((v) => (
+                    <span key={v.key} className={cx("mp-card__dot", v.pick && "mp-card__dot--pick", v.rung === "final" && "mp-card__dot--final")} />
+                  ))}
+                </div>
+              )}
+              <span className="mp-card__caption">{label}</span>
+            </div>
+            <div className="mp-card__hover">
+              {/* An extra card of a What if? film or a quick shot stays in Media: its timeline is the project's own shot. */}
+              {item.onTimeline ? (
+                <OnTimeline />
+              ) : (
+                canAddToTimeline(project, shot.id) && (
+                  <button type="button" className="mp-onmedia" onClick={() => addToTimeline([shot.id])}>
+                    <ListPlus /> Add to timeline
+                  </button>
+                )
+              )}
+              <button type="button" className="mp-onmedia mp-onmedia--icon" aria-label={`Open ${label}`} title="Open" tabIndex={-1} onClick={() => openCard(shot.id)}>
+                <Maximize2 />
               </button>
-            )}
-            <button type="button" className="mp-onmedia mp-onmedia--icon" aria-label={`Open ${label}`} title="Open" tabIndex={-1} onClick={() => openCard(shot.id)}>
-              <Maximize2 />
-            </button>
+            </div>
           </div>
         )}
-      </div>
-      <div className="mp-card__meta">
-        <span className="mp-card__label" title={label}>
-          {label}
-        </span>
-        {item.onTimeline && <OnTimeline />}
       </div>
     </CardShell>
   );
@@ -273,9 +322,11 @@ export function ImageCard({ item, boardId, index, drop, fallbackRatio }: CardPro
   const tier = useInstalledTier();
   const addToTimeline = useAddToTimeline();
   const ratio = imageRatio(item, fallbackRatio);
-  // The engine makes no new cards in a What if? film or a quick shot, and a What if? film takes no second shot.
+  // A quick shot makes its own shot before any card. A What if? film or a quick shot takes no second shot.
   const tools = !makeBlocked(project);
-  const toTimeline = project.template !== "what_if";
+  const toTimeline = canAddToTimeline(project, item.id);
+  // A reference carries its name on the picture. A plain upload has no words worth showing.
+  const named = project.references?.some((r) => r.assetId === item.asset.id) ?? false;
   return (
     <CardShell id={item.id} boardId={boardId} index={index} drop={drop} label={item.label} className={cx(picking && "mp-card--pickable", sourceCardId === item.id && "mp-card--source")}>
       <div className="frame mp-card__frame" style={{ aspectRatio: String(ratio) } as CSSProperties}>
@@ -306,11 +357,11 @@ export function ImageCard({ item, boardId, index, drop, fallbackRatio }: CardPro
             </div>
           )
         )}
-      </div>
-      <div className="mp-card__meta">
-        <span className="mp-card__label" title={item.label}>
-          {item.label}
-        </span>
+        {named && (
+          <div className="mp-card__marks">
+            <span className="mp-mark">{item.label}</span>
+          </div>
+        )}
       </div>
     </CardShell>
   );
@@ -318,7 +369,7 @@ export function ImageCard({ item, boardId, index, drop, fallbackRatio }: CardPro
 
 // ---------------------------------------------------------------- song, voiceover
 
-export function AudioTile({ item, boardId, index, drop }: CardProps<AudioItem>) {
+export function AudioTile({ item, boardId, index, drop, name = item.label }: CardProps<AudioItem> & { name?: string }) {
   const { project } = useMedia();
   const { client } = useEngine();
   const addToTimeline = useAddToTimeline();
@@ -334,22 +385,23 @@ export function AudioTile({ item, boardId, index, drop }: CardProps<AudioItem>) 
     else a.pause();
   }, [playing]);
   const words = item.asset.text?.trim();
+  const voice = item.role === "voice";
   return (
-    <CardShell id={item.id} boardId={boardId} index={index} drop={drop} label={item.label} className="mp-card--audio">
-      <div className="mp-audio">
+    <CardShell id={item.id} boardId={boardId} index={index} drop={drop} label={item.label} className={cx("mp-card--audio", playing && "mp-card--playing")}>
+      <div className="mp-audio" title={words || undefined}>
         <button type="button" className="mp-audio__play" aria-label={playing ? `Pause the ${item.label.toLowerCase()}` : `Play the ${item.label.toLowerCase()}`} disabled={!playable} title={playable ? undefined : "No sound in the demo"} onClick={() => setPlaying((v) => !v)}>
           {playing ? <Pause /> : <Play />}
         </button>
         <div className="mp-audio__text">
           <div className="mp-audio__name">
-            {item.role === "voice" ? <Mic /> : <Music />}
-            {item.label}
+            {voice ? <Mic /> : <Music />}
+            <span className="mp-audio__label">{name}</span>
             {item.asset.durationSec ? <span className="mp-audio__dur">{timecode(item.asset.durationSec, false)}</span> : null}
           </div>
-          {words && <div className="mp-audio__words">{words}</div>}
+          {words ? <div className="mp-audio__words">{words}</div> : <Wave seed={hashSeed(item.id)} n={56} speech={voice} className="mp-audio__wave" />}
         </div>
         {item.onTimeline ? (
-          <OnTimeline />
+          <OnTimeline onMedia={false} />
         ) : (
           <Button size="s" variant="quiet" icon={<ListPlus />} iconOnly aria-label={`Add the ${item.label.toLowerCase()} to the timeline`} title="Add to timeline" onClick={() => addToTimeline([item.id])} />
         )}
@@ -359,11 +411,18 @@ export function AudioTile({ item, boardId, index, drop }: CardProps<AudioItem>) 
   );
 }
 
-/** A frame waiting for its first picture: the shot list being written. */
-export function PlaceholderCard({ aspect }: { aspect: string }) {
+/** A small number from an id, so each song draws its own shape. */
+function hashSeed(id: string): number {
+  let h = 0;
+  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) | 0;
+  return Math.abs(h) % 997;
+}
+
+/** A frame waiting for its first picture: the shot list being written. It shimmers only while the writing runs. */
+export function PlaceholderCard({ aspect, rendering }: { aspect: string; rendering?: boolean }) {
   return (
     <div className="mp-card" aria-hidden>
-      <div className={cx("frame shimmer", aspect)}>
+      <div className={cx("frame", rendering ? "shimmer" : "frame--empty", aspect)}>
         <div className="mp-card__state">
           <Clapperboard />
         </div>

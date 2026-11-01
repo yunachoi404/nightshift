@@ -1,0 +1,64 @@
+{
+  "1": {
+    "class_type": "CheckpointLoaderSimple",
+    "inputs": {
+      "ckpt_name": "yue2_3b_int8_convrot.safetensors"
+    }
+  },
+  "11": {
+    "class_type": "PrimitiveInt",
+    "inputs": {
+      "value": 42
+    }
+  },
+  "12": {
+    "class_type": "YuE2GenerateABC",
+    "inputs": {
+      "clip": [
+        "1",
+        1
+      ],
+      "style": [
+        "13",
+        0
+      ],
+      "lyrics": [
+        "14",
+        0
+      ],
+      "seed": [
+        "11",
+        0
+      ],
+      "mode": "full",
+      "max_abc_tokens": 8192,
+      "temperature": 0.7,
+      "top_p": 0.9,
+      "top_k": 30,
+      "repetition_penalty": 1.005,
+      "penalty_window": 100
+    }
+  },
+  "13": {
+    "class_type": "PrimitiveStringMultiline",
+    "inputs": {
+      "value": "Instrumental. Warm downtempo beat at 90 BPM, soft piano, rounded bass, quiet crisp drums. A clear two-bar motif, no vocals, no lyrics."
+    }
+  },
+  "14": {
+    "class_type": "PrimitiveStringMultiline",
+    "inputs": {
+      "value": ""
+    }
+  },
+  "15": {
+    "class_type": "NightshiftSaveText",
+    "inputs": {
+      "text": [
+        "12",
+        0
+      ],
+      "filename_prefix": "nightshift/yue2_abc"
+    }
+  }
+}

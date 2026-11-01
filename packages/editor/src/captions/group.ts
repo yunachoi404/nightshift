@@ -58,6 +58,9 @@ const LEANS_FORWARD = new Set(
   "a an the and or but nor so yet to of in on at by for with from into onto over under about as than that which who whose your my our their his her its i we you they this these those is are was were be".split(" "),
 );
 
+/** Shorter on screen than this, a caption cannot be read: the Lumi ad's "Lumi wakes" showed for 0.15 s. */
+const MIN_SHOWN = 0.7;
+
 const textLength = (words: readonly Word[], from: number, to: number) => {
   let n = 0;
   for (let i = from; i < to; i++) n += (words[i] as Word).text.length + (i > from ? 1 : 0);
@@ -73,7 +76,8 @@ function balance(piece: Word[], maxChars: number, maxDuration: number): Word[][]
   for (let count = Math.max(2, Math.ceil(total / maxChars), Math.ceil(span / maxDuration)); count <= n; count++) {
     const target = total / count;
     // best[k][i]: least cost putting words[0..i) into k groups. Cost: squared distance from the target length,
-    // plus a penalty for overlong groups and for breaking anywhere but after a clause or a pause.
+    // plus a penalty for overlong groups, for groups on screen too briefly to read (until the next one starts), and
+    // for breaking anywhere but after a clause or a pause.
     const best = Array.from({ length: count + 1 }, () => new Array<number>(n + 1).fill(Infinity));
     const from = Array.from({ length: count + 1 }, () => new Array<number>(n + 1).fill(-1));
     best[0]![0] = 0;
@@ -87,6 +91,8 @@ function balance(piece: Word[], maxChars: number, maxDuration: number): Word[][]
           let cost = ((length - target) / maxChars) ** 2;
           if (length > maxChars) cost += 0.5 + ((length - maxChars) / maxChars) * 6;
           if (duration > maxDuration) cost += 4;
+          const shown = (i < n ? (piece[i] as Word).start : (piece[i - 1] as Word).end + 0.35) - (piece[j] as Word).start;
+          if (shown < MIN_SHOWN) cost += ((MIN_SHOWN - shown) / MIN_SHOWN) * 2;
           if (i - j === 1 && n > 2) cost += 1.5;
           if (i < n) {
             const last = piece[i - 1] as Word;

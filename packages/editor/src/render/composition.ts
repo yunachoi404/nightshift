@@ -601,7 +601,10 @@ export function placeCaptions(scene: Pick<Scene, "clips" | "captions" | "width" 
   const hopeless = captions.filter((x) => !scored.some((s) => s.clear.includes(x)));
   const votable = time(captions) - time(hopeless);
   let chosen: { cand: Candidate; clear: typeof captions };
-  if (votable <= 1e-6) {
+  if (style.captions.pinned) {
+    // Pinned captions keep the look's own line in every shot: the scrim keeps them readable over a face.
+    chosen = scored[0] as typeof chosen;
+  } else if (votable <= 1e-6) {
     chosen = captionBand(scene) === "upper" ? (scored[2] as typeof chosen) : (scored[0] as typeof chosen);
   } else {
     chosen = scored.find((s) => time(s.clear) >= votable - 1e-6) ?? [...scored].sort((a, b) => time(b.clear) - time(a.clear))[0]!;
@@ -615,7 +618,7 @@ export function placeCaptions(scene: Pick<Scene, "clips" | "captions" | "width" 
     const members = group.map((i) => captions[i]!);
     let cand = chosen.cand;
     const blocked = members.filter((x) => !clearOn(chosen.cand, x));
-    if (blocked.length && blocked.every((x) => x.subject && figureLike(x.subject, L))) {
+    if (!style.captions.pinned && blocked.length && blocked.every((x) => x.subject && figureLike(x.subject, L))) {
       // Above its own heads, not the film's lowest: a shot where the figure is small is not pushed up by one where
       // the figure grows to fill the frame.
       const heads = members.flatMap((x) => (x.subject ? [x.subject.top - g] : []));
@@ -928,6 +931,9 @@ function lowerThirdMarkup(scene: Scene, o: Overlay, id: string, tracks: Tracks, 
   return `<div class="lt side-${side}${place.clear ? "" : " covered"}" id="${id}" style="bottom:${fmt(place.bottom)}px;${x};max-width:${fmt(place.maxWidth)}px;background:${gradient}"><div class="lt-bar" id="${id}b"></div><div class="lt-text" id="${id}n" style="clip-path:${hidden}"><div class="lt-name" style="font-size:${fmt(nameSize)}px">${text}</div>${sub ? `<div class="lt-role">${sub}</div>` : ""}</div></div>`;
 }
 
+/** Seconds after it starts that the end card covers the whole frame: the picture under it is hidden from then on. */
+export const END_CARD_COVERED = 0.75;
+
 /**
  * The end card fills the frame: the product photo on one side, a panel in the accent colour on the other with the
  * name, the tagline and the call to action. On a phone the photo takes the top, the panel the rest (its text stays
@@ -940,7 +946,7 @@ function endCardMarkup(scene: Scene, o: Overlay & { imageSrc?: string }, id: str
   tracks.add(id, "opacity", s, 0, EASE.out).add(id, "opacity", s + 0.35, 1);
   if (o.imageSrc) tracks.add(`${id}i`, "transform", s, "scale(1.06)", EASE.linear).add(`${id}i`, "transform", o.end + 0.5, "scale(1)");
   const hidden = fromBelow ? "inset(100% 0% 0% 0%)" : "inset(0% 0% 0% 100%)";
-  tracks.add(`${id}p`, "clip-path", s + 0.1, hidden, EASE.outStrong).add(`${id}p`, "clip-path", s + 0.75, "inset(0% 0% 0% 0%)");
+  tracks.add(`${id}p`, "clip-path", s + 0.1, hidden, EASE.outStrong).add(`${id}p`, "clip-path", s + END_CARD_COVERED, "inset(0% 0% 0% 0%)");
   tracks.add(`${id}t`, "clip-path", s + 0.45, "inset(100% 0% 0% 0%)", EASE.outStrong).add(`${id}t`, "clip-path", s + 1.05, "inset(0% 0% 0% 0%)");
   tracks.add(`${id}t`, "transform", s + 0.45, `translateY(${fmt(1.5 * u)}px)`, EASE.outStrong).add(`${id}t`, "transform", s + 1.05, "translateY(0px)");
   tracks.add(`${id}u`, "opacity", s + 0.7, 0, EASE.out).add(`${id}u`, "opacity", s + 1.05, 1);

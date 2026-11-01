@@ -56,6 +56,7 @@ export function createMockClient(flavor: MockFlavor = "dev"): NightshiftClient {
     exportVideo: (pid, body) => call(() => engine.exportVideo(pid, body)),
     listJobs: () => call(() => engine.listJobs(), 40),
     cancelJob: (jid) => call(() => engine.cancelJob(jid)),
+    setJobMode: (jid, mode) => call(() => engine.setJobMode(jid, mode)),
     assetUrl: (pid, assetId) => engine.assetUrl(pid, assetId),
     events: (onEvent, onConnection) => engine.subscribe(onEvent, onConnection),
   };

@@ -1,6 +1,6 @@
-/* ---------- Buttons: pills. 30px regular, 26px small, 40px large. Banana for the main action, amber for the night. ---------- */
+/* ---------- Buttons: soft rectangles. 32px regular, 28px small, 40px large. Banana for the main action, amber for the night. ---------- */
 .btn {
-  --btn-h: 30px;
+  --btn-h: 32px;
   --btn-px: 14px;
   position: relative;
   display: inline-flex;
@@ -9,7 +9,7 @@
   gap: 6px;
   height: var(--btn-h);
   padding: 0 var(--btn-px);
-  border-radius: var(--r-pill);
+  border-radius: var(--r-s);
   font-size: var(--fs-body);
   font-weight: 500;
   line-height: 1;
@@ -37,30 +37,31 @@
 .btn:disabled {
   opacity: 0.4;
 }
-/* Every button shows the focus ring, whatever shadow its variant has. Pills stay pills when focused. */
+/* Every button shows the focus ring, whatever shadow its variant has, and keeps its own corners. */
 .btn:focus-visible {
-  border-radius: var(--r-pill);
   box-shadow: var(--focus);
 }
 .btn svg {
-  width: 15px;
-  height: 15px;
+  width: 16px;
+  height: 16px;
   flex: none;
-  stroke-width: 2;
+  stroke-width: 1.75;
 }
 .btn--s {
-  --btn-h: 26px;
+  --btn-h: 28px;
   --btn-px: 11px;
+  border-radius: 7px;
   font-size: var(--fs-small);
 }
 .btn--s svg {
-  width: 13px;
-  height: 13px;
+  width: 14px;
+  height: 14px;
 }
 .btn--l {
   --btn-h: 40px;
-  --btn-px: 22px;
-  font-size: var(--fs-read);
+  --btn-px: 16px;
+  border-radius: var(--r-control);
+  font-size: var(--fs-ui);
 }
 .btn--primary {
   background: var(--banana);
@@ -83,7 +84,7 @@
 .btn--night:disabled:not([aria-busy="true"]) {
   opacity: 1;
   background: var(--press);
-  color: var(--text-4);
+  color: var(--text-3);
   border-color: transparent;
   box-shadow: none;
 }
@@ -132,7 +133,7 @@
   width: var(--btn-h);
 }
 .btn--toolbar {
-  --btn-h: 30px;
+  --btn-h: 32px;
   --btn-px: 9px;
   background: transparent;
   border-color: transparent;
@@ -144,9 +145,9 @@
   color: var(--text);
 }
 .btn--toolbar svg {
-  width: 17px;
-  height: 17px;
-  stroke-width: 1.8;
+  width: 18px;
+  height: 18px;
+  stroke-width: 1.75;
 }
 .btn--toolbar[aria-pressed="true"],
 .btn--toolbar[aria-expanded="true"] {
@@ -197,7 +198,7 @@
 }
 .input::placeholder,
 .textarea::placeholder {
-  color: var(--text-4);
+  color: var(--text-3);
 }
 .input:focus,
 .textarea:focus,
@@ -225,6 +226,13 @@
   background-position: right 10px center;
   cursor: default;
 }
+/* The big field of a form's head (a project's name): 44px, rounder, the type a step up. */
+.input--l {
+  min-height: 44px;
+  padding: 0 14px;
+  border-radius: 11px;
+  font-size: var(--fs-ui);
+}
 .input--inline {
   background: transparent;
   border-color: transparent;
@@ -239,16 +247,17 @@
   display: inline-flex;
   padding: 3px;
   background: var(--seg-track);
-  border-radius: var(--r-pill);
-  gap: 0;
+  border: 1px solid var(--seg-line);
+  border-radius: var(--r-control);
+  gap: 2px;
   position: relative;
 }
 /* A label that cannot fit wraps inside its option, which grows, instead of spilling out of the pill. */
 .seg__opt {
   min-height: 26px;
-  padding: 2px 13px;
+  padding: 2px 12px;
   text-align: center;
-  border-radius: var(--r-pill);
+  border-radius: 7px;
   font-size: var(--fs-body);
   font-weight: 500;
   color: var(--text-2);
@@ -270,7 +279,6 @@
   box-shadow: var(--seg-knob-shadow);
 }
 .seg__opt:focus-visible {
-  border-radius: var(--r-pill);
   box-shadow: var(--focus);
 }
 .seg__opt:disabled {
@@ -280,14 +288,24 @@
   width: 14px;
   height: 14px;
 }
+.seg--s {
+  border-radius: 9px;
+}
 .seg--s .seg__opt {
   min-height: 22px;
   padding: 2px 10px;
+  border-radius: 6px;
   font-size: var(--fs-small);
 }
+.seg--l {
+  border-radius: 11px;
+}
 .seg--l .seg__opt {
-  min-height: 32px;
-  padding: 2px 16px;
+  min-height: 36px;
+  padding: 2px 12px;
+  border-radius: var(--r-s);
+  font-size: var(--fs-ui);
+  gap: 8px;
 }
 
 /* ---------- Tags ---------- */
@@ -299,7 +317,7 @@
   padding: 0 8px;
   border-radius: var(--r-pill);
   font-size: var(--fs-micro);
-  font-weight: 600;
+  font-weight: 500;
   line-height: 1;
   color: var(--text-2);
   background: var(--hover);
@@ -314,9 +332,17 @@
   color: var(--text-2);
   background: var(--select);
 }
+/* The night's tag carries the lamp: the one amber dot that marks a final or work that finishes overnight. */
 .tag--night {
   color: var(--amber);
   background: var(--amber-soft);
+}
+.tag--night::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--amber-fill);
 }
 .tag--ok {
   color: var(--ok);
@@ -335,12 +361,33 @@
   box-shadow: inset 0 0 0 1px var(--line-strong);
 }
 .tag--onmedia {
-  background: rgba(0, 0, 0, 0.6);
-  color: #fff;
+  background: rgba(9, 9, 12, 0.72);
+  color: #edebe6;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.06);
   backdrop-filter: blur(8px);
 }
 .tag--onmedia.tag--night {
   color: #ffc56e;
+}
+/* On a picture the tone is a small dot, so the words stay white and readable on any image. */
+.tag--onmedia:is(.tag--ok, .tag--night, .tag--bad, .tag--accent)::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+.tag--onmedia.tag--ok {
+  color: #edebe6;
+}
+.tag--onmedia.tag--ok::before {
+  background: #5bd68a;
+}
+.tag--onmedia.tag--accent::before {
+  background: #f4d35e;
+}
+.tag--onmedia.tag--bad::before {
+  background: #ff6b5b;
 }
 
 /* ---------- Progress ---------- */
@@ -379,6 +426,48 @@
   }
 }
 
+/* ---------- The moon: work under way, waxing from new to full ---------- */
+.moon {
+  flex: none;
+  display: block;
+  color: var(--moon);
+}
+.moon__disc {
+  fill: var(--moon-dim);
+}
+.moon__lit {
+  fill: currentColor;
+}
+.moon--night {
+  color: var(--amber-fill);
+}
+.moon--night .moon__disc {
+  fill: var(--amber-soft);
+}
+
+/* An empty night in line art (ui/NightHorizon.tsx). */
+.night-horizon {
+  display: block;
+  width: 120px;
+  height: 56px;
+}
+.night-horizon__line {
+  stroke: var(--line-strong);
+  stroke-width: 1;
+}
+.night-horizon__path {
+  fill: none;
+  stroke: var(--line-strong);
+  stroke-width: 1;
+  stroke-dasharray: 2 4;
+}
+.night-horizon__moon {
+  fill: none;
+  stroke: var(--moon);
+  stroke-width: 1.25;
+  stroke-linejoin: round;
+}
+
 /* ---------- Status dot ---------- */
 .pulse {
   width: 7px;
@@ -405,6 +494,13 @@
   background: var(--bad);
   animation: none;
 }
+/* Waiting, not working: the dot keeps its color and stops. */
+.pulse--still {
+  animation: none;
+}
+.toast__dot.pulse {
+  animation: none;
+}
 @keyframes pulse {
   0% {
     box-shadow: 0 0 0 0 rgba(var(--pulse-rgb), 0.32);
@@ -417,18 +513,31 @@
   }
 }
 
+/* The loader: the mark's crescent going round its unlit disc. It takes the color of the words around it in a button. */
 .spin {
+  position: relative;
+  flex: none;
   width: 14px;
   height: 14px;
   border-radius: 50%;
-  border: 2px solid var(--track);
-  border-top-color: var(--text-2);
-  animation: spin 0.8s linear infinite;
+  color: var(--text-2);
+  background: color-mix(in srgb, currentColor 16%, transparent);
 }
-.btn--primary .spin,
-.btn--night .spin {
-  border-color: color-mix(in srgb, currentColor 30%, transparent);
-  border-top-color: currentColor;
+.spin::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: currentColor;
+  -webkit-mask: var(--crescent) center / contain no-repeat;
+  mask: var(--crescent) center / contain no-repeat;
+  animation: spin 1s linear infinite;
+}
+.spin--l {
+  width: 20px;
+  height: 20px;
+}
+.btn .spin {
+  color: inherit;
 }
 @keyframes spin {
   to {
@@ -531,6 +640,25 @@
 .switch input:checked + .switch__track::after {
   transform: translateX(12px);
 }
+/* On, the knob carries the mark's crescent: it comes up once the knob has arrived and goes the moment it leaves. */
+.switch__track::before {
+  content: "";
+  position: absolute;
+  z-index: 1;
+  top: 5px;
+  left: 17px;
+  width: 8px;
+  height: 8px;
+  background: var(--on-banana);
+  -webkit-mask: var(--crescent) center / contain no-repeat;
+  mask: var(--crescent) center / contain no-repeat;
+  opacity: 0;
+  transition: opacity 80ms linear;
+}
+.switch input:checked + .switch__track::before {
+  opacity: 1;
+  transition: opacity var(--t-fast) var(--ease-out) 90ms;
+}
 .switch input:focus-visible + .switch__track {
   box-shadow: var(--focus);
 }
@@ -594,8 +722,8 @@
   font-family: var(--font-display);
   font-size: 22px;
   line-height: 28px;
-  font-weight: 400;
-  letter-spacing: -0.01em;
+  font-weight: var(--fw-display);
+  letter-spacing: -0.015em;
   text-wrap: balance;
 }
 .dialog__text {
@@ -605,6 +733,12 @@
 }
 .dialog__title + .dialog__text {
   margin-top: -4px;
+}
+/* A sheet whose body is a form keeps the body's rhythm. */
+.dialog__form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 .dialog__actions {
   display: flex;
@@ -701,6 +835,18 @@
 .toast__dot {
   margin-top: 6px;
 }
+/* A toast with a picture to it (the mark on a render that is ready) centres its row on the picture. */
+.toast--icon {
+  align-items: center;
+  padding-left: 12px;
+}
+.toast__icon {
+  display: flex;
+  flex: none;
+}
+.toast__action {
+  flex: none;
+}
 .toast__title {
   font-weight: 500;
 }
@@ -711,17 +857,29 @@
 }
 
 /* ---------- Kbd ---------- */
+/* A key: its label in mono on a hairline, quiet beside what it does (⌘K, Esc). */
 .kbd {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 19px;
   padding: 0 5px;
-  min-width: 18px;
-  text-align: center;
-  border-radius: 4px;
+  min-width: 19px;
+  border-radius: 5px;
   background: var(--kbd-bg);
-  box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.12);
+  border: 1px solid var(--kbd-line);
+  font-family: var(--font-mono);
   font-size: var(--fs-micro);
-  font-family: inherit;
-  color: var(--text-2);
+  font-weight: 400;
+  line-height: 1;
+  color: var(--text-3);
+  white-space: nowrap;
+}
+/* A key's label with no frame, at the end of a row (⌘N). */
+.kbd--bare {
+  border: 0;
+  min-width: 0;
+  padding: 0;
 }
 
 /* ---------- Empty states ---------- */
@@ -738,15 +896,18 @@
 .empty__icon {
   width: 36px;
   height: 36px;
-  color: var(--text-4);
-  stroke-width: 1.4;
+  color: var(--text-3);
+  stroke-width: 1.75;
   margin-bottom: 6px;
+}
+.empty__art {
+  margin-bottom: 8px;
 }
 .empty__title {
   font-family: var(--font-display);
   font-size: var(--fs-title-3);
   line-height: var(--lh-title-3);
-  font-weight: 400;
+  font-weight: var(--fw-display);
   letter-spacing: -0.01em;
 }
 .empty__text {
@@ -754,6 +915,35 @@
 }
 .empty .btn {
   margin-top: 8px;
+}
+
+/*
+ * A side panel that scrolls: its foot fades while there is more below, so a control cut at the fold reads as "scroll
+ * for more", not as broken. The fade goes as the end comes into view. A panel that fits, or a browser without scroll
+ * timelines, shows no fade at all.
+ */
+@property --scroll-fade {
+  syntax: "<length>";
+  inherits: false;
+  initial-value: 0px;
+}
+.scroll-fade {
+  mask-image: linear-gradient(to bottom, #000 calc(100% - var(--scroll-fade)), transparent);
+}
+@supports (animation-timeline: scroll()) {
+  .scroll-fade {
+    animation: scroll-fade-end linear both;
+    animation-timeline: scroll(self);
+    animation-range: 80% 100%;
+  }
+}
+@keyframes scroll-fade-end {
+  from {
+    --scroll-fade: 28px;
+  }
+  to {
+    --scroll-fade: 0px;
+  }
 }
 
 /* ---------- Notice ---------- */
@@ -788,7 +978,7 @@
   color: var(--amber);
 }
 .notice__title {
-  font-weight: 600;
+  font-weight: 500;
 }
 .notice__text {
   color: var(--text-2);
@@ -849,7 +1039,7 @@
 .group__head {
   font-size: var(--fs-small);
   line-height: var(--lh-small);
-  font-weight: 600;
+  font-weight: 500;
   color: var(--text-3);
   padding: 0 4px 8px;
 }
@@ -864,4 +1054,48 @@
   gap: 14px;
   padding: 10px 0;
   border-bottom: 1px solid var(--line);
+}
+
+/*
+ * Corner marks: a viewfinder's four corners on an empty frame (the New project card, the Queue's free GPU). Two are
+ * drawn on the element and two on its mirrored ::after. `--corners-inset` sets how far in they sit; both it and
+ * `--corners-color` ease when they change.
+ */
+@property --corners-color {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #3a3d4a;
+}
+@property --corners-inset {
+  syntax: "<length>";
+  inherits: false;
+  initial-value: 12px;
+}
+.corners,
+.corners::after {
+  position: absolute;
+  pointer-events: none;
+  --len: 14px;
+  background:
+    linear-gradient(var(--corners-color), var(--corners-color)) left top / var(--len) 1.5px,
+    linear-gradient(var(--corners-color), var(--corners-color)) left top / 1.5px var(--len),
+    linear-gradient(var(--corners-color), var(--corners-color)) right bottom / var(--len) 1.5px,
+    linear-gradient(var(--corners-color), var(--corners-color)) right bottom / 1.5px var(--len);
+  background-repeat: no-repeat;
+}
+.corners {
+  inset: var(--corners-inset);
+  transition:
+    --corners-inset var(--t-med) var(--ease),
+    --corners-color var(--t-med) var(--ease);
+}
+.corners::after {
+  content: "";
+  inset: 0;
+  transform: scaleX(-1);
+}
+@media (prefers-reduced-motion: reduce) {
+  .corners {
+    transition: none;
+  }
 }

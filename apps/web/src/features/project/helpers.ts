@@ -53,12 +53,41 @@ export function coverFor(p: Project): Asset | undefined {
 }
 
 /**
+ * The picture of what a job makes or works on, for a queue row: a still it drew, else the still its take starts from
+ * (a final's draft, a draft's still), else its shot's best picture; a film's export shows the project's cover. Stills
+ * come first, as a row of them loads lighter than a row of videos. Undefined for work without a picture (a song).
+ */
+export function jobPicture(p: Project, j: Pick<Job, "id" | "status" | "step" | "shotId" | "outputAssetIds">): Asset | undefined {
+  const visual = (a: Asset | undefined) => (a && (a.kind === "image" || a.kind === "video") ? a : undefined);
+  const out = j.status === "done" ? j.outputAssetIds.map((id) => assetById(p, id)) : [];
+  const drawn = out.find((a) => a?.kind === "image");
+  if (drawn) return drawn;
+  if (j.step === "export" && !j.shotId) return coverFor(p);
+  const take = p.takes.find((t) => t.jobId === j.id);
+  const parent = takeById(p, take?.parentTakeId);
+  const shot = j.shotId ? p.shots.find((s) => s.id === j.shotId) : undefined;
+  const still = visual(assetById(p, take?.imageAssetId)) ?? visual(assetById(p, parent?.imageAssetId)) ?? visual(assetById(p, shot?.stillAssetId));
+  if (still) return still;
+  return visual(out.find((a) => a?.kind === "video")) ?? (shot ? bestAssetFor(p, shot)?.asset : undefined);
+}
+
+/**
  * How long the film runs: its cut, which the export renders exactly, once the engine has made one. Before that, the
  * shots added up. Dissolves overlap the shots, so three 2 s drafts make a 5 s film, not a 6 s one.
  */
 export function totalDuration(p: Project): number {
   if (p.timeline?.clips.length) return timelineDuration(p.timeline);
   return timelineShots(p).reduce((s, x) => s + x.durationSec, 0);
+}
+
+/**
+ * How a picture fills a frame of the given shape (width over height): edge to edge when its own shape is close, else
+ * whole on the dark frame. Cut to a wide card, a tall picture loses the heads at its top.
+ */
+export function fitFor(asset: Pick<Asset, "width" | "height">, frame: number): "cover" | "contain" {
+  if (!asset.width || !asset.height) return "cover";
+  const r = asset.width / asset.height / frame;
+  return r > 0.72 && r < 1.39 ? "cover" : "contain";
 }
 
 export function frameClass(aspect: Aspect): string {
@@ -104,19 +133,23 @@ export function lastFailed(jobs: Job[], shotId: string, steps?: Job["step"][]): 
   return latest?.status === "failed" ? latest : undefined;
 }
 
-/** Where a project is, for the home card and the toolbar: its running work, else how far its timeline shots are. */
-export function projectStage(p: Project, jobs: Job[]): { label: string; tone?: "accent" | "night" | "ok" | "bad" } {
+/**
+ * Where a project is, for the home card and the toolbar: its running work, else how far its timeline shots are. While
+ * the GPU is away (`gpuAway`), its GPU work only waits, and says so instead of "Making".
+ */
+export function projectStage(p: Project, jobs: Job[], gpuAway = false): { label: string; tone?: "accent" | "night" | "ok" | "bad"; ready?: true } {
   const active = jobs.filter((j) => j.projectId === p.id && isActive(j));
   const overnight = active.filter((j) => j.mode === "overnight");
   if (overnight.length) return { label: `${overnight.length} ${overnight.length === 1 ? "final" : "finals"} tonight`, tone: "night" };
   const running = active.find((j) => j.status === "running");
+  if (running && gpuAway && isGpuJob(running)) return { label: "Waiting for the GPU" };
   if (running) return { label: running.analysis ? jobLabel(running) : running.step === "text" ? (p.template === "camera_move" || p.template === "vfx_effect" ? "Preparing photo" : p.template === "what_if" ? "Writing the story" : "Writing shots") : `Making ${stepLabel[running.step].toLowerCase()}`, tone: "accent" };
   if (active.length) return { label: `${active.length} queued`, tone: "accent" };
   if (!p.shots.length && !p.assets.some((a) => isBoardAsset(p, a))) return { label: "Empty" };
   const cut = timelineShots(p);
   if (!cut.length) return { label: "Nothing on the timeline" };
   const finals = cut.filter((s) => s.chosenFinalId).length;
-  if (finals === cut.length) return { label: "Ready to export", tone: "ok" };
+  if (finals === cut.length) return { label: "Ready to export", tone: "ok", ready: true };
   if (finals) return { label: `${finals} of ${cut.length} finals` };
   const drafts = cut.filter((s) => s.chosenDraftId).length;
   if (drafts === cut.length) return { label: "Drafts picked" };
@@ -124,6 +157,13 @@ export function projectStage(p: Project, jobs: Job[]): { label: string; tone?: "
   const stills = cut.filter((s) => s.stillAssetId).length;
   if (stills === cut.length) return { label: "Stills ready" };
   return { label: `${stills} of ${cut.length} stills` };
+}
+
+/** Where a project stands on Projects' filter: ready to export (every shot in the cut has its final), else in progress. */
+export type ProjectProgress = "ready" | "progress";
+
+export function projectProgress(p: Project, jobs: Job[], gpuAway = false): ProjectProgress {
+  return projectStage(p, jobs, gpuAway).ready ? "ready" : "progress";
 }
 
 /**

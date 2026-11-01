@@ -1,110 +1,371 @@
+/*
+ * Projects: every project as a card, its picture on top and a footer with its name, newest first. The first card is
+ * New project, an empty frame, with the presets people start with most. A search in the top bar and a filter narrow
+ * the grid.
+ */
+/* One column for the head, the notes and the cards, so their edges line up on a wide screen. */
+.page--home > * {
+  max-width: 1280px;
+}
+.home-filter .seg__opt {
+  min-height: 32px;
+  gap: 7px;
+}
+.home-filter__count {
+  font-family: var(--font-mono);
+  font-size: var(--fs-micro);
+  font-weight: 400;
+  color: var(--text-3);
+  font-variant-numeric: tabular-nums;
+}
+/* The sticky head paints over whatever slides under it. Part of its gap above the grid sits outside it, so a card's
+   focus ring is never cut by it. */
+.page--home .page__head {
+  padding-bottom: 22px;
+  margin-bottom: 6px;
+}
 .home-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(236px, 1fr));
-  gap: 22px 18px;
-  padding-top: 4px;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
 }
-.pcard {
+/* A narrow window (the app's smallest is 920 wide) keeps two columns, so no card, the empty frame least of all,
+   takes the whole width. */
+@container page (max-width: 620px) {
+  .home-grid {
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 232px), 1fr));
+    gap: 16px;
+  }
+}
+.home-none {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  min-width: 0;
-  text-align: left;
-  border-radius: var(--r-m);
+  align-items: flex-start;
+  gap: 12px;
+  padding: 8px 0;
+  color: var(--text-2);
 }
-.pcard__frame {
-  width: 100%;
-  aspect-ratio: 16 / 10;
+
+/* A project card: the picture, then the footer. Under the pointer its edge brightens and its cover plays; the card
+   and its picture hold still, so nothing slides under the page head or out of the frame. The link and the menu share
+   the card's rows, so a card stretched by its row keeps its menu beside its name. */
+.pcard {
+  position: relative;
+  min-width: 0;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  border-radius: var(--r-card);
+  border: 1px solid var(--line);
+  background: var(--raised);
+  box-shadow: var(--card-shadow);
+  transition: border-color var(--t-fast) var(--ease);
+}
+.pcard:hover {
+  border-color: var(--line-hover);
+}
+.pcard:has(.pcard__link:focus-visible) {
+  box-shadow: var(--focus);
+}
+.pcard__link {
+  grid-row: 1 / -1;
+  grid-column: 1;
+  display: grid;
+  grid-template-rows: subgrid;
+  min-width: 0;
+  color: var(--text);
+}
+.pcard__link:focus-visible {
+  box-shadow: none;
+}
+.pcard__media {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border-radius: calc(var(--r-card) - 1px) calc(var(--r-card) - 1px) 0 0;
+  background: var(--media);
+  isolation: isolate;
+}
+.pcard__picture {
+  position: absolute;
+  inset: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--inset);
-  border-radius: var(--r-s);
-  overflow: hidden;
-  position: relative;
-  box-shadow: inset 0 0 0 1px var(--line);
-  transition:
-    box-shadow 180ms var(--ease-out),
-    transform 180ms var(--ease-out);
 }
-/* The same lift as a card on a board. */
-.pcard:hover .pcard__frame {
-  transform: translateY(-2px);
-  box-shadow:
-    inset 0 0 0 1px var(--line-strong),
-    0 1px 2px rgba(24, 24, 27, 0.06),
-    0 10px 24px -10px rgba(24, 24, 27, 0.32);
-}
-:root[data-theme="dark"] .pcard:hover .pcard__frame {
-  box-shadow:
-    inset 0 0 0 1px var(--line-strong),
-    0 12px 28px -12px rgba(0, 0, 0, 0.9);
-}
-.pcard--new:hover .pcard__frame {
-  transform: none;
-  box-shadow: inset 0 0 0 1px var(--line-strong);
-}
-@media (prefers-reduced-motion: reduce) {
-  .pcard:hover .pcard__frame {
-    transform: none;
-  }
-}
-.pcard:focus-visible {
-  box-shadow: none;
-}
-.pcard:focus-visible .pcard__frame {
-  box-shadow: var(--focus);
-}
-.pcard__frame .frame {
+/* A cover close to the card's shape fills it and keeps its top, where faces are. A tall or square one shows whole on
+   the dark frame (see fitFor). */
+.pcard__picture .media {
   position: absolute;
   inset: 0;
-  aspect-ratio: auto;
+  object-position: 50% 22%;
+}
+/* A tall project: three of its shots side by side, a hairline of the frame between them. */
+.pcard__picture--three {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 2px;
+  background: var(--media);
+}
+.pcard__picture--three .media {
+  position: relative;
+  inset: auto;
   width: 100%;
   height: 100%;
-  border-radius: 0;
-  box-shadow: none;
+  object-position: 50% 30%;
 }
-.pcard__frame .frame--empty {
-  background: var(--inset);
+/* A tall cover with too few shots for three: whole, over a blurred, darkened copy of its picture. */
+.pcard__backdrop {
+  position: absolute;
+  inset: -12%;
+  width: 124%;
+  height: 124%;
+  object-fit: cover;
+  max-width: none;
+  filter: blur(22px) saturate(1.15) brightness(0.5);
+  pointer-events: none;
+}
+.pcard__backdrop + .media {
+  background: transparent;
+}
+.pcard--empty .pcard__media {
+  background: var(--media-empty);
+}
+.pcard--empty .pcard__picture {
+  color: var(--text-3);
+}
+.pcard__stage {
+  position: absolute;
+  left: 10px;
+  top: 10px;
+  z-index: 1;
+}
+.pcard__stage .tag {
+  height: 24px;
+  padding: 0 9px;
+  gap: 6px;
+  font-size: 11.5px;
+}
+/* Every stage chip carries a dot; a stage with no tone of its own takes a quiet one. */
+.pcard__stage .tag--onmedia:not(.tag--ok, .tag--night, .tag--bad, .tag--accent)::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(237, 235, 230, 0.5);
+}
+.pcard__length {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  z-index: 1;
+  padding: 2px 7px;
+  border-radius: 6px;
+  background: rgba(9, 9, 12, 0.72);
+  color: #edebe6;
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  line-height: 15px;
+  font-variant-numeric: tabular-nums;
 }
 .pcard__text {
-  padding: 0 2px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+  padding: 14px 54px 14px 16px;
 }
 .pcard__name {
+  font-size: 14.5px;
+  line-height: 18px;
   font-weight: 500;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 .pcard__meta {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 8px;
+  font-size: 12.5px;
+  line-height: 16px;
+  color: var(--text-2);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+/* The card's menu sits in the footer, beside the name, outside the card's link. */
+.pcard__more {
+  position: relative;
+  grid-row: 2;
+  grid-column: 1;
+  justify-self: end;
+  align-self: center;
+  margin-right: 14px;
+}
+.pcard__more > .btn {
   color: var(--text-3);
-  font-size: var(--fs-small);
-  line-height: var(--lh-small);
 }
-.pcard__tag {
-  padding: 0 2px;
+/* A card whose menu is open sits above its neighbours, so the menu opens over the row below. */
+.pcard:has(.pcard__more > .btn[aria-expanded="true"]) {
+  z-index: 3;
 }
-.pcard--new .pcard__frame {
-  background: var(--inset);
-  box-shadow: inset 0 0 0 1px var(--line);
-  color: var(--text-3);
-  flex-direction: column;
-  gap: 6px;
-}
-.pcard--new:hover .pcard__frame {
+.pcard__more > .btn[aria-expanded="true"] {
   background: var(--hover);
   color: var(--text);
 }
-.pcard--new svg {
-  width: 20px;
-  height: 20px;
+
+/* New project: a card the shape of a project's, its picture an empty frame on the dark stage with the banana plus, and
+   under it the name, its keys and three presets to start from. The corners draw in a little under the pointer, like a
+   viewfinder finding its frame. */
+.pnew {
+  position: relative;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--r-card);
+  border: 1px solid var(--line);
+  background: var(--raised);
+  box-shadow: var(--card-shadow);
+  transition: border-color var(--t-fast) var(--ease);
+}
+.pnew:hover {
+  border-color: var(--line-hover);
+}
+.pnew:has(.pnew__link:focus-visible) {
+  box-shadow: var(--focus);
+}
+.pnew__link {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  color: var(--text);
+}
+/* The whole card is the link; the presets sit above it. */
+.pnew__link::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+}
+.pnew__link:focus-visible {
+  box-shadow: none;
+}
+.pnew__stage {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: calc(var(--r-card) - 1px) calc(var(--r-card) - 1px) 0 0;
+  background: var(--media);
+}
+.pnew__stage > .corners {
+  --corners-inset: 14px;
+}
+.pnew:hover .pnew__stage > .corners {
+  --corners-inset: 20px;
+  --corners-color: #5e616c;
+}
+.pnew__plus {
+  position: relative;
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background: var(--banana);
+  color: var(--on-banana);
+  transition:
+    background-color var(--t-fast) var(--ease),
+    transform var(--t-fast) var(--ease);
+}
+.pnew:hover .pnew__plus {
+  background: var(--banana-hover);
+}
+.pnew__link:active .pnew__plus {
+  transform: scale(0.95);
+}
+.pnew__plus svg {
+  width: 18px;
+  height: 18px;
+  stroke-width: 2.2;
+}
+/* The footer has the project cards' rows: the name, then the presets in the place of a card's size and age. */
+.pnew__text {
+  min-width: 0;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 16px 0;
+}
+.pnew__name {
+  flex: 1;
+  min-width: 0;
+  font-size: 14.5px;
+  line-height: 18px;
+  font-weight: 500;
+}
+.pnew__keys {
+  flex: none;
+  line-height: 18px;
+}
+.pnew__starts {
+  position: relative;
+  z-index: 1;
+  align-self: flex-start;
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: 14px;
+  row-gap: 4px;
+  margin: 4px 16px 14px;
+}
+.pnew__start {
+  font-size: 12.5px;
+  line-height: 16px;
+  color: var(--text-2);
+  text-decoration: underline;
+  text-decoration-color: var(--line-strong);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  white-space: nowrap;
+  transition:
+    color var(--t-fast) var(--ease),
+    text-decoration-color var(--t-fast) var(--ease);
+}
+.pnew__start:hover {
+  color: var(--text);
+  text-decoration-color: var(--text-3);
+}
+.pnew__start:focus-visible {
+  border-radius: 4px;
 }
 
-/* The demo's note: what is real and what is a placeholder, above the projects until dismissed. */
+@media (prefers-reduced-motion: reduce) {
+  .pnew__plus {
+    transition: none;
+  }
+}
+
+/* The demo's note: what is real and what is a placeholder, above the projects until dismissed. One band, its
+   buttons at the end. */
 .demo-note {
   margin-bottom: 20px;
+}
+.demo-note .notice {
+  align-items: center;
+  padding: 10px 10px 10px 14px;
+}
+.demo-note .notice > svg {
+  margin-top: 0;
+}
+.demo-note .notice > div {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  column-gap: 16px;
+  align-items: center;
+}
+.demo-note .notice__actions {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  margin-top: 0;
 }

@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import type { Project, StepId } from "@nightshift/contract";
+import { ownShot, type Project, type StepId } from "@nightshift/contract";
 import { useNavigate } from "react-router";
 import { useEngine, useProjectJobs } from "@/store/engine";
 import { Button, Field, Notice, Textarea, toast } from "@/ui/primitives";
@@ -9,9 +9,10 @@ import { failureText, isActive, jobStatusLine } from "@/features/project/helpers
 /** The first stage of an Effect project: the photo, the effect, and the subject line. Same shape as CameraShot. */
 export function EffectShot({ project }: { project: Project }) {
   const { updateProject, draft, client } = useEngine();
-  const jobs = useProjectJobs(project.id);
   const nav = useNavigate();
-  const shot = project.shots[0];
+  // The shot from the photo is the project's own shot. Cards made with the tools in Media, and their jobs, are not its.
+  const shot = ownShot(project);
+  const jobs = useProjectJobs(project.id).filter((j) => !j.shotId || j.shotId === shot?.id);
   const [prompt, setPrompt] = useState(shot?.prompt ?? String(project.brief.prompt ?? ""));
   const [saving, setSaving] = useState(false);
   const saves = useRef(Promise.resolve());
@@ -25,9 +26,9 @@ export function EffectShot({ project }: { project: Project }) {
     setSaving(true);
     const run = saves.current.then(async () => {
       const latest = await client.getProject(project.id);
-      const current = latest.shots[0];
+      const current = ownShot(latest);
       if (!current) return;
-      await updateProject(project.id, { brief: { ...latest.brief, prompt, ...(next ? { effect: next } : {}) }, shots: [{ ...current, prompt }] });
+      await updateProject(project.id, { brief: { ...latest.brief, prompt, ...(next ? { effect: next } : {}) }, shots: latest.shots.map((s) => (s.id === current.id ? { ...current, prompt } : s)) });
     }).catch((e) => { failed = true; toast({ title: "Couldn't save the shot", text: String(e), tone: "bad" }); });
     saves.current = run;
     await run;

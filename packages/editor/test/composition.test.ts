@@ -323,6 +323,15 @@ describe("keep-out: captions", () => {
     expect(place.offset).toBeCloseTo(1920 * 0.22, 6);
   });
 
+  it("keeps pinned captions on their own line over the subject, every shot alike, with a scrim (a micro drama's subtitles)", () => {
+    const s = portrait(defaultStyle("micro_drama"), [WALKER]);
+    const L = layoutFor(s);
+    const place = placeCaptions(s, L, metrics(78.8));
+    expect(place).toMatchObject({ anchor: "bottom", band: "lower" });
+    expect(place.offset).toBeCloseTo(1920 * 0.24, 6);
+    expect(place.lines.every((line) => line.band === "lower" && line.offset === place.offset)).toBe(true);
+  });
+
   it("goes just above the head, growing upwards, when a centred figure reaches the controls", () => {
     const s = portrait(defaultStyle("talking_intro"), [WALKER]);
     const L = layoutFor(s);

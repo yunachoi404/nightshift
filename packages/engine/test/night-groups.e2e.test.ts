@@ -20,7 +20,8 @@ describe.skipIf(!hasFfmpeg)("finals for the night through the API", { timeout: 1
   let api: Api;
 
   beforeAll(async () => {
-    engine = await startEngine({ port: 0, dataDir: mkdtempSync(join(tmpdir(), "ns-night-groups-")), mock: true, mockSpeed: 0, recipesDir: defaultRecipesDir(), log: () => undefined });
+    // Finals for the night start right after the drafts here; the hold while the user works is tested in queue.test.ts.
+    engine = await startEngine({ port: 0, dataDir: mkdtempSync(join(tmpdir(), "ns-night-groups-")), mock: true, mockSpeed: 0, recipesDir: defaultRecipesDir(), holdForUserMs: 0, log: () => undefined });
     api = new Api(engine.url);
     await api.install("unified-128-cuda");
   });
@@ -50,6 +51,16 @@ describe.skipIf(!hasFfmpeg)("finals for the night through the API", { timeout: 1
       [remaster.id, "Runs when overnight mode is on"],
     ]);
 
+    // A final queued for tonight moves to now and runs while the others wait. Only a queued final moves.
+    const extra = await final("same_take");
+    expect(extra.nightGroup).toBe(same1.nightGroup);
+    const moved = await api.call("POST", `/api/jobs/${extra.id}/mode`, JobSchema, { mode: "now" });
+    expect([moved.mode, moved.nightGroup]).toEqual(["now", undefined]);
+    expect((await api.wait(extra.id)).status).toBe("done");
+    expect((await queued()).map((j) => j.id)).toEqual([same1.id, same2.id, remaster.id]);
+    expect((await api.refused("POST", `/api/jobs/${extra.id}/mode`, { mode: "overnight" })).status).toBe(409);
+    expect((await api.refused("POST", "/api/jobs/job_missing/mode", { mode: "now" })).status).toBe(404);
+
     // Overnight mode on with a window open all day: the LTX-2.5 finals run first, then the MiniMax H3 one.
     await api.call("PATCH", "/api/settings", SettingsSchema, { overnight: { enabled: true, startAt: "00:00", endAt: "00:00" } });
     try {
@@ -57,7 +68,7 @@ describe.skipIf(!hasFfmpeg)("finals for the night through the API", { timeout: 1
       expect(done.map((j) => j.status)).toEqual(["done", "done", "done"]);
       // Finals run one at a time and each files its take when it is done, so the takes are in the order they ran.
       const finals = (await api.project(created.id)).takes.filter((t) => t.rung === "final").map((t) => t.jobId);
-      expect(finals).toEqual([same1.id, same2.id, remaster.id]);
+      expect(finals).toEqual([extra.id, same1.id, same2.id, remaster.id]);
     } finally {
       await api.call("PATCH", "/api/settings", SettingsSchema, { overnight: { enabled: false, startAt: "23:00", endAt: "07:00" } });
     }

@@ -29,7 +29,7 @@ export interface CreateProjectBody {
   brief: Record<string, unknown>;
 }
 
-export type ProjectPatch = Partial<Pick<Project, "name" | "shots" | "timeline" | "brief" | "aspect" | "references" | "boards" | "soundtrack">>;
+export type ProjectPatch = Partial<Pick<Project, "name" | "shots" | "timeline" | "brief" | "aspect" | "references" | "boards" | "soundtrack" | "shotList">>;
 
 export interface FinalBody {
   draftId: string;
@@ -111,6 +111,8 @@ export interface NightshiftClient {
   exportVideo(id: string, body: ExportRequest): Promise<Job>;
   listJobs(): Promise<Job[]>;
   cancelJob(id: string): Promise<Job>;
+  /** Moves a queued final between now and tonight. */
+  setJobMode(id: string, mode: Job["mode"]): Promise<Job>;
 
   /** URL the browser can load for an asset. Mock assets use a `mock:` scheme handled by `<Media>`. */
   assetUrl(projectId: string, assetId: string): string;

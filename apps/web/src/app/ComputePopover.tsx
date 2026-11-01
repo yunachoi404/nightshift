@@ -1,5 +1,5 @@
 import type { Job } from "@nightshift/contract";
-import { ArrowUpRight, Settings as SettingsIcon } from "lucide-react";
+import { ArrowRight, Settings as SettingsIcon } from "lucide-react";
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode, type RefObject } from "react";
 import { createPortal } from "react-dom";
 import { Link, useLocation } from "react-router";
@@ -7,7 +7,8 @@ import { useEngineState, useJobs } from "@/store/engine";
 import { isGpuJob, jobLabel, jobStage, jobStatusLine } from "@/features/project/helpers";
 import { clock, plural } from "@/lib/format";
 import { useNow } from "@/lib/useNow";
-import { useThisMachine } from "@/store/tier";
+import { insideWindow } from "@/lib/overnight";
+import { useHardware, useThisMachine } from "@/store/tier";
 import { cx } from "@/ui/primitives";
 
 /** Where work runs and what it is doing: the one reading the toolbar pill, the sidebar foot and the popover share. */
@@ -25,8 +26,12 @@ export function useCompute(): ComputeSummary {
   const { status, settings } = useEngineState();
   const jobs = useJobs();
   const here = useThisMachine();
+  const hw = useHardware();
   const remoteSettings = status?.mode === "remote" ? settings?.remote : null;
-  const where = remoteSettings ? (remoteSettings.name ?? remoteSettings.url.replace(/^https?:\/\//, "")) : status?.mode === "attach" ? "GPU proxy" : here.name;
+  // Attach mode runs next to the GPU it attaches to, so the engine's own graphics name it, like the Generate button.
+  const gpu = hw?.gpus[0];
+  const attached = gpu && gpu.vendor !== "none" && gpu.name ? gpu.name : "GPU proxy";
+  const where = remoteSettings ? (remoteSettings.name ?? remoteSettings.url.replace(/^https?:\/\//, "")) : status?.mode === "attach" ? attached : here.name;
   const running = jobs.find((j) => j.status === "running");
   const queued = jobs.filter((j) => j.status === "queued");
   const away = !!status && status.phase === "ready" && !status.comfyui.running && (!running || isGpuJob(running));
@@ -150,7 +155,7 @@ function ComputeDetail() {
       )}
 
       {night.length > 0 && (
-        <Section title={settings?.overnight.enabled ? `Tonight at ${clock(settings.overnight.startAt)}, ${night.length}` : `For tonight, ${night.length}`} night>
+        <Section title={tonightTitle(settings?.overnight, now, night.length)} night>
           {night.slice(0, SHOWN).map((j) => (
             <JobRow key={j.id} job={j} project={name(j)} />
           ))}
@@ -163,7 +168,7 @@ function ComputeDetail() {
       <div className="gpu-pop__foot">
         <Link to="/queue" className="btn btn--s gpu-pop__queue">
           Open the queue
-          <ArrowUpRight />
+          <ArrowRight />
         </Link>
         <Link to="/settings" className="btn btn--s btn--quiet gpu-pop__settings" title="Where renders run">
           <SettingsIcon />
@@ -194,4 +199,10 @@ function JobRow({ job, project, stage }: { job: Job; project?: string; stage?: s
       </span>
     </div>
   );
+}
+
+/** The heading of tonight's finals: when the night shift starts, or until when it runs while it is on. */
+function tonightTitle(night: { enabled: boolean; startAt: string; endAt: string } | undefined, now: number, count: number): string {
+  if (!night?.enabled) return `For tonight, ${count}`;
+  return insideWindow(night.startAt, night.endAt, now) ? `Tonight until ${clock(night.endAt)}, ${count}` : `Tonight at ${clock(night.startAt)}, ${count}`;
 }

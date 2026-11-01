@@ -216,6 +216,15 @@
       "latent": "draft.latent"
     }
   },
+  "31": {
+    "class_type": "LTXVSeparateAVLatent",
+    "inputs": {
+      "av_latent": [
+        "30",
+        0
+      ]
+    }
+  },
   "32": {
     "class_type": "LatentUpscaleModelLoader",
     "inputs": {
@@ -268,15 +277,6 @@
       "audio_latent": [
         "31",
         1
-      ]
-    }
-  },
-  "31": {
-    "class_type": "LTXVSeparateAVLatent",
-    "inputs": {
-      "av_latent": [
-        "30",
-        0
       ]
     }
   }

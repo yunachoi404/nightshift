@@ -3,17 +3,18 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="color-scheme" content="light dark" />
+    <meta name="color-scheme" content="dark light" />
     <title>Nightshift</title>
     <link rel="icon" type="image/svg+xml" href="%BASE_URL%favicon.svg" />
+    <link rel="apple-touch-icon" href="%BASE_URL%apple-touch-icon.png" />
     <script>
-      // Resolve the theme before the first paint so there is no flash: the saved choice, else the system.
+      // Resolve the theme before the first paint so there is no flash: the saved choice, else dark.
       (function () {
-        var theme = "light";
+        var theme = "dark";
         try {
           var saved = localStorage.getItem("nightshift.theme");
-          var dark = saved === "dark" || (saved !== "light" && window.matchMedia("(prefers-color-scheme: dark)").matches);
-          theme = dark ? "dark" : "light";
+          if (saved === "light") theme = "light";
+          else if (saved === "system") theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
         } catch (e) {}
         document.documentElement.dataset.theme = theme;
       })();

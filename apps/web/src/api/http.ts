@@ -78,6 +78,7 @@ export function createHttpClient(base: string): NightshiftClient {
     exportVideo: (id, body) => call("POST", `/api/projects/${id}/export`, body),
     listJobs: () => call("GET", "/api/jobs"),
     cancelJob: (id) => call("POST", `/api/jobs/${id}/cancel`),
+    setJobMode: (id, mode) => call("POST", `/api/jobs/${id}/mode`, { mode }),
     assetUrl: (projectId, assetId) => `${root}/api/projects/${projectId}/assets/${assetId}`,
     events: (onEvent, onConnection) => {
       const es = new EventSource(`${root}/api/events`);

@@ -90,6 +90,11 @@ export const TimelineStyleSchema = z.object({
     uppercase: z.boolean(),
     /** Longest caption line group, in characters, when captions are built from words. */
     maxChars: z.number().int().min(8).max(80),
+    /**
+     * Keep every caption on the look's own line, never moved off the subjects: a drama's subtitles stay put from shot
+     * to shot, where captions that dodge each close-up's face would jump between the top and the bottom.
+     */
+    pinned: z.boolean(),
   }),
   audio: z.object({
     /** Loudness of the finished mix (LUFS). -14 suits social platforms. */
@@ -122,7 +127,7 @@ const cinematic: TimelineStyle = {
   // 4 s shot. Set duration to 0 for hard cuts.
   transition: { kind: "dissolve", duration: 0.5, accent: "none", sectionFlash: false, head: 0.6, tail: 0.9 },
   beatPulse: 0,
-  captions: { enabled: true, look: "subtitle", position: "bottom", size: 1, uppercase: false, maxChars: 44 },
+  captions: { enabled: true, look: "subtitle", position: "bottom", size: 1, uppercase: false, maxChars: 44, pinned: false },
   audio: { targetLufs: -16, voiceLufs: -18, musicLufs: -18, bedLufs: -28, clipLufs: -22, duckDb: -10, musicFadeIn: 1, musicFadeOut: 2 },
 };
 
@@ -135,7 +140,7 @@ const musicVideo: TimelineStyle = {
   picture: { reframe: "crop", letterbox: null, vignette: 0.22, grain: 0.06, stillMotion: 0.12, videoMotion: 0.03 },
   transition: { kind: "dissolve", duration: 0, accent: "punch", sectionFlash: true, head: 0, tail: 1 },
   beatPulse: 0.025,
-  captions: { enabled: true, look: "kinetic", position: "middle", size: 1, uppercase: true, maxChars: 22 },
+  captions: { enabled: true, look: "kinetic", position: "middle", size: 1, uppercase: true, maxChars: 22, pinned: false },
   audio: { targetLufs: -14, voiceLufs: -16, musicLufs: -14, bedLufs: -24, clipLufs: -30, duckDb: -6, musicFadeIn: 0, musicFadeOut: 1.5 },
 };
 
@@ -148,7 +153,7 @@ const productAd: TimelineStyle = {
   picture: { reframe: "crop", letterbox: null, vignette: 0.15, grain: 0, stillMotion: 0.08, videoMotion: 0.04 },
   transition: { kind: "dissolve", duration: 0, accent: "punch", sectionFlash: false, head: 0, tail: 0.5 },
   beatPulse: 0,
-  captions: { enabled: true, look: "chip", position: "lower", size: 1, uppercase: false, maxChars: 26 },
+  captions: { enabled: true, look: "chip", position: "lower", size: 1, uppercase: false, maxChars: 26, pinned: false },
   audio: { targetLufs: -14, voiceLufs: -16, musicLufs: -16, bedLufs: -26, clipLufs: -34, duckDb: -8, musicFadeIn: 0, musicFadeOut: 1.2 },
 };
 
@@ -161,8 +166,22 @@ const talkingIntro: TimelineStyle = {
   picture: { reframe: "crop", letterbox: null, vignette: 0.2, grain: 0, stillMotion: 0.07, videoMotion: 0.02 },
   transition: { kind: "dissolve", duration: 0.4, accent: "none", sectionFlash: false, head: 0.5, tail: 0.8 },
   beatPulse: 0,
-  captions: { enabled: true, look: "karaoke", position: "lower", size: 1, uppercase: false, maxChars: 32 },
+  captions: { enabled: true, look: "karaoke", position: "lower", size: 1, uppercase: false, maxChars: 32, pinned: false },
   audio: { targetLufs: -14, voiceLufs: -16, musicLufs: -18, bedLufs: -28, clipLufs: -34, duckDb: -10, musicFadeIn: 0.5, musicFadeOut: 1.5 },
+};
+
+/**
+ * Micro drama: hard cuts, the characters' own voices up front (the shots' sound carries the dialogue), large film
+ * subtitles low in the picture, no title card. Drawn by the cinematic compositor, without its letterbox.
+ */
+const microDrama: TimelineStyle = {
+  ...cinematic,
+  palette: { ...cinematic.palette, text: "#FFFFFF" },
+  fonts: { display: "inter-display", body: "instrument-sans", captions: "inter-display" },
+  picture: { reframe: "crop", letterbox: null, vignette: 0.18, grain: 0, stillMotion: 0.05, videoMotion: 0 },
+  transition: { kind: "dissolve", duration: 0, accent: "none", sectionFlash: false, head: 0, tail: 0.6 },
+  captions: { enabled: true, look: "subtitle", position: "bottom", size: 1.45, uppercase: false, maxChars: 30, pinned: true },
+  audio: { ...cinematic.audio, targetLufs: -14, clipLufs: -16, musicLufs: -24, bedLufs: -30 },
 };
 
 const DEFAULTS: Record<TemplateId, TimelineStyle> = {
@@ -171,6 +190,7 @@ const DEFAULTS: Record<TemplateId, TimelineStyle> = {
   music_video: musicVideo,
   product_ad: productAd,
   talking_intro: talkingIntro,
+  micro_drama: microDrama,
   // Quick shots export one clean shot: the cinematic look without letterbox, titles or captions.
   camera_move: {
     ...cinematic,
@@ -210,7 +230,7 @@ export interface ResolvedStyle {
 export function resolveStyle(template: TemplateId, stored: Record<string, unknown> | undefined): ResolvedStyle {
   const overrides = isPlainObject(stored) ? structuredClone(stored) : {};
   // Quick-shot templates use the cinematic compositor with clean shot defaults.
-  if ((template === "camera_move" || template === "vfx_effect" || template === "what_if" || template === "blank") && overrides.look === template) delete overrides.look;
+  if ((template === "camera_move" || template === "vfx_effect" || template === "what_if" || template === "blank" || template === "micro_drama") && overrides.look === template) delete overrides.look;
   const lookParse = TimelineStyleSchema.shape.look.safeParse(overrides.look);
   const base = defaultStyle(lookParse.success ? lookParse.data : template);
   const warnings: string[] = [];
