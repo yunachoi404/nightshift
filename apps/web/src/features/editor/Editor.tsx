@@ -7,7 +7,7 @@ import { upscaleOnly, useInstalledTier } from "@/store/tier";
 import { Button, Notice, Segmented, Select, Switch, Tag, cx, toast } from "@/ui/primitives";
 import { Media } from "@/media/Media";
 import { Moon } from "@/ui/Moon";
-import { assetById, failureText, frameClass, isActive, jobStatusLine } from "@/features/project/helpers";
+import { assetById, failureText, frameClass, isActive, jobStatusLine, timelineShots } from "@/features/project/helpers";
 import { cutShots, isCanvasDrag, readDrag, shotHistory, shotLabel, shotWords } from "@/features/media/items";
 import { useNow } from "@/lib/useNow";
 import { noFileToast } from "@/store/demo";
@@ -401,16 +401,23 @@ function ProjectEditor({ project }: { project: Project }) {
   );
 }
 
-/** The shot under the playhead: its place in the cut, its words in full, the version the cut uses, and its length. */
+/**
+ * The shot under the playhead: its place among the cut's shots (as the project's header counts them; a shot that plays
+ * twice is one shot, and a clip of a shot outside the cut counts as a clip), its words in full, the version the cut
+ * uses, and its length.
+ */
 function ShotSection({ project, clip, index, count, media }: { project: Project; clip: Clip; index: number; count: number; media: string }) {
   const shot = project.shots.find((s) => s.id === clip.shotId);
+  const cut = timelineShots(project);
+  const place = cut.findIndex((s) => s.id === clip.shotId);
+  const [number, of] = place >= 0 ? [place + 1, cut.length] : [index + 1, count];
   const words = shot?.prompt.trim() || clip.label;
   const versions = shot ? shotHistory(project, shot).length : 0;
   return (
     <section className="insp insp--shot" aria-label="Shot">
       <div className="insp__head">
         <span className="insp__title">
-          Shot {index + 1} <span className="insp__of">of {count}</span>
+          Shot {number} <span className="insp__of">of {of}</span>
         </span>
         <span className="insp__len">{shortDuration(clip.dur)}</span>
       </div>

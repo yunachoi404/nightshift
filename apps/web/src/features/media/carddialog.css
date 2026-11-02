@@ -351,6 +351,12 @@
   gap: 8px;
   min-height: 20px;
 }
+.cd-sec__aside {
+  font-size: var(--fs-small);
+  line-height: var(--lh-small);
+  color: var(--text-3);
+  font-variant-numeric: tabular-nums;
+}
 .cd-sec__title {
   display: block;
   margin: 0;

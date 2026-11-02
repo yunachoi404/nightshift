@@ -97,7 +97,7 @@ const TOOL_STEP_LABEL: Partial<Record<Job["step"], string>> = {
 function MakingState({ job, onMedia, now }: { job: Job; onMedia: boolean; now: number }) {
   const { status, settings } = useEngineState();
   const night = job.mode === "overnight";
-  const stage = jobStage(job);
+  const stage = jobStage(job, settings?.overnight);
   const elapsed = jobElapsed(job, now);
   const gpuAway = !!status && status.phase === "ready" && !status.comfyui.running && isGpuJob(job);
   // Not rendering yet: waiting for the GPU, or queued behind other work. It reads still, without the warm glow or a ring.
@@ -185,6 +185,7 @@ export function ShotCard({ item, boardId, index, drop }: CardProps<ShotItem>) {
           <Media
             src={client.assetUrl(project.id, pick.asset.id)}
             kind={pick.rung === "still" ? "image" : "video"}
+            thumb={640}
             playing={hover && !picking}
             durationSec={shot.durationSec}
             // An effect or a camera move rests on a late frame, where the change shows, and plays from the start on hover.
@@ -330,7 +331,7 @@ export function ImageCard({ item, boardId, index, drop, fallbackRatio }: CardPro
   return (
     <CardShell id={item.id} boardId={boardId} index={index} drop={drop} label={item.label} className={cx(picking && "mp-card--pickable", sourceCardId === item.id && "mp-card--source")}>
       <div className="frame mp-card__frame" style={{ aspectRatio: String(ratio) } as CSSProperties}>
-        <Media src={client.assetUrl(project.id, item.asset.id)} kind="image" alt={item.label} />
+        <Media src={client.assetUrl(project.id, item.asset.id)} kind="image" thumb={640} alt={item.label} />
         <button
           type="button"
           className="mp-card__open"

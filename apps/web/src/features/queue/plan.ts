@@ -112,7 +112,7 @@ export function planQueue(jobs: Job[], { now, tier, night, away }: PlanContext):
   });
   const nextSeconds = line.reduce((s, j) => s + estimateSeconds(j, tier), 0);
 
-  const nightOpen = gpu?.mode === "overnight" || (!!night?.enabled && insideWindow(night.startAt, night.endAt, now));
+  const nightOpen = gpu?.mode === "overnight" || (!!night?.enabled && insideWindow(night, now));
   const groups = tonightGroups(jobs, turn);
   const tonight = placeTonight(groups, t, { now, tier, night, away }, nightOpen);
 
@@ -152,7 +152,7 @@ function placeTonight(groups: ReturnType<typeof tonightGroups>, from: number | n
   let end = 0;
   if (known && night) {
     const length = windowMinutes(night) * MIN;
-    const opened = open ? (windowOpenedAt(night.startAt, night.endAt, now)?.getTime() ?? now) : nextWindowStart(night.startAt, now).getTime();
+    const opened = open ? (windowOpenedAt(night, now)?.getTime() ?? now) : nextWindowStart(night, now).getTime();
     t = open ? Math.max(from!, now) : Math.max(from!, opened);
     end = opened + length;
     if (t >= end) {

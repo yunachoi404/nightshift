@@ -16,6 +16,7 @@ import {
   RemoteUseRequestSchema,
   routes,
   StillRequestSchema,
+  AddReferenceRequestSchema,
   UpdateProjectRequestSchema,
   type Event,
   type TemplateId,
@@ -27,6 +28,7 @@ import { ApiError, badRequest, notFound } from "../errors.js";
 import type { EventBus } from "../events.js";
 import type { HardwareService } from "../hardware/service.js";
 import type { Installer } from "../install/installer.js";
+import { posterWidth, type Posters } from "../media/poster.js";
 import type { OnboardingService } from "../onboarding.js";
 import type { DataPaths } from "../paths.js";
 import type { ProjectService } from "../projects/service.js";
@@ -55,12 +57,16 @@ export interface EngineContext {
   service: ProjectService;
   queue: JobQueue;
   onboarding: OnboardingService;
+  /** Small previews of pictures and videos, for `?w=` on an asset. */
+  posters: Posters;
   log: Logger;
   /** Open SSE streams; each entry closes its stream and unsubscribes. Called on shutdown. */
   sseClients: Set<() => void>;
 }
 
 const MAX_UPLOAD_BYTES = 2 * 1024 ** 3;
+/** Asset files and their posters never change once written, so browsers may cache them for good. */
+const IMMUTABLE = "private, max-age=31536000, immutable";
 
 const RoleSchema = AssetSchema.shape.role;
 
@@ -151,6 +157,7 @@ export function buildRouter(e: EngineContext): Router {
   r.add(routes.audio, async (ctx) => new Reply(202, e.service.audio(id(ctx), await readBody(ctx.req, AudioRequestSchema))));
   r.add(routes.exportVideo, async (ctx) => new Reply(202, e.service.exportVideo(id(ctx), await readBody(ctx.req, ExportRequestSchema))));
 
+  r.add(routes.addReference, async (ctx) => e.service.addReference(id(ctx), await readBody(ctx.req, AddReferenceRequestSchema)));
   r.add(routes.deleteAsset, async (ctx) => {
     await e.service.deleteReferenceAsset(id(ctx), id(ctx, "assetId"));
     return new Reply(204);
@@ -160,8 +167,20 @@ export function buildRouter(e: EngineContext): Router {
     const project = e.store.require(id(ctx));
     const asset = e.store.findAsset(project, ctx.params.assetId);
     if (!asset) throw notFound(`No asset ${ctx.params.assetId}`);
-    // Asset files never change once written, so browsers may cache them for good.
-    await sendFile(ctx.req, ctx.res, e.store.assetPath(project, asset), "private, max-age=31536000, immutable");
+    const file = e.store.assetPath(project, asset);
+    // ?w=N: a small poster of a picture or a video, for the UI's small pictures. Audio has none: its file is sent.
+    const w = ctx.query.get("w");
+    if (w !== null && (asset.kind === "image" || asset.kind === "video")) {
+      const asked = Number(w);
+      if (!Number.isInteger(asked) || asked <= 0) throw badRequest("w must be a width in pixels");
+      const poster = await e.posters.get(e.store.dir(project.id), asset, file, posterWidth(asked));
+      if (poster) await sendFile(ctx.req, ctx.res, poster, IMMUTABLE);
+      else if (asset.kind === "video") throw notFound(`No poster for video ${asset.id}`);
+      // A picture with no poster (no ffmpeg here) is sent whole, and cached only briefly so a poster can replace it.
+      else await sendFile(ctx.req, ctx.res, file, "private, max-age=300");
+      return HANDLED;
+    }
+    await sendFile(ctx.req, ctx.res, file, IMMUTABLE);
     return HANDLED;
   });
 

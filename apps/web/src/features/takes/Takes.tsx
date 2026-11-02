@@ -270,7 +270,7 @@ function RailShot({ project, shot, index, current, onClick, jobs }: { project: P
   return (
     <button type="button" className="tk-shot" aria-current={current} onClick={onClick}>
       <div className="tk-shot__thumb">
-        <div className={cx("frame", frameClass(project.aspect), !best && "frame--empty")}>{best && <Media src={client.assetUrl(project.id, best.asset.id)} kind={best.rung === "still" ? "image" : "video"} />}</div>
+        <div className={cx("frame", frameClass(project.aspect), !best && "frame--empty")}>{best && <Media src={client.assetUrl(project.id, best.asset.id)} kind={best.rung === "still" ? "image" : "video"} thumb={160} />}</div>
       </div>
       <div className="tk-shot__text">
         <div className="tk-shot__n">Shot {index + 1}</div>

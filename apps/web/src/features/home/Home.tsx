@@ -5,7 +5,7 @@ import { useMemo, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router";
 import { useEngine, useEngineState, useJobs, useProjectList } from "@/store/engine";
 import { Button, Dialog, Input, Menu, MenuItem, Segmented, Tag, cx, toast } from "@/ui/primitives";
-import { Media } from "@/media/Media";
+import { Media, posterOf } from "@/media/Media";
 import { assetById, bestAssetFor, coverFor, fitFor, isActive, projectProgress, projectStage, timelineShots, totalDuration, type ProjectProgress } from "@/features/project/helpers";
 import { plural, relativeTime, timecode } from "@/lib/format";
 import { useMorningSummary } from "@/features/finals/morning";
@@ -227,26 +227,27 @@ function ProjectCard({ project }: { project: Project }) {
 /**
  * A card's picture. A cover close to the card's shape fills it. A tall one (a vertical project) shows three of its
  * shots side by side, which fill the wide card, with the cover in the middle; with fewer shots it shows whole over a
- * blurred, darkened copy of itself, never on flat black bars.
+ * blurred, darkened copy of itself, never on flat black bars. Every picture is a poster; a video cover loads only once
+ * it plays, on hover.
  */
 function Cover({ project, cover, playing }: { project: Project; cover: Asset; playing: boolean }) {
   const { client } = useEngine();
   const url = (a: Asset) => client.assetUrl(project.id, a.id);
-  const main = <Media src={url(cover)} kind={cover.kind === "video" ? "video" : "image"} playing={playing} durationSec={cover.durationSec} fit={fitFor(cover, 16 / 9)} />;
+  const main = <Media src={url(cover)} kind={cover.kind === "video" ? "video" : "image"} thumb={640} playing={playing} durationSec={cover.durationSec} fit={fitFor(cover, 16 / 9)} />;
   if (fitFor(cover, 16 / 9) === "cover") return <div className="pcard__picture">{main}</div>;
   const sides = sideStills(project, cover);
   if (sides.length === 2)
     return (
       <div className="pcard__picture pcard__picture--three">
-        <Media src={url(sides[0]!)} kind="image" fit="cover" />
-        <Media src={url(cover)} kind={cover.kind === "video" ? "video" : "image"} playing={playing} durationSec={cover.durationSec} fit="cover" />
-        <Media src={url(sides[1]!)} kind="image" fit="cover" />
+        <Media src={url(sides[0]!)} kind="image" thumb={320} fit="cover" />
+        <Media src={url(cover)} kind={cover.kind === "video" ? "video" : "image"} thumb={320} playing={playing} durationSec={cover.durationSec} fit="cover" />
+        <Media src={url(sides[1]!)} kind="image" thumb={320} fit="cover" />
       </div>
     );
   const backdrop = cover.kind === "image" ? cover : stillOf(project, cover);
   return (
     <div className="pcard__picture">
-      {backdrop && <img className="pcard__backdrop" src={url(backdrop)} alt="" aria-hidden draggable={false} />}
+      {backdrop && <img className="pcard__backdrop" src={posterOf(url(backdrop), 160)} alt="" aria-hidden draggable={false} />}
       {main}
     </div>
   );

@@ -1,3 +1,4 @@
+import type { PosterWidth } from "@nightshift/contract";
 import { useEffect, useRef, useState } from "react";
 import { drawFrame, parseMockUrl, stillDataUrl } from "./placeholder";
 import { cx } from "@/ui/primitives";
@@ -19,19 +20,46 @@ interface MediaProps {
   onTime?: (t: number) => void;
   /** A picture a real video shows until its first frame decodes, so switching to it never flashes black. */
   poster?: string;
+  /**
+   * Shown small: the engine's poster at this width (tens of KB) stands in for the file (a still is about 0.7 MB, a final
+   * several MB). A video shows its poster until it first plays, and loads only then. A video resting on a later frame
+   * (`time`) loads as before, since its poster is its first frame.
+   */
+  thumb?: PosterWidth;
 }
 
 /**
  * Shows an asset. Real engine assets are plain `<img>` or `<video>`. Mock assets (`mock:` URLs) render
  * procedurally so the whole UI works without any media files.
  */
-export function Media({ src, kind, playing = false, loop = true, muted = true, durationSec, time, className, alt = "", fit = "cover", onEnded, onTime, poster }: MediaProps) {
+export function Media({ src, kind, playing = false, loop = true, muted = true, durationSec, time, className, alt = "", fit = "cover", onEnded, onTime, poster, thumb }: MediaProps) {
   const spec = parseMockUrl(src);
   if (spec) {
     return <MockCanvas spec={spec} animate={kind === "video"} playing={playing} loop={loop} durationSec={durationSec ?? 4} time={time} className={className} fit={fit} onEnded={onEnded} onTime={onTime} />;
   }
-  if (kind === "image") return <img src={src} alt={alt} className={cx("media", className)} style={{ objectFit: fit }} draggable={false} />;
+  if (kind === "image") return <img src={thumb ? posterOf(src, thumb) : src} alt={alt} className={cx("media", className)} style={{ objectFit: fit }} draggable={false} />;
+  if (thumb && time === undefined) return <LazyVideo src={src} poster={posterOf(src, thumb)} alt={alt} playing={playing} loop={loop} muted={muted} className={className} fit={fit} onEnded={onEnded} onTime={onTime} />;
   return <RealVideo src={src} playing={playing} loop={loop} muted={muted} time={time} className={className} fit={fit} onEnded={onEnded} onTime={onTime} poster={poster} />;
+}
+
+/** The engine's poster of an asset at `width`: the asset's URL with `?w=` (see POSTER_WIDTHS in the contract). */
+export function posterOf(assetUrl: string, width: PosterWidth): string {
+  if (parseMockUrl(assetUrl)) return assetUrl;
+  return `${assetUrl}${assetUrl.includes("?") ? "&" : "?"}w=${width}`;
+}
+
+/**
+ * A video that loads only once it plays: until then its poster stands in, as a plain picture. Once played it stays, so
+ * playing it again does not load it again. A poster that does not load gives way to the video.
+ */
+function LazyVideo({ src, poster, alt, playing, className, fit, ...video }: { src: string; poster: string; alt: string; playing: boolean; loop: boolean; muted: boolean; className?: string; fit: "cover" | "contain"; onEnded?: () => void; onTime?: (t: number) => void }) {
+  const [played, setPlayed] = useState(playing);
+  const [posterFailed, setPosterFailed] = useState(false);
+  useEffect(() => {
+    if (playing) setPlayed(true);
+  }, [playing]);
+  if (!played && !playing && !posterFailed) return <img src={poster} alt={alt} className={cx("media", className)} style={{ objectFit: fit }} draggable={false} onError={() => setPosterFailed(true)} />;
+  return <RealVideo src={src} playing={playing} className={className} fit={fit} poster={posterFailed ? undefined : poster} {...video} />;
 }
 
 /** How many times a video that fails to load or decode is loaded again before the frame says so, and the waits between. */

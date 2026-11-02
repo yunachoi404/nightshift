@@ -157,7 +157,9 @@ describe("new project", () => {
     const e = engine(FULL);
     const { unmount } = open("#/new", e.client);
     fireEvent.click(await screen.findByRole("radio", { name: /^Product ad/ }));
-    expect(await screen.findByText("The writer turns your brief into a shot list, then draws a still for each shot. Every field is optional.")).toBeTruthy();
+    // With nothing written yet, the writer has nothing to work from: the line says what starts it.
+    expect(await screen.findByText("Describe what it is about and the writer turns it into a shot list when you create the project. Every field is optional.")).toBeTruthy();
+    expect(screen.queryByText(/The writer turns your brief into a shot list/)).toBeNull();
     expect(screen.getByText(/You get a 15 second ad with voiceover and captions\.$/)).toBeTruthy();
     // The seeded shot list, as the contract drafts it: five shots, each within a 4 s clip.
     expect(screen.getByText("5 shots, 15 seconds. Nothing renders yet.")).toBeTruthy();

@@ -8,7 +8,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router";
 import { useEngine, useProject, useProjectJobs } from "@/store/engine";
 import { useInstalledTier } from "@/store/tier";
-import { Button, Dialog, Menu, MenuItem, Notice, Select, Tag, cx, toast } from "@/ui/primitives";
+import { Button, Menu, MenuItem, Notice, Select, Tag, cx, toast } from "@/ui/primitives";
 import { Media } from "@/media/Media";
 import { activeJob, bestAssetFor, failureText, frameClass, isActive, jobElapsed, jobStatusLine, lastFailed, timelineShots, totalDuration } from "@/features/project/helpers";
 import { useNow } from "@/lib/useNow";
@@ -16,6 +16,8 @@ import { cameraMoves, fallbackShots, sentenceCase } from "@nightshift/contract";
 import { id as newId } from "@/lib/ids";
 import { plural, roughDuration, shortDuration } from "@/lib/format";
 import { cameraMoveLabel } from "@/features/media/items";
+import { WriterNote } from "@/features/media/BoardView";
+import { useRewriteShotList } from "@/features/media/RewriteShotList";
 import { CameraShot } from "./CameraShot";
 import { EffectShot } from "./EffectShot";
 import { References, ShotReferences, referenceDropHandlers, type ShotEdit } from "@/features/references/References";
@@ -26,11 +28,9 @@ export function Storyboard() {
   const { id } = useParams();
   const project = useProject(id)!;
   const jobs = useProjectJobs(id);
-  const { storyboard, still, draft, updateProject, client } = useEngine();
+  const { storyboard, still, draft, updateProject, client, cancelJob } = useEngine();
   const tier = useInstalledTier();
   const nav = useNavigate();
-  const [rewriteOpen, setRewriteOpen] = useState(false);
-  const [rewriting, setRewriting] = useState(false);
   const saves = useRef(Promise.resolve());
   // The cut's shots, in order. Edits save the whole list, so shots kept in Media only keep their place.
   const shots = timelineShots(project);
@@ -38,6 +38,9 @@ export function Storyboard() {
   // The shot list can take minutes on a small GPU: its elapsed time ticks.
   const now = useNow(1000, writing?.status === "running");
   const writingFailed = !writing && !shots.length ? jobs.filter((j) => j.step === "text" && j.status === "failed").at(-1) : undefined;
+  // The same rewrite, and the same note when the writer's list was not used, as the Media board's.
+  const rewrite = useRewriteShotList(project, jobs);
+  const writerNote = !writing ? project.shotList?.note : undefined;
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
@@ -100,7 +103,7 @@ export function Storyboard() {
           </div>
           <div className="page__actions">
             {shots.length > 0 && (
-              <Button variant="quiet" icon={<RefreshCw />} disabled={!!writing} onClick={() => setRewriteOpen(true)}>
+              <Button variant="quiet" icon={<RefreshCw />} disabled={!rewrite.open} onClick={rewrite.open}>
                 Rewrite shot list
               </Button>
             )}
@@ -128,9 +131,14 @@ export function Storyboard() {
           <div className="sb-writing">
             <span className="pulse" />
             {/* A running text job's stage is "Writing" too, so only its time follows. */}
-            {writing.status === "queued" ? jobStatusLine(writing) : ["Writing the shot list", jobElapsed(writing, now)].filter(Boolean).join(", ")}
+            <span>{writing.status === "queued" ? jobStatusLine(writing) : ["Writing the shot list", jobElapsed(writing, now)].filter(Boolean).join(", ")}</span>
+            <Button size="s" variant="quiet" onClick={() => void cancelJob(writing.id).catch((e) => toast({ title: "Couldn't stop the writer", text: e instanceof Error ? e.message : String(e), tone: "bad" }))}>
+              Cancel
+            </Button>
           </div>
         )}
+
+        {writerNote && <WriterNote note={writerNote} project={project} stills={project.shotList?.by === "template" ? shots.filter((s) => !s.stillAssetId && s.prompt.trim()) : []} />}
 
         {writingFailed && (
           <Notice tone="bad" title="Couldn't write the shot list">
@@ -206,24 +214,7 @@ export function Storyboard() {
             </SortableContext>
           </DndContext>
         )}
-      <Dialog open={rewriteOpen} onClose={() => !rewriting && setRewriteOpen(false)} width={480}>
-        <h2 className="dialog__title">Rewrite the shot list?</h2>
-        <p className="dialog__text">Locked shots keep their place, stills and takes. The new shot list fills the other slots, then adds any remaining shots. Takes for replaced shots are removed.</p>
-        <div className="dialog__actions">
-          <Button onClick={() => setRewriteOpen(false)} disabled={rewriting}>Cancel</Button>
-          <Button variant="primary" busy={rewriting} onClick={async () => {
-            setRewriting(true);
-            try {
-              await storyboard(project.id);
-              setRewriteOpen(false);
-            } catch (error) {
-              toast({ title: "Couldn't rewrite the shot list", text: error instanceof Error ? error.message : String(error), tone: "bad" });
-            } finally {
-              setRewriting(false);
-            }
-          }}>Rewrite shot list</Button>
-        </div>
-      </Dialog>
+      {rewrite.dialog}
     </div>
   );
 }
@@ -284,7 +275,7 @@ function ShotCard({
   return (
     <div {...referenceDropHandlers(project, shot, onChange)} ref={setNodeRef} className={cx("shot", isDragging && "shot--dragging")} style={{ transform: CSS.Transform.toString(transform), transition }}>
       <div className={cx("frame shot__frame", frameClass(project.aspect), !best && "frame--empty", stillJob && best && "frame--working")} {...attributes} {...listeners} aria-label={`Reorder shot ${index + 1}`}>
-        {best && <Media src={client.assetUrl(project.id, best.asset.id)} kind={best.rung === "still" ? "image" : "video"} playing={false} />}
+        {best && <Media src={client.assetUrl(project.id, best.asset.id)} kind={best.rung === "still" ? "image" : "video"} thumb={640} playing={false} />}
         {!best && !stillJob && !failed && (
           <div className="shot__status">
             {prompt.trim() ? (

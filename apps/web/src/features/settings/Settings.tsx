@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { useEngine, useEngineState, useJobs } from "@/store/engine";
 import { jobLabel } from "@/features/project/helpers";
 import { NightArc, finalSeconds } from "@/features/queue/NightArc";
+import { nightClock } from "@/lib/overnight";
 import { useNow } from "@/lib/useNow";
 import { tierFor, useHardware, useInstalledTier, useThisMachine, useTiers } from "@/store/tier";
 import { useThemeMode } from "@/store/theme";
@@ -44,7 +45,7 @@ export function SettingsPage() {
       const current = await client.settings();
       const saved = await updateSettings({ overnight: { ...current.overnight, ...patch } });
       const night = saved.overnight;
-      toast({ title: night.enabled ? "Night shift saved" : "Night shift paused", text: night.enabled ? `Finals for tonight run from ${clock(night.startAt)} to ${clock(night.endAt)}` : "Finals for tonight wait until you turn it back on", tone: "ok", ttl: 2600 });
+      toast({ title: night.enabled ? "Night shift saved" : "Night shift paused", text: night.enabled ? `Finals for tonight run from ${clock(night.startAt)} to ${nightClock(night, Date.now()).time(night.endAt)}` : "Finals for tonight wait until you turn it back on", tone: "ok", ttl: 2600 });
     });
     overnightSaves.current = save.catch(() => undefined);
     return save.catch((e) => toast({ title: "Couldn't save the night shift", text: e instanceof Error ? e.message : String(e), tone: "bad" }));
@@ -68,6 +69,8 @@ export function SettingsPage() {
   const jobs = useJobs();
   const tonightJobs = [...jobs.filter((j) => j.mode === "overnight" && j.status === "running"), ...jobs.filter((j) => j.mode === "overnight" && j.status === "queued")];
   const now = useNow(30_000, true);
+  // The window is on the engine's clock: where that is not this browser's, its times name the zone and a line says so.
+  const nightTimes = nightClock(overnight, now);
   const measured = tier?.estimates ? Object.values(tier.estimates).some((e) => e?.measured) : false;
   const remoteName = remote?.name ?? remote?.url.replace(/^https?:\/\//, "") ?? "";
   const models = modelRows(tier);
@@ -248,6 +251,7 @@ export function SettingsPage() {
                 <NightArc
                   startAt={overnight.startAt}
                   endAt={overnight.endAt}
+                  timeZone={overnight.timeZone}
                   enabled={overnight.enabled}
                   now={now}
                   finals={tonightJobs.map((j) => ({ id: j.id, label: jobLabel(j, projects[j.projectId]), seconds: finalSeconds(j, tier) * (j.status === "running" ? 1 - j.progress : 1) }))}
@@ -274,6 +278,7 @@ export function SettingsPage() {
               <TimeField label="Overnight end" value={overnight?.endAt ?? "07:00"} onSave={(endAt) => saveOvernight({ endAt })} />
             </div>
           </div>
+          {nightTimes.note && <p className="settings__foot">{nightTimes.note}</p>}
           <p className="settings__foot">Keep the computer awake and plugged in through the night. The desktop app does that for you.</p>
         </section>
 

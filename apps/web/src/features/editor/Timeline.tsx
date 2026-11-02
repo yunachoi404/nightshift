@@ -38,6 +38,8 @@ type DropLane = "shots" | Role;
 
 /** The shortest and, for a still, the longest a clip's end drags to, seconds. A video goes as far as it runs. */
 const MIN_LENGTH = 0.5;
+/** An ad never shows a shot for less than this (the editor's `AD_MIN_SHOT`), so its handle stops there. */
+const AD_MIN_SHOT = 1.5;
 const MAX_STILL = 20;
 const tenths = (seconds: number) => Math.round(seconds * 10) / 10;
 
@@ -136,15 +138,17 @@ export function TimelineView({ project, clips, total, time, onSeek, current, tim
   // A clip's end drags (or steps with the arrow keys) to set how long the cut shows its shot (`Shot.cutSec`); the engine
   // cuts the film again around it, so the song, the voice and the end card follow. The clip shows its new length until
   // that cut arrives. A talking intro cuts on its script's lines, and an ad's last shot ends with the ad: no end to drag.
+  // A cut edited by hand is not cut again, so it has none either: Re-cut first.
   const [sizing, setSizing] = useState<{ index: number; length: number } | null>(null);
   const resize = useRef<{ index: number; from: number; length: number } | null>(null);
   const settle = useRef<ReturnType<typeof setTimeout>>(undefined);
   const cutKey = clips.map((c) => `${c.shotId} ${c.start} ${c.dur}`).join(",");
   useEffect(() => setSizing(null), [cutKey]);
   useEffect(() => () => clearTimeout(settle.current), []);
-  const sizable = (i: number) => project.template !== "talking_intro" && !(project.template === "product_ad" && i === clips.length - 1);
-  const longest = (c: Clip) => (c.kind === "image" ? MAX_STILL : Math.max(MIN_LENGTH, (assetById(project, c.assetId)?.durationSec ?? c.in + c.dur) - 0.05 - c.in));
-  const fit = (c: Clip, length: number) => Math.max(MIN_LENGTH, Math.min(longest(c), length));
+  const sizable = (i: number) => !project.timeline?.edited && project.template !== "talking_intro" && !(project.template === "product_ad" && i === clips.length - 1);
+  const shortest = project.template === "product_ad" ? AD_MIN_SHOT : MIN_LENGTH;
+  const longest = (c: Clip) => (c.kind === "image" ? MAX_STILL : Math.max(shortest, (assetById(project, c.assetId)?.durationSec ?? c.in + c.dur) - 0.05 - c.in));
+  const fit = (c: Clip, length: number) => Math.max(shortest, Math.min(longest(c), length));
   /** Saves a clip's new length after `wait` ms, unless another change comes first. */
   const commit = (index: number, length: number, wait = 0) => {
     clearTimeout(settle.current);
@@ -256,7 +260,7 @@ export function TimelineView({ project, clips, total, time, onSeek, current, tim
                       tabIndex={0}
                       className={cx("tl__clip-end", set && "tl__clip-end--set")}
                       aria-label={`Length of shot ${i + 1}`}
-                      aria-valuemin={MIN_LENGTH}
+                      aria-valuemin={shortest}
                       aria-valuemax={tenths(longest(c))}
                       aria-valuenow={tenths(length)}
                       aria-valuetext={`${tenths(length)} seconds${set ? ", set by you" : ""}`}

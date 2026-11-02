@@ -17,6 +17,7 @@ import type {
   Settings,
   Shot,
   StillRequest,
+  AddReferenceRequest,
   StepId,
   Take,
   TierId,
@@ -29,7 +30,7 @@ import { hardwarePresets, mockTier, rankTiers } from "./data";
 import { nightTurn, tonightGroups } from "@/features/queue/tonight";
 import { firstShot as firstShotSample, isSamplePath, playsRecordedCut, recordedCut, sampleAd, sampleAdExport, sampleForDraft, sampleForPrompt, sampleForStill, sampleUrl } from "./samples";
 import { soundPick } from "./soundtrack";
-import { boardOf, cameraMoves, fallbackShots, finalFor, isBoardAsset, isExtraCard, isOneShot, MAIN_BOARD_ID, mainBoardName, ownShot, placeItem, quickEffects, quickMoves, scriptLines, shotTemplate } from "@nightshift/contract";
+import { boardOf, cameraMoves, fallbackShots, finalFor, isBoardAsset, isExtraCard, isOneShot, MAIN_BOARD_ID, mainBoardName, ownShot, placeItem, projectBoards, quickEffects, quickMoves, scriptLines, shotTemplate } from "@nightshift/contract";
 import { genres, looks } from "@nightshift/contract";
 import type { AudioBody, CreateProjectBody, FinalBody, ProjectPatch } from "../client";
 
@@ -647,6 +648,32 @@ export class MockEngine {
     delete this.state.uploads[assetId];
   }
 
+  /** As the engine: an image of the project becomes a reference, a copy of its own on the board of its card. */
+  addReference(pid: string, body: AddReferenceRequest): Project {
+    const p = this.getProject(pid);
+    const image = p.assets.find((a) => a.id === body.assetId && a.kind === "image");
+    if (!image) throw new MockHttpError(404, "That image is not in this project.");
+    const refs = p.references ?? [];
+    const already = refs.find((r) => r.assetId === image.id || r.copiedFrom === image.id);
+    if (already) throw new MockHttpError(409, `That image is already the reference ${already.label}.`);
+    if (refs.length >= 6) throw new MockHttpError(409, "A project can have up to six references. Remove one first.");
+    if (!body.label.trim()) throw new MockHttpError(400, "Name the reference.");
+    let next: Project = { ...p, updatedAt: now() };
+    let asset = image;
+    if (image.role !== "reference") {
+      asset = { ...image, id: id("ast"), role: "reference", createdAt: now() };
+      const url = this.state.uploads[image.id];
+      if (url) this.state.uploads[asset.id] = url;
+      const card = p.shots.find((s) => s.stillAssetId === image.id || s.stillHistory?.some((h) => h.assetId === image.id));
+      next = { ...next, assets: [...p.assets, asset] };
+      next.boards = placeItem(next, asset.id, { boardId: body.boardId ?? (card ? boardOf(projectBoards(next), card.id)?.id : undefined) });
+    }
+    next.references = [...refs, { id: id("ref"), assetId: asset.id, kind: body.kind, label: body.label.trim(), ...(asset !== image ? { copiedFrom: image.id } : {}) }];
+    if (p.template === "product_ad") next.brief = { ...next.brief, referenceAssetId: next.references.find((r) => r.kind === "product")?.assetId };
+    this.replaceProject(next);
+    return next;
+  }
+
   /** An uploaded file, filed at the end of `boardId` (else the first board). A song or a voiceover is the one the cut uses now. */
   uploadAsset(pid: string, dataUrl: string, kind: Asset["kind"], meta: Partial<Asset>, boardId?: string): Asset {
     const p = this.getProject(pid);
@@ -778,6 +805,8 @@ export class MockEngine {
     if (body.tool === "video") shot.cameraMove = body.move ?? "static";
     if (body.tool === "camera_move") shot.cameraMove = body.move;
     if (body.referenceIds?.length) shot.referenceIds = body.referenceIds;
+    // As the engine: an edit card keeps the references asked for, else none.
+    if (edit) shot.referenceIds = body.referenceIds ?? [];
     if (body.aspect) shot.aspect = body.aspect;
     const next: Project = { ...p, shots: [...p.shots, shot], updatedAt: now() };
     next.boards = placeItem(next, shot.id, { boardId: body.boardId });

@@ -271,6 +271,20 @@ describe("product ad", () => {
     expect(expectWellFormed(timeline, media, durationSec)).toEqual([]);
   });
 
+  it("keeps the end card where the voice puts it when every clip is shorter than a shot's shortest, so repeats only fill the picture", () => {
+    // Two 1 s drafts under a 7 s voice once made a 3-minute ad: each repeat pushed the card back by as much as it added.
+    const script = "Breaking up with your alarm clock? Same. Lumi wakes you with a slow sunrise. Just light.";
+    const tiny = { kind: "video" as const, length: 0.99, durationSec: 1 };
+    const { project, media } = fakeProject("product_ad", [tiny, tiny], [audioAssetOf("voice", "voice", 7, script)], { productName: "Lumi" });
+    const { timeline, durationSec, warnings } = planTimeline({ project, media, voice: { assetId: "voice", words: estimateWords(script, { start: 0.1, end: 6.9 }) } });
+    expect(warnings.join(" ")).toMatch(/play twice/);
+    const card = timeline.overlays!.find((o) => o.kind === "end_card")!;
+    expect(card.start).toBeCloseTo(0.3 + 6.9 + 0.35, 3);
+    expect(durationSec).toBeLessThanOrEqual(15.01);
+    expect(timeline.clips.length).toBeLessThan(12);
+    expect(timeline.clips.at(-1)!.shotId).toBe("s1");
+  });
+
   it("plays a short voiceover in one take, the end card holding longer", () => {
     const short = "Lumen. It follows the sun across your desk. No setup. No fuss. Lumen. Done.";
     const { project, media } = fakeProject("product_ad", [{ kind: "video", length: 3, durationSec: 3 }, { kind: "video", length: 4, durationSec: 3 }], [audioAssetOf("voice", "voice", 5.5, short)], { productName: "Lumen" });

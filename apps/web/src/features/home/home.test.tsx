@@ -187,9 +187,10 @@ describe("Projects", () => {
     };
     expect(fit("Night market")).toBe("contain");
     expect(fit("Harbour")).toBe("cover");
-    // Too few shots for three: the tall cover sits over a blurred copy of itself, not on black bars.
+    // Too few shots for three: the tall cover sits over a blurred copy of itself, not on black bars. Both are posters.
     const market = [...document.querySelectorAll(".pcard")].find((c) => c.querySelector(".pcard__name")?.textContent === "Night market")!;
-    expect(market.querySelector(".pcard__backdrop")?.getAttribute("src")).toBe("/api/projects/prj_tall/assets/ast_tall");
+    expect(market.querySelector(".pcard__backdrop")?.getAttribute("src")).toBe("/api/projects/prj_tall/assets/ast_tall?w=160");
+    expect(market.querySelector(".pcard__picture img.media")?.getAttribute("src")).toBe("/api/projects/prj_tall/assets/ast_tall?w=640");
   });
 
   it("shows a tall project with three shots or more as three of them side by side, the cover in the middle", async () => {
@@ -202,8 +203,35 @@ describe("Projects", () => {
     open(engine([tall]).client);
     await waitFor(() => expect(cards()).toEqual(["Ghost shift"]));
     const panels = [...document.querySelectorAll(".pcard__picture--three img")].map((i) => i.getAttribute("src")?.split("/").at(-1));
-    expect(panels).toEqual(["ast_1", "ast_0", "ast_2"]);
+    expect(panels).toEqual(["ast_1?w=320", "ast_0?w=320", "ast_2?w=320"]);
     expect(document.querySelector(".pcard__backdrop")).toBeNull();
+  });
+
+  it("shows a video cover as its poster, and loads the video only on hover", async () => {
+    const clip = { id: "ast_final", kind: "video" as const, path: "final.mp4", width: 1280, height: 720, durationSec: 4, createdAt: iso(5) };
+    const take = { id: "take_f", shotId: "shot_0", rung: "final" as const, finalKind: "same_take" as const, seed: 1, videoAssetId: clip.id, jobId: "job_f" };
+    const harbour = { ...project("prj_harbour", "Harbour", [shot(0, { chosenFinalId: take.id })], 5), takes: [take], assets: [clip] };
+    open(engine([harbour]).client);
+    await waitFor(() => expect(cards()).toEqual(["Harbour"]));
+    const card = document.querySelector(".pcard")!;
+    const picture = () => card.querySelector(".pcard__picture .media")!;
+    // Before hover: a small picture, and no video to load.
+    expect(picture().tagName).toBe("IMG");
+    expect(picture().getAttribute("src")).toBe("/api/projects/prj_harbour/assets/ast_final?w=640");
+    expect(card.querySelector("video")).toBeNull();
+
+    // On hover the video loads, the poster standing in until its first frame. It stays once loaded.
+    const play = vi.spyOn(HTMLMediaElement.prototype, "play").mockResolvedValue(undefined);
+    vi.spyOn(HTMLMediaElement.prototype, "pause").mockImplementation(() => undefined);
+    fireEvent.mouseEnter(card);
+    await waitFor(() => expect(card.querySelector("video")).not.toBeNull());
+    const video = card.querySelector("video")!;
+    expect(video.getAttribute("src")).toBe("/api/projects/prj_harbour/assets/ast_final");
+    expect(video.getAttribute("poster")).toBe("/api/projects/prj_harbour/assets/ast_final?w=640");
+    await waitFor(() => expect(play).toHaveBeenCalled());
+    fireEvent.mouseLeave(card);
+    expect(card.querySelector("video")).toBe(video);
+    vi.restoreAllMocks();
   });
 
   it("starts a project from a preset on the New project card", async () => {

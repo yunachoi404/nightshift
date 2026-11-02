@@ -56,6 +56,7 @@ export function createHttpClient(base: string): NightshiftClient {
     updateProject: (id, patch) => call("PATCH", `/api/projects/${id}`, patch),
     deleteProject: (id) => call("DELETE", `/api/projects/${id}`),
     deleteAsset: (id, assetId) => call("DELETE", `/api/projects/${id}/assets/${assetId}`),
+    addReference: (id, body) => call("POST", `/api/projects/${id}/references`, body),
     uploadAsset: async (id, file, opts) => {
       const form = new FormData();
       form.append("file", file, file.name);

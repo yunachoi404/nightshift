@@ -97,12 +97,7 @@ export function applyReferences(
         shot.referenceIds = shot.referenceIds.filter((id) => ids.has(id));
   }
   validateReferences(project);
-  // The product end card continues to use the original uploaded product photo.
-  if (project.template === "product_ad" && patch.references !== undefined) {
-    const product = project.references.find((r) => r.kind === "product");
-    if (product) project.brief.referenceAssetId = product.assetId;
-    else delete project.brief.referenceAssetId;
-  }
+  if (patch.references !== undefined) syncProductPhoto(project);
   if (patch.references !== undefined)
     for (const key of ["referenceAssetId", "productAssetId"]) {
       const assetId = project.brief[key];
@@ -113,6 +108,14 @@ export function applyReferences(
       )
         delete project.brief[key];
     }
+}
+
+/** A product ad's end card shows its first product reference: an uploaded photo, a cast product or a card's still. */
+export function syncProductPhoto(project: Project): void {
+  if (project.template !== "product_ad") return;
+  const product = projectReferences(project).find((r) => r.kind === "product");
+  if (product) project.brief.referenceAssetId = product.assetId;
+  else delete project.brief.referenceAssetId;
 }
 
 export function validateReferences(project: Project): void {
@@ -163,4 +166,39 @@ export function requireReferenceSupport(
         ? `This recipe supports ${limit} reference image${limit === 1 ? "" : "s"} per shot. Choose fewer references.`
         : "This recipe cannot use reference photos. Choose a recipe with reference stills, or turn off references for this shot.",
     );
+}
+
+/** How many references an edit can keep: the reference workflow's image places, less the one the edited image takes. */
+export function editReferenceSlots(recipe: Recipe): number {
+  const workflow = recipe.referenceStill;
+  return workflow ? Math.max(0, ["image", "image2", "image3"].filter((k) => workflow.inputs[k]).length - 1) : 0;
+}
+
+/**
+ * The references an edit of a shot's still keeps. A shot that chose its references keeps them all, or the edit is
+ * refused with what to switch off. A shot that never chose (all of the project's, as for its stills) keeps as many of
+ * the first ones as the edit has room for.
+ */
+export function referencesForEdit(project: Project, shot: Pick<Shot, "referenceIds">, recipe: Recipe): Reference[] {
+  const refs = referencesForShot(project, shot);
+  const slots = editReferenceSlots(recipe);
+  if (shot.referenceIds === undefined) return refs.slice(0, slots);
+  if (refs.length > slots)
+    throw conflict(
+      slots
+        ? `An edit keeps up to ${slots} reference${slots === 1 ? "" : "s"} beside the image. Switch ${refs.length - slots === 1 ? "one" : "some"} off for this shot.`
+        : "This recipe cannot edit with references. Switch them off for this shot.",
+    );
+  return refs;
+}
+
+/**
+ * An edit's prompt. Without references, the instruction as written. With them, image 1 is the picture to change and
+ * each reference is named by its place.
+ */
+export function editPrompt(refs: Reference[], instruction: string): string {
+  if (!refs.length) return instruction;
+  const asked = instruction.trim().replace(/[^.!?]$/, "$&.");
+  const named = refs.map((r, i) => `Image ${i + 2} is ${JSON.stringify(r.label)} (${r.kind}).`).join(" ");
+  return `Image 1 is the picture to change. ${named} Change image 1: ${asked} Keep everything else in image 1 as it is: the framing, the setting and the light. Wherever a reference appears in image 1, give it the look of its image: each character's face, hair and clothing, each product's shape and materials. Names identify subjects only. Do not add lettering.`;
 }

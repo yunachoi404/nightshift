@@ -74,14 +74,16 @@ export class Api {
     return AssetSchema.parse(await res.json());
   }
 
-  async install(tier: string): Promise<void> {
+  /** Installs a tier and waits for it, by the clock: a loaded machine (a full parallel run) takes more than a few polls. */
+  async install(tier: string, timeoutMs = 60_000): Promise<void> {
     await this.call("POST", "/api/install", null, { tier, memoryLimitGb: null });
-    for (let i = 0; i < 500; i++) {
+    const deadline = Date.now() + timeoutMs;
+    while (Date.now() < deadline) {
       const status = await this.call("GET", "/api/status", RuntimeStatusSchema);
       if (status.phase === "ready" && status.tier === tier) return;
-      await sleep(20);
+      await sleep(50);
     }
-    throw new Error(`tier ${tier} did not become ready`);
+    throw new Error(`tier ${tier} did not become ready in ${timeoutMs / 1000} s`);
   }
 }
 

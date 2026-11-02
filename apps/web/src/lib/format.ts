@@ -36,13 +36,18 @@ export function shortDuration(seconds: number): string {
 
 /** "0:04.2" style timecode for the editor. */
 export function timecode(seconds: number, showTenths = true): string {
+  // Without tenths it states a length, rounded as the header's "4 s" is: a 3.9 s clip reads 0:04, not 0:03. With them it
+  // states a place in time, which never runs ahead.
+  if (!showTenths) {
+    const whole = Math.round(Math.max(0, seconds));
+    return `${Math.floor(whole / 60)}:${(whole % 60).toString().padStart(2, "0")}`;
+  }
   const s = Math.max(0, seconds);
   const m = Math.floor(s / 60);
   const rem = s - m * 60;
   const whole = Math.floor(rem);
   const tenths = Math.floor((rem - whole) * 10);
-  const base = `${m}:${whole.toString().padStart(2, "0")}`;
-  return showTenths ? `${base}.${tenths}` : base;
+  return `${m}:${whole.toString().padStart(2, "0")}.${tenths}`;
 }
 
 /** "11:00 pm" from "23:00". */

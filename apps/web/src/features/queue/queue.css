@@ -328,6 +328,13 @@
 .q-line--plain > *::after {
   display: none;
 }
+/*
+ * Tonight's times on another clock name its zone ("11:30 pm PT"): the time column grows to fit them, nine characters
+ * for the time and one per letter of the zone's name, at the mono font's advance of 0.6em.
+ */
+.q-line.q-line--zoned {
+  --when: calc((9 + var(--zone-chars)) * 0.6 * 11.5px);
+}
 .q-row__when {
   justify-self: end;
   font-family: var(--font-mono);

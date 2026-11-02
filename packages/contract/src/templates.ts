@@ -256,8 +256,11 @@ export interface FallbackShot {
 
 type Brief = Record<string, unknown>;
 
-/** The most shots a shot list holds: a 60 second music video's, at one or two bars a shot. */
-export const MAX_SHOTS = 24;
+/**
+ * The most shots a shot list holds: a 60 second music video's even on the setups whose clips are about 2 s, where a
+ * lo-fi song's shot is a half bar (1.43 s) and the minute takes 42, so it never runs out mid-song.
+ */
+export const MAX_SHOTS = 48;
 
 export interface FallbackOptions {
   /**

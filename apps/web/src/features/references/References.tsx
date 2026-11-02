@@ -1,6 +1,7 @@
 import type { Project, Reference, Shot } from "@nightshift/contract";
 import { ImagePlus, X } from "lucide-react";
 import { useEffect, useRef, useState, type DragEvent } from "react";
+import { posterOf } from "@/media/Media";
 import { useEngine } from "@/store/engine";
 import { useInstalledTier } from "@/store/tier";
 import { Button, Input, Select, toast } from "@/ui/primitives";
@@ -224,7 +225,7 @@ export function References({ project }: { project: Project }) {
             <ReferenceCard
               key={reference.id}
               reference={reference}
-              src={client.assetUrl(project.id, reference.assetId)}
+              src={posterOf(client.assetUrl(project.id, reference.assetId), 320)}
               disabled={busy}
               draggable
               onChange={(patch) =>

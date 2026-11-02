@@ -212,8 +212,10 @@ export function NewProject({ preset = FIRST_PRESET }: { preset?: Preset }) {
                   <p className="brief__seed">
                     {template === "what_if"
                       ? "The preset only sets up the story, the look and the captions. Nothing renders until you ask."
-                      : writer
+                      : writes
                         ? "The writer turns your brief into a shot list, then draws a still for each shot. Every field is optional."
+                        : writer
+                          ? "Describe what it is about and the writer turns it into a shot list when you create the project. Every field is optional."
                         : "The preset only sets up the shot list, the look and the captions. Every field is optional. Nothing renders until you ask."}
                   </p>
                 </>

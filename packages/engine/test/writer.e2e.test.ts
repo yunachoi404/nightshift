@@ -108,10 +108,12 @@ describe("the shot list writer on the Spark's recipe", () => {
     writer.answers = [LUMI];
     const before = writer.requests.length;
     const job = await api.run(`/api/projects/${project.id}/storyboard`);
-    expect(job.message).toBe("Shot list drafted.");
+    // An ad without a product photo draws its product first, as its product reference.
+    expect(job.message).toBe("Shot list drafted. Drew Lumi sunrise lamp first, so every shot shows the same one.");
     await api.settle(project.id);
     const p = await api.project(project.id);
     expect(p.shotList).toEqual({ by: "writer" });
+    expect(p.references?.map((r) => [r.label, r.kind])).toEqual([["Lumi sunrise lamp", "product"]]);
     // The writer's own lines, in the ad's 15 seconds: five shots of 4 s became five of 3 s.
     expect(p.shots.map((s) => s.line)).toEqual(LUMI.shots.map((s) => s.line));
     expect(p.shots.map((s) => s.durationSec)).toEqual([3, 3, 3, 3, 3]);
@@ -124,7 +126,7 @@ describe("the shot list writer on the Spark's recipe", () => {
     writer.answers = [{ shots: LUMI.shots.map(({ line: _, ...shot }) => shot) }, { shots: LUMI.shots.slice(0, 3) }, LUMI];
     const before = writer.requests.length;
     const job = await api.run(`/api/projects/${project.id}/storyboard`);
-    expect(job.message).toBe("Shot list drafted.");
+    expect(job.message).toMatch(/^Shot list drafted\./);
     const asks = writer.asks(before);
     expect(asks).toHaveLength(3);
     expect(String(asks[0]!.values.system)).not.toContain("Your last answer");

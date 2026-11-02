@@ -172,7 +172,7 @@ describe("mock engine, end to end", () => {
 
   it("settings: partial updates and validation", async () => {
     const s = await api("PATCH", "/api/settings", SettingsSchema, { overnight: { enabled: true } });
-    expect(s.overnight).toEqual({ enabled: true, startAt: "23:00", endAt: "07:00" });
+    expect(s.overnight).toEqual({ enabled: true, startAt: "23:00", endAt: "07:00", timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone });
     await api("PATCH", "/api/settings", ErrorResponseSchema, { overnight: { startAt: "25:00" } }, 400);
   });
 

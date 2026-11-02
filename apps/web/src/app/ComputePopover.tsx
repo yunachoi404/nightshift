@@ -5,9 +5,9 @@ import { createPortal } from "react-dom";
 import { Link, useLocation } from "react-router";
 import { useEngineState, useJobs } from "@/store/engine";
 import { isGpuJob, jobLabel, jobStage, jobStatusLine } from "@/features/project/helpers";
-import { clock, plural } from "@/lib/format";
+import { plural } from "@/lib/format";
 import { useNow } from "@/lib/useNow";
-import { insideWindow } from "@/lib/overnight";
+import { insideWindow, nightClock, type NightWindow } from "@/lib/overnight";
 import { useHardware, useThisMachine } from "@/store/tier";
 import { cx } from "@/ui/primitives";
 
@@ -202,7 +202,8 @@ function JobRow({ job, project, stage }: { job: Job; project?: string; stage?: s
 }
 
 /** The heading of tonight's finals: when the night shift starts, or until when it runs while it is on. */
-function tonightTitle(night: { enabled: boolean; startAt: string; endAt: string } | undefined, now: number, count: number): string {
+function tonightTitle(night: (NightWindow & { enabled: boolean }) | undefined, now: number, count: number): string {
   if (!night?.enabled) return `For tonight, ${count}`;
-  return insideWindow(night.startAt, night.endAt, now) ? `Tonight until ${clock(night.endAt)}, ${count}` : `Tonight at ${clock(night.startAt)}, ${count}`;
+  const c = nightClock(night, now);
+  return insideWindow(night, now) ? `Tonight until ${c.time(night.endAt)}, ${count}` : `Tonight at ${c.time(night.startAt)}, ${count}`;
 }

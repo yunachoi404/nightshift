@@ -133,15 +133,15 @@ function Card({ project, item, boardId, busy, onSeekShot, onAdd }: { project: Pr
 function Thumb({ project, item }: { project: Project; item: Exclude<CanvasItem, { kind: "audio" }> }) {
   const { client } = useEngine();
   const url = (assetId: string) => client.assetUrl(project.id, assetId);
-  if (item.kind === "image") return <Media src={url(item.asset.id)} kind="image" />;
+  if (item.kind === "image") return <Media src={url(item.asset.id)} kind="image" thumb={320} />;
   const pick = item.pick;
   if (!pick) return null;
-  if (pick.asset.kind === "image") return <Media src={url(pick.asset.id)} kind="image" />;
+  if (pick.asset.kind === "image") return <Media src={url(pick.asset.id)} kind="image" thumb={320} />;
   const ratio = project.aspect === "9:16" ? 9 / 16 : project.aspect === "1:1" ? 1 : 16 / 9;
   const length = pick.asset.durationSec ?? 1;
   if (pick.tool) return <Filmstrip src={url(pick.asset.id)} kind="video" start={length * 0.8} duration={length * 0.2} count={1} ratio={ratio} />;
   const start = assetById(project, pick.take?.imageAssetId ?? item.shot.stillAssetId);
-  if (start?.kind === "image") return <Media src={url(start.id)} kind="image" />;
+  if (start?.kind === "image") return <Media src={url(start.id)} kind="image" thumb={320} />;
   return <Filmstrip src={url(pick.asset.id)} kind="video" start={0} duration={length} count={1} ratio={ratio} />;
 }
 

@@ -85,7 +85,7 @@ function Beat({ frame, index, project, disabled, onSave, onRedraw }: {
   return <section className="whatif-beat" aria-label={`Beat ${index + 1}: ${whatIfBeatNames[index]}`}>
     <div className="whatif-beat__head"><span>{index + 1}. {whatIfBeatNames[index]}</span><span className="t-micro t-muted">{index * 5}s</span></div>
     <div className={`frame ${frameClass(project.aspect)} ${frame.stillAssetId ? "" : "frame--empty"}`}>
-      {frame.stillAssetId ? <Media kind="image" src={client.assetUrl(project.id, frame.stillAssetId)} /> : <span className="t-small t-muted">Waiting for this keyframe</span>}
+      {frame.stillAssetId ? <Media kind="image" src={client.assetUrl(project.id, frame.stillAssetId)} thumb={640} /> : <span className="t-small t-muted">Waiting for this keyframe</span>}
     </div>
     <label className="whatif-beat__label" htmlFor={`${frame.id}-visual`}>What we see</label>
     <Textarea id={`${frame.id}-visual`} rows={4} value={prompt} disabled={disabled} onChange={event => setPrompt(event.target.value)}

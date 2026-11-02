@@ -42,6 +42,7 @@ export function createMockClient(flavor: MockFlavor = "dev"): NightshiftClient {
     updateProject: (pid, patch) => call(() => engine.updateProject(pid, patch), 30),
     deleteProject: (pid) => call(() => engine.deleteProject(pid)),
     deleteAsset: (pid, assetId) => call(() => engine.deleteAsset(pid, assetId)),
+    addReference: (pid, body) => call(() => engine.addReference(pid, body)),
     uploadAsset: async (pid, file, opts) => {
       const dataUrl = await fileToSmallDataUrl(file);
       const kind: Asset["kind"] = file.type.startsWith("audio") ? "audio" : "image";

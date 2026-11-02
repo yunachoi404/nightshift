@@ -315,11 +315,12 @@ function planProductAd(ctx: Ctx, voice: VoiceTrack | null, song: SongTrack | nul
   // Without words, the shots play at their own lengths, as much of them as the ad's length holds.
   const wishes = shots.reduce((sum, s) => sum + (s.fixed ?? Math.min(s.desired, s.avail)), 0);
   const picture = words.length ? (words.at(-1) as Word).end + AD_SPEECH_TO_CARD : Math.min(wishes || 4, target - AD_END_CARD);
-  let cardStart = Math.max(picture, floor());
+  // The end card's time is set by the voice and the shots themselves, once. Shots that play again only fill the picture
+  // up to it: a repeat never pushes the card back, or short clips would add as much as they fill, without end.
+  const cardStart = Math.max(picture, floor());
   for (let repeat = 0; shots.length && slots.reduce((sum, s) => sum + s.avail, 0) < cardStart + END_CARD_COVERED && repeat < 200; repeat++) {
     const again = shots[shots.length > 1 ? repeat % (shots.length - 1) : 0] as Source;
     slots.splice(slots.length - (shots.length > 1 ? 1 : 0), 0, again);
-    cardStart = Math.max(cardStart, floor());
   }
   if (slots.length > shots.length) ctx.warnings.push("The shots' videos are shorter than the voiceover, so some play twice. Add shots or shorten the voiceover.");
   const cardLength = words.length ? Math.min(AD_MAX_END_CARD, Math.max(AD_END_CARD, target - cardStart)) : AD_END_CARD;

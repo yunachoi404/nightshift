@@ -14,7 +14,7 @@ respects reduced motion.
 | `push_in` | Kiln & Clay studio |
 | `pull_back` | Kaia in the rain, a generated warrior (see below) |
 | `crash_zoom` | Cobalt ceramic vase |
-| `dolly_zoom` | Kiln & Clay bowl and shelves |
+| `dolly_zoom` | A woman in a red coat in a long hotel corridor (see below) |
 | `crane_up` | Last Ferry harbor |
 
 `pull_back` is newer: Kaia's rain close-up, then the camera backs away and shows the lamplit street. It is a
@@ -28,6 +28,11 @@ SRC=outputs/showcase-v2/cam-pullback-kaia-final.mp4
 ffmpeg -i $SRC -an -vf scale=320:192:flags=lanczos -c:v libx264 -crf 30 -preset veryslow -pix_fmt yuv420p \
   -movflags +faststart pull_back.mp4
 ```
+
+`dolly_zoom` is newer too: the dolly zoom rebuilt on 2 November 2026 (see
+[its report](../../../../research/2026-11-02_dolly_zoom.md)), drawn in the app on a DGX Spark from a Krea 2 still of
+the corridor, seed 7, and copied the same way. Original: `outputs/dolly-zoom-v3/corridor-dolly-zoom-after.mp4`. Its
+WebP is the first frame, saved with Pillow at quality 80.
 
 When changing the catalog, update both preview files and the review evidence.
 Full-size clips stay outside git. The review lists their project IDs and the

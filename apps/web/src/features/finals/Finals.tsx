@@ -9,8 +9,8 @@ import { Star } from "@/ui/Star";
 import { Media } from "@/media/Media";
 import { activeJob, bestAssetFor, draftsFor, failureText, frameClass, jobLabel, jobStatusLine, lastFailed, takeById, timelineShots } from "@/features/project/helpers";
 import { useNow } from "@/lib/useNow";
-import { clock, clockFromDate, plural, roughDuration, shortDuration } from "@/lib/format";
-import { insideWindow, nextWindowStart, tonightStart } from "@/lib/overnight";
+import { plural, roughDuration, shortDuration } from "@/lib/format";
+import { insideWindow, nextWindowStart, nightClock, tonightStart, type NightWindow } from "@/lib/overnight";
 import { useMorningSummary } from "./morning";
 import { RevealSheet } from "@/features/reveal/RevealSheet";
 import { revealable } from "@/features/reveal/reveal";
@@ -58,14 +58,17 @@ function ProjectFinals({ project }: { project: Project }) {
   const tonightSec = overnightJobs.reduce((s, j) => s + secondsLeft(j), 0);
   const startAt = settings?.overnight.startAt ?? "23:00";
   const endAt = settings?.overnight.endAt ?? "07:00";
+  const timeZone = settings?.overnight.timeZone;
   const overnightEnabled = settings?.overnight.enabled ?? true;
   const overnightRunning = overnightJobs.some((j) => j.status === "running");
   const now = useNow(1000, overnightJobs.length > 0 || renderingNow.length > 0);
+  const night = useMemo(() => ({ startAt, endAt, timeZone }), [startAt, endAt, timeZone]);
+  const c = nightClock(night, now);
   const doneBy = useMemo(() => {
     // Running already, or inside the window: count from now. Otherwise from the next time the window opens.
-    const from = overnightRunning || insideWindow(startAt, endAt, now) ? new Date(now) : nextWindowStart(startAt, now);
+    const from = overnightRunning || insideWindow(night, now) ? new Date(now) : nextWindowStart(night, now);
     return new Date(from.getTime() + tonightSec * 1000);
-  }, [startAt, endAt, tonightSec, overnightRunning, now]);
+  }, [night, tonightSec, overnightRunning, now]);
 
   const submit = async (mode: "now" | "overnight") => {
     setBusy(true);
@@ -79,7 +82,7 @@ function ProjectFinals({ project }: { project: Project }) {
       if (mode === "now") toast({ title: `Finishing ${plural(chosen.length, "shot")}`, text: `${cap(roughDuration(totalSec))} in all. You can keep working.`, tone: "accent" });
       else {
         setNightOpen(false);
-        toast({ title: `${plural(chosen.length, "final")} queued for tonight`, text: tonightStart({ startAt, endAt }, Date.now()).text, tone: "night" });
+        toast({ title: `${plural(chosen.length, "final")} queued for tonight`, text: tonightStart(night, Date.now()).text, tone: "night" });
       }
     } catch (e) {
       toast({ title: "Couldn't queue the finals", text: e instanceof Error ? e.message : String(e), tone: "bad" });
@@ -196,7 +199,7 @@ function ProjectFinals({ project }: { project: Project }) {
             </label>
           </div>
           {shots.map((s, i) => (
-            <FinalRow key={s.id} project={project} shot={s} index={i} jobs={jobs} now={now} selected={selected.has(s.id)} selectable={selectable.includes(s)} onToggle={() => toggle(s.id)} onRetry={(k, mode) => s.chosenDraftId && void final(project.id, s.id, { draftId: s.chosenDraftId, kind: k, mode })} onCancel={(j) => void cancelJob(j.id)} />
+            <FinalRow key={s.id} project={project} shot={s} index={i} jobs={jobs} now={now} night={night} selected={selected.has(s.id)} selectable={selectable.includes(s)} onToggle={() => toggle(s.id)} onRetry={(k, mode) => s.chosenDraftId && void final(project.id, s.id, { draftId: s.chosenDraftId, kind: k, mode })} onCancel={(j) => void cancelJob(j.id)} />
           ))}
         </div>
       </div>
@@ -217,7 +220,7 @@ function ProjectFinals({ project }: { project: Project }) {
           </div>
           <div className="insp__kv">
             <span>Tonight, done by</span>
-            <b>{chosen.length ? clockFromDate(new Date(doneBy.getTime() + totalSec * 1000)) : "None"}</b>
+            <b>{chosen.length ? c.at(doneBy.getTime() + totalSec * 1000) : "None"}</b>
           </div>
           <div className="fn-actions">
             <Button variant="primary" icon={<Sun />} disabled={!tier || !chosen.length} busy={busy} onClick={() => void submit("now")}>
@@ -245,11 +248,11 @@ function ProjectFinals({ project }: { project: Project }) {
             </div>
             <div className="insp__kv">
               <span>Starts</span>
-              <b>{overnightRunning ? "Running now" : !overnightEnabled ? "Paused in Settings" : insideWindow(startAt, endAt, now) ? "When the GPU is free" : clock(startAt)}</b>
+              <b>{overnightRunning ? "Running now" : !overnightEnabled ? "Paused in Settings" : insideWindow(night, now) ? "When the GPU is free" : c.time(startAt)}</b>
             </div>
             <div className="insp__kv">
               <span>Done by</span>
-              <b>{overnightEnabled ? `about ${clockFromDate(doneBy)}` : "When runs resume"}</b>
+              <b>{overnightEnabled ? `about ${c.at(doneBy)}` : "When runs resume"}</b>
             </div>
             <div className="insp__text">Keep the computer awake and plugged in. A summary waits here in the morning.</div>
             {overnightJobs.some((j) => j.status === "queued") && !overnightRunning && (
@@ -290,7 +293,7 @@ function ProjectFinals({ project }: { project: Project }) {
             <div>
               <h2 className="dialog__title">Tonight, while you sleep</h2>
               <p className="dialog__text">
-                {insideWindow(startAt, endAt, now) ? `The night shift is on until ${clock(endAt)}. Once the GPU is free, Nightshift` : `At ${clock(startAt)} Nightshift`} renders {plural(chosen.length, "final")} at the heaviest settings this machine allows, one after another. In the morning the finals are here, with a note on how it went.
+                {insideWindow(night, now) ? `The night shift is on until ${c.time(endAt)}. Once the GPU is free, Nightshift` : `At ${c.time(startAt)} Nightshift`} renders {plural(chosen.length, "final")} at the heaviest settings this machine allows, one after another. In the morning the finals are here, with a note on how it went.
               </p>
             </div>
           </div>
@@ -305,9 +308,10 @@ function ProjectFinals({ project }: { project: Project }) {
             </div>
             <div className="night__row">
               <small>Done around</small>
-              <b>{clockFromDate(new Date(doneBy.getTime() + totalSec * 1000))}</b>
+              <b>{c.at(doneBy.getTime() + totalSec * 1000)}</b>
             </div>
           </div>
+          {c.note && <p className="t-small t-muted">{c.note}</p>}
           <p className="t-small t-muted">Keep the computer awake and plugged in. The desktop app keeps it awake for you. Change the window in Settings.</p>
           {!overnightEnabled && <p className="t-small t-muted">This turns overnight runs on. Pause them in Settings.</p>}
           <div className="dialog__actions">
@@ -328,6 +332,7 @@ function FinalRow({
   index,
   jobs,
   now,
+  night,
   selected,
   selectable,
   onToggle,
@@ -339,6 +344,7 @@ function FinalRow({
   index: number;
   jobs: Job[];
   now: number;
+  night: NightWindow;
   selected: boolean;
   selectable: boolean;
   onToggle: () => void;
@@ -363,7 +369,7 @@ function FinalRow({
       </div>
       <div className="fn-row__thumb">
         <div className={cx("frame", frameClass(project.aspect), !best && "frame--empty")}>
-          {best && <Media src={client.assetUrl(project.id, best.asset.id)} kind={best.rung === "still" ? "image" : "video"} />}
+          {best && <Media src={client.assetUrl(project.id, best.asset.id)} kind={best.rung === "still" ? "image" : "video"} thumb={320} />}
           {best?.rung === "final" && (
             <div className="frame__corner">
               <Tag onMedia tone="night">Final</Tag>
@@ -384,7 +390,7 @@ function FinalRow({
         {working ? (
           <>
             <span style={{ display: "flex", justifyContent: "space-between", gap: 8 }}>
-              <span>{jobStatusLine(working, now)}</span>
+              <span>{jobStatusLine(working, now, night)}</span>
               {working.status === "running" && <span className="t-num">{Math.round(working.progress * 100)}%</span>}
             </span>
             <div className={cx("bar", working.mode === "overnight" && "bar--night")}>

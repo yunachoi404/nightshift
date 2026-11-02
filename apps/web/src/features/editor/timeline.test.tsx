@@ -219,8 +219,25 @@ describe("the minimal editor", () => {
     const project = cutProject();
     project.template = "product_ad";
     open(project);
-    await screen.findByRole("slider", { name: "Length of shot 1" });
+    const first = await screen.findByRole("slider", { name: "Length of shot 1" });
     expect(screen.queryByRole("slider", { name: "Length of shot 2" })).toBeNull();
+    // An ad shows no shot for less than 1.5 s, so its handle stops there.
+    expect(first.getAttribute("aria-valuemin")).toBe("1.5");
+    fireEvent.keyDown(first, { key: "ArrowLeft" });
+    fireEvent.keyDown(first, { key: "ArrowLeft" });
+    fireEvent.keyDown(first, { key: "ArrowLeft" });
+    fireEvent.keyDown(first, { key: "ArrowLeft" });
+    fireEvent.keyDown(first, { key: "ArrowLeft" });
+    fireEvent.keyDown(first, { key: "ArrowLeft" });
+    expect(first.getAttribute("aria-valuenow")).toBe("1.5");
+  });
+
+  it("has no end to drag on a cut edited by hand, which is not cut again", async () => {
+    const project = cutProject();
+    project.timeline!.edited = true;
+    open(project);
+    await screen.findByRole("button", { name: /^Shot 2,/ });
+    expect(screen.queryByRole("slider", { name: /^Length of shot/ })).toBeNull();
   });
 
   it("puts a song dropped on the Music lane on the timeline", async () => {

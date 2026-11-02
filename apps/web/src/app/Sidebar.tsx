@@ -12,8 +12,8 @@ import { tonightTally } from "@/features/queue/tonight";
 import { tonightSeconds } from "@/features/queue/plan";
 import { Button, cx } from "@/ui/primitives";
 import { TemplateIcon } from "@/features/project/TemplateIcon";
-import { clock, gb, plural, shortDuration } from "@/lib/format";
-import { insideWindow } from "@/lib/overnight";
+import { gb, plural, shortDuration } from "@/lib/format";
+import { insideWindow, nightClock } from "@/lib/overnight";
 import { useNow } from "@/lib/useNow";
 import { useHardware, useInstalledTier, useThisMachine } from "@/store/tier";
 import { modKey, sidebarShortcut } from "./useSidebar";
@@ -103,7 +103,7 @@ function ProjectItem({ project, current }: { project: Project; current: boolean 
   const cover = coverFor(project);
   return (
     <Link to={`/p/${project.id}`} className="side__item side__item--project" aria-current={current ? "page" : undefined} title={project.name}>
-      <span className="side__thumb">{cover ? <Media src={client.assetUrl(project.id, cover.id)} kind={cover.kind === "video" ? "video" : "image"} /> : <TemplateIcon template={project.template} />}</span>
+      <span className="side__thumb">{cover ? <Media src={client.assetUrl(project.id, cover.id)} kind={cover.kind === "video" ? "video" : "image"} thumb={160} /> : <TemplateIcon template={project.template} />}</span>
       <span className="side__label">{project.name}</span>
     </Link>
   );
@@ -128,8 +128,9 @@ function Tonight() {
   const left = tally.queued + (tally.running ? 1 : 0);
   const total = tally.done + left;
   const on = !!night?.enabled;
-  const open = on && insideWindow(night.startAt, night.endAt, now);
-  const when = !night ? "" : !on ? "Paused" : open ? `until ${clock(night.endAt)}` : clock(night.startAt);
+  const open = on && insideWindow(night, now);
+  const c = nightClock(night, now);
+  const when = !night ? "" : !on ? "Paused" : open ? `until ${c.time(night.endAt)}` : c.time(night.startAt);
   // The same words and numbers as the Queue's Tonight.
   const work = shortDuration(tonightSeconds(jobs, tier, now));
   const text = !on ? `${plural(left, "final")} queued. The night shift is off in Settings.` : open && total > left ? `${tally.done} of ${plural(total, "final")} done, about ${work} left` : `${plural(left, "final")}, about ${work} of work`;

@@ -1,4 +1,4 @@
-import { windowOpenedAt } from "@/lib/overnight";
+import { windowOpenedAt, type NightWindow } from "@/lib/overnight";
 import type { Job } from "@nightshift/contract";
 
 /** Finals for the night that share a model and run back to back (Job.nightGroup). */
@@ -59,8 +59,8 @@ export interface TonightTally {
  * Tonight's finals: queued ones wait for the window; once it is open, those it finished count as done. Before the window
  * opens nothing is done yet, so last night's finals never fill tonight's bar.
  */
-export function tonightTally(jobs: Job[], night: { startAt: string; endAt: string } | undefined, now: number): TonightTally {
-  const opened = night ? windowOpenedAt(night.startAt, night.endAt, now) : null;
+export function tonightTally(jobs: Job[], night: NightWindow | undefined, now: number): TonightTally {
+  const opened = night ? windowOpenedAt(night, now) : null;
   const since = opened?.getTime();
   const overnight = jobs.filter((j) => j.mode === "overnight");
   const running = overnight.find((j) => j.status === "running");

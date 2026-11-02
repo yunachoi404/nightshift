@@ -22,6 +22,19 @@ export const SettingsPatchSchema = z
 
 export type SettingsPatch = z.infer<typeof SettingsPatchSchema> & { remote?: Settings["remote"] };
 
+/**
+ * The time zone this engine's clock is in (IANA, "America/Los_Angeles"): the one the overnight window opens and closes
+ * in (`inWindow` reads the local clock). The TZ variable sets it, else the system's.
+ */
+export function engineTimeZone(): string {
+  return Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
+}
+
+/** The overnight window as saved: its zone is the engine's, added on every read and never saved. */
+function savedWindow(w: Settings["overnight"]): Settings["overnight"] {
+  return { enabled: w.enabled, startAt: w.startAt, endAt: w.endAt };
+}
+
 export class SettingsStore {
   private current: Settings = structuredClone(DEFAULT_SETTINGS);
 
@@ -30,19 +43,22 @@ export class SettingsStore {
   async load(): Promise<Settings> {
     const raw = await readJson<unknown>(this.path);
     const parsed = SettingsSchema.safeParse(raw);
-    this.current = parsed.success ? { ...parsed.data, remote: parsed.data.remote ?? null } : structuredClone(DEFAULT_SETTINGS);
+    this.current = parsed.success ? { ...parsed.data, overnight: savedWindow(parsed.data.overnight), remote: parsed.data.remote ?? null } : structuredClone(DEFAULT_SETTINGS);
     return this.get();
   }
 
+  /** The settings, with the overnight window's time zone: the engine's own, so a browser elsewhere reads its times right. */
   get(): Settings {
-    return structuredClone(this.current);
+    const out = structuredClone(this.current);
+    out.overnight.timeZone = engineTimeZone();
+    return out;
   }
 
   async update(patch: SettingsPatch): Promise<Settings> {
     const next: Settings = {
       tier: patch.tier !== undefined ? patch.tier : this.current.tier,
       memoryLimitGb: patch.memoryLimitGb !== undefined ? patch.memoryLimitGb : this.current.memoryLimitGb,
-      overnight: { ...this.current.overnight, ...patch.overnight },
+      overnight: savedWindow({ ...this.current.overnight, ...patch.overnight }),
       remote: patch.remote !== undefined ? patch.remote : (this.current.remote ?? null),
     };
     this.current = SettingsSchema.parse(next);

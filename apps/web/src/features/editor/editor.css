@@ -220,9 +220,11 @@
   text-transform: uppercase;
 }
 
-/* inspector: Captions, then Export, in one column that scrolls as a whole. */
+/* inspector: Captions, then Export, in one column that scrolls as a whole. Its scrollbar's room is kept, so nothing
+   shifts sideways when an export's result makes the column tall enough to scroll. */
 .ed__side {
   min-height: 0;
+  scrollbar-gutter: stable;
 }
 /* Export is the end of the work: it sits at the foot of the inspector, whatever is above it. */
 .insp--export {

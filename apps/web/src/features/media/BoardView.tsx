@@ -295,14 +295,19 @@ function BoardHead({ board, variant, title, steps, main }: { board: CanvasBoard;
   );
 }
 
+/** The writer at work, with a way to stop it: on a small GPU each try takes minutes, and it may try three times. */
 function WritingLine({ job, project }: { job: Job; project: Project }) {
+  const { cancelJob } = useEngine();
   const now = useNow(1000, job.status === "running");
   const what = project.template === "what_if" ? "Writing your story" : "Writing the shot list";
   return (
     <div className="mp-board__status" role="status">
       <span className={cx("pulse", job.status !== "running" && "pulse--still")} />
       {/* A running text job's stage is "Writing" too, so only its time follows. */}
-      {job.status === "queued" ? jobStatusLine(job) : [what, jobElapsed(job, now)].filter(Boolean).join(", ")}
+      <span>{job.status === "queued" ? jobStatusLine(job) : [what, jobElapsed(job, now)].filter(Boolean).join(", ")}</span>
+      <Button size="s" variant="quiet" onClick={() => void cancelJob(job.id).catch((e) => toast({ title: "Couldn't stop the writer", text: e instanceof Error ? e.message : String(e), tone: "bad" }))}>
+        Cancel
+      </Button>
     </div>
   );
 }
@@ -312,7 +317,7 @@ function WritingLine({ job, project }: { job: Job; project: Project }) {
  * film that still has the template's shots says so, and can use them: the note goes and their stills are drawn. One
  * whose own list stayed can dismiss the note.
  */
-function WriterNote({ note, project, stills = [] }: { note: string; project: Project; stills?: Shot[] | undefined }) {
+export function WriterNote({ note, project, stills = [] }: { note: string; project: Project; stills?: Shot[] | undefined }) {
   const { storyboard, updateProject, still } = useEngine();
   const tier = useInstalledTier();
   const [busy, setBusy] = useState(false);

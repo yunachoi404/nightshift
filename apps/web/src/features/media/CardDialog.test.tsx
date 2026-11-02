@@ -3,7 +3,7 @@
  * Escape closes an open tool before the card. Edit image redraws the card's still as an edit, following a few words,
  * where the setup has an image edit step.
  */
-import type { Asset, DraftRequest, Event, Job, Project, Settings, StillRequest, TierSummary } from "@nightshift/contract";
+import type { AddReferenceRequest, Asset, DraftRequest, Event, Job, Project, Settings, StillRequest, TierSummary } from "@nightshift/contract";
 import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { MemoryRouter, Route, Routes } from "react-router";
 import { beforeAll, describe, expect, it, vi } from "vitest";
@@ -97,6 +97,7 @@ class FakeEngine {
   stills: Array<{ shotId: string; body: StillRequest | undefined }> = [];
   drafts: Array<{ shotId: string; body: DraftRequest | undefined }> = [];
   patches: ProjectPatch[] = [];
+  references: AddReferenceRequest[] = [];
   tier: TierSummary = TIER;
   settings: Settings = { tier: "apple-64", memoryLimitGb: null, overnight: { enabled: false, startAt: "23:00", endAt: "07:00" }, remote: null } as Settings;
 
@@ -118,6 +119,13 @@ class FakeEngine {
         answer(() => {
           this.patches.push(structuredClone(patch));
           this.project = { ...this.project, ...patch } as Project;
+          return this.project;
+        }),
+      addReference: (_id, body) =>
+        answer(() => {
+          this.references.push(structuredClone(body));
+          const asset: Asset = { id: `ref_asset_${this.references.length}`, kind: "image", path: "copy.png", role: "reference", createdAt: iso(9) };
+          this.project = { ...this.project, assets: [...this.project.assets, asset], references: [...(this.project.references ?? []), { id: `ref_${this.references.length}`, assetId: asset.id, kind: body.kind, label: body.label, copiedFrom: body.assetId }] };
           return this.project;
         }),
       still: (_id, shotId, body) =>
@@ -294,6 +302,74 @@ describe("Card popup", () => {
     const card = await openCard("Open Camera move, Dolly in");
     expect(within(card.dialog).queryByRole("button", { name: "Edit image" })).toBeNull();
     expect(within(card.dialog).queryByRole("button", { name: "Redraw still" })).toBeNull();
+  });
+});
+
+describe("references on a card", () => {
+  /** The ferry, in a project with three references, on a setup that draws from up to three. */
+  function withReferences(): FakeEngine {
+    const engine = new FakeEngine(ferry());
+    engine.tier = { ...TIER, referenceImageLimit: 3 };
+    const ref = (id: string, label: string, kind: "character" | "place") => ({ id, assetId: `img_${id}`, kind, label });
+    engine.project.assets.push(...["rin", "mochi", "shop"].map((id): Asset => ({ id: `img_${id}`, kind: "image", path: `${id}.png`, role: "reference", createdAt: iso(5) })));
+    engine.project.references = [ref("rin", "Rin", "character"), ref("mochi", "Mochi", "character"), ref("shop", "The shop", "place")];
+    return engine;
+  }
+  // The prompt panel has references of its own: these are the card's.
+  const chips = () => within(within(screen.getByRole("dialog")).getByRole("group", { name: "References" }));
+  const chip = (name: string) => chips().getByRole("button", { name });
+
+  it("shows the shot's references as chips that switch for this shot, and Edit image says which it keeps", async () => {
+    const engine = withReferences();
+    show(engine);
+    const { dialog } = await openCard();
+    // A shot that never chose is drawn with the project's first three.
+    for (const name of ["Rin", "Mochi", "The shop"]) expect(chip(name).getAttribute("aria-pressed")).toBe("true");
+    expect(within(dialog).getByText("3 of 3")).toBeTruthy();
+    expect(within(dialog).getByText("Redraw still and Edit image keep their look.")).toBeTruthy();
+
+    fireEvent.click(chip("The shop"));
+    await waitFor(() => expect(engine.patches).toHaveLength(1));
+    expect(engine.patches[0]!.shots?.[0]).toMatchObject({ id: "shot_1", referenceIds: ["rin", "mochi"] });
+    await waitFor(() => expect(chip("The shop").getAttribute("aria-pressed")).toBe("false"));
+
+    fireEvent.click(within(dialog).getByRole("button", { name: "Edit image" }));
+    const form = within(dialog).getByRole("form", { name: "Edit image" });
+    expect(within(form).getByText(/Keeps the look of Rin and Mochi\./)).toBeTruthy();
+
+    // Three on is one too many for an edit: the form says so and will not send it.
+    fireEvent.click(chip("The shop"));
+    await waitFor(() => expect(within(form).getByText(/An edit keeps up to 2 references\. Switch one off above\./)).toBeTruthy());
+    fireEvent.change(within(form).getByRole("textbox", { name: "What to change" }), { target: { value: "Make it night" } });
+    expect((within(form).getByRole("button", { name: "Make the edit" }) as HTMLButtonElement).disabled).toBe(true);
+    fireEvent.submit(form);
+    expect(engine.stills).toHaveLength(0);
+  });
+
+  it("Use as reference makes the still on show a reference of the project, named and kinded in the card", async () => {
+    const engine = new FakeEngine(ferry());
+    engine.tier = { ...TIER, referenceImageLimit: 3 };
+    show(engine);
+    const { dialog } = await openCard();
+    expect(within(dialog).getByText("None yet. Use this still as one, and other pictures can keep its look.")).toBeTruthy();
+    fireEvent.click(chip("Use as reference"));
+    const named = within(dialog).getByRole("group", { name: "New reference" });
+    const add = within(named).getByRole("button", { name: "Add reference" }) as HTMLButtonElement;
+    expect(add.disabled).toBe(true);
+    fireEvent.change(within(named).getByRole("textbox", { name: "Name" }), { target: { value: "The ferry" } });
+    fireEvent.click(within(named).getByRole("radio", { name: "Place" }));
+    fireEvent.click(add);
+    await waitFor(() => expect(engine.references).toEqual([{ assetId: "still_1", label: "The ferry", kind: "place" }]));
+    // The new reference is a chip, and this still is not offered again.
+    await waitFor(() => expect(chip("The ferry")).toBeTruthy());
+    expect(chips().queryByRole("button", { name: "Use as reference" })).toBeNull();
+    expect(await screen.findByText("The ferry is a reference")).toBeTruthy();
+  });
+
+  it("shows no references where the setup cannot draw from them", async () => {
+    show(new FakeEngine(ferry()));
+    const { dialog } = await openCard();
+    expect(within(dialog).queryByRole("group", { name: "References" })).toBeNull();
   });
 });
 

@@ -17,10 +17,10 @@ import { Moon as MoonPhase } from "@/ui/Moon";
 import { Media } from "@/media/Media";
 import { activeJob, failureText, frameClass, jobStatusLine, lastFailed } from "@/features/project/helpers";
 import { useNow } from "@/lib/useNow";
-import { tonightStart } from "@/lib/overnight";
+import { nightClock, tonightStart } from "@/lib/overnight";
 import { finalKindFor } from "@/features/finals/finishAll";
 import { clearFreshPick, useFreshPick } from "@/features/takes/freshPicks";
-import { clock, plural, relativeTime, roughDuration } from "@/lib/format";
+import { plural, relativeTime, roughDuration } from "@/lib/format";
 import { EffectPicker } from "@/features/newproject/EffectFields";
 import { CameraMovePicker, cameraPhotoHint } from "@/features/newproject/CameraMoveFields";
 import { RevealSheet } from "@/features/reveal/RevealSheet";
@@ -29,6 +29,7 @@ import { useMedia } from "./context";
 import { ownsArrowKeys, versionKey } from "./dialogKeys";
 import { CARD_STEPS, FINAL_STEPS, TAKE_STEPS, cameraMoveLabel, canAddToTimeline, canRestore, placeOnTimeline, restingTime, restore, shotHistory, shotLabel, shotPatch, takeOffTimeline, versionLabel, withoutCard, type Version } from "./items";
 import { toolBlocked } from "./PromptPanel";
+import { CardReferences, editReferences, namesOf } from "./CardReferences";
 import "./carddialog.css";
 
 export function CardDialog({ shotId, onClose }: { shotId: string | null; onClose: () => void }) {
@@ -152,6 +153,8 @@ function CardBody({ shot, onClose }: { shot: Shot; onClose: () => void }) {
   const upscale = upscaleOnly(tier);
   const canFinish = pick?.rung === "draft" && shot.chosenDraftId === pick.take?.id && !!finalKind;
   const night = settings?.overnight ?? { enabled: true, startAt: "23:00", endAt: "07:00" };
+  // The window's times on the engine's clock, which is not this browser's on a shared preview.
+  const nightTimes = nightClock(night, Date.now());
   const overnightOn = night.enabled;
   const reveal = revealable(project, shot);
 
@@ -183,9 +186,14 @@ function CardBody({ shot, onClose }: { shot: Shot; onClose: () => void }) {
   const editSec = tier?.estimates?.effect_end_frame?.seconds;
   const editModel = tier?.models?.effect_end_frame;
   const editCost = editSec && editModel ? `${sentenceCase(roughDuration(editSec))} with ${editModel}.` : editSec ? `${sentenceCase(roughDuration(editSec))}.` : editModel ? `Made with ${editModel}.` : "";
+  // References: the card draws and edits with its own. An edit has one place fewer: the image it changes takes one.
+  const refLimit = quick || whatIf ? 0 : Math.min(3, tier?.referenceImageLimit ?? 0);
+  const editSlots = Math.max(0, refLimit - 1);
+  const editKeeps = editReferences(project, shot, editSlots);
+  const editRefsNote = editKeeps.tooMany ? `An edit keeps up to ${plural(editSlots, "reference")}. Switch one off above.` : editKeeps.refs.length ? `Keeps the look of ${namesOf(editKeeps.refs)}.` : "";
   const makeEdit = () => {
     const words = instruction.trim();
-    if (!words || !editFrom || editBlocked) return;
+    if (!words || !editFrom || editBlocked || editKeeps.tooMany) return;
     void run("edit", async () => {
       await still(project.id, shot.id, { prompt: words, editFrom });
       setInstruction("");
@@ -239,7 +247,7 @@ function CardBody({ shot, onClose }: { shot: Shot; onClose: () => void }) {
       ) : (
         <span className="pulse pulse--still" aria-hidden />
       )}
-      <span className="cd-status__text">{jobStatusLine(job, now)}</span>
+      <span className="cd-status__text">{jobStatusLine(job, now, night)}</span>
       {job === finishing && (
         <Button size="s" variant="quiet" onClick={() => void cancelJob(job.id).catch(() => undefined)}>
           Cancel
@@ -338,7 +346,7 @@ function CardBody({ shot, onClose }: { shot: Shot; onClose: () => void }) {
                   </div>
                 </div>
                 <div className="cd-ver__kind">{job.step === "still" ? "Still" : FINAL_STEPS.includes(job.step as never) ? "Final" : "Take"}</div>
-                <div className="cd-ver__time">{jobStatusLine(job, now)}</div>
+                <div className="cd-ver__time">{jobStatusLine(job, now, night)}</div>
               </div>
             )}
           </div>
@@ -468,10 +476,10 @@ function CardBody({ shot, onClose }: { shot: Shot; onClose: () => void }) {
                 >
                   <Input autoFocus aria-label="What to change" value={instruction} onChange={(e) => setInstruction(e.target.value)} placeholder="Make it night, remove the car" maxLength={3000} />
                   <p className="cd-text">
-                    {selected?.rung === "still" ? "Edits the still on show." : "Edits the card's still."} The result is a new version of this card. {editCost}
+                    {selected?.rung === "still" ? "Edits the still on show." : "Edits the card's still."} {editRefsNote} The result is a new version of this card. {editCost}
                   </p>
                   <div className="cd-row cd-row--end">
-                    <Button type="submit" size="s" variant="primary" busy={busy === "edit"} disabled={!instruction.trim() || !!editBlocked}>
+                    <Button type="submit" size="s" variant="primary" busy={busy === "edit"} disabled={!instruction.trim() || !!editBlocked || editKeeps.tooMany}>
                       Make the edit
                     </Button>
                   </div>
@@ -479,6 +487,8 @@ function CardBody({ shot, onClose }: { shot: Shot; onClose: () => void }) {
               )}
             </section>
           )}
+
+          {refLimit > 0 && <CardReferences shot={shot} still={editFrom} limit={refLimit} />}
 
           <Section title="New version">
             {!quick && !whatIf && (
@@ -645,8 +655,9 @@ function CardBody({ shot, onClose }: { shot: Shot; onClose: () => void }) {
                   <div className="cd-night">
                     <b>Tonight, while you sleep</b>
                     <p>
-                      {tonightStart(night, Date.now()).open ? `The night shift is on until ${clock(night.endAt)}. Once the GPU is free, Nightshift` : `At ${clock(night.startAt)} Nightshift`} renders this final at the heaviest settings this machine allows. In the morning it is here.
+                      {tonightStart(night, Date.now()).open ? `The night shift is on until ${nightTimes.time(night.endAt)}. Once the GPU is free, Nightshift` : `At ${nightTimes.time(night.startAt)} Nightshift`} renders this final at the heaviest settings this machine allows. In the morning it is here.
                     </p>
+                    {nightTimes.note && <p className="cd-night__quiet">{nightTimes.note}</p>}
                     <p className="cd-night__quiet">Keep the computer awake and plugged in. The desktop app keeps it awake for you.{overnightOn ? "" : " This turns overnight runs on. Pause them in Settings."}</p>
                     <div className="cd-row cd-row--end">
                       <Button size="s" variant="quiet" onClick={() => setOpen(null)}>
@@ -813,7 +824,7 @@ function VersionTile({
         onClick={onSelect}
       >
         <div className={cx("frame cd-ver__frame", aspect)}>
-          <Media src={client.assetUrl(project.id, version.asset.id)} kind={version.rung === "still" ? "image" : "video"} {...(rest !== undefined ? { time: rest } : {})} />
+          <Media src={client.assetUrl(project.id, version.asset.id)} kind={version.rung === "still" ? "image" : "video"} thumb={320} {...(rest !== undefined ? { time: rest } : {})} />
           {version.pick && (
             <div className="cd-ver__pick">
               <PickTag />

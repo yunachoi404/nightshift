@@ -15,6 +15,7 @@ import type {
   RuntimeStatus,
   Settings,
   StillRequest,
+  AddReferenceRequest,
   TemplateId,
   TierId,
   TierSummary,
@@ -97,6 +98,8 @@ export interface NightshiftClient {
   deleteProject(id: string): Promise<void>;
   /** Deletes an uploaded image (a reference or a photo) and its links. */
   deleteAsset(id: string, assetId: string): Promise<void>;
+  /** Makes an image of the project a reference: the engine copies it into a reference of its own. */
+  addReference(id: string, body: AddReferenceRequest): Promise<Project>;
   /** Uploads a user file (reference photo, song, voice) into the project. `role` defaults as the engine decides; `boardId` files it in that board. */
   uploadAsset(id: string, file: File, opts?: { role?: "reference" | "music" | "voice"; boardId?: string }): Promise<import("@nightshift/contract").Asset>;
 

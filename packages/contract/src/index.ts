@@ -256,7 +256,17 @@ export const SettingsSchema = z.object({
   tier: TierIdSchema.nullable(),
   /** Most memory the app may use. Turns into ComfyUI launch flags. null = the recipe default. */
   memoryLimitGb: z.number().nullable(),
-  overnight: z.object({ enabled: z.boolean(), startAt: z.string(), endAt: z.string() }), // "23:00"
+  overnight: z.object({
+    enabled: z.boolean(),
+    startAt: z.string(), // "23:00"
+    endAt: z.string(), // "07:00"
+    /**
+     * The engine's time zone (IANA, "America/Los_Angeles"). The engine opens and closes the window on its own clock, so
+     * startAt and endAt are times there, not in the browser's zone. Set by the engine on every read; a PATCH ignores it.
+     * Absent from older engines: read the times on the browser's clock.
+     */
+    timeZone: z.string().optional(),
+  }),
   /**
    * The GPU computer this app sends its work to, when it is not this machine (for example a DGX Spark on the same
    * network). null or absent = this machine. Set through POST /api/remote, cleared through DELETE /api/remote.
@@ -539,6 +549,8 @@ export const ReferenceSchema = z.object({
   kind: z.enum(["character", "product", "place", "style"]),
   /** How prompts name it, e.g. "Mara" or "the Solenne bottle". */
   label: z.string().trim().min(1).max(80),
+  /** The project image it was copied from (a card's still, by Use as reference), so that image is not offered twice. */
+  copiedFrom: z.string().min(1).optional(),
 });
 
 /**
@@ -729,8 +741,23 @@ export const StillRequestSchema = z.object({
   /**
    * Draw the still as an edit of this image (an image asset of the project), following `prompt` as the instruction:
    * "make it night", "remove the car". Only on recipes with an image edit step (effect_end_frame, FLUX.2 Klein edit).
+   * The edit keeps the look of the shot's references (`Shot.referenceIds`), up to one fewer than a still takes: the
+   * image being edited takes the first place. A card made with the edit tool starts with none.
    */
   editFrom: z.string().min(1).optional(),
+});
+
+/**
+ * Makes an image of the project a reference ("Use as reference" on a card). The engine copies the image into an
+ * uploaded reference of its own (an asset with role "reference"), so redrawing or deleting the card never changes it,
+ * and adds it to the project's references (its `copiedFrom` names the image). The copy goes on `boardId`, else on the board of the card whose still it
+ * is, else on the first board. In a product ad, the first product reference is also the end card's photo.
+ */
+export const AddReferenceRequestSchema = z.object({
+  assetId: z.string().min(1),
+  kind: ReferenceSchema.shape.kind,
+  label: ReferenceSchema.shape.label,
+  boardId: z.string().min(1).optional(),
 });
 
 /** `tool`: make the draft with an effect or a camera move on the shot's still, a new version of the shot. */
@@ -812,6 +839,15 @@ export const ErrorResponseSchema = z.object({ error: z.string(), issues: z.array
 
 // ---------------------------------------------------------------- HTTP API
 
+/**
+ * The widths a poster comes in, for `GET /api/projects/:id/assets/:assetId?w=N`: a picture, or a video's first frame,
+ * scaled down to N pixels wide (never up), for the small pictures of the UI. JPEG, or PNG for a picture with
+ * transparency. Any other N is rounded up to the next of these, and anything wider to the widest. Made on first ask and
+ * kept in the project's folder. An engine that cannot make one sends a picture's own file, and a 404 for a video.
+ */
+export const POSTER_WIDTHS = [160, 320, 640] as const;
+export type PosterWidth = (typeof POSTER_WIDTHS)[number];
+
 /** Every route the engine serves. Bodies and responses use the schemas above. */
 export const routes = {
   hardware: "GET /api/hardware", // -> HardwareProfile: the manual one if saved (source: manual), else detected
@@ -846,8 +882,9 @@ export const routes = {
   cancelJob: "POST /api/jobs/:id/cancel", // -> Job
   jobMode: "POST /api/jobs/:id/mode", // JobModeRequest -> Job. A queued final only (409 otherwise)
   deleteAsset: "DELETE /api/projects/:id/assets/:assetId", // Delete an uploaded reference and remove its project and shot links
+  addReference: "POST /api/projects/:id/references", // AddReferenceRequest -> Project. Copies an image of the project into a new reference
   uploadAsset: "POST /api/projects/:id/assets", // multipart, field "file" (reference photo, song, voice sample) -> Asset. Role: ?role= if given, else "music" for audio in a music_video project, else "reference". ?board= puts it on that board. A song or voiceover queues an analysis job
-  asset: "GET /api/projects/:id/assets/:assetId", // -> file bytes (supports Range)
+  asset: "GET /api/projects/:id/assets/:assetId", // -> file bytes (supports Range). ?w=N: a small poster instead, see POSTER_WIDTHS
   events: "GET /api/events", // SSE stream of Event
 } as const;
 
@@ -899,6 +936,7 @@ export type RemoteUseRequest = z.infer<typeof RemoteUseRequestSchema>;
 export type CreateProjectRequest = z.input<typeof CreateProjectRequestSchema>;
 export type UpdateProjectRequest = z.infer<typeof UpdateProjectRequestSchema>;
 export type StillRequest = z.infer<typeof StillRequestSchema>;
+export type AddReferenceRequest = z.infer<typeof AddReferenceRequestSchema>;
 export type DraftRequest = z.infer<typeof DraftRequestSchema>;
 export type MakeRequest = z.infer<typeof MakeRequestSchema>;
 export type FinalRequest = z.infer<typeof FinalRequestSchema>;

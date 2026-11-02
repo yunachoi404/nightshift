@@ -6,15 +6,16 @@
  * column of its own beside them. Every section shows even when it is empty, saying what goes in it, so the page always
  * reads as the queue.
  */
-import type { Job, Project, TierSummary } from "@nightshift/contract";
+import type { Job, PosterWidth, Project, TierSummary } from "@nightshift/contract";
 import { FileText, Film, Mic, Moon as MoonIcon, Music2, RotateCcw, X } from "lucide-react";
-import { Fragment, useState, type ReactNode } from "react";
+import { Fragment, useState, type CSSProperties, type ReactNode } from "react";
 import { Link } from "react-router";
 import { useCompute } from "@/app/ComputePopover";
 import { retryFor } from "@/features/media/items";
 import { failureReason, fitFor, isActive, jobLabel, jobPicture, jobStage, timelineShots } from "@/features/project/helpers";
 import { TemplateIcon } from "@/features/project/TemplateIcon";
 import { clock, clockFromDate, pct, plural, relativeTime, shortDuration } from "@/lib/format";
+import { nightClock } from "@/lib/overnight";
 import { useNow } from "@/lib/useNow";
 import { Media } from "@/media/Media";
 import { useEngine, useEngineState, useJobs } from "@/store/engine";
@@ -107,7 +108,7 @@ function Live({ job, left, now, away, host }: { job: Job; left: number | null; n
   const time = away ? null : left === null ? (elapsed >= 1 ? `${shortDuration(elapsed)} so far` : null) : left < 10 ? "Almost done" : `About ${shortDuration(left)} left`;
   return (
     <div className={cx("q-live", night && "q-live--night", away && "q-live--away")}>
-      <Picture job={job} project={p} className="q-live__pic">
+      <Picture job={job} project={p} className="q-live__pic" thumb={640}>
         {!away && (
           <span className="q-live__progress" aria-hidden>
             <span style={{ width: `${job.progress * 100}%` }} />
@@ -160,7 +161,7 @@ function Free({ plan, away, host }: { plan: QueuePlan; away: boolean; host: stri
     text = host ? "It is busy with other work or can't be reached. Queued work starts on its own when it is free." : "It is starting or busy. Queued work starts on its own when it is back.";
   } else if (tonight.length && night && !plan.nightOpen) {
     const one = tonight.length === 1;
-    text = night.enabled ? `Tonight's ${plural(tonight.length, "final")} ${one ? "starts" : "start"} at ${clock(night.startAt)}` : `Tonight's ${plural(tonight.length, "final")} ${one ? "waits" : "wait"}. The night shift is off in Settings.`;
+    text = night.enabled ? `Tonight's ${plural(tonight.length, "final")} ${one ? "starts" : "start"} at ${nightClock(night, Date.now()).time(night.startAt)}` : `Tonight's ${plural(tonight.length, "final")} ${one ? "waits" : "wait"}. The night shift is off in Settings.`;
     const startAll = async () => {
       setBusy(true);
       try {
@@ -262,13 +263,15 @@ function TonightSection({ plan, now }: { plan: QueuePlan; now: number }) {
   const late = finals.filter((s) => s.later).length;
   const paused = !!night && !night.enabled;
   const running = plan.gpu?.mode === "overnight" ? plan.gpu : undefined;
+  // Tonight's times are on the engine's clock: with its zone named when that is not this browser's.
+  const c = nightClock(night, now);
   return (
     <section className="q-sec q-tonight" aria-labelledby="q-tonight">
       <header className="q-sec__head">
         <h2 id="q-tonight" className="q-sec__title">
           Tonight
         </h2>
-        {night && <span className="q-sec__meta t-num">{paused ? "Paused" : `${clock(night.startAt)} to ${clock(night.endAt)}`}</span>}
+        {night && <span className="q-sec__meta t-num">{paused ? "Paused" : `${clock(night.startAt)} to ${c.time(night.endAt)}`}</span>}
         <Link to="/settings" className="q-sec__link">
           {paused ? "Turn it on" : "Change the hours"}
         </Link>
@@ -278,6 +281,7 @@ function TonightSection({ plan, now }: { plan: QueuePlan; now: number }) {
           className="q-arc"
           startAt={night.startAt}
           endAt={night.endAt}
+          timeZone={night.timeZone}
           enabled={night.enabled}
           now={now}
           finals={[
@@ -288,7 +292,7 @@ function TonightSection({ plan, now }: { plan: QueuePlan; now: number }) {
       )}
       {count === 0 && !running && <p className="q-empty">No finals for tonight. On a take you like, choose Finish tonight and it renders here while you sleep.</p>}
       {late > 0 && <p className="q-note">{late === count ? "These finals don't fit in tonight's window. They run tomorrow night." : `${plural(late, "final")} don't fit in tonight's window. They run tomorrow night.`}</p>}
-      <ol className="q-line q-line--night">
+      <ol className={cx("q-line q-line--night", c.label && "q-line--zoned")} style={c.label ? ({ "--zone-chars": c.label.length } as CSSProperties) : undefined}>
         {plan.tonight.map((g, gi) => (
           <Fragment key={g.slots[0]!.job.id}>
             <li className="q-group" aria-label={`${g.name}, ${plural(g.slots.length, "final")}`}>
@@ -302,7 +306,7 @@ function TonightSection({ plan, now }: { plan: QueuePlan; now: number }) {
               <Row
                 key={s.job.id}
                 job={s.job}
-                when={s.at !== null ? <span className="t-num">{clockFromDate(new Date(s.at))}</span> : null}
+                when={s.at !== null ? <span className="t-num">{c.at(s.at)}</span> : null}
                 node={<MoonIcon className="q-row__crescent" aria-hidden />}
                 status={s.later ? "Tomorrow night" : paused ? "Waits until the night shift is on" : waitText(s.job, false)}
                 actions={
@@ -456,14 +460,14 @@ function ProjectLink({ job, project, className }: { job: Job; project: Project |
 }
 
 /** The picture of what a job makes, on the dark frame; a song, a voice or a shot list shows its kind. */
-function Picture({ job, project, className, children }: { job: Job; project: Project | undefined; className?: string; children?: ReactNode }) {
+function Picture({ job, project, className, thumb = 160, children }: { job: Job; project: Project | undefined; className?: string; thumb?: PosterWidth; children?: ReactNode }) {
   const { client } = useEngine();
   const asset = project ? jobPicture(project, job) : undefined;
   const Icon = job.step === "export" ? Film : job.step === "music" ? Music2 : job.step === "voice" ? Mic : job.step === "text" ? FileText : null;
   return (
     <span className={cx("q-pic", className)}>
       {asset ? (
-        <Media src={client.assetUrl(job.projectId, asset.id)} kind={asset.kind === "video" ? "video" : "image"} fit={fitFor(asset, 16 / 9)} />
+        <Media src={client.assetUrl(job.projectId, asset.id)} kind={asset.kind === "video" ? "video" : "image"} thumb={thumb} fit={fitFor(asset, 16 / 9)} />
       ) : Icon ? (
         <Icon className="q-pic__icon" aria-hidden />
       ) : project ? (

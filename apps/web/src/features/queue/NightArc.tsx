@@ -5,7 +5,8 @@
  * night shift in Settings draw the same arc.
  */
 import type { Job, TierSummary } from "@nightshift/contract";
-import { clock, clockFromDate, plural, shortDuration } from "@/lib/format";
+import { clock, plural, shortDuration } from "@/lib/format";
+import { minutesOnClock, nextWindowStart, nightClock, windowOpenedAt } from "@/lib/overnight";
 import { moonPath } from "@/ui/Moon";
 import { cx } from "@/ui/primitives";
 import "./night-arc.css";
@@ -54,19 +55,21 @@ export interface ArcFinal {
   at?: number;
 }
 
-export function NightArc({ startAt, endAt, enabled, finals, now, className }: { startAt: string; endAt: string; enabled: boolean; finals: ArcFinal[]; now: number; className?: string }) {
+/**
+ * `timeZone`: the engine's, whose clock the window is on (see lib/overnight). The arc runs on that clock, and its times
+ * name the zone when it is not this browser's.
+ */
+export function NightArc({ startAt, endAt, timeZone, enabled, finals, now, className }: { startAt: string; endAt: string; timeZone?: string | undefined; enabled: boolean; finals: ArcFinal[]; now: number; className?: string }) {
+  const night = { startAt, endAt, timeZone };
+  const c = nightClock(night, now);
   const start = minutesOf(startAt);
   const length = (minutesOf(endAt) - start + 1440) % 1440 || 1440;
-  const d = new Date(now);
-  const sinceStart = (d.getHours() * 60 + d.getMinutes() - start + 1440) % 1440;
+  const sinceStart = (minutesOnClock(night, now) - start + 1440) % 1440;
   const open = enabled && sinceStart < length;
   const f = (minutesFromStart: number) => minutesFromStart / length;
 
   // When tonight's window opens (or opened, while it is open), to place finals planned at a time.
-  const dusk = new Date(now);
-  dusk.setHours(Math.floor(start / 60), start % 60, 0, 0);
-  if (open && dusk.getTime() > now) dusk.setDate(dusk.getDate() - 1);
-  if (!open && dusk.getTime() <= now) dusk.setDate(dusk.getDate() + 1);
+  const dusk = (open ? windowOpenedAt(night, now) : null) ?? nextWindowStart(night, now);
 
   // Tonight's finals in the order they run, at their planned times, else one after another from now while the window
   // is open, or from dusk.
@@ -79,7 +82,7 @@ export function NightArc({ startAt, endAt, enabled, finals, now, className }: { 
   });
   const total = finals.reduce((s, x) => s + x.seconds, 0);
   const last = finals.at(-1);
-  const endsAt = last?.at !== undefined ? new Date(last.at + last.seconds * 1000) : new Date(now + (open ? 0 : ((start - (d.getHours() * 60 + d.getMinutes()) + 1440) % 1440) * 60_000) + total * 1000);
+  const endsAt = last?.at !== undefined ? last.at + last.seconds * 1000 : (open ? now : dusk.getTime()) + total * 1000;
 
   // Whole hours inside the window, as faint points on the path; midnight is named when the window crosses it.
   const hours: number[] = [];
@@ -97,13 +100,13 @@ export function NightArc({ startAt, endAt, enabled, finals, now, className }: { 
 
   let caption: string;
   if (!enabled) caption = finals.length ? `The night shift is paused. ${plural(finals.length, "final")} wait until you turn it on.` : "The night shift is paused";
-  else if (!finals.length) caption = `Finals you queue for tonight run between ${clock(startAt)} and ${clock(endAt)}`;
-  else if (open) caption = `${plural(finals.length, "final")}, about ${shortDuration(total)} of work. Should be done by about ${clockFromDate(endsAt)}.`;
-  else caption = `${plural(finals.length, "final")}, about ${shortDuration(total)} of work. The night shift starts at ${clock(startAt)}.`;
+  else if (!finals.length) caption = `Finals you queue for tonight run between ${clock(startAt)} and ${c.time(endAt)}`;
+  else if (open) caption = `${plural(finals.length, "final")}, about ${shortDuration(total)} of work. Should be done by about ${c.at(endsAt)}.`;
+  else caption = `${plural(finals.length, "final")}, about ${shortDuration(total)} of work. The night shift starts at ${c.time(startAt)}.`;
 
   return (
     <figure className={cx("night-arc", !enabled && "night-arc--paused", className)}>
-      <svg viewBox={`0 0 ${W} 124`} role="img" aria-label={`The night shift from ${clock(startAt)} to ${clock(endAt)}${finals.length ? `, ${plural(finals.length, "final")} tonight` : ""}`}>
+      <svg viewBox={`0 0 ${W} 124`} role="img" aria-label={`The night shift from ${clock(startAt)} to ${c.time(endAt)}${finals.length ? `, ${plural(finals.length, "final")} tonight` : ""}`}>
         <line className="night-arc__horizon" x1="0" y1={HORIZON} x2={W} y2={HORIZON} />
         <path className="night-arc__path" d={`M ${p0.x} ${p0.y} A ${RX} ${RY} 0 0 1 ${p1.x} ${p1.y}`} />
         {hours.map((m) => {
@@ -116,7 +119,7 @@ export function NightArc({ startAt, endAt, enabled, finals, now, className }: { 
           const cx = Math.max(at(x.f).x, at(placed[0]!.f).x + i * 10);
           return (
             <circle key={x.id} className="night-arc__final" cx={cx} cy={HORIZON} r="4.5">
-              <title>{`${x.label}, about ${clock(`${Math.floor(x.startsAt / 60) % 24}:${String(Math.floor(x.startsAt % 60)).padStart(2, "0")}`)}`}</title>
+              <title>{`${x.label}, about ${c.time(`${Math.floor(x.startsAt / 60) % 24}:${String(Math.floor(x.startsAt % 60)).padStart(2, "0")}`)}`}</title>
             </circle>
           );
         })}
@@ -138,7 +141,7 @@ export function NightArc({ startAt, endAt, enabled, finals, now, className }: { 
           </text>
         )}
         <text className="night-arc__label" x={p1.x} y="120" textAnchor="end">
-          {clock(endAt)}
+          {c.time(endAt)}
         </text>
         {nowPoint && (
           <text className="night-arc__label night-arc__label--now" x={nowPoint.x} y={nowPoint.y - 16} textAnchor="middle">

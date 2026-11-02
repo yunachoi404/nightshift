@@ -308,7 +308,7 @@ export function parseCast(raw: string): CastMember[] {
 }
 
 /** A line the writer gave the whole film (a micro drama's "setting", a music video's "look"), or undefined. */
-export function parseLine(raw: string, key: "setting" | "look"): string | undefined {
+export function parseLine(raw: string, key: "setting" | "look" | "product"): string | undefined {
   const json = parseJsonAnswer(raw);
   const value = typeof json === "object" && json !== null ? (json as Record<string, unknown>)[key] : undefined;
   return typeof value === "string" && value.trim() ? value.replace(/\s+/g, " ").trim().slice(0, 300) : undefined;
@@ -318,6 +318,27 @@ export function parseLine(raw: string, key: "setting" | "look"): string | undefi
 export function speakerOf(prompt: string, names: string[]): string | undefined {
   const at = (name: string) => prompt.search(new RegExp(`\\b${name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`, "i"));
   return names.map((name) => ({ name, i: at(name) })).filter((x) => x.i >= 0).sort((a, b) => a.i - b.i)[0]?.name;
+}
+
+/**
+ * What the writer of a product ad is told when there is no product photo: describe the product once, so it is drawn
+ * once and every still is drawn from that picture. See `productPrompt`.
+ */
+export const PRODUCT_LOOK = 'There is no product photo, so design the product yourself: add "product":"what it looks like, its shape, materials and colors, in at most 20 words" to the JSON. Every shot shows this same product.';
+
+/** A product ad's product name, as its reference is named. */
+export function productLabel(brief: Brief): string {
+  const name = typeof brief.productName === "string" ? brief.productName.replace(/\s+/g, " ").trim().slice(0, 80) : "";
+  return name || "The product";
+}
+
+/**
+ * A product ad's product, drawn once as its reference: from the writer's description, else from what the brief says it
+ * does. The whole product alone on a plain ground, and no lettering, which every still would copy.
+ */
+export function productPrompt(brief: Brief, look?: string): string {
+  const does = typeof brief.does === "string" && brief.does.trim() ? `, a product that ${clauseOf(brief.does).replace(/^(it|that)\s+/i, "")}` : "";
+  return `Product photo of ${productLabel(brief)}${look ? `, ${clauseOf(look)}` : does}. The whole product alone in the middle of the frame, on a plain soft grey studio background, soft even light, crisp detail. No lettering, labels or logos.`;
 }
 
 /** A cast character's portrait prompt: half-body, facing the camera, on a plain ground, in the scene's look. */

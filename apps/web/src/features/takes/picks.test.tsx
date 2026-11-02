@@ -98,7 +98,8 @@ function open(engine: FakeEngine, hash: string) {
 }
 
 const go = (hash: string) => act(() => void (window.location.hash = hash));
-const finalsPicture = () => document.querySelector(".fn-row__thumb video")?.getAttribute("src");
+// The row's picture is the poster of the clip it shows.
+const finalsPicture = () => document.querySelector(".fn-row__thumb .media")?.getAttribute("src");
 
 describe("picking takes", () => {
   it("picking Take 2 and then Take 1 again shows Take 1's final again, and a pick never names a final", async () => {
@@ -114,7 +115,7 @@ describe("picking takes", () => {
     expect(screen.getByText("Take 2 picked")).toBeTruthy();
     expect(screen.queryByText("Final, same take")).toBeNull();
     expect(screen.queryByRole("button", { name: "Share reveal" })).toBeNull();
-    expect(finalsPicture()).toBe(`/api/projects/${PID}/assets/ast_take_2`);
+    expect(finalsPicture()).toBe(`/api/projects/${PID}/assets/ast_take_2?w=320`);
 
     go(`#/p/${PID}/takes?shot=shot_1`);
     fireEvent.click(await screen.findByRole("button", { name: "Take 1" }));
@@ -123,7 +124,7 @@ describe("picking takes", () => {
     await screen.findByRole("heading", { name: "Finals" });
     expect(screen.getByText("Final, same take")).toBeTruthy();
     expect(screen.getByRole("button", { name: "Share reveal" })).toBeTruthy();
-    expect(finalsPicture()).toBe(`/api/projects/${PID}/assets/ast_final_1`);
+    expect(finalsPicture()).toBe(`/api/projects/${PID}/assets/ast_final_1?w=320`);
 
     // Each pick says which draft, and leaves the final to the engine.
     expect(engine.patches.map((p) => p.shots?.map((s) => [s.chosenDraftId, "chosenFinalId" in s]))).toEqual([[["take_2", false]], [["take_1", false]]]);

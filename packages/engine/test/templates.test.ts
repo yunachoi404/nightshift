@@ -47,18 +47,22 @@ describe("template fallbacks", () => {
     expect(lofi.map((s) => s.durationSec)).toEqual(Array(11).fill(2.86));
     // Indie pop at 118 bpm: two bars (4.07 s) miss a 4.04 s clip by a hair, so a bar and a half.
     expect(TEMPLATES.music_video.fallback({ genre: "indie", length: "30" }, { longestShotSec: 4.04 }).map((s) => s.durationSec)).toEqual(Array(10).fill(3.05));
-    // A minute, and a setup with short clips (Kandinsky 6 Lite, 2.04 s): enough shots, up to 24.
+    // A minute, and a setup with short clips (Kandinsky 6 Lite, 2.04 s): enough shots.
     expect(TEMPLATES.music_video.fallback({ genre: "lofi", length: "60" }, { longestShotSec: 4.04 })).toHaveLength(21);
     expect(TEMPLATES.music_video.fallback({ genre: "rock", length: "30" }, { longestShotSec: 2.04 }).map((s) => s.durationSec)).toEqual(Array(17).fill(1.82));
     // Where not even a bar fits in a clip, whole beats: three of Synthwave's 110 bpm, not a choppy half bar.
     expect(TEMPLATES.music_video.fallback({ genre: "synth", length: "30" }, { longestShotSec: 2.04 }).map((s) => s.durationSec)).toEqual(Array(19).fill(1.64));
+    // Every genre, every clip length, half a minute or a minute: the shots fill the song, and none is one too many.
     for (const genre of genres) {
       for (const longestShotSec of [2.04, 4.04, 5.16]) {
-        const shots = TEMPLATES.music_video.fallback({ genre: genre.id, length: "30" }, { longestShotSec });
-        const total = shots.reduce((sum, s) => sum + s.durationSec, 0);
-        expect(shots.every((s) => s.durationSec <= longestShotSec + 0.005), `${genre.id} ${longestShotSec}`).toBe(true);
-        expect(total, `${genre.id} ${longestShotSec}`).toBeGreaterThanOrEqual(30 - 1e-6);
-        expect(total - shots[0]!.durationSec, `${genre.id} ${longestShotSec}`).toBeLessThan(30);
+        for (const length of [30, 60]) {
+          const shots = TEMPLATES.music_video.fallback({ genre: genre.id, length: String(length) }, { longestShotSec });
+          const total = shots.reduce((sum, s) => sum + s.durationSec, 0);
+          const at = `${genre.id} ${longestShotSec} ${length}`;
+          expect(shots.every((s) => s.durationSec <= longestShotSec + 0.005), at).toBe(true);
+          expect(total, at).toBeGreaterThanOrEqual(length - 1e-6);
+          expect(total - shots[0]!.durationSec, at).toBeLessThan(length);
+        }
       }
     }
   });

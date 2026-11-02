@@ -1,5 +1,6 @@
 import { isBoardAsset, timelineDuration, type Asset, type Aspect, type Job, type Project, type Shot, type Take } from "@nightshift/contract";
-import { shortDuration } from "@/lib/format";
+import { clock, shortDuration } from "@/lib/format";
+import { nightClock, type NightWindow } from "@/lib/overnight";
 
 /** Whether a shot is in the cut. Shots the tools make wait in the project's media until they are sent to the timeline. */
 export function onTimeline(shot: Shot): boolean {
@@ -171,11 +172,14 @@ export function projectProgress(p: Project, jobs: Job[], gpuAway = false): Proje
  * through a long model load, so those become a stage read from progress. Messages that already say something
  * ("Loading draft latent", "Waiting for the GPU") are kept. ComfyUI's own queue note becomes a wait for the GPU.
  */
-export function jobStage(j: Pick<Job, "status" | "progress" | "message" | "mode" | "step" | "analysis">): string {
+export function jobStage(j: Pick<Job, "status" | "progress" | "message" | "mode" | "step" | "analysis">, night?: NightWindow): string {
   const m = j.message?.trim() ?? "";
   if (j.status === "queued") {
     if (/waiting for the gpu/i.test(m)) return "Waiting for the GPU";
     if (/comfyui queue|waiting in .*queue/i.test(m)) return "Waiting for the GPU";
+    // The engine says "Runs tonight, 11 pm to 7 am" on its own clock: with the window at hand, said with its zone where
+    // that is not this browser's clock ("to 7 am PT"), and the same words where it is.
+    if (night && /^Runs tonight, /.test(m)) return `Runs tonight, ${clock(night.startAt)} to ${nightClock(night, Date.now()).time(night.endAt)}`;
     if (m && !/node \d+ of \d+/i.test(m)) return m;
     return j.mode === "overnight" ? "Queued for tonight" : "Queued";
   }
@@ -226,8 +230,8 @@ export function jobElapsed(j: Pick<Job, "status" | "startedAt">, now = Date.now(
 }
 
 /** "Generating, 1 min 20 s". The stage alone while queued. */
-export function jobStatusLine(j: Pick<Job, "status" | "progress" | "message" | "mode" | "step" | "analysis" | "startedAt">, now = Date.now()): string {
-  const stage = jobStage(j);
+export function jobStatusLine(j: Pick<Job, "status" | "progress" | "message" | "mode" | "step" | "analysis" | "startedAt">, now = Date.now(), night?: NightWindow): string {
+  const stage = jobStage(j, night);
   const elapsed = jobElapsed(j, now);
   return elapsed ? `${stage}, ${elapsed}` : stage;
 }

@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { quickMoves } from "@nightshift/contract";
-import { cameraPose, cameraPoints, cameraFrame, cameraBasis } from "../src/comfy/camera.js";
+import { DOLLY_ZOOM_BACK, DOLLY_ZOOM_CRACK_PX, DOLLY_ZOOM_GROWTH, cameraPose, cameraPoints, cameraFrame, cameraBasis, dollyZoomPoints, dollyZoomStretch } from "../src/comfy/camera.js";
 import { bindWorkflow } from "../src/comfy/bind.js";
 import { defaultWorkflowsDir } from "../src/paths.js";
 import { cameraPrompt } from "../src/projects/camera-move.js";
@@ -49,19 +49,101 @@ describe("camera paths", () => {
       expect(p.zoom / (3 - p.z)).toBeCloseTo(1 / 3);
     }
   });
-  it("holds an off-centre subject during the dolly zoom and enlarges the distant background", () => {
+  it("holds the whole plane of an off-centre subject during the dolly zoom and grows the background out from it", () => {
     const subject = { x: 0.6, y: -0.2, z: 2.4 };
+    // Where a point lands, in focal units from the centre: what cameraFrame draws.
+    const screen = (p: ReturnType<typeof cameraPose>, x: number, y: number, z: number) => [(x - p.x) * p.zoom / (z - p.z) + p.shiftX, (y - p.y) * p.zoom / (z - p.z) + p.shiftY];
     for (const t of [0, 0.3, 0.7, 1]) {
       const p = cameraPose("dolly_zoom", t, subject);
-      expect(p.zoom / (subject.z - p.z)).toBeCloseTo(1 / subject.z);
-      expect((subject.x - p.x) * p.zoom / (subject.z - p.z)).toBeCloseTo(subject.x / subject.z);
-      expect((subject.y - p.y) * p.zoom / (subject.z - p.z)).toBeCloseTo(subject.y / subject.z);
+      // The camera faces ahead: no turn, only a lens shift.
+      expect([p.targetX - p.x, p.targetY - p.y, p.targetZ - p.z]).toEqual([0, 0, 3]);
+      for (const [x, y] of [[subject.x, subject.y], [-0.5, 0.4], [1.1, 0.9]] as const) {
+        const [sx, sy] = screen(p, x, y, subject.z);
+        expect(sx).toBeCloseTo(x / subject.z);
+        expect(sy).toBeCloseTo(y / subject.z);
+      }
     }
-    const p = cameraPose("dolly_zoom", 1, subject);
-    expect(p.zoom * 12 / (12 - p.z)).toBeGreaterThan(2);
+    // A distant wall more than doubles in size, about the subject's place in the frame.
+    const end = cameraPose("dolly_zoom", 1, subject);
+    const [ax] = screen(end, 0, 0, 12), [bx] = screen(end, 1, 0, 12);
+    expect((bx! - ax!) / (1 / 12)).toBeGreaterThan(2);
+    const [cx, cy] = screen(end, subject.x / subject.z * 12, subject.y / subject.z * 12, 12);
+    expect(cx).toBeCloseTo(subject.x / subject.z);
+    expect(cy).toBeCloseTo(subject.y / subject.z);
+  });
+  it("shapes the dolly zoom's scene: the foreground holds, the background stretches, edges snap", () => {
+    // A 20x10 photo: a near box in the middle (the subject), a wall one step behind it, the floor in front nearer still.
+    const width = 20, height = 10;
+    const depth = new Uint8Array(width * height * 3);
+    for (let y = 0; y < height; y++) for (let x = 0; x < width; x++) {
+      const d = x >= 8 && x < 12 && y >= 3 && y < 7 ? 200 : y >= 8 ? 240 : 60;
+      depth.fill(d, (y * width + x) * 3, (y * width + x + 1) * 3);
+    }
+    // A pixel blended between the box and the wall.
+    depth.fill(130, (5 * width + 12) * 3, (5 * width + 13) * 3);
+    const points = cameraPoints(depth, depth, width, height);
+    const shaped = dollyZoomPoints(points, width, height);
+    const z = (p: typeof points, x: number, y: number) => p.xyz[(y * width + x) * 3 + 2]!;
+    const hold = shaped.subject.z;
+    expect(hold).toBeGreaterThan(points.subject.z);
+    // The subject and the nearer floor sit on the hold plane; the wall is pushed back by the stretch.
+    expect(z(shaped, 10, 5)).toBeCloseTo(hold, 5);
+    expect(z(shaped, 10, 9)).toBeCloseTo(hold, 5);
+    // The wall is the background's middle depth: stretched until it grows by DOLLY_ZOOM_GROWTH by the end.
+    const b = DOLLY_ZOOM_BACK / hold, wall = z(shaped, 0, 0) / hold;
+    expect((1 + b) / (1 + b / wall)).toBeCloseTo(DOLLY_ZOOM_GROWTH, 4);
+    expect(wall).toBeGreaterThan(z(points, 0, 0) / hold);
+    // The blended pixel joins the box, not the gap between.
+    expect(z(shaped, 12, 5)).toBeCloseTo(hold, 5);
+    // Every pixel keeps its place in the opening frame.
+    for (let i = 0; i < width * height; i++) {
+      expect(shaped.xyz[i * 3]! / shaped.xyz[i * 3 + 2]!).toBeCloseTo(points.xyz[i * 3]! / points.xyz[i * 3 + 2]!, 6);
+      expect(shaped.xyz[i * 3 + 1]! / shaped.xyz[i * 3 + 2]!).toBeCloseTo(points.xyz[i * 3 + 1]! / points.xyz[i * 3 + 2]!, 6);
+    }
+    // The opening frame is the photo's layout. Only pixels at a depth edge take the shade of the side they join.
+    const opening = cameraFrame(shaped, width, height, cameraPose("dolly_zoom", 0, shaped.subject), DOLLY_ZOOM_CRACK_PX);
+    const source = cameraFrame(points, width, height, cameraPose("dolly_zoom", 0));
+    const d = (x: number, y: number) => depth[(Math.min(height - 1, Math.max(0, y)) * width + Math.min(width - 1, Math.max(0, x))) * 3];
+    for (let y = 0; y < height; y++) for (let x = 0; x < width; x++) {
+      const flat = [-2, -1, 0, 1, 2].every((dy) => [-2, -1, 0, 1, 2].every((dx) => d(x + dx, y + dy) === d(x, y)));
+      if (flat) expect(opening[(y * width + x) * 3]).toBe(source[(y * width + x) * 3]);
+    }
+    expect(opening[(5 * width + 12) * 3]).toBe(points.shade[5 * width + 10]);
+  });
+  it("stretches a shallow room more than a deep corridor, within bounds", () => {
+    const scene = (ratio: number) => Float32Array.from({ length: 100 }, (_, i) => (i < 30 ? 2.5 : 3 * ratio));
+    const shallow = dollyZoomStretch(scene(1.2), 3), deep = dollyZoomStretch(scene(3), 3);
+    expect(shallow).toBeGreaterThan(deep);
+    expect(deep).toBeGreaterThanOrEqual(1);
+    expect(dollyZoomStretch(scene(1), 3.5)).toBe(1);
+    expect(dollyZoomStretch(scene(1.00001), 3)).toBe(6);
+  });
+  it("makes a dolly zoom guide that holds the subject and the frame's edges while the background grows", () => {
+    // A box near the camera on a floor, in front of a far wall with a bright square: frame zero, then the last frame.
+    const width = 64, height = 48;
+    const depth = new Uint8Array(width * height * 3), photo = new Uint8Array(width * height * 3);
+    for (let y = 0; y < height; y++) for (let x = 0; x < width; x++) {
+      const box = x >= 26 && x < 38 && y >= 16 && y < 34, floor = y >= 40, mark = x >= 40 && x < 48 && y >= 8 && y < 14;
+      depth.fill(box ? 220 : floor ? 240 : 40, (y * width + x) * 3, (y * width + x + 1) * 3);
+      photo.fill(mark ? 255 : 0, (y * width + x) * 3, (y * width + x + 1) * 3);
+    }
+    const shaped = dollyZoomPoints(cameraPoints(depth, photo, width, height), width, height);
+    const last = cameraFrame(shaped, width, height, cameraPose("dolly_zoom", 1, shaped.subject), DOLLY_ZOOM_CRACK_PX);
+    const first = cameraFrame(shaped, width, height, cameraPose("dolly_zoom", 0, shaped.subject), DOLLY_ZOOM_CRACK_PX);
+    const at = (f: Buffer, x: number, y: number) => f[(y * width + x) * 3]!;
+    // The box and the floor are where they were; no grey border opens at the bottom or the sides.
+    for (const [x, y] of [[30, 20], [35, 30], [0, 47], [63, 47], [32, 44]] as const) expect(at(last, x, y)).toBe(at(first, x, y));
+    // The bright mark on the far wall is wider than it was.
+    const wide = (f: Buffer) => Array.from({ length: width }, (_, x) => at(f, x, 10)).filter((v) => v === Math.max(...Array.from({ length: width }, (_, k) => at(f, k, 10)))).length;
+    expect(wide(last)).toBeGreaterThan(wide(first) * 1.5);
   });
   it("names every move in the model prompt", () => {
     for (const move of quickMoves) expect(cameraPrompt("A clay bowl.", move.id)).toContain(`Camera movement: ${move.label}.`);
+  });
+  it("tells the video model what a dolly zoom looks like, never that the camera pulls back", () => {
+    const prompt = cameraPrompt("A woman in a hotel corridor.", "dolly_zoom");
+    expect(prompt).toContain("same size and place in the frame");
+    expect(prompt).not.toMatch(/pull|back away/i);
   });
   it("focuses the centre subject rather than a larger background", () => {
     const depth = new Uint8Array(10 * 10 * 3).fill(20);

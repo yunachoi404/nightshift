@@ -25,6 +25,7 @@ import { SdkStepRunner } from "./runner/sdk.js";
 import type { StepRunner } from "./runner/types.js";
 import { AttachRuntime, LocalRuntime, MockRuntime, type Runtime } from "./runtime/runtime.js";
 import { corsHeaders, HANDLED, isClientAbort, refuseRequest, Reply, sendError, sendFile, sendJson, type Ctx } from "./server/http.js";
+import { Posters } from "./media/poster.js";
 import { buildRouter, type EngineContext } from "./server/routes.js";
 import { SettingsStore } from "./settings.js";
 import { consoleLogger, errorMessage, exists, type Logger } from "./util.js";
@@ -183,7 +184,7 @@ export async function startEngine(opts: EngineOptions): Promise<EngineHandle> {
     estimateSec: (j) => (j.step === "export" ? undefined : service.currentRecipe()?.estimates[j.step]?.seconds),
   });
 
-  const ctx: EngineContext = { paths, bus, hardware, recipes: () => recipeSet, reloadRecipes, workflowsDir, installer, remote, runtime, settings, store, service, queue, onboarding, log, sseClients: new Set() };
+  const ctx: EngineContext = { paths, bus, hardware, recipes: () => recipeSet, reloadRecipes, workflowsDir, installer, remote, runtime, settings, store, service, queue, onboarding, posters: new Posters(log), log, sseClients: new Set() };
   const router = buildRouter(ctx);
   const webDir = opts.webDir ? resolve(opts.webDir) : undefined;
   if (webDir && !(await exists(join(webDir, "index.html")))) log(`warning: ${webDir} has no index.html`);

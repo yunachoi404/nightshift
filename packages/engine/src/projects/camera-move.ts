@@ -22,8 +22,9 @@ export function cameraMove(value: unknown): string {
 
 export function cameraPrompt(scene: string, move: string): string {
   const preset = quickMoves.find((p) => p.id === move)!;
+  // The dolly zoom says what the picture does, not how a crew makes it: "the camera pulls back" gets a pull-back.
   const motion = move === "dolly_zoom"
-    ? "Strong vertigo dolly zoom. The camera pulls far back while the lens zooms in. The foreground subject stays the same size and position while the background visibly expands behind it"
+    ? "The vertigo effect. The subject and everything in front of it keep exactly the same size and place in the frame for the whole shot, while the background behind them stretches and looms larger, the perspective warping"
     : preset.hint;
   return `${scene.trim() || "The scene in the photo."} Camera movement: ${preset.label}. ${motion}. Follow the guide's camera path and preserve the scene, objects, colors and lighting in the first frame. One continuous shot. Natural quiet ambience.`;
 }

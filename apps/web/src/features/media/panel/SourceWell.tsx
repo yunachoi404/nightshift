@@ -53,7 +53,7 @@ export function SourceWell({ projectId, required, role, without, source, sourceN
     return (
       <div className="mp-well mp-well--full" data-testid="source-well">
         <span className="mp-well__thumb">
-          <Media src={client.assetUrl(projectId, source.id)} kind="image" alt="" />
+          <Media src={client.assetUrl(projectId, source.id)} kind="image" thumb={160} alt="" />
         </span>
         <div className="mp-well__text">
           <b title={sourceName}>{sourceName}</b>

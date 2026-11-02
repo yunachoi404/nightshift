@@ -1,11 +1,12 @@
 import { useCallback, useMemo, useState } from "react";
-import { useJobs } from "@/store/engine";
+import { useEngineState, useJobs } from "@/store/engine";
 
 const KEY = "nightshift.overnightSeen";
 
 /** Overnight finals that finished since the user last looked. Null when there is nothing to tell. */
 export function useMorningSummary(projectId?: string) {
   const jobs = useJobs();
+  const { projects } = useEngineState();
   const [seen, setSeen] = useState<string>(() => {
     const v = localStorage.getItem(KEY);
     if (v) return v;
@@ -19,7 +20,8 @@ export function useMorningSummary(projectId?: string) {
     setSeen(now);
   }, []);
   return useMemo(() => {
-    const finished = jobs.filter((j) => j.mode === "overnight" && (j.status === "done" || j.status === "failed") && j.finishedAt && j.finishedAt > seen && (!projectId || j.projectId === projectId));
+    // A final of a project deleted since is nothing to look at: its link would lead nowhere.
+    const finished = jobs.filter((j) => j.mode === "overnight" && (j.status === "done" || j.status === "failed") && j.finishedAt && j.finishedAt > seen && (!projectId || j.projectId === projectId) && projects[j.projectId]);
     if (!finished.length) return null;
     const stillRunning = jobs.some((j) => j.mode === "overnight" && (j.status === "running" || j.status === "queued") && (!projectId || j.projectId === projectId));
     if (stillRunning) return null;
@@ -29,5 +31,5 @@ export function useMorningSummary(projectId?: string) {
       projectIds: Array.from(new Set(finished.map((j) => j.projectId))),
       dismiss,
     };
-  }, [jobs, seen, projectId, dismiss]);
+  }, [jobs, projects, seen, projectId, dismiss]);
 }

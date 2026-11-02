@@ -51,7 +51,11 @@ export function isInteractive(job: Job): boolean {
  * idle GPU per pause, and only while the night has that time to spare (see `userHold`).
  */
 export const HOLD_FOR_USER_MS = 120_000;
-/** A final counts its estimate times this: measured finals ran 4.8 min against the setup's 4.4. */
+/**
+ * A final counts its estimate times this, a margin for finals that run long: on Nov 1 they ran 4.8 min against the 4.4
+ * the Spark's setup said then. Its estimate is now that measured 4.8, so the margin is on the safe side there: the hold
+ * lets go a little early, never late.
+ */
 export const FINAL_OVERRUN = 1.25;
 /** A final whose step has no estimate counts five minutes, as on the Queue page. */
 const FINAL_FALLBACK_SEC = 300;

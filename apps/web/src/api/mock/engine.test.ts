@@ -141,3 +141,17 @@ describe("mock engine: finals for the night", () => {
     expect(ran).toEqual([same1.id, same2.id, remaster.id]);
   });
 });
+
+describe("mock engine references", () => {
+  it("makes a card's still a reference as the engine does: a copy on the card's board, offered once", () => {
+    const p = engine.addReference(PID, { assetId: "ast_still", kind: "place", label: "The pier" });
+    const ref = p.references!.at(-1)!;
+    expect(ref).toMatchObject({ kind: "place", label: "The pier", copiedFrom: "ast_still" });
+    const copy = p.assets.find((a) => a.id === ref.assetId)!;
+    expect(copy).toMatchObject({ kind: "image", role: "reference" });
+    expect(copy.id).not.toBe("ast_still");
+    expect(projectBoards(p).find((b) => b.items.includes("shot_1"))!.items).toContain(copy.id);
+    for (const assetId of ["ast_still", copy.id]) expect(() => engine.addReference(PID, { assetId, kind: "place", label: "Again" })).toThrow("That image is already the reference The pier.");
+    expect(() => engine.addReference(PID, { assetId: "ast_nope", kind: "place", label: "Nope" })).toThrow("That image is not in this project.");
+  });
+});

@@ -9,8 +9,8 @@ import { useState } from "react";
 import { useEngine, useEngineState, useJobs } from "@/store/engine";
 import { useInstalledTier } from "@/store/tier";
 import { Button, Dialog, cx, toast } from "@/ui/primitives";
-import { clock, clockFromDate, plural, shortDuration } from "@/lib/format";
-import { nextWindowStart, tonightStart, windowEndsAt } from "@/lib/overnight";
+import { plural, shortDuration } from "@/lib/format";
+import { nextWindowStart, nightClock, tonightStart, windowEndsAt } from "@/lib/overnight";
 import { tonightSeconds } from "@/features/queue/plan";
 import { finalKindFor, finalSecondsFor, unfinishedPicks } from "./finishAll";
 import "./finals.css";
@@ -33,12 +33,13 @@ export function FinishTonight({ project, jobs, quiet, className }: { project: Pr
   const night = settings?.overnight ?? { enabled: true, startAt: "23:00", endAt: "07:00" };
   const now = Date.now();
   const start = tonightStart(night, now);
+  const c = nightClock(night, now);
   const seconds = shots.reduce((sum, s) => sum + finalSecondsFor(project, s, tier, kind), 0);
   // The finals already queued for tonight run first, then these, from now while the window is open, else from when it opens.
-  const from = start.open ? now : nextWindowStart(night.startAt, now).getTime();
+  const from = start.open ? now : nextWindowStart(night, now).getTime();
   const doneBy = new Date(from + (tonightSeconds(allJobs, tier, now) + seconds) * 1000);
   // A final that would start once the window has closed waits for the next night, as the engine holds it.
-  const closes = windowEndsAt(night.startAt, night.endAt, now);
+  const closes = windowEndsAt(night, now);
   const fits = doneBy <= closes;
   const label = `Finish ${plural(shots.length, "shot")} tonight`;
 
@@ -78,7 +79,7 @@ export function FinishTonight({ project, jobs, quiet, className }: { project: Pr
             <div>
               <h2 className="dialog__title">{label}?</h2>
               <p className="dialog__text">
-                {start.open ? "The night shift is on now. Once the GPU is free, Nightshift" : `At ${clock(night.startAt)} Nightshift`} renders the picked take of {shots.length === 1 ? "the shot" : `each of the ${shots.length} shots`} on the timeline at full quality, one after another. In the morning they are on their cards and in the editor.
+                {start.open ? "The night shift is on now. Once the GPU is free, Nightshift" : `At ${c.time(night.startAt)} Nightshift`} renders the picked take of {shots.length === 1 ? "the shot" : `each of the ${shots.length} shots`} on the timeline at full quality, one after another. In the morning they are on their cards and in the editor.
               </p>
             </div>
           </div>
@@ -93,10 +94,11 @@ export function FinishTonight({ project, jobs, quiet, className }: { project: Pr
             </div>
             <div className="night__row">
               <small>{fits ? "Done around" : "The night ends"}</small>
-              <b>{clockFromDate(fits ? doneBy : closes)}</b>
+              <b>{c.at(fits ? doneBy : closes)}</b>
             </div>
           </div>
-          {!fits && <p className="t-small">Not all of them fit before {clockFromDate(closes)}. The rest run the next night.</p>}
+          {!fits && <p className="t-small">Not all of them fit before {c.at(closes)}. The rest run the next night.</p>}
+          {c.note && <p className="t-small t-muted">{c.note}</p>}
           <p className="t-small t-muted">
             Keep the computer awake and plugged in. The desktop app keeps it awake for you.{night.enabled ? "" : " This turns overnight runs on. Pause them in Settings."}
           </p>

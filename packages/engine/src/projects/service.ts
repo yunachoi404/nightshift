@@ -25,6 +25,7 @@ import type {
   Shot,
   StepId,
   StillRequest,
+  AddReferenceRequest,
   Take,
   TemplateId,
   Timeline,
@@ -37,6 +38,7 @@ import { mkdir, readFile, rm, stat } from "node:fs/promises";
 import { join } from "node:path";
 import { floorFrames, frameCount, frameRule, graphDefault, longestClipSec, sizeForAspect, sizeForRatio, type Graph, type Size } from "../comfy/bind.js";
 import { ApiError, badRequest, conflict, notFound } from "../errors.js";
+import { removePosters } from "../media/poster.js";
 import type { DataPaths } from "../paths.js";
 import { WAITING_FOR_GPU, type ExecContext, type ExecResult, type JobQueue } from "../queue/queue.js";
 import type { JobPayload } from "../queue/store.js";
@@ -48,10 +50,10 @@ import { errorMessage, exists, isAbortError, newId, nowIso, round1, type Logger 
 import type { Assembled, EditorBridge } from "./editor.js";
 import type { ProjectStore } from "./store.js";
 import { effectDirection, effectPhoto, runEffect, runEffectFrame } from "./effects.js";
-import { briefForLlm, CAMERA_MOVES, CAST_FROM_PHOTOS, CAST_INSTRUCTIONS, castNames, castPrompt, fitDurations, parseCast, parseLine, parseStoryboard, stylePrompt, templateMisfit, TEMPLATES, videoPrompt, VOICE_INSTRUCTIONS, writerTokens, type CastMember, type ShotPlan } from "./templates.js";
+import { briefForLlm, CAMERA_MOVES, CAST_FROM_PHOTOS, CAST_INSTRUCTIONS, castNames, castPrompt, fitDurations, parseCast, parseLine, parseStoryboard, PRODUCT_LOOK, productLabel, productPrompt, stylePrompt, templateMisfit, TEMPLATES, videoPrompt, VOICE_INSTRUCTIONS, writerTokens, type CastMember, type ShotPlan } from "./templates.js";
 import { cameraSource, cameraMove, cameraPrompt, cameraLayout, prepareCameraProject } from "./camera-move.js";
 import { keepOwnShot, setOwnShot } from "./own-shot.js";
-import { applyReferences, projectReferences, referenceInstructions, referencePrompt, referencesForShot, requireReferenceSupport, validateReferences } from "./references.js";
+import { applyReferences, editPrompt, projectReferences, referenceInstructions, referencePrompt, referencesForEdit, referencesForShot, requireReferenceSupport, syncProductPhoto, validateReferences } from "./references.js";
 import { contentKey, patchedTimeline, replaceTrack, stableJson } from "./timeline.js";
 import { addStill, draftTool, onTimeline, pickDraft, stillHistory, toolEffect, toolMove } from "./versions.js";
 import { drawWhatIf, fitWhatIfVoice, renderWhatIf, validateWhatIfBrief, validateWhatIfProject, whatIfDraftSnapshot, writeWhatIf } from "./what-if.js";
@@ -349,6 +351,38 @@ export class ProjectService {
     return asset;
   }
 
+  /**
+   * Make an image of the project a reference, a card's "Use as reference": a copy of it becomes an uploaded reference of
+   * its own, so the card can be redrawn or deleted without changing it. An upload that is not a reference yet becomes
+   * one as it is. The copy goes on the board asked for, else on the board of the card whose image it is, else the first.
+   */
+  async addReference(id: string, req: AddReferenceRequest): Promise<Project> {
+    const project = this.d.store.require(id);
+    const image = project.assets.find((a) => a.id === req.assetId && a.kind === "image");
+    if (!image) throw notFound("That image is not in this project.");
+    const refs = projectReferences(project);
+    const already = refs.find((r) => r.assetId === image.id || r.copiedFrom === image.id);
+    if (already) throw conflict(`That image is already the reference ${already.label}.`);
+    if (refs.length >= 6) throw conflict("A project can have up to six references. Remove one first.");
+    const copy = image.role === "reference" ? undefined : await this.d.store.importFile(id, this.d.store.assetPath(project, image), "image", { role: "reference" });
+    const asset = copy ?? image;
+    try {
+      return await this.d.store.mutate(id, (p) => {
+        if (copy) {
+          p.assets.push(copy);
+          const card = p.shots.find((s) => s.stillAssetId === image.id || s.stillHistory?.some((h) => h.assetId === image.id));
+          p.boards = placeItem(p, copy.id, { boardId: req.boardId ?? (card ? boardOf(projectBoards(p), card.id)?.id : undefined) });
+        }
+        p.references = [...projectReferences(p), { id: newId("ref"), assetId: asset.id, kind: req.kind, label: req.label.trim(), ...(copy ? { copiedFrom: image.id } : {}) }];
+        validateReferences(p);
+        syncProductPhoto(p);
+      });
+    } catch (err) {
+      if (copy) await rm(this.d.store.assetPath(project, copy), { force: true });
+      throw err;
+    }
+  }
+
   async deleteReferenceAsset(id: string, assetId: string): Promise<void> {
     const project = this.d.store.require(id);
     const asset = this.d.store.findAsset(project, assetId);
@@ -365,6 +399,7 @@ export class ProjectService {
       if (p.boards) p.boards = p.boards.map(b => ({ ...b, items: b.items.filter(item => item !== assetId) }));
     });
     await rm(this.d.store.assetPath(project, asset), { force: true });
+    await removePosters(this.d.store.dir(id), assetId);
     await this.recutSoon(id);
   }
 
@@ -525,6 +560,8 @@ export class ProjectService {
     if (req.editFrom !== undefined) {
       refuseEdit(template);
       const source = this.editSource(project, req.editFrom, req.prompt);
+      validateReferences(project);
+      referencesForEdit(project, shot, this.currentRecipe()!);
       return this.d.queue.enqueue(this.newJob(id, "still", "now", shotId), { kind: "still", seed: req.seed ?? randomSeed(), prompt: source.instruction, editFrom: source.image.id });
     }
     if (template === "what_if") {
@@ -611,9 +648,12 @@ export class ProjectService {
         break;
       }
       case "edit": {
-        // The new card's still is the image changed as the prompt says. The image stays where it was.
+        // The new card's still is the image changed as the prompt says. The image stays where it was. It keeps the
+        // references asked for, else none: an edit changes one picture, it is not drawn from the project's references.
         if (!image) throw badRequest("Choose an image from this project first.");
         const source = this.editSource(project, image.id, prompt);
+        shot.referenceIds ??= [];
+        referencesForEdit(project, shot, this.currentRecipe()!);
         job = { step: "still", payload: { kind: "still", seed, prompt: source.instruction, editFrom: source.image.id } };
         shot.durationSec = await this.clipLength("video_draft", shot.durationSec);
         break;
@@ -1095,8 +1135,13 @@ export class ProjectService {
     let plans: ShotPlan[] = template.fallback(project.brief, fit);
     let message = "Shot list drafted from the template (this tier has no local LLM step).";
     let peakGb: number | undefined;
-    // A micro drama without character photos casts its own, where stills can be drawn from photos.
+    // A micro drama without character photos casts its own, where stills can be drawn from photos. A product ad without
+    // a product photo draws its product first, the same way.
     const casting = project.template === "micro_drama" && !projectReferences(project).some((r) => r.kind === "character") && referenceSlots(this.currentRecipe()) > 0;
+    const castingProduct = project.template === "product_ad" && !projectReferences(project).some((r) => r.kind === "product") && projectReferences(project).length < 6 && referenceSlots(this.currentRecipe()) > 0;
+    /** The writer's share of the job's progress: casting draws after it. */
+    const writing = casting ? 0.4 : castingProduct ? 0.7 : 1;
+    let productLook: string | undefined;
     let cast: CastMember[] = [];
     let setting: string | undefined;
     let look: string | undefined;
@@ -1108,14 +1153,14 @@ export class ProjectService {
         const brief = briefForLlm(project.template, project.name, project.brief);
         const rhythm = project.template === "music_video" ? musicVideoShots(project.brief, fit.longestShotSec) : undefined;
         const constraints = `Return exactly ${plans.length} shots${rhythm ? `, each ${secs(rhythm.shotSec)} seconds long, for a ${rhythm.lengthSec} second song` : ""}.`;
-        const people = casting ? CAST_INSTRUCTIONS : [referenceInstructions(project), project.template === "micro_drama" && projectReferences(project).some((r) => r.kind === "character") ? CAST_FROM_PHOTOS : ""].filter(Boolean).join(" ");
+        const people = casting ? CAST_INSTRUCTIONS : [referenceInstructions(project), project.template === "micro_drama" && projectReferences(project).some((r) => r.kind === "character") ? CAST_FROM_PHOTOS : "", castingProduct ? PRODUCT_LOOK : ""].filter(Boolean).join(" ");
         // Room for every shot asked for, never less than the recipe gives its writer.
         const maxTokens = Math.max(num(await this.stepDefault(writer, "maxTokens"), 0), writerTokens(template.lines, plans.length));
         const seed = num(payload.seed, 0);
         let again = "";
         let fitted = false;
         for (let attempt = 0; attempt < WRITER_TRIES && !fitted; attempt++) {
-          const span: [number, number] = [(attempt / WRITER_TRIES) * (casting ? 0.4 : 1), ((attempt + 1) / WRITER_TRIES) * (casting ? 0.4 : 1)];
+          const span: [number, number] = [(attempt / WRITER_TRIES) * writing, ((attempt + 1) / WRITER_TRIES) * writing];
           const values = { system: [template.instructions, constraints, people, again].filter(Boolean).join(" "), prompt: brief, text: brief, seed: seed + attempt, maxTokens, fallback: JSON.stringify({ shots: plans }) };
           const res = await this.runStep(job, payload, "text", values, { aspect: project.aspect, width: 0, height: 0 }, ctx, span);
           peakGb = res.peakGb === undefined ? peakGb : Math.max(peakGb ?? 0, res.peakGb);
@@ -1128,6 +1173,7 @@ export class ProjectService {
             plans = parsed;
             fitDurations(project.template, project.brief, plans, fit);
             if (casting) cast = parseCast(raw);
+            if (castingProduct) productLook = parseLine(raw, "product");
             if (project.template === "micro_drama") setting = parseLine(raw, "setting");
             // Without a look of its own, the brief's world is the look: every still keeps it.
             if (project.template === "music_video") look = parseLine(raw, "look") ?? (typeof project.brief.subject === "string" && project.brief.subject.trim() ? clause(project.brief.subject) : undefined);
@@ -1156,6 +1202,11 @@ export class ProjectService {
     if (cast.length) {
       const drawn = await this.castCharacters(job, payload, ctx, cast);
       if (drawn.length) message += ` Cast ${drawn.join(" and ")}.`;
+      project = this.d.store.require(job.projectId);
+    }
+    if (castingProduct) {
+      const drawn = await this.castProduct(job, payload, ctx, productLook, [writing, 1]);
+      if (drawn) message += ` Drew ${drawn} first, so every shot shows the same one.`;
       project = this.d.store.require(job.projectId);
     }
     const names = projectReferences(project).slice(0, 3).filter(r => r.kind !== "style").map(r => r.label);
@@ -1261,9 +1312,17 @@ export class ProjectService {
     if (!source) throw new Error("The image to edit is no longer in this project.");
     const instruction = str(payload.prompt) ?? shot.prompt;
     const size = { width: shape.width, height: shape.height };
-    const values: Record<string, unknown> = { image: this.d.store.assetPath(project, source), prompt: instruction, seed: num(payload.seed, 0), ...size };
+    // With the shot's references the edit runs the reference still workflow (the same FLUX.2 Klein): the image to
+    // change first, then each reference, so a re-posed character keeps their face.
+    const refs = referencesForEdit(project, shot, this.currentRecipe()!);
+    const values: Record<string, unknown> = { image: this.d.store.assetPath(project, source), prompt: editPrompt(refs, instruction), seed: num(payload.seed, 0), ...size };
+    refs.forEach((ref, i) => {
+      const path = this.assetFile(project, ref.assetId);
+      if (!path) throw new Error(`Reference ${ref.label} is missing its image`);
+      values[`image${i + 2}`] = path;
+    });
     try {
-      const { outputs, peakGb } = await this.runStep(job, payload, "effect_end_frame", values, { ...shape, label: `Shot ${shot.index + 1}` }, ctx);
+      const { outputs, peakGb } = await this.runStep(job, payload, refs.length ? "still" : "effect_end_frame", values, { ...shape, label: `Shot ${shot.index + 1}` }, ctx);
       const asset = await this.fileStill(project, shot, outputs, instruction, "The image edit produced no image");
       return withPeak({ outputAssetIds: [asset.id], message: "Edit ready" }, peakGb);
     } finally {
@@ -1298,6 +1357,32 @@ export class ProjectService {
       await this.cleanup(job);
     }
     return drawn;
+  }
+
+  /**
+   * A product ad with no product photo draws its product first: one clean product photo, from the writer's description
+   * (else from the brief), becomes the product reference every still is drawn from, and the end card's photo. Runs
+   * inside the shot list's job, after the writer. Returns the product's name, or undefined when nothing was drawn.
+   */
+  private async castProduct(job: Job, payload: JobPayload, ctx: ExecContext, look: string | undefined, span: [number, number]): Promise<string | undefined> {
+    const project = this.d.store.require(job.projectId);
+    const label = productLabel(project.brief);
+    const size = await this.sizeFor("still", "1:1");
+    try {
+      const values = { prompt: productPrompt(project.brief, look), seed: num(payload.seed, 0), ...size };
+      const { outputs } = await this.runStep(job, payload, "still", values, { aspect: "1:1", ...size, label }, ctx, span);
+      const image = outputs.find((o) => o.kind === "image");
+      if (!image) return undefined;
+      const asset = await this.d.store.importFile(project.id, image.path, "image", { move: true, role: "reference" });
+      await this.d.store.mutate(project.id, (p) => {
+        p.assets.push(asset);
+        p.references = [...projectReferences(p), { id: newId("ref"), assetId: asset.id, kind: "product", label }];
+        syncProductPhoto(p);
+      });
+      return label;
+    } finally {
+      await this.cleanup(job);
+    }
   }
 
   /** A new still lands: it is filed into the project, and is the shot's pick and the newest of its history. */
