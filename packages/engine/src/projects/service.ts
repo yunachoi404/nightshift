@@ -1224,9 +1224,10 @@ export class ProjectService {
       if (drawn.length) message += ` Cast ${drawn.join(" and ")}.`;
       project = this.d.store.require(job.projectId);
     }
+    let productDrawn: string | undefined;
     if (castingProduct) {
-      const drawn = await this.castProduct(job, payload, ctx, productLook, [writing, 1]);
-      if (drawn) message += ` Drew ${drawn} first, so every shot shows the same one.`;
+      productDrawn = await this.castProduct(job, payload, ctx, productLook, [writing, 1]);
+      if (productDrawn) message += ` Drew ${productDrawn} first, so every shot shows the same one.`;
       project = this.d.store.require(job.projectId);
     }
     const names = projectReferences(project).slice(0, 3).filter(r => r.kind !== "style").map(r => r.label);
@@ -1243,7 +1244,10 @@ export class ProjectService {
     } else {
       for (const plan of plans) {
         const missing = names.filter(name => !plan.prompt.toLowerCase().includes(name.toLowerCase()));
-        if (missing.length) plan.prompt += ` Featuring ${missing.join(" and ")}.`;
+        // Each addition is its own sentence: the writer's prompt may end without a full stop.
+        if (missing.length) plan.prompt = `${sentence(plan.prompt)} Featuring ${missing.join(" and ")}.`;
+        // The product drawn first is described in every shot as in its picture, so the words and the picture agree.
+        if (productDrawn && productLook) plan.prompt = `${sentence(plan.prompt)} ${productDrawn}: ${clause(productLook)}.`;
       }
     }
     const longest = await this.clampPlans(plans);

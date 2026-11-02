@@ -155,7 +155,10 @@ describe("references on cards, on the Spark's recipe", () => {
     expect(job.message).toBe("Shot list drafted. Drew Lumi sunrise lamp first, so every shot shows the same one.");
     await api.settle(project.id);
     const asked = writer.requests.slice(before);
-    expect(String(asked.find((r) => r.step === "text")!.values.system)).toContain('There is no product photo, so design the product yourself: add "product"');
+    const system = String(asked.find((r) => r.step === "text")!.values.system);
+    expect(system).toContain('There is no product photo, so describe the product once: add "product"');
+    expect(system).toContain("keeping every detail the brief gives");
+    expect(system).toContain("In the shots, call it only by its name and never describe how it looks");
 
     // One square product photo, from the writer's description, is the product reference and the end card's photo.
     const stills = asked.filter((r) => r.step === "still");
@@ -173,6 +176,8 @@ describe("references on cards, on the Spark's recipe", () => {
     for (const still of shots) {
       expect(still.ref.workflow).toBe("references_klein4b.api.json");
       expect(String(still.values.image)).toContain(product.assetId);
+      // Its words describe the product as its picture does.
+      expect(String(still.values.prompt)).toContain("Lumi sunrise lamp: a frosted glass dome on a round oak base, warm amber glow.");
     }
 
     // Asked again, the ad has its product: nothing more is drawn first.

@@ -380,10 +380,11 @@ export function speakerOf(prompt: string, names: string[]): string | undefined {
 }
 
 /**
- * What the writer of a product ad is told when there is no product photo: describe the product once, so it is drawn
- * once and every still is drawn from that picture. See `productPrompt`.
+ * What the writer of a product ad is told when there is no product photo: describe the product once, keeping what the
+ * brief says of it, so it is drawn once and every still is drawn from that picture (`productPrompt`). The shots name it
+ * and never describe it again: a shot that says "a black mug" beside a white one's picture draws two products.
  */
-export const PRODUCT_LOOK = 'There is no product photo, so design the product yourself: add "product":"what it looks like, its shape, materials and colors, in at most 20 words" to the JSON. Every shot shows this same product.';
+export const PRODUCT_LOOK = 'There is no product photo, so describe the product once: add "product":"what it looks like, its shape, materials and colors, in at most 20 words, keeping every detail the brief gives" to the JSON. In the shots, call it only by its name and never describe how it looks: one picture of it is drawn from your description, and every shot is drawn from that picture.';
 
 /** A product ad's product name, as its reference is named. */
 export function productLabel(brief: Brief): string {
