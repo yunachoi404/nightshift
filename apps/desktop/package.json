@@ -87,7 +87,8 @@
         "to": "runtime",
         "filter": [
           "**/*",
-          "!**/.bin/**"
+          "!**/.bin/**",
+          "!**/node_modules/.modules.yaml"
         ]
       }
     ]
