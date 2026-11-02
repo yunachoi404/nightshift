@@ -17,6 +17,7 @@ import type {
   Settings,
   Shot,
   StillRequest,
+  StoryboardRequest,
   AddReferenceRequest,
   StepId,
   Take,
@@ -226,6 +227,10 @@ type MockJob = Job & {
   editFrom?: string;
   /** A still from the video tool: its draft is queued when it lands. */
   autoDraft?: boolean;
+  /** A What if? story job that draws and renders the film's beats as they are (StoryboardRequest.keepStory). */
+  keepStory?: boolean;
+  /** A What if? film's keyframes drawn after its story: the film's take follows when they land. */
+  filmDraft?: boolean;
   aspect?: Project["aspect"];
   quality?: ExportRequest["quality"];
   /** One shot's share clip. */
@@ -745,9 +750,13 @@ export class MockEngine {
     return job;
   }
 
-  storyboard(pid: string): Job {
+  storyboard(pid: string, body?: StoryboardRequest): Job {
     const p = this.getProject(pid);
     if (p.template === "blank") throw new MockHttpError(409, "A blank project has no shot list to write. Make shots with the tools.");
+    if (p.template === "what_if" && body?.keepStory) {
+      if (!ownShot(p)?.keyframes) throw new MockHttpError(409, "Write the story first.");
+      return this.enqueue({ projectId: pid, step: "text", message: "Waiting", keepStory: true });
+    }
     if (p.template === "vfx_effect") {
       if (!p.assets.some((a) => a.id === p.brief.photoAssetId && a.kind === "image")) throw new MockHttpError(409, "Add a photo to this Effect project first.");
       if (!quickEffects.some((e) => e.id === p.brief.effect)) throw new MockHttpError(409, "Choose an effect from the gallery.");
@@ -1142,6 +1151,15 @@ export class MockEngine {
         let gen = fallbackShots(p.template, p.brief, { longestShotSec: longest }).map(s => ({ ...s, durationSec: longest ? Math.min(s.durationSec, longest) : s.durationSec, prompt: [s.prompt, ...(p.references ?? []).slice(0, 3).map(r => `Featuring ${r.label}.`)].join(" ") }));
         // The First shot sample writes the shot the real one wrote, so its still and draft are the real renders.
         if (p.id === this.state.onboarding.sampleProjectId && gen[0] && p.shots.length === 0) gen = [{ ...gen[0], prompt: firstShotSample.prompt, cameraMove: firstShotSample.cameraMove, durationSec: firstShotSample.durationSec }];
+        // As the engine: a What if? story is written on the film's own shot, so its takes and finals stay. Its beats as
+        // they are, with keepStory.
+        const film = p.template === "what_if" ? ownShot(p) : undefined;
+        if (film && gen[0]) {
+          const plan = gen[0];
+          if (!job.keepStory) next.shots = p.shots.map((s) => (s.id === film.id ? { ...s, prompt: plan.prompt, cameraMove: plan.cameraMove, durationSec: plan.durationSec, line: plan.line ?? "", keyframes: plan.keyframes ?? [] } : s));
+          next.shotList = { by: p.shotList?.by ?? "writer" };
+          break;
+        }
         let planIndex = 0;
         const fresh = (g: (typeof gen)[number]): Shot => ({ id: id("sht"), index: 0, ...g, locked: false });
         const merged: Shot[] = [];
@@ -1168,7 +1186,7 @@ export class MockEngine {
         const quickPhoto = (p.template === "camera_move" || p.template === "vfx_effect") && typeof p.brief.photoAssetId === "string" ? { stillAssetId: p.brief.photoAssetId } : {};
         next.shots = [...merged.map((s) => ({ ...s, ...quickPhoto })), ...boardShots(p), ...aside].map((s, index) => ({ ...s, index }));
         next.takes = p.takes.filter((t) => next.shots.some((s) => s.id === t.shotId));
-        if (FILMS.has(p.template)) next.shotList = { by: "writer" };
+        if (FILMS.has(p.template) || p.template === "what_if") next.shotList = { by: "writer" };
         // A rewritten shot takes its place on its board; a shot set aside moves to the end of its board. A What if?
         // film's or a quick shot's first own shot opens the first board.
         const asideIds = new Set(aside.map((s) => s.id));
@@ -1438,6 +1456,8 @@ export class MockEngine {
     if (job.step === "text") {
       if (p.template === "vfx_effect") {
         if (own) this.draft(p.id, own.id);
+      } else if (p.template === "what_if") {
+        if (own) this.enqueue({ projectId: p.id, shotId: own.id, step: "still", keyframeIndex: 0, filmDraft: true });
       } else {
         for (const s of timelineShots(next).filter((s) => !s.stillAssetId)) this.enqueue({ projectId: p.id, shotId: s.id, step: "still" });
       }
@@ -1446,7 +1466,7 @@ export class MockEngine {
         this.audio(p.id, { role: "music", prompt: "Instrumental cinematic curiosity", durationSec: 15 });
       }
     }
-    if (job.step === "still" && p.template === "what_if" && own && job.shotId === own.id && own.stillAssetId && !p.takes.some((t) => t.shotId === own.id)) this.draft(p.id, own.id);
+    if (job.step === "still" && p.template === "what_if" && own && job.shotId === own.id && own.stillAssetId && (job.filmDraft || !p.takes.some((t) => t.shotId === own.id))) this.draft(p.id, own.id);
     // A still the video tool drew: its draft follows, from the still that landed.
     const drawn = next.shots.find((s) => s.id === job.shotId);
     if (job.step === "still" && job.autoDraft && drawn?.stillAssetId) this.enqueue({ projectId: p.id, shotId: drawn.id, step: "video_draft", seed: job.seed ?? Math.floor(Math.random() * 1e9) });

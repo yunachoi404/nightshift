@@ -250,8 +250,19 @@ read. Run it after changing a pin, a patch or ComfyUI's version.
 
 `what_if` is one 15-second shot with four editable `Shot.keyframes`, not four clips to join. The brief contains
 `question`, `look` (`cinematic` or `miniature`) and an optional `photoAssetId`. The writer has a larger output
-budget for this template and falls back to a complete starter story if its answer fails validation. Narration
-has 35 to 50 words and describes an imagined premise, not a scientific explanation.
+budget for this template. It is asked up to three times; each new ask says what the last answer broke, and every
+miss is in the engine log with what it wrote. Narration has 35 to 50 words (30 to 55 are accepted) and describes an
+imagined premise, not a scientific explanation. An answer that only repeats the generic outline (no tested starter
+story fits the question) is a miss.
+
+When the writer's story does not come, nothing is drawn, voiced or rendered. A new film gets the starter beats to
+edit, and `shotList` is `{ by: "template", note }`. A film that had a story keeps it, its keyframes and its takes,
+with a note. The UI shows the note on the story page and the Media board, with Try again. `POST storyboard` with
+`{ "keepStory": true }` skips the writer and draws, voices and renders the beats as they are. Drawing a beat by hand
+clears the note.
+
+A story written again replaces the film's beats and narration on the same shot: its takes and finals stay, its pick
+stays until the new film lands, and a final or an export waiting for the film goes on.
 
 The first keyframe is Krea 2 or the uploaded photo. Later frames use Klein with the previous frame and the
 original scene as references. A forward camera journey uses the previous frame alone. A still request with

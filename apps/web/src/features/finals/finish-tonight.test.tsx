@@ -170,6 +170,17 @@ describe("finish every pick tonight", () => {
     await waitFor(() => expect(engine.finals.map((f) => f.shotId)).toEqual(["shot_1", "shot_2"]));
   });
 
+  it("for one shot, says it in the singular and times it as one final", async () => {
+    const project = ghostShift();
+    project.shots = project.shots.map((s) => (s.id === "shot_2" ? { ...s, onTimeline: false } : s));
+    open(new Engine(project, { enabled: true, startAt: "23:00", endAt: "07:00" }), "media");
+    fireEvent.click(await screen.findByRole("button", { name: "Finish 1 shot tonight" }));
+    const dialog = screen.getByRole("dialog");
+    expect(dialog.textContent).toContain("renders the picked take of the shot on the timeline at full quality. In the morning it is on its card and in the editor.");
+    expect(dialog.textContent).not.toContain("one after another");
+    expect(within(dialog).getByText("Takes about").nextElementSibling?.textContent).toMatch(/^5 min/);
+  });
+
   it("shows nothing once every pick in the cut is finished", async () => {
     const project = ghostShift();
     project.shots = project.shots.map((s) => (s.id === "shot_1" || s.id === "shot_2" ? { ...s, onTimeline: false } : s));

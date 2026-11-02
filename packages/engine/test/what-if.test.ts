@@ -7,7 +7,7 @@ import { bindWorkflow } from "../src/comfy/bind.js";
 import { EventBus } from "../src/events.js";
 import { placeholderScene } from "../src/media/png.js";
 import { ProjectStore } from "../src/projects/store.js";
-import { drawWhatIf, parseWhatIf, renderWhatIf, validateWhatIfProject, whatIfDraftSnapshot, writeWhatIf } from "../src/projects/what-if.js";
+import { drawWhatIf, parseWhatIf, readWhatIf, renderWhatIf, validateWhatIfProject, whatIfDraftSnapshot, writeWhatIf } from "../src/projects/what-if.js";
 import type { JobPayload } from "../src/queue/store.js";
 import type { ExecContext } from "../src/queue/queue.js";
 
@@ -61,6 +61,27 @@ describe("What-if contract and story", () => {
     expect(parseWhatIf(JSON.stringify(placeholderFrames))).toBeUndefined();
   });
 
+  it("tells the writer what broke, in words it can act on", () => {
+    const story = fallbackWhatIf({ question: "What if the moon came down to the beach?" });
+    const misfit = (answer: unknown) => {
+      const read = readWhatIf(typeof answer === "string" ? answer : JSON.stringify(answer));
+      return "misfit" in read ? read.misfit : undefined;
+    };
+    expect(misfit("Here you go")).toMatch(/^Your last answer was not one JSON object/);
+    expect(misfit({ ...story, keyframes: story.keyframes.slice(0, 3) })).toMatch(/^Your last answer had 3 keyframes/);
+    expect(misfit({ ...story, prompt: "" })).toMatch(/did not have the shape asked for \(prompt\)/);
+    expect(misfit({ ...story, keyframes: story.keyframes.map(frame => ({ ...frame, line: "word ".repeat(20) })) })).toBe("Your last four narration lines total 80 words. Make them total 35 to 50 words.");
+  });
+
+  it("reads a near miss as the story it is: a copied camera choice, narration for line", () => {
+    const story = fallbackWhatIf({ question: "What if the moon came down to the beach?" });
+    expect(parseWhatIf(JSON.stringify({ ...story, cameraMove: "static or dolly_in" }))?.cameraMove).toBe("static");
+    expect(parseWhatIf(JSON.stringify({ ...story, cameraMove: "dolly in" }))?.cameraMove).toBe("dolly_in");
+    expect(parseWhatIf(JSON.stringify({ ...story, cameraMove: undefined }))?.cameraMove).toBe("static");
+    const narrated = { ...story, keyframes: story.keyframes.map(({ prompt, line }) => ({ prompt, narration: line })) };
+    expect(parseWhatIf(JSON.stringify(narrated))?.line).toBe(story.line);
+  });
+
   it("rejects unusable writer answers instead of shipping an empty or overlong story", () => {
     const story = fallbackWhatIf(brief);
     expect(parseWhatIf("not JSON")).toBeUndefined();
@@ -91,7 +112,7 @@ describe("What-if contract and story", () => {
 });
 
 describe("What-if stage recovery", () => {
-  it("writes a complete fallback when the writer fails, then resumes without replacing it", async () => {
+  it("leaves the starter beats and a note when the writer fails, draws nothing, then resumes without replacing them", async () => {
     const root = await mkdtemp(join(tmpdir(), "ns-what-if-writer-"));
     const store = new ProjectStore(join(root, "projects"), new EventBus(), () => undefined);
     await store.load();
@@ -100,14 +121,44 @@ describe("What-if stage recovery", () => {
     const ctx: ExecContext = { signal: new AbortController().signal, progress: () => undefined, remember: (key, value) => { payload[key] = value; } };
     let attempts = 0;
     const deps: Parameters<typeof writeWhatIf>[0] = { store, run: async () => { attempts++; throw new Error("writer offline"); } };
-    const result = await writeWhatIf(deps, project, payload, ctx, true);
-    expect(result.message).toContain("starter story");
+    const story = await writeWhatIf(deps, project, payload, ctx, true);
+    expect(story.ready).toBe(false);
+    expect(story.result.message).toBe("The writer could not finish: writer offline. Nothing was drawn. Try again, or use the starter beats.");
     const saved = store.require(project.id);
     expect(saved.shots[0]!.keyframes).toHaveLength(4);
     expect(saved.shots[0]!.line!.split(/\s+/)).toHaveLength(40);
-    await writeWhatIf(deps, saved, payload, ctx, true);
+    expect(saved.shotList).toEqual({ by: "template", note: "The writer could not finish: writer offline." });
+    const again = await writeWhatIf(deps, saved, payload, ctx, true);
+    expect(again.ready).toBe(false);
     expect(attempts).toBe(1);
     expect(store.require(project.id).shots[0]!.id).toBe(saved.shots[0]!.id);
+  });
+
+  it("asks again with what broke, and keeps a generic outline echoed back as a note, not a film", async () => {
+    const root = await mkdtemp(join(tmpdir(), "ns-what-if-tries-"));
+    const store = new ProjectStore(join(root, "projects"), new EventBus(), () => undefined);
+    await store.load();
+    const books = { question: "What if every book in an old library flew off its shelf like a bird?", look: "miniature" };
+    const project = await store.create({ name: "Books", template: "what_if", aspect: "9:16", brief: books });
+    const payload: JobPayload = {};
+    const ctx: ExecContext = { signal: new AbortController().signal, progress: () => undefined, remember: (key, value) => { payload[key] = value; } };
+    const starter = fallbackWhatIf(books);
+    const answers = ["Sure! Here is a story.", JSON.stringify({ ...starter, keyframes: starter.keyframes.slice(0, 2) }), JSON.stringify(starter)];
+    const systems: string[] = [];
+    const logged: string[] = [];
+    const deps: Parameters<typeof writeWhatIf>[0] = { store, log: (line) => logged.push(line), run: async (_step, values) => {
+      systems.push(String(values.system));
+      const path = join(root, `answer-${systems.length}.txt`);
+      await writeFile(path, answers[systems.length - 1]!);
+      return { outputs: [{ kind: "text", path, nodeId: "writer" }] };
+    } };
+    const story = await writeWhatIf(deps, project, payload, ctx, true);
+    expect(systems).toHaveLength(3);
+    expect(systems[1]).toContain("Your last answer was not one JSON object.");
+    expect(systems[2]).toContain("Your last answer had 2 keyframes. Write exactly four");
+    expect(logged.at(-1)).toContain("repeated the outline word for word");
+    expect(story.ready).toBe(false);
+    expect(store.require(project.id).shotList).toEqual({ by: "template", note: "The writer tried 3 times, but its story did not fit." });
   });
 
   it("says the starter story is used when the writer only repeats its outline", async () => {
@@ -120,8 +171,10 @@ describe("What-if stage recovery", () => {
     const answer = join(root, "answer.txt");
     await writeFile(answer, JSON.stringify(fallbackWhatIf(brief)));
     const deps: Parameters<typeof writeWhatIf>[0] = { store, run: async () => ({ outputs: [{ kind: "text", path: answer, nodeId: "writer" }] }) };
-    const result = await writeWhatIf(deps, project, payload, ctx, true);
-    expect(result.message).toBe("Story ready. Using the starter story.");
+    const story = await writeWhatIf(deps, project, payload, ctx, true);
+    expect(story.result.message).toBe("Story ready. Using the starter story.");
+    expect(story.ready).toBe(true);
+    expect(store.require(project.id).shotList).toEqual({ by: "writer" });
   });
 
   it("reattaches to the interrupted edit and does not repeat completed images", async () => {

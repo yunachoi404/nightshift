@@ -315,19 +315,32 @@ function WritingLine({ job, project }: { job: Job; project: Project }) {
 /**
  * The writer's last answer was not used: why, as the engine noted it (`Project.shotList`), with a way to try again. A
  * film that still has the template's shots says so, and can use them: the note goes and their stills are drawn. One
- * whose own list stayed can dismiss the note.
+ * whose own list stayed can dismiss the note. A What if? film is the same with its story: the starter beats nothing was
+ * drawn from can be used as they are (`beforeUse` saves any beat still being typed), or a story that stayed kept.
  */
-export function WriterNote({ note, project, stills = [] }: { note: string; project: Project; stills?: Shot[] | undefined }) {
+export function WriterNote({ note, project, stills = [], beforeUse, onStory }: { note: string; project: Project; stills?: Shot[] | undefined; beforeUse?: () => Promise<unknown>; onStory?: boolean }) {
   const { storyboard, updateProject, still } = useEngine();
   const tier = useInstalledTier();
   const [busy, setBusy] = useState(false);
   const by = project.shotList?.by ?? "writer";
+  const story = project.template === "what_if";
+  // A What if? film still on its starter beats, with nothing drawn from them, can use them. One whose beats were used
+  // or drawn has a story of its own that stayed.
+  const starter = by === "template" && (!story || !ownShot(project)?.keyframes?.some((frame) => frame.stillAssetId));
   const use = async () => {
+    if (story) {
+      await beforeUse?.();
+      await storyboard(project.id, { keepStory: true });
+      return;
+    }
     await updateProject(project.id, { shotList: { by } });
     for (const s of stills) await still(project.id, s.id);
     const each = tier?.estimates?.still?.seconds;
     if (stills.length) toast({ title: `Drawing ${plural(stills.length, "still")}`, text: each ? `${sentenceCase(roughDuration(each * stills.length))} in all` : "They land here one by one", tone: "accent" });
   };
+  const title = story
+    ? starter ? "These are starter beats, not a story of your question" : "The story was not rewritten"
+    : starter ? "These are the template's shots, not your brief's" : "The shot list was not rewritten";
   const act = async (what: () => Promise<unknown>, failTitle: string) => {
     setBusy(true);
     try {
@@ -341,15 +354,15 @@ export function WriterNote({ note, project, stills = [] }: { note: string; proje
   return (
     <div className="mp-board__notice">
       <Notice
-        title={by === "template" ? "These are the template's shots, not your brief's" : "The shot list was not rewritten"}
+        title={title}
         actions={
           <>
             <Button size="s" variant="primary" icon={<RefreshCw />} busy={busy} onClick={() => void act(() => storyboard(project.id), "Couldn't start the writer")}>
               Try again
             </Button>
-            {by === "template" ? (
-              <Button size="s" variant="quiet" icon={<Wand2 />} disabled={busy} onClick={() => void act(use, "Couldn't start the stills")}>
-                Use these shots
+            {starter ? (
+              <Button size="s" variant="quiet" icon={<Wand2 />} disabled={busy} onClick={() => void act(use, story ? "Couldn't start the film" : "Couldn't start the stills")}>
+                {story ? "Use these beats" : "Use these shots"}
               </Button>
             ) : (
               <Button size="s" variant="quiet" disabled={busy} onClick={() => void act(() => updateProject(project.id, { shotList: { by } }), "Couldn't save")}>
@@ -359,7 +372,7 @@ export function WriterNote({ note, project, stills = [] }: { note: string; proje
           </>
         }
       >
-        {note}
+        {story && starter ? `${note} Nothing was drawn from these beats. ${onStory ? "Edit them below" : "Open the story to edit them"}, or use them as they are.` : note}
       </Notice>
     </div>
   );
@@ -452,7 +465,7 @@ export function firstSteps(project: Project, jobs: Job[], main: boolean, writer 
   // The template's list, before the writer wrote one: until a still or a take is made from it, the writer comes first.
   const template = film && writer && project.shotList?.by === "template";
   const untouched = !shots.some((s) => s.stillAssetId || project.takes.some((t) => t.shotId === s.id));
-  const writerNote = film && !writing ? project.shotList?.note : undefined;
+  const writerNote = (film || project.template === "what_if") && !writing ? project.shotList?.note : undefined;
   const writeFirst = template && !writing && !writerNote && untouched;
   // The template's shots the note offers to use: those with no still yet, nor one on its way.
   const noteStills = template && writerNote ? missing.filter((s) => !jobs.some((j) => j.shotId === s.id && isActive(j))) : undefined;

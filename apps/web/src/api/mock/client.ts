@@ -48,7 +48,7 @@ export function createMockClient(flavor: MockFlavor = "dev"): NightshiftClient {
       const kind: Asset["kind"] = file.type.startsWith("audio") ? "audio" : "image";
       return call(() => engine.uploadAsset(pid, dataUrl, kind, { role: opts?.role ?? (kind === "audio" ? "music" : "reference") }, opts?.boardId), 400);
     },
-    storyboard: (pid) => call(() => engine.storyboard(pid)),
+    storyboard: (pid, body) => call(() => engine.storyboard(pid, body)),
     make: (pid, body) => call(() => engine.make(pid, body)),
     still: (pid, shotId, body) => call(() => engine.still(pid, shotId, body)),
     draft: (pid, shotId, body) => call(() => engine.draft(pid, shotId, body)),

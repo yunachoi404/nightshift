@@ -58,13 +58,13 @@ describe("finishing every pick", () => {
     expect(finalKindFor(null)).toBe("same_take");
   });
 
-  it("times a What if? film at nearly four shots' worth", () => {
+  it("times a What if? film as the Queue does: its long-take final takes about as long as a shot's", () => {
     const tier = { estimates: { video_final_same_take: { peakGb: 56, seconds: 288, measured: true } } } as unknown as TierSummary;
     const p = project();
     expect(finalSecondsFor(p, p.shots[0]!, tier, "same_take")).toBe(288);
     // A What if? film's own shot is the one with keyframes.
     const beats = [1, 2, 3].map((n) => ({ id: `beat_${n}`, prompt: `Beat ${n}`, line: "" }));
     const film = { ...p, template: "what_if" as const, shots: [{ ...p.shots[0]!, keyframes: beats }] };
-    expect(finalSecondsFor(film, film.shots[0]!, tier, "same_take")).toBe(1080);
+    expect(finalSecondsFor(film, film.shots[0]!, tier, "same_take")).toBe(288);
   });
 });

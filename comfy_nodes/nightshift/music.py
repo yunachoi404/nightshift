@@ -12,6 +12,9 @@ from .yue2_score.instrumentalize import convert_score
 
 # Lyrics with only section tags: the planner lays out a song form and nothing is sung.
 PLAN_LYRICS = "[Intro]\n\n[Verse]\n\n[Chorus]\n\n[Outro]\n"
+# Lyrics for a song rendered without a plan: in the lab, YuE2 sang over 1 of 5 30-second songs with it, against 3 of 5
+# with empty lyrics (research/2026-10-31_yue2_music.md).
+NO_PLAN_LYRICS = "[Instrumental]"
 CONDITIONS = ("no vocals", "no singing", "no choir", "no spoken words")
 
 
@@ -39,16 +42,18 @@ def section_tags(abc):
 
 def arrange(plan, style, lyrics):
     """(abc, style, lyrics) for YuE2 Generate Music. YuE2 sings words over the plan as it is. Without words the plan's
-    vocal melody moves to the instrument part. A plan the converter refuses falls back to no plan and no lyrics, which
-    the lab found mostly instrumental for short songs."""
+    vocal melody moves to the instrument part. A plan the converter refuses falls back to no plan, with the
+    instrumental tag as lyrics: empty lyrics let YuE2 sing made-up words in most 30-second songs. The style stays as
+    asked, as "Instrumental, no vocals" in the style made it sing more without a plan."""
     if has_words(lyrics):
         return plan, style, lyrics
     try:
         converted, _ = convert_score(plan)
     except Exception as error:  # A converter failure must not cost the user the song.
         logging.warning("YuE2 plan could not be made instrumental (%s); rendering without it", error)
-        return "", style, ""
-    return converted, instrumental_style(style), section_tags(converted)
+        return "", style, NO_PLAN_LYRICS
+    # A score without section labels still gets lyrics that say it is an instrumental, never empty ones.
+    return converted, instrumental_style(style), section_tags(converted) or NO_PLAN_LYRICS
 
 
 class YuE2Instrumental:

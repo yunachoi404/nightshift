@@ -198,6 +198,24 @@ export function cinematicTitleLength(duration: number): number {
   return Math.min(3.6, Math.max(Math.min(1.5, duration * 0.5), duration * 0.3));
 }
 
+/**
+ * How far past a video's usable end a beat still counts as reached: the margin `usableLength` keeps off its real end,
+ * about a frame. The cut falls that much before the beat, which reads as on it.
+ */
+const REACH = 0.05;
+
+/**
+ * A music video plays the shot list as written: every shot on the timeline once, in story order, each for its own
+ * length (`Shot.cutSec` when the user set it, else the length the writer planned on the genre's beat, as far as its
+ * video runs). It never starts the shots again, and never drops one.
+ *
+ * Cuts land on the song's beats: each falls on the beat nearest where the planned lengths put it, or on a new section
+ * of the song within a beat of it. A length the user set is kept as set, so the cut after it may fall between beats.
+ * When the planned lengths run longer than the song (or the length asked for), the shots the user did not set share
+ * what is left, down to a bar each, then the rest of the song is used, then they go down to a beat each. Shots that
+ * still do not fit play on past the song's end. When the shots end first, so does the cut, on a bar line where the
+ * last shot allows, and the song fades out there (the style's `musicFadeOut`).
+ */
 function planMusicVideo(ctx: Ctx, song: SongTrack | null): Planned {
   if (!song) {
     ctx.warnings.push("No song yet: shots are laid end to end without beat sync.");
@@ -217,70 +235,125 @@ function planMusicVideo(ctx: Ctx, song: SongTrack | null): Planned {
   const beats = (beatMap?.beats ?? []).map((b) => b - songStart).filter((b) => b > 0.05 && b < available);
   const downbeats = (beatMap?.downbeats ?? []).map((b) => b - songStart).filter((b) => b > 0.05 && b < available);
   const sectionStarts = (beatMap?.sections ?? []).map((s) => s.start - songStart).filter((s) => s > 0.5 && s < available);
-  if (!beatMap || beats.length < 4) ctx.warnings.push("The song has no steady beat: cuts follow the shot lengths instead.");
+  const steady = !!beatMap && beats.length >= 4;
+  if (!steady) ctx.warnings.push("The song has no steady beat: cuts follow the shot lengths instead.");
   const period = medianGap(beats) ?? 0.5;
+  const bar = period * (beatMap?.meter ?? 4);
 
-  // Cut the song short on a downbeat near the asked length, so the music ends on a bar line.
-  let end = available;
+  // The song's end the cut may run to: on a downbeat near the length asked for, or the whole song.
+  let limit = available;
   const asked = ctx.brief.durationSec;
   if (asked !== undefined && asked < available - 0.5) {
     const near = nearest(downbeats.length ? downbeats : beats, asked, period * 4);
-    end = near !== undefined && near >= asked * 0.8 ? near : asked;
+    limit = near !== undefined && near >= asked * 0.8 ? near : asked;
   }
 
-  const isDownbeat = closeTo(downbeats, 0.03);
-  // In 4/4 the third beat of a bar is the next strongest place to cut.
-  const isHalfBar = beatMap?.meter === 4 ? closeTo(downbeats.map((d) => d + 2 * period), 0.03) : () => false;
-  const isSection = closeTo(sectionStarts, period * 0.6);
-  const minLength = Math.max(0.8, period);
-  const clips: TimelineClip[] = [];
-  let t = 0;
-  let k = 0;
-  for (let guard = 0; end - t > 0.05 && guard < 5000 && ctx.sources.length; guard++, k++) {
-    const src = ctx.sources[k % ctx.sources.length] as Source;
-    const desired = Math.max(minLength, Math.min(src.desired, src.avail));
-    const maxLength = Math.min(src.avail, end - t);
-    const remaining = end - t;
+  const shots = ctx.sources;
+  const lengths = musicVideoLengths(shots, { limit, available, bar, beat: Math.max(0.8, period) });
+  const planned = lengths.reduce((sum, l) => sum + l, 0);
+  if (planned > available + 0.05) ctx.warnings.push(`The shots run ${round3(planned - available)} s past the song's end. Take a shot off or make a longer song.`);
+
+  // Where each cut wants to fall, from the lengths, and where it does: on a beat, a section or as the user set it.
+  const minLength = Math.max(0.8, Math.min(period, 1.5));
+  const starts: number[] = [0];
+  let ideal = 0;
+  for (let k = 0; k + 1 < shots.length; k++) {
+    const src = shots[k] as Source;
+    const start = starts[k] as number;
+    ideal += lengths[k] as number;
+    const lo = start + Math.min(minLength, src.avail);
+    const hi = start + src.avail;
     let cut: number;
-    if (remaining <= maxLength + 1e-6 && remaining <= desired * 1.5 + period) {
-      cut = end;
+    if (src.fixed !== undefined) {
+      // As the user set it; onto a beat only where that moves it less than the timeline's tenths show.
+      const set = start + (lengths[k] as number);
+      const beat = nearest(beats, set, 0.05);
+      cut = beat !== undefined && beat <= hi + 1e-6 ? beat : set;
     } else {
-      const candidates = beats.filter((b) => b >= t + minLength - 1e-6 && b <= t + maxLength + 1e-6 && b <= end - minLength);
-      if (candidates.length === 0) {
-        cut = t + Math.min(maxLength, Math.max(minLength, Math.min(desired, remaining - minLength)));
-      } else {
-        let best = candidates[0] as number;
-        let bestScore = Infinity;
-        for (const b of candidates) {
-          // Bar lines and half bars pull cuts towards them, a new section most; the shot's own length still counts,
-          // so cuts do not fall on every bar like a metronome.
-          const score = Math.abs(b - t - desired) / Math.max(period, 0.25) - (isDownbeat(b) ? 1.5 : isHalfBar(b) ? 0.75 : 0) - (isSection(b) ? 3 : 0);
-          if (score < bestScore) {
-            bestScore = score;
-            best = b;
-          }
-        }
-        cut = best;
-      }
+      const target = Math.min(hi, Math.max(lo, ideal));
+      const section = steady ? nearest(sectionStarts.filter((s) => s >= lo - 1e-6 && s <= hi + REACH), target, period * 1.05) : undefined;
+      // The nearest beat the shots on either side can reach: a beat away at most, when its video ends just short of one.
+      const beat = steady ? nearest(beats.filter((b) => b >= lo - 1e-6 && b <= hi + REACH), target, period * 1.05) : undefined;
+      // A beat a few milliseconds past the video's end is cut on just before it.
+      cut = Math.min(hi, section ?? beat ?? target);
     }
-    clips.push(clipFor(src, t, cut - t, 0));
-    t = cut;
+    starts.push(cut);
   }
 
+  // The end: the song's (or the length asked for), when the shots fill it; else just after the last shot, on a bar
+  // line it can reach. Shots that run past the song end where they end.
+  const lastStart = starts.at(-1) ?? 0;
+  const last = shots.at(-1);
+  const want = lastStart + (lengths.at(-1) ?? 0);
+  const boundary = [limit, available].find((b) => Math.abs(planned - b) <= 0.05);
+  let end: number;
+  if (!last) end = limit;
+  else if (boundary !== undefined && lastStart + last.avail >= boundary - 0.05) end = Math.max(boundary, lastStart + Math.min(minLength, last.avail));
+  else if (want > available) end = want;
+  else {
+    const lo = lastStart + Math.min(minLength, last.avail);
+    const hi = Math.min(lastStart + last.avail, planned <= limit ? limit : available);
+    const reach = (times: number[], within: number) => nearest(times.filter((b) => b >= lo - 1e-6 && b <= hi + REACH), want, within);
+    end = Math.min(hi, last.fixed === undefined && steady ? (reach(downbeats, bar * 0.5) ?? reach(beats, period * 0.55) ?? want) : want);
+  }
+
+  const clips = shots.map((src, k) => {
+    const start = starts[k] as number;
+    const length = (k + 1 < shots.length ? (starts[k + 1] as number) : end) - start;
+    return clipFor(src, start, length, 0);
+  });
+  // Past the song's end the picture plays on in silence.
+  const songEnd = Math.min(end, available);
   const markers: Marker[] = [
-    ...beats.filter((b) => b < end && !isDownbeat(b)).map((b) => ({ t: round3(b), kind: "beat" as const })),
-    ...downbeats.filter((b) => b < end).map((b) => ({ t: round3(b), kind: "downbeat" as const })),
-    ...sectionStarts.filter((s) => s < end).map((s) => ({ t: round3(s), kind: "section" as const })),
+    ...beats.filter((b) => b < songEnd && !isAt(downbeats, b)).map((b) => ({ t: round3(b), kind: "beat" as const })),
+    ...downbeats.filter((b) => b < songEnd).map((b) => ({ t: round3(b), kind: "downbeat" as const })),
+    ...sectionStarts.filter((s) => s < songEnd).map((s) => ({ t: round3(s), kind: "section" as const })),
   ].sort((a, b) => a.t - b.t);
-  const words = shiftWords(song.lyrics, -songStart).filter((w) => w.start >= 0 && w.end <= end + 0.5);
+  const words = shiftWords(song.lyrics, -songStart).filter((w) => w.start >= 0 && w.end <= songEnd + 0.5);
   return {
     clips,
-    audio: [songAudio(song, ctx, 0, end, songStart)],
+    audio: [songAudio(song, ctx, 0, songEnd, songStart)],
     words,
     overlays: titleOverlay(ctx, end),
     markers,
     duration: end,
   };
+}
+
+/**
+ * How long each shot of a music video plays, before the cuts go onto the beat: its own length (`Source.fixed`, else
+ * `Source.desired`), unless together they run past `limit`. Then the shots the user did not set give way in proportion,
+ * down to a `bar`, then the cut takes more of the song (up to `available`), then they go down to a `beat`. Lengths the
+ * user set stay. A shot never plays longer than its video.
+ */
+function musicVideoLengths(shots: readonly Pick<Source, "desired" | "fixed" | "avail">[], o: { limit: number; available: number; bar: number; beat: number }): number[] {
+  const own = shots.map((s) => Math.min(s.avail, s.fixed ?? s.desired));
+  const sum = (xs: number[]) => xs.reduce((a, b) => a + b, 0);
+  if (sum(own) <= o.limit + 0.05) return own;
+  const fixedSum = sum(shots.map((s, k) => (s.fixed === undefined ? 0 : (own[k] as number))));
+  // The free shots shrunk in proportion to fit `room`, none below `floor` (or its own length, when that is shorter).
+  const squeeze = (room: number, floor: number): number[] => {
+    const free = shots.map((s, k) => (s.fixed === undefined ? (own[k] as number) : 0));
+    const lowest = free.map((l) => Math.min(l, floor));
+    let held = free.map(() => false);
+    let scale = 1;
+    // Shots held at their floor take their share out of the room; the others shrink by one scale. A few passes settle it.
+    for (let pass = 0; pass < 8; pass++) {
+      const heldSum = sum(free.map((_, k) => (held[k] ? (lowest[k] as number) : 0)));
+      const rest = sum(free.map((l, k) => (held[k] ? 0 : l)));
+      scale = rest > 0 ? Math.min(1, Math.max(0, room - fixedSum - heldSum) / rest) : 1;
+      const next = free.map((l, k) => held[k] || (l > 0 && l * scale <= (lowest[k] as number)));
+      if (next.every((h, k) => h === held[k])) break;
+      held = next;
+    }
+    return shots.map((s, k) => (s.fixed !== undefined ? (own[k] as number) : held[k] ? (lowest[k] as number) : (free[k] as number) * scale));
+  };
+  const toBar = squeeze(o.limit, o.bar);
+  if (sum(toBar) <= o.limit + 0.05) return toBar;
+  // As much more of the song as the shots need at a bar each.
+  const atBar = fixedSum + sum(shots.map((s, k) => (s.fixed === undefined ? Math.min(own[k] as number, o.bar) : 0)));
+  if (atBar <= o.available + 0.05) return squeeze(atBar, o.bar);
+  return squeeze(o.available, o.beat);
 }
 
 /**
@@ -686,7 +759,7 @@ function nearest(times: number[], target: number, within: number): number | unde
   return best;
 }
 
-function closeTo(times: number[], tolerance: number): (t: number) => boolean {
-  return (t) => times.some((x) => Math.abs(x - t) <= tolerance);
+function isAt(times: number[], t: number): boolean {
+  return times.some((x) => Math.abs(x - t) <= 0.03);
 }
 

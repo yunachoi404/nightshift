@@ -13,6 +13,7 @@ import type {
   Asset,
   AudioRequest,
   Board,
+  Caption,
   CreateProjectRequest,
   DraftRequest,
   DraftTool,
@@ -25,6 +26,7 @@ import type {
   Shot,
   StepId,
   StillRequest,
+  StoryboardRequest,
   AddReferenceRequest,
   Take,
   TemplateId,
@@ -40,7 +42,7 @@ import { floorFrames, frameCount, frameRule, graphDefault, longestClipSec, sizeF
 import { ApiError, badRequest, conflict, notFound } from "../errors.js";
 import { removePosters } from "../media/poster.js";
 import type { DataPaths } from "../paths.js";
-import { WAITING_FOR_GPU, type ExecContext, type ExecResult, type JobQueue } from "../queue/queue.js";
+import { FINAL_STEPS, WAITING_FOR_GPU, type ExecContext, type ExecResult, type JobQueue } from "../queue/queue.js";
 import type { JobPayload } from "../queue/store.js";
 import { readGraph, workflowModel, type RecipeSet } from "../recipes.js";
 import type { StepOutput, StepRequest, StepRunner } from "../runner/types.js";
@@ -50,7 +52,7 @@ import { errorMessage, exists, isAbortError, newId, nowIso, round1, type Logger 
 import type { Assembled, EditorBridge } from "./editor.js";
 import type { ProjectStore } from "./store.js";
 import { effectDirection, effectPhoto, runEffect, runEffectFrame } from "./effects.js";
-import { briefForLlm, CAMERA_MOVES, CAST_FROM_PHOTOS, CAST_INSTRUCTIONS, castNames, castPrompt, fitDurations, parseCast, parseLine, parseStoryboard, PRODUCT_LOOK, productLabel, productPrompt, stylePrompt, templateMisfit, TEMPLATES, videoPrompt, VOICE_INSTRUCTIONS, writerTokens, type CastMember, type ShotPlan } from "./templates.js";
+import { briefForLlm, CAMERA_MOVES, CAST_FROM_PHOTOS, CAST_INSTRUCTIONS, castNames, castPrompt, fitDurations, nameSubject, parseCast, parseLine, parseStoryboard, PRODUCT_LOOK, productLabel, productPrompt, stylePrompt, templateMisfit, TEMPLATES, videoPrompt, VOICE_INSTRUCTIONS, writerTokens, type CastMember, type ShotPlan } from "./templates.js";
 import { cameraSource, cameraMove, cameraPrompt, cameraLayout, prepareCameraProject } from "./camera-move.js";
 import { keepOwnShot, setOwnShot } from "./own-shot.js";
 import { applyReferences, editPrompt, projectReferences, referenceInstructions, referencePrompt, referencesForEdit, referencesForShot, requireReferenceSupport, syncProductPhoto, validateReferences } from "./references.js";
@@ -403,10 +405,13 @@ export class ProjectService {
     await this.recutSoon(id);
   }
 
-  /** Queue the analysis of a song or a voiceover: its beats or its words' times, then the cut fitted to it. */
-  private analyze(projectId: string, asset: Asset, role: "music" | "voice"): Job {
+  /**
+   * Queue the analysis of a song or a voiceover: its beats or its words' times, then the cut fitted to it. `song`: the
+   * request an instrumental song was made from, so a song that sings anyway is made again (see `runAnalysis`).
+   */
+  private analyze(projectId: string, asset: Asset, role: "music" | "voice", song?: InstrumentalSong): Job {
     const job: Job = { ...this.newJob(projectId, role, "now"), analysis: true };
-    return this.d.queue.enqueue(job, { kind: "analyze", assetId: asset.id });
+    return this.d.queue.enqueue(job, { kind: "analyze", assetId: asset.id, ...(song ? { song } : {}) });
   }
 
   // ---------------------------------------------------------------- timeline
@@ -522,15 +527,23 @@ export class ProjectService {
     return shot;
   }
 
-  async storyboard(id: string): Promise<Job> {
+  /**
+   * Write the shot list (a What if? story) from the brief. A What if? film with `keepStory` skips the writer and is drawn,
+   * voiced and rendered from its beats as they are.
+   */
+  async storyboard(id: string, req: StoryboardRequest = {}): Promise<Job> {
     const project = this.d.store.require(id);
     if (project.template === "blank") throw conflict("A blank project has no shot list to write. Make something with the tools.");
     if (project.template === "what_if") {
       this.requireWhatIf();
       validateWhatIfProject(project);
-      // The film's jobs: its story, beats, takes and finals, its voice and music. Extra cards' jobs are their own.
+      // The film's jobs that a new story would change under them: its story, beats and takes, its voice and music. A
+      // final or an export is made from its take's own record, so it goes on. Extra cards' jobs are their own.
       const film = ownShot(project);
-      if (this.d.queue.list({ projectId: id }).some(j => (j.status === "queued" || j.status === "running") && (!j.shotId || j.shotId === film?.id))) throw conflict("Wait for this film's jobs to finish before rewriting its story.");
+      const changing = (j: Job) => !FINAL_STEPS.has(j.step) && j.step !== "export" && (!j.shotId || j.shotId === film?.id);
+      if (this.d.queue.list({ projectId: id }).some(j => (j.status === "queued" || j.status === "running") && changing(j))) throw conflict("Wait for this film's jobs to finish before rewriting its story.");
+      if (req.keepStory && !film?.keyframes) throw conflict("Write the story first.");
+      if (req.keepStory) return this.d.queue.enqueue(this.newJob(id, "text", "now"), { kind: "storyboard", seed: randomSeed(), keepStory: true });
     }
     if (project.template === "camera_move") {
       this.requireStep("camera_layout");
@@ -970,7 +983,7 @@ export class ProjectService {
   }
 
   private whatIfDeps(job: Job): Parameters<typeof drawWhatIf>[0] {
-    return { store: this.d.store, run: (step, values, hints, payload, ctx, span) => this.runStep(job, payload, step, values, hints, ctx, span) };
+    return { store: this.d.store, log: (line) => this.d.log(line), run: (step, values, hints, payload, ctx, span) => this.runStep(job, payload, step, values, hints, ctx, span) };
   }
 
   /** Remember child IDs before enqueueing, so retrying the parent never repeats a film or audio job. */
@@ -1091,7 +1104,12 @@ export class ProjectService {
     let project = this.d.store.require(job.projectId);
     if (project.template === "what_if") {
       try {
-        const result = await writeWhatIf(this.whatIfDeps(job), project, payload, ctx, !!this.currentRecipe()?.steps.text);
+        const { result, ready } = await writeWhatIf(this.whatIfDeps(job), project, payload, ctx, !!this.currentRecipe()?.steps.text);
+        // A story the writer did not write is not drawn, voiced or rendered: the note on the board asks first.
+        if (!ready) {
+          await this.recutSoon(project.id);
+          return result;
+        }
         const current = this.d.store.require(project.id);
         const shot = ownShot(current)!;
         this.whatIfChild(job, payload, ctx, "_whatIfStillJobId", "still", { kind: "still", seed: randomSeed(),
@@ -1177,6 +1195,8 @@ export class ProjectService {
             if (project.template === "micro_drama") setting = parseLine(raw, "setting");
             // Without a look of its own, the brief's world is the look: every still keeps it.
             if (project.template === "music_video") look = parseLine(raw, "look") ?? (typeof project.brief.subject === "string" && project.brief.subject.trim() ? clause(project.brief.subject) : undefined);
+            // Who the video follows, by the same words in every prompt that shows them: each still is drawn on its own.
+            if (project.template === "music_video") nameSubject(plans, parseLine(raw, "subject"));
             message = "Shot list drafted.";
           } else {
             // What it wrote, so a writer that keeps missing the template can be seen and its instructions fixed.
@@ -1262,6 +1282,8 @@ export class ProjectService {
     if (template === "what_if") {
       try {
         const result = await drawWhatIf(this.whatIfDeps(job), project, shot, payload, ctx);
+        // Beats drawn by hand are the story the user chose: a note that the writer's story did not come is done with.
+        if (!payload.autoDraft) await this.d.store.mutate(project.id, (p) => { if (p.shotList?.note) p.shotList = { by: p.shotList.by }; });
         await this.recutSoon(project.id);
         if (payload.autoDraft) {
           const current = this.d.store.require(project.id);
@@ -1600,7 +1622,9 @@ export class ProjectService {
         p.boards = placeItem(p, asset.id, { boardId: str(payload.boardId) });
       });
       await this.recutSoon(project.id);
-      this.analyze(project.id, asset, role);
+      // A music video hears its song's words for its captions: an instrumental's should be none.
+      const instrumental = role === "music" && !words && project.template === "music_video";
+      this.analyze(project.id, asset, role, instrumental ? { prompt: String(values.prompt), durationSec: num(values.durationSec, 30), retried: !!str(payload.retryOf) } : undefined);
       return withPeak({ outputAssetIds: [asset.id], message: role === "music" ? "Song ready" : "Voiceover ready" }, peakGb);
     } finally {
       await this.cleanup(job);
@@ -1631,11 +1655,20 @@ export class ProjectService {
     }
     const { cut } = await this.measuredCut(project.id, { signal: ctx.signal, onProgress: (f, m) => ctx.progress(0.02 + 0.96 * f, m) });
     const beats = cut.timeline.markers?.filter((m) => m.kind === "beat").length ?? 0;
+    const song = instrumentalSong(payload.song);
     const found = [
       role === "music" && project.template === "music_video" ? (beats ? `${beats} beats` : "no steady beat") : undefined,
-      cut.captionMethod === "aligned" || cut.captionMethod === "transcribed" ? "words timed" : cut.captionMethod === "estimated" ? "words timed from the text" : undefined,
+      song ? undefined : cut.captionMethod === "aligned" || cut.captionMethod === "transcribed" ? "words timed" : cut.captionMethod === "estimated" ? "words timed from the text" : undefined,
     ].filter(Boolean);
-    return { outputAssetIds: [], message: `${role === "music" ? "Song" : "Voiceover"} measured${found.length ? `: ${found.join(", ")}` : ""}` };
+    const measured = `${role === "music" ? "Song" : "Voiceover"} measured${found.length ? `: ${found.join(", ")}` : ""}`;
+    // YuE2 is a song model: now and then an instrumental sings made-up words anyway, which the cut would then show as
+    // lyrics. Such a song is made once more on another seed; the new one takes its place when it is ready.
+    if (song && sungWords(cut.timeline.captions) >= SUNG_WORDS) {
+      if (song.retried) return { outputAssetIds: [], message: `${measured}. It has singing in it too. Make another song to try again.` };
+      this.d.queue.enqueue(this.newJob(project.id, "music", "now"), { kind: "audio", role: "music", prompt: song.prompt, durationSec: song.durationSec, seed: randomSeed(), retryOf: asset.id });
+      return { outputAssetIds: [], message: `${measured}. It has singing in it, so another song is on its way.` };
+    }
+    return { outputAssetIds: [], message: measured };
   }
 
   /**
@@ -1724,6 +1757,31 @@ function shiftCaptions(captions: Timeline["captions"], by: number): Timeline["ca
  * A new song or voiceover (made or uploaded) is the one the cut plays: the role's pick, an id or null (off), is cleared,
  * so the cut takes the newest of the role again.
  */
+/** The request an instrumental song was made from, as an analysis job carries it. */
+interface InstrumentalSong {
+  prompt: string;
+  durationSec: number;
+  /** Already the second try: a song that sings again is left to the user. */
+  retried: boolean;
+}
+
+function instrumentalSong(value: unknown): InstrumentalSong | undefined {
+  if (typeof value !== "object" || value === null) return undefined;
+  const v = value as Record<string, unknown>;
+  return typeof v.prompt === "string" ? { prompt: v.prompt, durationSec: num(v.durationSec, 30), retried: v.retried === true } : undefined;
+}
+
+/**
+ * Words heard in a song past which it sings, rather than whisper hearing a word or two in the music: the Chrome Sunset
+ * song that sang had about 20 in its last ten seconds; whisper's usual mishearings ("Music", "Thank you.") are one or two.
+ */
+export const SUNG_WORDS = 6;
+
+/** The words a cut's captions hold: a music video's are its song's lyrics, as whisper heard them. */
+export function sungWords(captions: readonly Caption[]): number {
+  return captions.reduce((sum, c) => sum + (c.words?.length ? c.words.map((w) => w.text) : c.text.split(/\s+/)).filter((w) => /\p{L}{2,}/u.test(w)).length, 0);
+}
+
 function playNewest(p: Project, role: "music" | "voice"): void {
   if (!p.soundtrack || !(role in p.soundtrack)) return;
   const { [role]: _, ...rest } = p.soundtrack;

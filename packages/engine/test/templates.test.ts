@@ -1,7 +1,7 @@
-import { cameraMoves, dramaLooks, dramaMoods, genres, looks, tones, type Shot, type Take, type TemplateId } from "@nightshift/contract";
+import { cameraMoves, dramaLooks, dramaMoods, genres, looks, songPromptFor, tones, voiceoverScript, type Shot, type Take, type TemplateId } from "@nightshift/contract";
 import { describe, expect, it } from "vitest";
 import { mergeShots } from "../src/projects/service.js";
-import { briefForLlm, castNames, fitDurations, parseCast, parseLine, parseStoryboard, scriptLines, storyboardFormat, stylePrompt, templateMisfit, TEMPLATES, videoPrompt, withoutCamera, writerTokens } from "../src/projects/templates.js";
+import { briefForLlm, castNames, fitDurations, nameSubject, parseCast, parseLine, parseStoryboard, scriptLines, storyboardFormat, stylePrompt, templateMisfit, TEMPLATES, videoPrompt, withoutCamera, writerTokens } from "../src/projects/templates.js";
 
 describe("template fallbacks", () => {
   it("match the UI mock's generator for the same brief (apps/web/src/api/mock/text.ts)", () => {
@@ -305,6 +305,73 @@ describe("parseStoryboard", () => {
     // A prompt that is all camera stays as it is.
     expect(withoutCamera("Camera pans right.")).toBe("Camera pans right.");
     expect(parseStoryboard('{"shots":[{"prompt":"A frog on a paper boat, camera pans right to follow it","cameraMove":"pan_right","durationSec":4}]}', "none")).toEqual([{ prompt: "A frog on a paper boat.", cameraMove: "pan_right", durationSec: 4 }]);
+  });
+
+  it("starts a music video's song from its genre and tempo, and what it is about", () => {
+    const brief = { genre: "synth", songPrompt: "Racing the sunrise on roller skates" };
+    expect(songPromptFor("music_video", brief)).toBe("Synthwave, 110 bpm. Racing the sunrise on roller skates");
+    // Once said, not twice: a song made from the box saves its words as the new songPrompt.
+    expect(songPromptFor("music_video", { ...brief, songPrompt: "Synthwave, 110 bpm. Racing the sunrise" })).toBe("Synthwave, 110 bpm. Racing the sunrise");
+    expect(songPromptFor("music_video", { ...brief, songPrompt: "Lo-fi at 80 BPM, rain" })).toBe("Lo-fi at 80 BPM, rain");
+    expect(songPromptFor("music_video", { genre: "synth" })).toBe("Synthwave, 110 bpm.");
+    expect(songPromptFor("product_ad", { songPrompt: "Warm ukulele" })).toBe("Warm ukulele");
+    expect(songPromptFor("micro_drama", {})).toBe("");
+  });
+
+  it("reads a product ad's voiceover from its shot lines until a script is written", () => {
+    const brief = { productName: "Moby planter", does: "waters your plant for two weeks", tone: "warm" };
+    const shots = [
+      { index: 1, line: "Let Moby take care of your green space." },
+      { index: 0, line: "Moby planter waters your plant for two weeks." },
+      { index: 2, line: "Not in the cut.", onTimeline: false },
+      { index: 3 },
+    ];
+    expect(voiceoverScript({ template: "product_ad", brief, shots })).toBe("Moby planter waters your plant for two weeks. Let Moby take care of your green space.");
+    expect(voiceoverScript({ template: "product_ad", brief: { ...brief, script: "My own words." }, shots })).toBe("My own words.");
+    // No lines yet: the template's pitch.
+    expect(voiceoverScript({ template: "product_ad", brief, shots: [] })).toBe(scriptLines("product_ad", brief).join(" "));
+    expect(voiceoverScript({ template: "talking_intro", brief: { script: "Hi.\nI'm Ada." }, shots: [] })).toBe("Hi.\nI'm Ada.");
+  });
+
+  it("takes out only the camera's words, never who is in the picture", () => {
+    // Chrome Sunset, Nov 2: whole clauses went, and three stills were drawn from what was left ("Casting neon pink and
+    // cyan light across the empty highway.", "Mirroring the magenta sun and neon sky.", "The VHS grain swirling around
+    // her like static."). The prompts as the writer's camera moves (dolly_out, crash_zoom, tilt_down) suggest them:
+    expect(withoutCamera("A low-angle dolly out as she speeds toward us, casting neon pink and cyan light across the empty highway.")).toBe("She speeds toward us, casting neon pink and cyan light across the empty highway.");
+    expect(withoutCamera("The camera pulls back as the roller skater speeds toward us, casting neon pink and cyan light across the empty highway.")).toBe("The roller skater speeds toward us, casting neon pink and cyan light across the empty highway.");
+    expect(withoutCamera("Crash zoom into her chrome skates gliding over wet asphalt, mirroring the magenta sun and neon sky.")).toBe("Her chrome skates gliding over wet asphalt, mirroring the magenta sun and neon sky.");
+    expect(withoutCamera("Close-up of her chrome skates as the camera crash zooms in on the wet asphalt, mirroring the magenta sun and neon sky.")).toBe("Close-up of her chrome skates, mirroring the magenta sun and neon sky.");
+    expect(withoutCamera("The camera tilts down to her face, the VHS grain swirling around her like static.")).toBe("Her face, the VHS grain swirling around her like static.");
+    expect(withoutCamera("A slow dolly in on the skater's face as neon pink and cyan light washes over her.")).toBe("The skater's face as neon pink and cyan light washes over her.");
+    expect(withoutCamera("Tracking shot of the roller skater gliding past neon palm trees.")).toBe("The roller skater gliding past neon palm trees.");
+    // A move that only goes somewhere ("follows her", "to show...") is not the picture: the clause goes, as before.
+    expect(withoutCamera("The camera follows her as she skates under the neon sign.")).toBe("She skates under the neon sign.");
+  });
+
+  it("names a music video's subject in every prompt that shows them", () => {
+    const subject = "a young woman with a short silver bob, a teal satin bomber jacket and pink knee pads";
+    const plans = [
+      "A young woman with a short silver bob, teal satin bomber jacket, and pink knee pads glides past neon palm trees on roller skates.",
+      "She skates past a glowing grid ocean, chrome reflections shimmering on the asphalt as the magenta sun dips below the horizon.",
+      "A lone chrome car with glowing headlights speeds past her in the distance, its reflection rippling on the wet asphalt.",
+      "Close-up of the roller skater's face, short silver bob blowing back, teal satin collar turned up.",
+      "A glowing grid ocean under a huge striped magenta sun.",
+    ].map((prompt) => ({ prompt, durationSec: 3.27 }));
+    nameSubject(plans, subject);
+    expect(plans.map((p) => p.prompt)).toEqual([
+      "A young woman with a short silver bob, teal satin bomber jacket, and pink knee pads glides past neon palm trees on roller skates.",
+      "A young woman with a short silver bob, a teal satin bomber jacket and pink knee pads skates past a glowing grid ocean, chrome reflections shimmering on the asphalt as the magenta sun dips below the horizon.",
+      "A lone chrome car with glowing headlights speeds past her in the distance, its reflection rippling on the wet asphalt. She is a young woman with a short silver bob, a teal satin bomber jacket and pink knee pads.",
+      "Close-up of the roller skater's face, short silver bob blowing back, teal satin collar turned up.",
+      "A glowing grid ocean under a huge striped magenta sun.",
+    ]);
+    // Without a subject from the writer, prompts stay as written.
+    const same = [{ prompt: "She skates on.", durationSec: 3 }];
+    nameSubject(same, undefined);
+    expect(same[0]!.prompt).toBe("She skates on.");
+    expect(TEMPLATES.music_video.instructions).toContain('"subject":"who the video follows');
+    expect(TEMPLATES.music_video.instructions).toContain("never only as she, he or they");
+    expect(parseLine('{"look":"x","subject":"a young woman with a short silver bob","shots":[]}', "subject")).toBe("a young woman with a short silver bob");
   });
 
   it("tells the writer to keep the camera out of its prompts, and a music video to name its look once", () => {

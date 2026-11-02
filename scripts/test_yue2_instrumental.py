@@ -16,7 +16,7 @@ ROOT = Path(__file__).resolve().parents[1]
 package = types.ModuleType("nightshift")
 package.__path__ = [str(ROOT / "comfy_nodes/nightshift")]
 sys.modules.setdefault("nightshift", package)
-from nightshift.music import PLAN_LYRICS, YuE2Instrumental, arrange, has_words  # noqa: E402
+from nightshift.music import NO_PLAN_LYRICS, PLAN_LYRICS, YuE2Instrumental, arrange, has_words  # noqa: E402
 from nightshift.yue2_score.abc_tools import parse_abc  # noqa: E402
 
 PLAN = (ROOT / "scripts/fixtures/yue2_plan_piano.abc").read_text()
@@ -33,6 +33,11 @@ class ArrangeTest(unittest.TestCase):
         self.assertEqual(style, "Instrumental, Slow piano, warm, a little hopeful, no vocals, no singing, no choir, no spoken words.")
         self.assertEqual(lyrics, "[Intro]\n\n[Verse]\n\n[Chorus]\n\n[Interlude]\n\n[Verse]\n\n[Chorus]\n\n[Outro]\n")
 
+    def test_a_score_without_section_labels_is_tagged_instrumental(self):
+        unlabelled = "\n".join(line for line in PLAN.splitlines() if not line.startswith("% "))
+        _, _, lyrics = arrange(unlabelled, STYLE, PLAN_LYRICS)
+        self.assertEqual(lyrics, NO_PLAN_LYRICS)
+
     def test_a_style_that_says_instrumental_keeps_its_words(self):
         _, style, _ = arrange(PLAN, "Instrumental cinematic curiosity. No vocals.", PLAN_LYRICS)
         self.assertEqual(style, "Instrumental cinematic curiosity. No vocals, no singing, no choir, no spoken words.")
@@ -41,9 +46,11 @@ class ArrangeTest(unittest.TestCase):
         words = "[Verse]\nStreetlights hum a quiet tune\n"
         self.assertEqual(arrange(PLAN, STYLE, words), (PLAN, STYLE, words))
 
-    def test_a_plan_the_converter_refuses_renders_without_a_plan(self):
+    def test_a_plan_the_converter_refuses_renders_without_a_plan_as_an_instrumental(self):
+        # Empty lyrics let YuE2 sing made-up words; the instrumental tag mostly keeps it quiet.
         with self.assertLogs(level="WARNING"):
-            self.assertEqual(arrange("not a score", STYLE, PLAN_LYRICS), ("", STYLE, ""))
+            self.assertEqual(arrange("not a score", STYLE, PLAN_LYRICS), ("", STYLE, "[Instrumental]"))
+        self.assertFalse(has_words(NO_PLAN_LYRICS))
 
     def test_only_section_tags_are_not_words(self):
         self.assertFalse(has_words(PLAN_LYRICS))

@@ -225,6 +225,46 @@ describe.skipIf(!hasFfmpeg)("song analysis is a queued job", { timeout: 120_000 
   });
 });
 
+describe.skipIf(!hasFfmpeg)("an instrumental song that sings", { timeout: 120_000 }, () => {
+  it("is made once more on another seed, and a second that sings is left to the user", async () => {
+    // Chrome Sunset, Nov 2: the "instrumental" song sang made-up words in its last ten seconds.
+    const p = await main.project("music_video", "9:16", { subject: "a roller skater at night", genre: "synth", length: "30" });
+    const sung = [{ start: 22, end: 25, text: "I saw you if you walked away", words: ["I", "saw", "you", "if", "you", "walked", "away"].map((text, i) => ({ text, start: 22 + i * 0.4, end: 22.3 + i * 0.4 })) }];
+    const assemble = EditorBridge.prototype.assemble;
+    // Whisper is not needed: the measured cut hears the words.
+    const heard = vi.spyOn(EditorBridge.prototype, "assemble").mockImplementation(async function (this: EditorBridge, project, options) {
+      const cut = await assemble.call(this, project, options);
+      return project.id === p.id && options.analyze ? { ...cut, timeline: { ...cut.timeline, captions: sung }, captionMethod: "transcribed" } : cut;
+    });
+    try {
+      const songs = async () => (await main.jobs(p.id)).filter((j) => j.step === "music").sort((a, b) => a.createdAt.localeCompare(b.createdAt));
+      await main.run(`/api/projects/${p.id}/audio`, { role: "music", prompt: "Synthwave, 110 bpm. Racing the sunrise", durationSec: 30 });
+      // Its analysis hears singing and queues a second song; that one's analysis hears it again and stops there.
+      const done = await until(songs, (j) => j.filter((x) => x.analysis && x.status === "done").length >= 2, 60_000);
+      const analyses = done.filter((j) => j.analysis);
+      expect(analyses[0]!.message).toMatch(/^Song measured: (\d+ beats|no steady beat)\. It has singing in it, so another song is on its way\.$/);
+      expect(analyses[1]!.message).toMatch(/It has singing in it too\. Make another song to try again\.$/);
+      const made = done.filter((j) => !j.analysis);
+      expect(made).toHaveLength(2);
+      const requests = calls.filter((c) => c.step === "music" && made.some((j) => j.id === c.jobId));
+      expect(requests.map((r) => r.values.prompt)).toEqual(["Synthwave, 110 bpm. Racing the sunrise", "Synthwave, 110 bpm. Racing the sunrise"]);
+      expect(requests[1]!.values.seed).not.toBe(requests[0]!.values.seed);
+      await sleep(200);
+      expect((await songs()).filter((j) => !j.analysis)).toHaveLength(2);
+    } finally {
+      heard.mockRestore();
+    }
+  });
+
+  it("is not made again when the song was asked with words", async () => {
+    const p = await main.project("music_video", "9:16", { subject: "a roller skater at night", genre: "synth", length: "30" });
+    await main.run(`/api/projects/${p.id}/audio`, { role: "music", prompt: "Synthwave", lyrics: "[Verse]\nRacing the sunrise down the coast", durationSec: 30 });
+    const analysis = await until(() => main.jobs(p.id), (j) => j.some((x) => x.analysis && x.status === "done"), 60_000);
+    expect(analysis.find((x) => x.analysis)!.message).not.toMatch(/singing/);
+    expect(analysis.filter((j) => j.step === "music" && !j.analysis)).toHaveLength(1);
+  });
+});
+
 describe.skipIf(!hasFfmpeg)("a cut measured while drafts land", { timeout: 180_000 }, () => {
   it("keeps the drafts that landed while the song was measured", async () => {
     let p = await main.project("music_video", "16:9", { subject: "a night drive", genre: "synth", length: "30" });

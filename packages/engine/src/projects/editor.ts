@@ -7,13 +7,12 @@
  * - What is slow to measure (a song's beats, the words of a voice or a song) is kept per project in
  *   `projects/<id>/editor.json`, keyed by asset id, so each audio file is analysed once.
  */
-import type { Aspect, Asset, Caption, ExportRequest, Project, TemplateId, Timeline } from "@nightshift/contract";
+import { voiceoverScript, type Aspect, type Asset, type Caption, type ExportRequest, type Project, type TemplateId, type Timeline } from "@nightshift/contract";
 import type { AssembleOptions, BeatMap, ExportResult, RevealResult, ToolOverrides, Word } from "@nightshift/editor";
 import { join } from "node:path";
 import type { EditorLib } from "../editorLib.js";
 import { readJson, writeJsonAtomic, type Logger } from "../util.js";
 import type { ProjectStore } from "./store.js";
-import { scriptLines } from "./templates.js";
 
 /** How word times were found: aligned (known text), transcribed, estimated from the text, or none. */
 export type CaptionMethod = "aligned" | "transcribed" | "estimated" | "none";
@@ -230,11 +229,8 @@ export function editorProject(project: Project): Project {
     if (!str(brief.productImageAssetId) && photo) brief.productImageAssetId = photo.id;
     const does = str(brief.does);
     if (!str(brief.tagline) && does) brief.tagline = does[0]!.toUpperCase() + does.slice(1);
-    if (!str(brief.script)) {
-      // The lines of the shots in the cut: shots kept on a board out of it say nothing.
-      const lines = [...project.shots].sort((a, b) => a.index - b.index).flatMap((s) => (s.onTimeline !== false && s.line?.trim() ? [s.line.trim()] : []));
-      brief.script = (lines.length ? lines : scriptLines("product_ad", project.brief)).join(" ");
-    }
+    // The lines of the shots in the cut (shots kept on a board out of it say nothing), as the Editor's voiceover box.
+    if (!str(brief.script)) brief.script = voiceoverScript(project);
   }
   const timeline = project.timeline ? { ...project.timeline, style: editorStyle(project.template, project.timeline.style) } : null;
   return { ...project, brief, timeline };

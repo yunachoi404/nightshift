@@ -13,5 +13,8 @@
 .whatif-beat textarea { font-size: 12px; line-height: 17px; resize: none; }
 .whatif-beat .frame--empty { display: flex; align-items: center; justify-content: center; text-align: center; padding: 12px; }
 .whatif-status { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; padding: 12px 16px; background: var(--inset); border: 1px solid var(--line); border-radius: 9px; color: var(--text-2); }
+.whatif-status__text { flex: 1; min-width: 0; }
+.whatif-note .mp-board__notice { margin-bottom: 20px; }
+.whatif-status .btn { margin-block: -4px; }
 .whatif-foot { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-top: 20px; }
 @media (max-width: 1100px) { .whatif-grid:not(.whatif-grid--tall) { grid-template-columns: repeat(2, minmax(0, 1fr)); } }

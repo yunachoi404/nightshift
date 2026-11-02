@@ -12,7 +12,7 @@
  * - vfx_effect: photoAssetId, effect (a quickEffects id), prompt (optional)
  * - blank: none. A blank project has no shot list; it fills from the project's tools.
  */
-import type { Aspect, TemplateId } from "./index.js";
+import type { Aspect, Shot, TemplateId } from "./index.js";
 import { fallbackWhatIf } from "./what-if.js";
 
 
@@ -382,6 +382,20 @@ export function musicVideoShots(brief: Brief, longestShotSec?: number): { count:
   return { count: Math.min(MAX_SHOTS, Math.ceil(lengthSec / shotSec - 1e-6)), shotSec, lengthSec };
 }
 
+/**
+ * What the song box starts with: the song the brief asks for (`songPrompt`). A music video's also names its genre and
+ * tempo ("Synthwave, 110 bpm. Racing the sunrise..."), so the song follows the form's genre and the shots' beat; not
+ * twice, when the words already say a tempo or the genre.
+ */
+export function songPromptFor(template: TemplateId, brief: Brief): string {
+  const about = str(brief.songPrompt);
+  if (template !== "music_video") return about;
+  const genre = genres.find((g) => g.id === brief.genre);
+  if (!genre) return about;
+  if (/\bbpm\b/i.test(about) || about.toLowerCase().includes(genre.label.toLowerCase())) return about;
+  return about ? `${genre.label}, ${genre.bpm} bpm. ${about}` : `${genre.label}, ${genre.bpm} bpm.`;
+}
+
 /** The voiceover a template implies: the talking intro's script sentences (at most eight), the product ad's pitch. */
 export function scriptLines(template: TemplateId, brief: Brief): string[] {
   if (template === "what_if") return fallbackWhatIf(brief).keyframes.map((frame) => frame.line);
@@ -395,6 +409,21 @@ export function scriptLines(template: TemplateId, brief: Brief): string[] {
   if (tone === "playful") return [sentence(`Meet ${named || "this one"}`), `${it} Yes, really.`, "Small thing. Big grin.", `${Name} Go on.`];
   if (tone === "warm") return [named ? sentence(`This is ${named}`) : "This is it.", it, "Made for the mornings you actually have.", `${Name} Welcome home.`];
   return [Name, it, "No setup. No fuss.", `${Name} Done.`];
+}
+
+/**
+ * The voiceover a project's cut reads until a voice is made: the brief's `script` when one was written, else a product
+ * ad's own shot lines (the writer's, on the shots of the cut, in order: the captions lane shows them), else the
+ * template's (`scriptLines`). The engine's cut and the Editor's voiceover box both start from it.
+ */
+export function voiceoverScript(project: { template: TemplateId; brief: Brief; shots: readonly Pick<Shot, "index" | "line" | "onTimeline">[] }): string {
+  const script = project.brief.script;
+  if (typeof script === "string" && script.trim()) return script;
+  if (project.template === "product_ad") {
+    const lines = [...project.shots].sort((a, b) => a.index - b.index).flatMap((s) => (s.onTimeline !== false && s.line?.trim() ? [s.line.trim()] : []));
+    if (lines.length) return lines.join(" ");
+  }
+  return scriptLines(project.template, project.brief).join(" ");
 }
 
 /** A script's sentences, as written (whitespace collapsed). */

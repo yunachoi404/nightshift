@@ -4,7 +4,7 @@
  */
 import { MAIN_BOARD_ID, type Asset, type Project, type Shot, type Take } from "@nightshift/contract";
 import { describe, expect, it } from "vitest";
-import { cameraMoveLabel, canAddToTimeline, canRestore, canvas, changesCut, cutDuration, cutShots, dropMoves, imageOfCard, makeBlocked, moveCard, moveOnTimeline, placeOnTimeline, restingTime, restore, retryFor, shotHistory, shotLabel, shotPatch, shotWords, soundOnTimeline, takeOffTimeline, versionLabel, withoutCard } from "./items";
+import { cameraMoveLabel, canAddToTimeline, canRestore, canvas, changesCut, cutDuration, cutShots, downloadName, dropMoves, imageOfCard, makeBlocked, moveCard, moveOnTimeline, placeOnTimeline, restingTime, restore, retryFor, shotHistory, shotLabel, shotPatch, shotWords, soundOnTimeline, takeOffTimeline, versionLabel, withoutCard } from "./items";
 
 const at = (minute: number) => new Date(Date.UTC(2026, 9, 30, 9, minute)).toISOString();
 const image = (id: string, minute: number, extra: Partial<Asset> = {}): Asset => ({ id, kind: "image", path: `${id}.png`, createdAt: at(minute), ...extra });
@@ -353,6 +353,16 @@ describe("resting thumbnails", () => {
   });
 });
 
+describe("what a card's version downloads as", () => {
+  it("names the project, the card's place and the version, with the file's own extension", () => {
+    const asset = (path: string, kind: "image" | "video" = "video") => ({ asset: { id: "a", kind, path, createdAt: "" } });
+    expect(downloadName({ name: "Moby planter ad" }, "Shot 4: A hand brushes the fern", asset("assets/ast_x.mp4"), 3)).toBe("Moby planter ad, Shot 4, version 3.mp4");
+    expect(downloadName({ name: "Photo shoot" }, "3D animated feature film character", asset("assets/ast_y.PNG", "image"), 1)).toBe("Photo shoot, version 1.png");
+    expect(downloadName({ name: "What if: books/flew?" }, "Shot 1", asset("assets/ast_z.webp", "image"), 2)).toBe("What if books flew, Shot 1, version 2.webp");
+    expect(downloadName({ name: "  " }, "Shot 2", asset("noext", "image"), 1)).toBe("Nightshift, Shot 2, version 1.png");
+  });
+});
+
 describe("what a card is called", () => {
   // The dogfood night's music video: every prompt began with the same look, so every card read the same.
   const look = "Claymation stop-motion scene, handmade plasticine with fingerprints, tiny green clay frog in a yellow clay raincoat,";
@@ -364,6 +374,21 @@ describe("what a card is called", () => {
       shot("c", 2, { prompt: `${look} asleep on a pink dawn cloud`, onTimeline: false }),
     ],
     takes: [],
+  });
+
+  it("leaves out a character described the same way on each card, all of it", () => {
+    // Chrome Sunset, Nov 2: titles cut the shared description at its first comma and read "A teal satin bomber jacket...".
+    const skater = "The roller skater with a short silver bob, a teal satin bomber jacket and pink knee pads";
+    const p: Project = {
+      ...film(),
+      shots: [
+        shot("a", 0, { prompt: `${skater} raises one fist as she zips under a glowing neon sign` }),
+        shot("b", 1, { prompt: `${skater} skates past a huge billboard of a smiling chrome robot` }),
+        shot("c", 2, { prompt: "Seen from behind, the roller skater glides through a tunnel of neon palm trees" }),
+      ],
+      takes: [],
+    };
+    expect(p.shots.map((s) => shotWords(p, s))).toEqual(["Raises one fist as she zips under a glowing neon sign", "Skates past a huge billboard of a smiling chrome robot", "Seen from behind, the roller skater glides through a tunnel..."]);
   });
 
   it("leaves out the start the prompts share, and says its place on a timeline of several shots", () => {

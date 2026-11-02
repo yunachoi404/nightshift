@@ -115,30 +115,99 @@ describe("music video", () => {
     { kind: "image" as const, durationSec: 2 },
   ];
 
-  it("cuts on beats, prefers downbeats and section changes, and ends on a bar line", () => {
+  it("cuts on beats, prefers section changes, and ends on a bar line after the last shot", () => {
     const { project, media } = fakeProject("music_video", shots, [audioAssetOf("song", "music", 40)], { durationSec: 30 });
-    const beats = beatMap(120, 40, [8, 24]);
+    const beats = beatMap(120, 40, [5, 24]);
     const { timeline, durationSec } = planTimeline({ project, media, song: { assetId: "song", beats, lyrics: [] } });
-    expect(durationSec).toBe(30);
+    // Four shots of 3, 2.5, 2 and 2 s: 9.5 s, each once. The song does not bring them back.
+    expect(timeline.clips.map((c) => c.shotId)).toEqual(["s0", "s1", "s2", "s3"]);
     const cuts = timeline.clips.slice(1).map((c) => c.start);
     for (const cut of cuts) expect(beats.beats.some((b) => Math.abs(b - cut) < 1e-3)).toBe(true);
-    const onDownbeat = cuts.filter((c) => beats.downbeats.some((d) => Math.abs(d - c) < 1e-3)).length;
-    expect(onDownbeat / cuts.length).toBeGreaterThan(0.5);
-    expect(cuts).toContain(8);
-    expect(cuts).toContain(24);
+    // The cut at 5.5 moves to the new section at 5.
+    expect(cuts).toEqual([3, 5, 7.5]);
+    expect(beats.downbeats).toContain(durationSec);
+    expect(durationSec).toBeCloseTo(10, 3);
     expect(timeline.clips.every((c) => c.gain === 0)).toBe(true);
-    expect(timeline.audio[0]).toMatchObject({ role: "music", in: 0, out: 30 });
+    expect(timeline.audio[0]).toMatchObject({ role: "music", in: 0, out: durationSec });
     expect(timeline.markers?.some((m) => m.kind === "downbeat")).toBe(true);
     expect(expectWellFormed(timeline, media, durationSec)).toEqual([]);
   });
 
-  it("reuses shots with new in-points when the song outlasts them", () => {
-    const { project, media } = fakeProject("music_video", shots.slice(0, 2), [audioAssetOf("song", "music", 40)]);
+  // Chrome Sunset, Nov 2: ten shots the writer planned at 1.5 bars of 110 bpm (3.27 s), drafts of 3.38 s, a 30 s song.
+  const chrome = Array.from({ length: 10 }, () => ({ kind: "video" as const, length: 3.38, durationSec: 3.27 }));
+
+  it.each([
+    ["heard at 120 bpm", 120],
+    ["at 108 bpm, slower than the genre", 108],
+    ["at 110 bpm, the genre's", 110],
+  ])("plays every planned shot once, in order, for its planned length on the beat: a song %s", (_, bpm) => {
+    const { project, media } = fakeProject("music_video", chrome, [audioAssetOf("song", "music", 30)], { durationSec: 30 });
+    const beats = beatMap(bpm, 30);
+    const { timeline, durationSec } = planTimeline({ project, media, song: { assetId: "song", beats, lyrics: [] } });
+    // Before, the cut gave most shots one bar: at 120 bpm it dropped the finale, at 108 it played shots 1 and 2 again.
+    expect(timeline.clips.map((c) => c.shotId)).toEqual(chrome.map((_, i) => `s${i}`));
+    expect(durationSec).toBeCloseTo(30, 3);
+    const period = 60 / bpm;
+    const lengths = timeline.clips.map((c) => c.out - c.in);
+    // 32.7 s of shots share the 30 s song: about 3 s each, a beat either way at most.
+    for (const length of lengths.slice(0, -1)) expect(Math.abs(length - 3)).toBeLessThanOrEqual(period * 0.6);
+    // On the beat, or a few milliseconds before it where a video ends just short of it: about a frame at most.
+    for (const cut of timeline.clips.slice(1).map((c) => c.start)) expect(beats.beats.some((b) => b - cut > -1e-3 && b - cut <= 0.05 + 1e-6)).toBe(true);
+    expect(timeline.audio[0]).toMatchObject({ in: 0, out: 30 });
+    expect(expectWellFormed(timeline, media, durationSec)).toEqual([]);
+  });
+
+  it("reaches a beat that falls in the video's last frame, so short drafts do not pull every cut a beat early", () => {
+    // The mock engine's 3.38 s drafts on its 89 bpm song: five beats are 3.37 s, just past the usable 3.33 s.
+    const drafts = Array.from({ length: 10 }, () => ({ kind: "video" as const, length: 3.38, durationSec: 3.27 }));
+    const { project, media } = fakeProject("music_video", drafts, [audioAssetOf("song", "music", 30)], { durationSec: 30 });
+    const { timeline, durationSec } = planTimeline({ project, media, song: { assetId: "song", beats: beatMap(89, 30), lyrics: [] } });
+    expect(timeline.clips).toHaveLength(10);
+    expect(durationSec).toBeGreaterThan(29);
+  });
+
+  it("keeps a clip's length the user set, longer or shorter, and the other shots make room", () => {
+    const { project, media } = fakeProject("music_video", chrome, [audioAssetOf("song", "music", 30)], { durationSec: 30 });
+    project.shots[2]!.cutSec = 3.3;
+    project.shots[5]!.cutSec = 1.6;
+    const { timeline, durationSec } = planTimeline({ project, media, song: { assetId: "song", beats: beatMap(108, 30), lyrics: [] } });
+    expect(timeline.clips.map((c) => c.shotId)).toEqual(chrome.map((_, i) => `s${i}`));
+    const length = (shotId: string) => timeline.clips.filter((c) => c.shotId === shotId).map((c) => round3(c.out - c.in));
+    expect(length("s2")).toEqual([3.3]);
+    expect(length("s5")).toEqual([1.6]);
+    expect(durationSec).toBeCloseTo(30, 3);
+    expect(expectWellFormed(timeline, media, durationSec)).toEqual([]);
+  });
+
+  it("plays shots added by hand too: all of them once, a bar each at least, in the song's length", () => {
+    const thirteen = [...chrome, ...Array.from({ length: 3 }, () => ({ kind: "image" as const, durationSec: 3.27 }))];
+    const { project, media } = fakeProject("music_video", thirteen, [audioAssetOf("song", "music", 30)], { durationSec: 30 });
+    const { timeline, durationSec } = planTimeline({ project, media, song: { assetId: "song", beats: beatMap(108, 30), lyrics: [] } });
+    expect(timeline.clips.map((c) => c.shotId)).toEqual(thirteen.map((_, i) => `s${i}`));
+    expect(durationSec).toBeCloseTo(30, 3);
+    const bar = (4 * 60) / 108;
+    for (const c of timeline.clips) expect(c.out - c.in).toBeGreaterThan(bar - 60 / 108 / 2);
+    expect(expectWellFormed(timeline, media, durationSec)).toEqual([]);
+  });
+
+  it("takes more of the song before it plays shots shorter than a bar", () => {
+    const many = Array.from({ length: 12 }, () => ({ kind: "image" as const, durationSec: 4 }));
+    const { project, media } = fakeProject("music_video", many, [audioAssetOf("song", "music", 40)], { durationSec: 20 });
     const { timeline, durationSec } = planTimeline({ project, media, song: { assetId: "song", beats: beatMap(120, 40), lyrics: [] } });
-    expect(durationSec).toBe(40);
-    const firstShotUses = timeline.clips.filter((c) => c.assetId === "a0");
-    expect(firstShotUses.length).toBeGreaterThan(3);
-    expect(new Set(firstShotUses.map((c) => c.in)).size).toBeGreaterThan(1);
+    // 48 s of shots, 20 s asked for: at a bar (2 s) each they need 24 s of the song.
+    expect(timeline.clips).toHaveLength(12);
+    expect(durationSec).toBeCloseTo(24, 1);
+    expect(expectWellFormed(timeline, media, durationSec)).toEqual([]);
+  });
+
+  it("never drops a shot: more than the song holds play on past its end, and say so", () => {
+    const many = Array.from({ length: 20 }, () => ({ kind: "image" as const, durationSec: 3 }));
+    const { project, media } = fakeProject("music_video", many, [audioAssetOf("song", "music", 10)]);
+    const { timeline, durationSec, warnings } = planTimeline({ project, media, song: { assetId: "song", beats: beatMap(120, 10), lyrics: [] } });
+    expect(timeline.clips).toHaveLength(20);
+    expect(durationSec).toBeGreaterThan(10);
+    expect(warnings.join(" ")).toMatch(/past the song's end/);
+    expect(timeline.audio[0]).toMatchObject({ in: 0, out: 10 });
     expect(expectWellFormed(timeline, media, durationSec)).toEqual([]);
   });
 

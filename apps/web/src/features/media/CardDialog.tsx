@@ -7,7 +7,7 @@
  * restores the selected one, and Escape closes an open tool first, then the card.
  */
 import { cameraMoves, isExtraCard, isOneShot, quickEffects, quickMoves, sentenceCase, shotTemplate, type Shot } from "@nightshift/contract";
-import { Check, ChevronDown, Clapperboard, ListMinus, ListPlus, Moon, Move3d, Pause, Play, RefreshCw, RotateCcw, Share2, Sparkles, SquarePen, Sun, Trash2, X } from "lucide-react";
+import { Check, ChevronDown, Clapperboard, Download, ListMinus, ListPlus, Moon, Move3d, Pause, Play, RefreshCw, RotateCcw, Share2, Sparkles, SquarePen, Sun, Trash2, X } from "lucide-react";
 import { useEffect, useId, useMemo, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
 import { Link } from "react-router";
 import { useEngine, useEngineState } from "@/store/engine";
@@ -25,9 +25,10 @@ import { EffectPicker } from "@/features/newproject/EffectFields";
 import { CameraMovePicker, cameraPhotoHint } from "@/features/newproject/CameraMoveFields";
 import { RevealSheet } from "@/features/reveal/RevealSheet";
 import { revealable } from "@/features/reveal/reveal";
+import { noFileToast } from "@/store/demo";
 import { useMedia } from "./context";
 import { ownsArrowKeys, versionKey } from "./dialogKeys";
-import { CARD_STEPS, FINAL_STEPS, TAKE_STEPS, cameraMoveLabel, canAddToTimeline, canRestore, placeOnTimeline, restingTime, restore, shotHistory, shotLabel, shotPatch, takeOffTimeline, versionLabel, withoutCard, type Version } from "./items";
+import { CARD_STEPS, FINAL_STEPS, TAKE_STEPS, cameraMoveLabel, canAddToTimeline, canRestore, downloadName, placeOnTimeline, restingTime, restore, shotHistory, shotLabel, shotPatch, takeOffTimeline, versionLabel, withoutCard, type Version } from "./items";
 import { toolBlocked } from "./PromptPanel";
 import { CardReferences, editReferences, namesOf } from "./CardReferences";
 import "./carddialog.css";
@@ -140,6 +141,14 @@ function CardBody({ shot, onClose }: { shot: Shot; onClose: () => void }) {
       }),
     );
   };
+  /**
+   * What is typed in the card and not saved yet, saved: every action that makes something from the shot (a take, an
+   * effect, a camera move) uses the words in the fields, as Redraw still does, not the ones saved before.
+   */
+  const saveEdits = async () => {
+    await savePrompt();
+    if (speaks) await saveLine();
+  };
   const restoreSelected = () => {
     if (!selected || !canRestore(shot, selected)) return;
     const version = selected;
@@ -237,6 +246,9 @@ function CardBody({ shot, onClose }: { shot: Shot; onClose: () => void }) {
     select(action.select);
   };
 
+  // The version on show, as a file: the still or the clip itself, named for the project, the shot and the version.
+  const downloadUrl = selected ? client.assetUrl(project.id, selected.asset.id) : "";
+
   const status = job ? (
     <>
       {/* A version under way waxes as a moon; a final waiting for tonight wears the crescent. */}
@@ -318,6 +330,20 @@ function CardBody({ shot, onClose }: { shot: Shot; onClose: () => void }) {
             ) : (
               !selected.pick && <span className="cd-caption__note">Shown as its final</span>
             )}
+            <a
+              className="btn btn--ghost btn--s cd-download"
+              href={downloadUrl}
+              download={downloadName(project, label, selected, selectedIndex + 1)}
+              title="Save this version to your computer"
+              onClick={(e) => {
+                if (!downloadUrl.startsWith("mock:")) return;
+                e.preventDefault();
+                toast(noFileToast());
+              }}
+            >
+              <Download aria-hidden />
+              Download
+            </a>
           </div>
         )}
 
@@ -526,7 +552,12 @@ function CardBody({ shot, onClose }: { shot: Shot; onClose: () => void }) {
                 busy={busy === "take"}
                 title={videoBlocked ?? (takeReady ? undefined : "Draw the still first")}
                 // The tool the pick was made with. A quick shot's older takes record none and stay on its template's path.
-                onClick={() => void run("take", () => draft(project.id, shot.id, undefined, pick?.take?.tool))}
+                onClick={() =>
+                  void run("take", async () => {
+                    await saveEdits();
+                    await draft(project.id, shot.id, undefined, pick?.take?.tool);
+                  })
+                }
               >
                 {takeLabel}
               </Action>
@@ -561,6 +592,7 @@ function CardBody({ shot, onClose }: { shot: Shot; onClose: () => void }) {
                           onClick={() =>
                             void run("effect", async () => {
                               if (askSubject && subject.trim()) await change({ prompt: subject.trim() });
+                              else await saveEdits();
                               await draft(project.id, shot.id, undefined, { kind: "effect", effect });
                               setOpen(null);
                             })
@@ -595,6 +627,7 @@ function CardBody({ shot, onClose }: { shot: Shot; onClose: () => void }) {
                           disabled={!!taking}
                           onClick={() =>
                             void run("camera", async () => {
+                              await saveEdits();
                               await draft(project.id, shot.id, undefined, { kind: "camera_move", move: path });
                               setOpen(null);
                             })

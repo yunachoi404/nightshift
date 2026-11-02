@@ -5,7 +5,7 @@
  * and their progress and failures show there.
  */
 import type { Job, Project, Timeline } from "@nightshift/contract";
-import { voices } from "@nightshift/contract";
+import { songPromptFor, voices } from "@nightshift/contract";
 import { AlertCircle, Plus, X } from "lucide-react";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { isCanvasDrag, readDrag, setDrag, soundOnTimeline } from "@/features/media/items";
@@ -364,7 +364,7 @@ interface Sound {
 function useSound(project: Project, role: Role, jobs: Job[], total: number, voiceText: string): Sound {
   const { audio, updateProject } = useEngine();
   const [busy, setBusy] = useState(false);
-  const [text, setText] = useState(() => (role === "voice" ? voiceText : typeof project.brief.songPrompt === "string" ? project.brief.songPrompt : ""));
+  const [text, setText] = useState(() => (role === "voice" ? voiceText : songPromptFor(project.template, project.brief)));
   const [voice, setVoice] = useState(() => (typeof project.brief.voice === "string" ? project.brief.voice : "mara"));
   const job = jobs.find((j) => j.step === role && isActive(j));
   // The newest song or voice the GPU made (analysis jobs only measure one). If it failed, its lane says why.

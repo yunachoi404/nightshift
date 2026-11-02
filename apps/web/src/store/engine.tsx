@@ -1,4 +1,4 @@
-import type { AddReferenceRequest, Aspect, DraftTool, ExportRequest, Job, MakeRequest, Onboarding, OnboardingSample, Project, RemoteCheck, RuntimeStatus, Settings, StillRequest, TierId, TierSummary } from "@nightshift/contract";
+import type { AddReferenceRequest, Aspect, DraftTool, ExportRequest, Job, MakeRequest, Onboarding, OnboardingSample, Project, RemoteCheck, RuntimeStatus, Settings, StillRequest, StoryboardRequest, TierId, TierSummary } from "@nightshift/contract";
 import { createContext, useCallback, useContext, useEffect, useMemo, useReducer, useRef, type ReactNode } from "react";
 import { ApiError, type AudioBody, type CreateProjectBody, type FinalBody, type NightshiftClient, type ProjectPatch } from "@/api/client";
 import { getClient } from "@/api/config";
@@ -111,7 +111,7 @@ export interface EngineActions {
   /** Makes an image of the project a reference (a copy of its own). */
   addReference(id: string, body: AddReferenceRequest): Promise<Project>;
   deleteProject(id: string): Promise<void>;
-  storyboard(id: string): Promise<Job>;
+  storyboard(id: string, body?: StoryboardRequest): Promise<Job>;
   /** One use of a project tool from the prompt panel: a new card (a shot, job.shotId) on a board and its first job. */
   make(id: string, body: MakeRequest): Promise<Job>;
   still(id: string, shotId: string, body?: StillRequest): Promise<Job>;
@@ -281,8 +281,8 @@ export function EngineProvider({ children, client: given }: { children: ReactNod
         await client.deleteProject(pid);
         dispatch({ type: "projectRemoved", id: pid });
       },
-      storyboard: async (pid) => {
-        const j = await client.storyboard(pid);
+      storyboard: async (pid, body) => {
+        const j = await client.storyboard(pid, body);
         dispatch({ type: "job", job: j });
         return j;
       },

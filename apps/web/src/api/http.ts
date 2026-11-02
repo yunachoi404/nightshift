@@ -70,7 +70,7 @@ export function createHttpClient(base: string): NightshiftClient {
       if (!res.ok) throw new ApiError(`Upload failed (${res.status})`, res.status);
       return (await res.json()) as import("@nightshift/contract").Asset;
     },
-    storyboard: (id) => call("POST", `/api/projects/${id}/storyboard`),
+    storyboard: (id, body) => call("POST", `/api/projects/${id}/storyboard`, body),
     make: (id, body) => call("POST", `/api/projects/${id}/make`, body),
     still: (id, shotId, body) => call("POST", `/api/projects/${id}/shots/${shotId}/still`, body),
     draft: (id, shotId, body) => call("POST", `/api/projects/${id}/shots/${shotId}/draft`, body ?? {}),

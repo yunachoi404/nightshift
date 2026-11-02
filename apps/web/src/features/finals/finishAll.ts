@@ -3,7 +3,7 @@
  * setup makes, and how long they take. The board's header and the editor's Export panel queue them for tonight with
  * one press, as the card's own Finish tonight does one by one.
  */
-import { shotTemplate, type FinalKind, type Job, type Project, type Shot, type TierSummary } from "@nightshift/contract";
+import { type FinalKind, type Job, type Project, type Shot, type TierSummary } from "@nightshift/contract";
 import { activeJob, timelineShots } from "@/features/project/helpers";
 import { FINAL_STEPS, shotHistory } from "@/features/media/items";
 
@@ -30,8 +30,12 @@ export function unfinishedPicks(project: Project, jobs: Job[]): Shot[] {
   return timelineShots(project).filter((s) => canFinish(project, s, jobs));
 }
 
-/** Seconds one final of `shot` takes here. A What if? film is 15 s of video, nearly four shots' worth. */
-export function finalSecondsFor(project: Project, shot: Shot, tier: TierSummary | null | undefined, kind: FinalKind): number {
+/**
+ * Seconds one final of `shot` takes here: the setup's estimate, as the Queue counts it. A What if? film is 15 s of video,
+ * but it finishes at twice the draft's size, not four times (the recipe's long-take final), so it takes about as long as
+ * a shot's final: 304 s on the Spark on Nov 2, against 288 s estimated.
+ */
+export function finalSecondsFor(_project: Project, _shot: Shot, tier: TierSummary | null | undefined, kind: FinalKind): number {
   const step = kind === "remaster" ? "video_final_remaster" : "video_final_same_take";
-  return (tier?.estimates?.[step]?.seconds ?? 0) * (shotTemplate(project, shot) === "what_if" ? 15 / 4 : 1);
+  return tier?.estimates?.[step]?.seconds ?? 0;
 }

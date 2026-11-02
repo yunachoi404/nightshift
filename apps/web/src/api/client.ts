@@ -15,6 +15,7 @@ import type {
   RuntimeStatus,
   Settings,
   StillRequest,
+  StoryboardRequest,
   AddReferenceRequest,
   TemplateId,
   TierId,
@@ -103,7 +104,8 @@ export interface NightshiftClient {
   /** Uploads a user file (reference photo, song, voice) into the project. `role` defaults as the engine decides; `boardId` files it in that board. */
   uploadAsset(id: string, file: File, opts?: { role?: "reference" | "music" | "voice"; boardId?: string }): Promise<import("@nightshift/contract").Asset>;
 
-  storyboard(id: string): Promise<Job>;
+  /** Writes the shot list (a What if? story). A What if? film with `keepStory` is drawn and rendered from its beats as they are. */
+  storyboard(id: string, body?: StoryboardRequest): Promise<Job>;
   /** One use of a project tool (image, video, effect, camera move): a new shot in the project's media and its first job. */
   make(id: string, body: MakeRequest): Promise<Job>;
   still(id: string, shotId: string, body?: StillRequest): Promise<Job>;

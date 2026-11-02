@@ -1,6 +1,6 @@
 /** Four linked visual states, one continuous film, one saved audio-video latent. */
 import {
-  KeyframeSchema, fallbackWhatIf, whatIfLook, whatIfLooks, WHAT_IF_DURATION,
+  KeyframeSchema, fallbackWhatIf, hasWhatIfPreset, ownShot, whatIfLook, whatIfLooks, WHAT_IF_DURATION,
   WHAT_IF_FPS, WHAT_IF_FRAMES, type Asset, type Job, type Keyframe, type Project,
   type Shot, type StepId, type Take,
 } from "@nightshift/contract";
@@ -21,6 +21,8 @@ import { pickDraft } from "./versions.js";
 type Plan = ReturnType<typeof fallbackWhatIf>;
 interface Deps {
   store: ProjectStore;
+  /** A line for the engine's log. */
+  log?: (line: string) => void;
   run(step: StepId, values: Record<string, unknown>, hints: StepRequest["hints"], payload: JobPayload, ctx: ExecContext, span: [number, number]): Promise<{ outputs: StepOutput[]; peakGb?: number }>;
 }
 
@@ -51,26 +53,61 @@ export function validateWhatIfProject(project: Project): void {
   }
 }
 
+/** What a story's narration may total, in words: the writer is asked for 35 to 50, and the voice fits up to 55. */
+const WORDS = { ask: [35, 50], take: [30, 55] } as const;
+
 const Answer = z.object({
   prompt: z.string().trim().min(20).max(3000),
-  cameraMove: z.enum(["static", "dolly_in"]).default("static"),
-  keyframes: z.array(z.object({ prompt: z.string().trim().min(12).max(3000), line: z.string().trim().min(1).max(400) })).length(4),
+  cameraMove: z.unknown().optional(),
+  keyframes: z.array(z.preprocess(
+    // "narration" for "line" is the same answer.
+    (frame) => (frame && typeof frame === "object" && !("line" in frame) && "narration" in frame ? { ...frame, line: (frame as { narration: unknown }).narration } : frame),
+    z.object({ prompt: z.string().trim().min(12).max(3000), line: z.string().trim().min(1).max(400) }),
+  )).length(4),
 });
 
 /** The placeholder values in the writer's JSON format. A small model sometimes copies them back as its answer. */
 const FORMAT = { prompt: "the continuous action across the whole film", frame: "a complete visual state", line: "spoken narration" };
 const echoesFormat = (text: string) => Object.values(FORMAT).some((placeholder) => text.toLowerCase().includes(placeholder));
 
-export function parseWhatIf(raw: string): Plan | undefined {
+/**
+ * The writer's answer as a story, or what it broke, in words the writer is told when it is asked again. `starter`: the
+ * outline it was given; an answer that only repeats a generic outline (no tested story fits the question) is filler.
+ */
+export function readWhatIf(raw: string, starter?: { plan: Plan; generic: boolean }): { plan: Plan } | { misfit: string } {
   let value: unknown;
-  try { value = JSON.parse(raw.slice(raw.indexOf("{"), raw.lastIndexOf("}") + 1)); } catch { return; }
+  try { value = JSON.parse(raw.slice(raw.indexOf("{"), raw.lastIndexOf("}") + 1)); } catch {
+    return { misfit: "Your last answer was not one JSON object. Answer with the JSON object only, in the shape asked for, with no markdown." };
+  }
   const answer = Answer.safeParse(value);
-  if (!answer.success) return;
-  if (echoesFormat(answer.data.prompt) || answer.data.keyframes.some((frame) => echoesFormat(frame.prompt) || echoesFormat(frame.line))) return;
+  if (!answer.success) {
+    const frames = value && typeof value === "object" && Array.isArray((value as { keyframes?: unknown }).keyframes) ? (value as { keyframes: unknown[] }).keyframes.length : undefined;
+    if (frames !== undefined && frames !== 4) return { misfit: `Your last answer had ${frames} keyframes. Write exactly four: ordinary, first change, escalation, consequence.` };
+    const where = [...new Set(answer.error.issues.map((issue) => issue.path.filter((part) => typeof part === "string").join(".") || "the answer"))].slice(0, 4).join(", ");
+    return { misfit: `Your last answer did not have the shape asked for (${where}). Give a prompt of at least a sentence, and four keyframes, each with a prompt and a line.` };
+  }
+  if (echoesFormat(answer.data.prompt) || answer.data.keyframes.some((frame) => echoesFormat(frame.prompt) || echoesFormat(frame.line))) {
+    return { misfit: "Your last answer copied the placeholder words of the format. Write the story itself: what we see in each state, and what the narrator says." };
+  }
   const line = answer.data.keyframes.map((frame) => frame.line).join(" ");
   const words = line.split(/\s+/).length;
-  if (words < 35 || words > 50) return;
-  return { ...answer.data, keyframes: answer.data.keyframes.map((frame, index) => ({ ...frame, id: `beat-${index}` })), line, durationSec: WHAT_IF_DURATION };
+  if (words < WORDS.take[0] || words > WORDS.take[1]) {
+    return { misfit: `Your last four narration lines total ${words} words. Make them total ${WORDS.ask[0]} to ${WORDS.ask[1]} words.` };
+  }
+  // A small writer sometimes copies the format's "static or dolly_in", or writes "dolly in": only a dolly alone moves.
+  const move = answer.data.cameraMove;
+  const cameraMove = typeof move === "string" && /dolly/i.test(move) && !/static/i.test(move) ? "dolly_in" : "static";
+  const plan = { ...answer.data, cameraMove, keyframes: answer.data.keyframes.map((frame, index) => ({ ...frame, id: `beat-${index}` })), line, durationSec: WHAT_IF_DURATION };
+  if (starter?.generic && sameStory(plan, starter.plan)) {
+    return { misfit: "Your last answer repeated the outline word for word. Write this question's own story: four states of one place, and narration about them." };
+  }
+  return { plan };
+}
+
+/** The writer's answer as a story, or undefined when it is not one. */
+export function parseWhatIf(raw: string): Plan | undefined {
+  const read = readWhatIf(raw);
+  return "plan" in read ? read.plan : undefined;
 }
 
 function sameStory(a: Plan, b: Plan): boolean {
@@ -88,38 +125,98 @@ async function stage(deps: Deps, key: string, step: StepId, values: Record<strin
   }, span);
 }
 
-export async function writeWhatIf(deps: Deps, project: Project, payload: JobPayload, ctx: ExecContext, canWrite: boolean): Promise<ExecResult> {
+/**
+ * How many times the writer is asked for a story. A small writer answers the same input the same way, so each new ask
+ * also says what the last answer broke (`readWhatIf`), as a film's shot list does.
+ */
+export const WHAT_IF_TRIES = 3;
+
+/**
+ * The story a storyboard job wrote, and whether the film is drawn from it. `ready` is false when the writer's story did
+ * not come: the project's `shotList` says why, and nothing is drawn, voiced or rendered until the user asks.
+ */
+export interface WhatIfStory { result: ExecResult; ready: boolean }
+
+/**
+ * Write the film's story from the question. A new story replaces the film's beats and narration, on the same shot, so
+ * every take and final of the film stays (its pick too, until a new take lands). A writer whose story does not fit after
+ * `WHAT_IF_TRIES` asks leaves the film as it was, or a new film with the starter beats, and a note (`Project.shotList`).
+ * `keepStory`: the film's beats as they are now are used, with no writer.
+ */
+export async function writeWhatIf(deps: Deps, project: Project, payload: JobPayload, ctx: ExecContext, canWrite: boolean): Promise<WhatIfStory> {
   validateWhatIfBrief(project.brief);
   if (typeof payload._whatIfPreparedShotId === "string" && project.shots.some((shot) => shot.id === payload._whatIfPreparedShotId)) {
-    return { outputAssetIds: [], message: "Story ready" };
+    const ready = payload._whatIfStory !== "note";
+    return { result: { outputAssetIds: [], message: ready ? "Story ready" : "The story was not written." }, ready };
   }
-  let plan = fallbackWhatIf(project.brief);
+  const film = ownShot(project);
+  if (payload.keepStory === true && film?.keyframes) {
+    await deps.store.mutate(project.id, (p) => void (p.shotList = { by: p.shotList?.by ?? "writer" }));
+    ctx.remember("_whatIfShotId", film.id);
+    ctx.remember("_whatIfPreparedShotId", film.id);
+    return { result: { outputAssetIds: [], message: "Story ready. Drawing your beats." }, ready: true };
+  }
+  const starter = fallbackWhatIf(project.brief);
+  let plan = starter;
   let message = "Story ready. Using the starter story.";
   let peakGb: number | undefined;
+  /** Why the writer's story was not used. */
+  let note: string | undefined;
   if (canWrite) {
+    const system = `Write a fictional 15-second What-if film as ONE uninterrupted shot. Return JSON only: {"prompt":"${FORMAT.prompt}","cameraMove":"static or dolly_in","keyframes":[{"prompt":"${FORMAT.frame}","line":"${FORMAT.line}"}]}. Exactly four keyframes: ordinary, first change, escalation, consequence. Keep the same place, objects, lighting and visual style. No cuts, montage, fades, text in images, close-up faces, crowds, precise hand actions or brands. Describe four clearly DIFFERENT states, not four camera angles. The first is ordinary, before the change. Prefer a fixed camera; dolly_in is only for a continuous first-person journey. The four narration lines TOTAL ${WORDS.ask[0]} to ${WORDS.ask[1]} words. Tell an imagined premise plainly; do not assert scientific facts, numbers, causes or predictions as truth. The last line has a consequence. Each image prompt must name the same setting and objects, and describe what has changed. ${whatIfLook(project.brief)}`;
+    const prompt = `Question: ${project.brief.question}\n${project.brief.photoAssetId ? "The user's photo is the opening frame. Describe changes to that scene without inventing a new place." : "Choose a simple, striking place and a few objects."}\nUse this visual outline when it fits the question. Keep the narration about the same objects and changes:\n${JSON.stringify(starter)}`;
+    const outline = { plan: starter, generic: !hasWhatIfPreset(project.brief) };
+    let again = "";
+    let written: Plan | undefined;
     try {
-      const system = `Write a fictional 15-second What-if film as ONE uninterrupted shot. Return JSON only: {"prompt":"${FORMAT.prompt}","cameraMove":"static or dolly_in","keyframes":[{"prompt":"${FORMAT.frame}","line":"${FORMAT.line}"}]}. Exactly four keyframes: ordinary, first change, escalation, consequence. Keep the same place, objects, lighting and visual style. No cuts, montage, fades, text in images, close-up faces, crowds, precise hand actions or brands. Describe four clearly DIFFERENT states, not four camera angles. The first is ordinary, before the change. Prefer a fixed camera; dolly_in is only for a continuous first-person journey. The four narration lines TOTAL 35 to 50 words. Tell an imagined premise plainly; do not assert scientific facts, numbers, causes or predictions as truth. The last line has a consequence. Each image prompt must name the same setting and objects, and describe what has changed. ${whatIfLook(project.brief)}`;
-      const prompt = `Question: ${project.brief.question}\n${project.brief.photoAssetId ? "The user's photo is the opening frame. Describe changes to that scene without inventing a new place." : "Choose a simple, striking place and a few objects."}\nUse this visual outline when it fits the question. Keep the narration about the same objects and changes:\n${JSON.stringify(plan)}`;
-      const result = await stage(deps, "_whatIfWriterJobId", "text", {
-        system, prompt, text: prompt, maxTokens: 1024, seed: payload.seed ?? 0, fallback: JSON.stringify(plan),
-      }, { aspect: project.aspect, width: 0, height: 0 }, payload, ctx, [0, 1]);
-      peakGb = result.peakGb;
-      const output = result.outputs.find((item) => item.kind === "text");
-      const parsed = output ? parseWhatIf(await readFile(output.path, "utf8")) : undefined;
-      // An answer that only repeats the outline is still the starter story; say so.
-      if (parsed) { message = sameStory(parsed, plan) ? message : "Story ready"; plan = parsed; }
-      else message = "The writer's answer did not fit. Using the starter story.";
+      for (let attempt = 0; attempt < WHAT_IF_TRIES && !written; attempt++) {
+        const result = await stage(deps, attempt ? `_whatIfWriterJobId${attempt}` : "_whatIfWriterJobId", "text", {
+          system: [system, again].filter(Boolean).join(" "), prompt, text: prompt, maxTokens: 1024, seed: Number(payload.seed ?? 0) + attempt, fallback: JSON.stringify(starter),
+        }, { aspect: project.aspect, width: 0, height: 0 }, payload, ctx, [attempt / WHAT_IF_TRIES, (attempt + 1) / WHAT_IF_TRIES]);
+        if (result.peakGb !== undefined) peakGb = Math.max(peakGb ?? 0, result.peakGb);
+        const output = result.outputs.find((item) => item.kind === "text");
+        const raw = output ? await readFile(output.path, "utf8") : "";
+        const read = readWhatIf(raw, outline);
+        if ("plan" in read) written = read.plan;
+        else {
+          // What it wrote, so a writer that keeps missing can be seen and its instructions fixed.
+          deps.log?.(`project ${project.id}: the What if? writer's story (try ${attempt + 1} of ${WHAT_IF_TRIES}) did not fit: ${read.misfit} It wrote: ${raw.replace(/\s+/g, " ").slice(0, 6000)}`);
+          again = read.misfit;
+        }
+      }
+      if (written) {
+        plan = written;
+        // An answer that only repeats a tested outline is still the starter story; say so.
+        message = sameStory(written, starter) ? message : "Story ready";
+      } else note = `The writer tried ${WHAT_IF_TRIES} times, but its story did not fit.`;
     } catch (error) {
       if (ctx.signal.aborted) throw error;
-      message = `The writer could not finish. Using the starter story. ${errorMessage(error)}`;
+      deps.log?.(`project ${project.id}: the What if? writer failed: ${errorMessage(error)}`);
+      note = `The writer could not finish: ${errorMessage(error).replace(/\.?$/, ".")}`;
     }
   }
-  const id = typeof payload._whatIfShotId === "string" ? payload._whatIfShotId : newId("sht");
+  if (note && film?.keyframes) {
+    // The film keeps its story, its keyframes and its takes. The note says why on the board, with a way to try again.
+    await deps.store.mutate(project.id, (p) => void (p.shotList = { by: p.shotList?.by ?? "writer", note: note! }));
+    ctx.remember("_whatIfStory", "note");
+    ctx.remember("_whatIfShotId", film.id);
+    ctx.remember("_whatIfPreparedShotId", film.id);
+    return { result: { outputAssetIds: [], message: `${note} The story stays as it was.`, ...(peakGb === undefined ? {} : { peakGb }) }, ready: false };
+  }
+  const id = film?.id ?? (typeof payload._whatIfShotId === "string" ? payload._whatIfShotId : newId("sht"));
   ctx.remember("_whatIfShotId", id);
-  // The new story is the film: it replaces the old one and its takes. Extra cards made with the tools stay.
-  await deps.store.mutate(project.id, (p) => setOwnShot(p, { ...plan, id, index: 0, locked: false }));
+  await deps.store.mutate(project.id, (p) => {
+    const old = ownShot(p);
+    // A new story is written on the film's own shot: its takes, its finals and its pick stay. The beats are new, so
+    // they have no keyframes yet; extra cards made with the tools stay as they are.
+    if (old) setOwnShot(p, { ...old, prompt: plan.prompt, cameraMove: plan.cameraMove, durationSec: plan.durationSec, line: plan.line, keyframes: plan.keyframes });
+    else setOwnShot(p, { ...plan, id, index: 0, locked: false });
+    p.shotList = note ? { by: "template", note } : { by: canWrite ? "writer" : "template" };
+  });
+  if (note) ctx.remember("_whatIfStory", "note");
   ctx.remember("_whatIfPreparedShotId", id);
-  return { outputAssetIds: [], message, ...(peakGb === undefined ? {} : { peakGb }) };
+  const result = { outputAssetIds: [], message: note ? `${note} Nothing was drawn. Try again, or use the starter beats.` : message, ...(peakGb === undefined ? {} : { peakGb }) };
+  return { result, ready: !note };
 }
 
 function imageAsset(project: Project, id: unknown): Asset {

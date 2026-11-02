@@ -207,6 +207,43 @@ describe("Card popup", () => {
     expect(engine.patches[0]!.shots?.[0]).toMatchObject({ id: "shot_1", chosenDraftId: "take_2", useStill: false });
   });
 
+  it("downloads the version on show, named for the project and the version", async () => {
+    show(new FakeEngine(ferry()));
+    const { dialog } = await openCard();
+    await waitFor(() => expect(document.activeElement).toBe(version(PICK)));
+    const link = () => within(dialog).getByRole("link", { name: "Download" });
+    expect(link().getAttribute("href")).toBe(`/api/projects/${PID}/assets/v_final_1`);
+    expect(link().getAttribute("download")).toBe("Ferry, version 5.mp4");
+    // Another version shown: that one downloads.
+    key(version(PICK), "Home");
+    expect(link().getAttribute("href")).toBe(`/api/projects/${PID}/assets/still_0`);
+    expect(link().getAttribute("download")).toBe("Ferry, version 1.png");
+  });
+
+  it("makes another take from the prompt in the field, saving it first, with no separate Save", async () => {
+    // Moby planter ad, Nov 2: an edited prompt was dropped by Another take unless Save was pressed first.
+    const engine = new FakeEngine(ferry());
+    show(engine);
+    const { dialog } = await openCard();
+    fireEvent.change(within(dialog).getByRole("textbox", { name: "Prompt" }), { target: { value: "A hand brushes the fern leaves. The ferry stays still." } });
+    fireEvent.click(within(dialog).getByRole("button", { name: "Another take" }));
+    await waitFor(() => expect(engine.drafts).toHaveLength(1));
+    expect(engine.patches).toHaveLength(1);
+    expect(engine.patches[0]!.shots?.[0]).toMatchObject({ id: "shot_1", prompt: "A hand brushes the fern leaves. The ferry stays still." });
+    expect(engine.project.shots[0]!.prompt).toBe("A hand brushes the fern leaves. The ferry stays still.");
+  });
+
+  it("saves an edited prompt before a camera move too", async () => {
+    const engine = new FakeEngine(ferry());
+    show(engine);
+    const { dialog } = await openCard();
+    fireEvent.change(within(dialog).getByRole("textbox", { name: "Prompt" }), { target: { value: "A ferry glides under the bridge" } });
+    fireEvent.click(within(dialog).getByRole("button", { name: "Camera move" }));
+    fireEvent.click(within(dialog).getByRole("button", { name: "Apply camera move" }));
+    await waitFor(() => expect(engine.drafts).toHaveLength(1));
+    expect(engine.patches[0]!.shots?.[0]).toMatchObject({ prompt: "A ferry glides under the bridge" });
+  });
+
   it("holds the shot's still in the viewer while a newly shown version loads, so switching never flashes black", async () => {
     show(new FakeEngine(ferry()));
     const { dialog } = await openCard();

@@ -275,6 +275,21 @@ describe("the minimal editor", () => {
     expect(screen.queryByRole("dialog", { name: "Write voiceover" })).toBeNull();
   });
 
+  it("prefills a product ad's voiceover with the writer's lines on its shots, not the template's pitch", async () => {
+    // Moby planter ad, Nov 2: the box held "This is Moby planter... Made for the mornings you actually have." while the
+    // captions lane showed the writer's lines.
+    const project = cutProject();
+    project.template = "product_ad";
+    project.brief = { productName: "Moby planter", does: "waters your plant for two weeks", tone: "warm" };
+    project.shots[0]!.line = "Moby planter waters your plant for two weeks.";
+    project.shots[1]!.line = "Let Moby take care of your green space.";
+    project.shots[2]!.line = "Kept off the cut, so not read.";
+    open(project);
+    fireEvent.click(await screen.findByRole("button", { name: "Write voiceover" }));
+    const script = within(screen.getByRole("dialog", { name: "Write voiceover" })).getByRole("textbox", { name: "Voice script" });
+    expect((script as HTMLTextAreaElement).value).toBe("Moby planter waters your plant for two weeks. Let Moby take care of your green space.");
+  });
+
   it("shows the drop hint on an empty timeline, and still takes drops", async () => {
     const project = cutProject();
     project.shots = project.shots.map((s) => ({ ...s, onTimeline: false }));

@@ -6,7 +6,8 @@ export function suggestName(template: TemplateId, brief: Record<string, unknown>
     case "blank":
       return "Untitled project";
     case "what_if":
-      return trim(str(brief.question, "What if?"), 48);
+      // The question is the name, whole. A very long one is cut at a word, with no ellipsis typed into the name.
+      return words(str(brief.question, "What if?"), 90);
     case "cinematic_shot":
       return trim(sentenceCase(str(brief.idea, "Cinematic shot")));
     case "music_video":
@@ -26,6 +27,11 @@ export function suggestName(template: TemplateId, brief: Record<string, unknown>
   }
 }
 
+
+/** At most `n` characters, cut at the last whole word. */
+function words(s: string, n: number): string {
+  return s.length > n ? s.slice(0, n + 1).replace(/\s+\S*$/, "") : s;
+}
 
 function sentenceCase(s: string): string {
   const t = s.trim();

@@ -431,6 +431,29 @@ describe("keep-out: captions", () => {
     expect(figureLike({ left: 500, right: 580, top: 900, bottom: 1100 }, L)).toBe(false);
   });
 
+  it("keeps a product ad's captions off its name: the shot under the title keeps the lower line", () => {
+    // Moby planter ad, Nov 2: the first captions went up above the planter, onto the name, for its whole run.
+    const captions = [
+      { start: 0.32, end: 1.5, text: "Moby planter waters" },
+      { start: 1.6, end: 2.5, text: "your plant for two weeks." },
+      { start: 3, end: 3.9, text: "No more watering worries." },
+      { start: 5, end: 6, text: "It's all inside." },
+    ];
+    const clips = [{ ...WALKER, start: 0, end: 4 }, { ...WALKER, start: 4, end: 8 }];
+    const title = { id: "product", kind: "title" as const, start: 0.25, end: 2.7, text: "Moby planter", subtext: "Waters your plant" };
+    const without = portrait(defaultStyle("product_ad"), clips, { captions, duration: 8, overlays: [] });
+    const m = { width: 842.4, lineHeight: 71, pad: 25, linesOf: () => 1 };
+    expect(placeCaptions(without, layoutFor(without), m).lines.map((l) => l.band)).toEqual(["upper", "upper", "upper", "upper"]);
+    const s = portrait(defaultStyle("product_ad"), clips, { captions, duration: 8, overlays: [title] });
+    const L = layoutFor(s);
+    const lines = placeCaptions(s, L, m).lines;
+    expect(lines.map((l) => l.band)).toEqual(["lower", "lower", "lower", "upper"]);
+    expect(lines[0]!.offset).toBeCloseTo(1920 * 0.32, 6);
+    const html = buildComposition(s, "").html;
+    expect(html).toContain('id="c0" style="visibility:hidden;bottom:');
+    expect(html).toContain("title-ad");
+  });
+
   it("gives chip captions no scrim: the pill is theirs", () => {
     const s = portrait(defaultStyle("product_ad"), [WALKER]);
     const html = buildComposition(s, "").html;

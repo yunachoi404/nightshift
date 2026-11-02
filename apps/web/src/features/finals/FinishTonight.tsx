@@ -79,7 +79,9 @@ export function FinishTonight({ project, jobs, quiet, className }: { project: Pr
             <div>
               <h2 className="dialog__title">{label}?</h2>
               <p className="dialog__text">
-                {start.open ? "The night shift is on now. Once the GPU is free, Nightshift" : `At ${c.time(night.startAt)} Nightshift`} renders the picked take of {shots.length === 1 ? "the shot" : `each of the ${shots.length} shots`} on the timeline at full quality, one after another. In the morning they are on their cards and in the editor.
+                {start.open ? "The night shift is on now. Once the GPU is free, Nightshift" : `At ${c.time(night.startAt)} Nightshift`} {shots.length === 1
+                  ? "renders the picked take of the shot on the timeline at full quality. In the morning it is on its card and in the editor."
+                  : `renders the picked take of each of the ${shots.length} shots on the timeline at full quality, one after another. In the morning they are on their cards and in the editor.`}
               </p>
             </div>
           </div>

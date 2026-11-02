@@ -140,6 +140,10 @@
   -webkit-line-clamp: 2;
   overflow: hidden;
 }
+.cd-download {
+  flex: none;
+  text-decoration: none;
+}
 .cd-caption__note {
   flex: none;
   font-size: var(--fs-small);

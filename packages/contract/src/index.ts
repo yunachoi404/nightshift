@@ -582,8 +582,10 @@ export const SoundtrackSchema = z.object({
  * Who wrote a film's shot list. "template": the template's own list for the brief, as a new film starts, or as the
  * writer left it when its answer did not fit. "writer": the local language model wrote it from the brief. `note` says,
  * in plain words, why the writer's last answer was not used; the writer's next list clears it. The UI shows the note
- * with a way to try again, and sends the shot list back without its note to dismiss it. Absent on projects with no shot
- * list to write (blank, What if?, quick shots) and on films made before the engine kept it.
+ * with a way to try again, and sends the shot list back without its note to dismiss it. A What if? film keeps the same
+ * record for its story: "template" is the starter story, left when the writer's first story did not fit (nothing is
+ * drawn from it until the user asks). Absent on projects with no shot list to write (blank, quick shots), on What if?
+ * projects before their story is written, and on films made before the engine kept it.
  */
 export const ShotListSchema = z.object({
   by: z.enum(["template", "writer"]),
@@ -732,6 +734,14 @@ export const UpdateProjectRequestSchema = z
   .object({ name: z.string().min(1), aspect: AspectSchema, brief: z.record(z.string(), z.unknown()), shots: z.array(ShotSchema), references: z.array(ReferenceSchema).max(6), timeline: TimelineSchema.nullable(), boards: z.array(BoardSchema).max(50), soundtrack: SoundtrackSchema, shotList: ShotListSchema })
   .partial();
 
+/**
+ * Optional body for the storyboard route. A What if? film with `keepStory` skips the writer: its beats and narration as
+ * they are now (the starter beats the writer left, or the user's own) are drawn and voiced, then made into a film.
+ */
+export const StoryboardRequestSchema = z.object({
+  keepStory: z.boolean().optional(),
+});
+
 /** Optional body for the still route: a seed, or a prompt that replaces the shot's prompt for this render only. */
 export const StillRequestSchema = z.object({
   seed: z.number().int().nonnegative().optional(),
@@ -871,7 +881,7 @@ export const routes = {
   getProject: "GET /api/projects/:id", // -> Project
   updateProject: "PATCH /api/projects/:id", // UpdateProjectRequest (name, aspect, brief, shots, timeline) -> Project
   deleteProject: "DELETE /api/projects/:id",
-  storyboard: "POST /api/projects/:id/storyboard", // drafts the shot list from the brief -> Job
+  storyboard: "POST /api/projects/:id/storyboard", // StoryboardRequest (optional) -> Job. Drafts the shot list (a What if? story) from the brief
   make: "POST /api/projects/:id/make", // MakeRequest -> Job. Makes a new card (a shot, job.shotId) on a board and queues its first job
   still: "POST /api/projects/:id/shots/:shotId/still", // StillRequest (optional) -> Job
   draft: "POST /api/projects/:id/shots/:shotId/draft", // DraftRequest -> Job. With `tool`, an effect or camera move on the shot's still
@@ -935,6 +945,7 @@ export type RemoteCheckRequest = z.infer<typeof RemoteCheckRequestSchema>;
 export type RemoteUseRequest = z.infer<typeof RemoteUseRequestSchema>;
 export type CreateProjectRequest = z.input<typeof CreateProjectRequestSchema>;
 export type UpdateProjectRequest = z.infer<typeof UpdateProjectRequestSchema>;
+export type StoryboardRequest = z.infer<typeof StoryboardRequestSchema>;
 export type StillRequest = z.infer<typeof StillRequestSchema>;
 export type AddReferenceRequest = z.infer<typeof AddReferenceRequestSchema>;
 export type DraftRequest = z.infer<typeof DraftRequestSchema>;

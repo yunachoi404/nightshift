@@ -561,7 +561,7 @@ export function figureLike(subject: Rect, L: Layout): boolean {
  * the only switch is at that cut. Film subtitles in a letterbox bar stay in the bar. A scrim darkens behind the
  * block when the picture there is bright or a subject is under it.
  */
-export function placeCaptions(scene: Pick<Scene, "clips" | "captions" | "width" | "height" | "style">, L: Layout, m: CaptionMetrics): CaptionPlacement {
+export function placeCaptions(scene: Pick<Scene, "clips" | "captions" | "width" | "height" | "style"> & Partial<Pick<Scene, "overlays">>, L: Layout, m: CaptionMetrics): CaptionPlacement {
   const { style } = scene;
   const { shape, letterbox } = L;
   const g = gapOf(L);
@@ -578,8 +578,10 @@ export function placeCaptions(scene: Pick<Scene, "clips" | "captions" | "width" 
 
   const captions = scene.captions.map((c) => {
     const mid = (c.start + c.end) / 2;
-    return { clip: clipAt(scene, mid), subject: subjectRect(scene, L, mid, c.end), need: needOf(c), length: Math.max(0, c.end - c.start) };
+    return { clip: clipAt(scene, mid), subject: subjectRect(scene, L, mid, c.end), need: needOf(c), length: Math.max(0, c.end - c.start), start: c.start, end: c.end };
   });
+  const titles = style.look === "product_ad" ? (scene.overlays ?? []).filter((o) => o.kind === "title") : [];
+  const titleUp = (from: number, to: number) => titles.some((o) => o.start < to && from < o.end);
   const time = (xs: { length: number }[]) => xs.reduce((s, x) => s + x.length, 0);
   const defaultBottom = L.H - (CAPTION_BOTTOM[style.captions.position][shape] * L.H + letterbox);
   const lowBottom = range.bottom;
@@ -626,6 +628,9 @@ export function placeCaptions(scene: Pick<Scene, "clips" | "captions" | "width" 
       const own: Candidate[] = [candidates[0]!, candidates[1]!, { band: "upper", edge: ownUpper, rect: (n) => at(ownUpper - n, ownUpper) }];
       cand = own.find((c) => members.every((x) => clearOn(c, x))) ?? chosen.cand;
     }
+    // A product ad's name holds its top corner whatever the picture: under it, the shot's captions keep to the lower
+    // line, over the product if they must (their pill keeps them readable), never up across the name.
+    if (cand.band === "upper" && members.some((x) => titleUp(x.start, x.end))) cand = candidates[0]!;
     for (const i of group) lineOf.set(i, cand);
   }
   const lines: CaptionLine[] = captions.map((x, i) => {

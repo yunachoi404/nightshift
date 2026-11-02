@@ -16,6 +16,7 @@ import {
   RemoteUseRequestSchema,
   routes,
   StillRequestSchema,
+  StoryboardRequestSchema,
   AddReferenceRequestSchema,
   UpdateProjectRequestSchema,
   type Event,
@@ -149,7 +150,7 @@ export function buildRouter(e: EngineContext): Router {
     await e.service.deleteProject(id(ctx));
     return new Reply(204);
   });
-  r.add(routes.storyboard, async (ctx) => new Reply(202, await e.service.storyboard(id(ctx))));
+  r.add(routes.storyboard, async (ctx) => new Reply(202, await e.service.storyboard(id(ctx), await readBody(ctx.req, StoryboardRequestSchema))));
   r.add(routes.make, async (ctx) => new Reply(202, await e.service.make(id(ctx), await readBody(ctx.req, MakeRequestSchema))));
   r.add(routes.still, async (ctx) => new Reply(202, e.service.still(id(ctx), id(ctx, "shotId"), await readBody(ctx.req, StillRequestSchema))));
   r.add(routes.draft, async (ctx) => new Reply(202, await e.service.draft(id(ctx), id(ctx, "shotId"), await readBody(ctx.req, DraftRequestSchema))));

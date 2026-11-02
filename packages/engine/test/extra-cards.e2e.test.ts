@@ -143,14 +143,18 @@ describe.skipIf(!hasFfmpeg)("extra cards in a What if? film", { timeout: 180_000
     p = await patch(p.id, { shots: [...p.shots].reverse().filter((s) => s.id !== kite.shot.id) });
     expect(p.shots.map((s) => [s.id, s.index])).toEqual([[film.id, 0], [waves.shot.id, 1]]);
 
-    // A new story replaces the film and its takes. The cards stay, with theirs, and the new film takes the old one's place.
+    // A new story is written on the same film: its takes and finals stay, and its new take is the pick. The cards stay,
+    // with theirs.
+    const kept = takesOf(p, film.id).map((t) => t.id);
     await api.run(`${base}/storyboard`);
     await api.settle(p.id);
     p = await api.project(p.id);
     const rewritten = ownShot(p)!;
-    expect(rewritten.id).not.toBe(film.id);
+    expect(rewritten.id).toBe(film.id);
     expect(p.shots.map((s) => s.id)).toEqual([rewritten.id, waves.shot.id]);
-    expect(takesOf(p, film.id)).toEqual([]);
+    expect(takesOf(p, film.id).map((t) => t.id)).toEqual(expect.arrayContaining(kept));
+    expect(takesOf(p, film.id).filter((t) => t.rung === "draft")).toHaveLength(3);
+    expect(kept).not.toContain(rewritten.chosenDraftId);
     expect(takesOf(p, waves.shot.id).map((t) => t.rung)).toEqual(["draft", "final"]);
     expect(shotCards(p)[0]!.items).toEqual([rewritten.id, waves.shot.id]);
     expect(cutOf(p)).toEqual([rewritten.id]);

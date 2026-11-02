@@ -12,7 +12,7 @@ import { cutShots, isCanvasDrag, readDrag, shotHistory, shotLabel, shotWords } f
 import { useNow } from "@/lib/useNow";
 import { noFileToast } from "@/store/demo";
 import { plural, relativeTime, shortDuration, timecode } from "@/lib/format";
-import { ownShot, scriptLines } from "@nightshift/contract";
+import { ownShot, voiceoverScript } from "@nightshift/contract";
 import { RevealSheet } from "@/features/reveal/RevealSheet";
 import { FinishTonight } from "@/features/finals/FinishTonight";
 import { CaptionPreview, defaultCaptionLook, defaultCaptionSize, type CaptionLook, type CaptionPos } from "./CaptionPreview";
@@ -151,7 +151,7 @@ function ProjectEditor({ project }: { project: Project }) {
   });
   const voiceText = project.template === "what_if"
     ? (voiceTrack && assetById(project, voiceTrack.assetId)?.text) ?? ownShot(project)?.line ?? ""
-    : typeof project.brief.script === "string" ? project.brief.script : scriptLines(project.template, project.brief).join(" ");
+    : voiceoverScript(project);
   const [busy, setBusy] = useState<string | null>(null);
 
   const run = useCallback(async (key: string, p: Promise<unknown>) => {

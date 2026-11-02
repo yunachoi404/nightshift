@@ -146,6 +146,21 @@ export function shotLabel(project: Project, shot: Shot, history = shotHistory(pr
  * pasted on every shot) is left out, so cards whose prompts all begin "Claymation stop-motion scene, handmade
  * plasticine..." never read the same. Empty without either.
  */
+/**
+ * The file name a card's version downloads as: the project, the card's place ("Shot 4", from its title) and the
+ * version, with the asset's own extension. "Moby planter ad, Shot 4, version 3.mp4". Characters that file systems
+ * refuse are left out.
+ */
+export function downloadName(project: Pick<Project, "name">, label: string, version: Pick<Version, "asset">, n: number): string {
+  const place = /^Shot \d+/.exec(label)?.[0];
+  const ext = /\.([a-z0-9]{2,5})$/i.exec(version.asset.path)?.[1]?.toLowerCase() ?? (version.asset.kind === "image" ? "png" : "mp4");
+  const own = project.name.replace(/[\\/:*?"<>|\p{Cc}]+/gu, " ").replace(/\s+/g, " ").trim();
+  return `${[own || "Nightshift", place, `version ${n}`].filter(Boolean).join(", ")}.${ext}`;
+}
+
+/** Words two prompts share from their start that make a whole description: what a character pasted on each runs to. */
+const SHARED_SUBJECT = 8;
+
 export function shotWords(project: Project, shot: Shot, history = shotHistory(project, shot), making?: DraftTool): string {
   const tool = history.find((v) => v.pick)?.tool ?? making ?? templateTool(project, shot);
   if (tool) return toolLabel(tool);
@@ -160,7 +175,9 @@ export function shotWords(project: Project, shot: Shot, history = shotHistory(pr
     shared = Math.max(shared, n);
   }
   // A phrase pasted on each ends at a comma or a full stop, and has a few words: "A woman in a" is how prompts begin.
-  while (shared > 0 && !/[,.;:]$/.test(words[shared - 1]!)) shared--;
+  // A long one is a character described the same way in each ("The roller skater with a short silver bob, a teal satin
+  // bomber jacket and pink knee pads"): all of it goes, not up to its first comma, or cards read "A teal satin bomber...".
+  if (shared < SHARED_SUBJECT) while (shared > 0 && !/[,.;:]$/.test(words[shared - 1]!)) shared--;
   const own = shared >= 4 && shared < words.length ? words.slice(shared).join(" ") : words.join(" ");
   const text = own ? own[0]!.toUpperCase() + own.slice(1) : words.join(" ");
   return text.length > 60 ? `${text.slice(0, 60).replace(/\s+\S*$/, "")}...` : text;

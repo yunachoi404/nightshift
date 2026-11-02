@@ -119,9 +119,9 @@ const DELIVERY: Record<string, string> = {
  * A prompt is drawn as a still, so it never names the camera: asked for "camera crane_up to reveal the sky", the image
  * model drew a camera operator and a construction crane. The move goes in `cameraMove`, which only the video hears.
  */
-export function storyboardFormat(lines: ShotLines, field?: { key: string; what: string }): string {
+export function storyboardFormat(lines: ShotLines, field?: { key: string; what: string } | { key: string; what: string }[]): string {
   const line = lines === "none" ? "" : `,"line":"${LINE[lines]}"`;
-  const head = field ? `"${field.key}":"${field.what}",` : "";
+  const head = (Array.isArray(field) ? field : field ? [field] : []).map((f) => `"${f.key}":"${f.what}",`).join("");
   const shape = `{${head}"shots":[{"prompt":"what is in the picture: who or what, the action, the place and the light, in one or two sentences","cameraMove":"one of ${CAMERA_MOVES.join(", ")}","durationSec":4${line}}]}`;
   const camera = " A prompt never mentions the camera or how it moves: the move goes in cameraMove only.";
   const rules = lines === "none" ? "" : ` A line holds only spoken words, without speaker names or stage directions.${lines === "script" ? " Keep every script sentence verbatim." : ""}`;
@@ -130,6 +130,8 @@ export function storyboardFormat(lines: ShotLines, field?: { key: string; what: 
 
 /** A music video's look, in the shots' own words: what every still and draft is drawn in. See `TEMPLATES.music_video`. */
 const MUSIC_LOOK = { key: "look", what: "the look every shot shares: the medium, the materials, the palette and the light, in one line" };
+/** A music video's main character or thing, described once and named in every prompt that shows it. See `nameSubject`. */
+const MUSIC_SUBJECT = { key: "subject", what: "who the video follows: what they are, their hair and what they wear, in a few words" };
 
 export const TEMPLATES: Record<TemplateId, TemplateDef> = {
   what_if: {
@@ -148,7 +150,7 @@ export const TEMPLATES: Record<TemplateId, TemplateDef> = {
     // The look the writer named once (`brief.style`), on every still and draft: a writer that put "claymation" in its
     // first shot only had the other five drawn photoreal.
     style: (brief) => [typeof brief.style === "string" && brief.style.trim() ? sentence(sentenceCase(brief.style)) : "", "Music video, bold color, stylized lighting, anamorphic lens."].filter(Boolean).join(" "),
-    instructions: `You plan a music video as a list of shots that cut on the beat and tell what the brief describes in order, from the first shot to the last. Give the video's look once, as "look": the medium, the materials, the palette and the light every shot shares, taken from the brief (claymation, anime, grainy 16mm film...). Each prompt is one moment in that world: who or what is in the picture, what happens, where, and the light. Vary places, actions and camera moves. Keep people small in frame or in silhouette. ${storyboardFormat("none", MUSIC_LOOK)}`,
+    instructions: `You plan a music video as a list of shots that cut on the beat and tell what the brief describes in order, from the first shot to the last. Give the video's look once, as "look": the medium, the materials, the palette and the light every shot shares, taken from the brief (claymation, anime, grainy 16mm film...). Give who the video follows once, as "subject", taken from the brief (for example "a young woman with a short silver bob and a teal satin bomber jacket"). Each prompt is drawn on its own, without the others, so every prompt that shows the subject names them with those same words, never only as she, he or they. Each prompt is one moment in that world: who or what is in the picture, what happens, where, and the light. Vary places, actions and camera moves. Keep people small in frame or in silhouette. ${storyboardFormat("none", [MUSIC_LOOK, MUSIC_SUBJECT])}`,
     lines: "none",
     fallback: (brief, o) => fallbackShots("music_video", brief, o),
   },
@@ -253,21 +255,78 @@ export function parseStoryboard(raw: string, lines: ShotLines = "short"): ShotPl
 const CAMERA_WORDS = /\bcameras?\b|\bdoll(?:y|ies|ying)\b|\bcran(?:e[sd]?|ing) (?:up|down|over)\b|\bcrash zoom|\bzoom(?:s|ing)? (?:in|out)\b|\bpan(?:s|ning)? (?:left|right|across)\b|\btracking shot\b|\b[a-z]+_(?:in|out|up|down|left|right|zoom)\b/i;
 
 /**
- * A written prompt with the clauses that name the camera left out ("The frog floats up, camera crane_up to reveal the
- * sky." reads "The frog floats up."). The move is the shot's `cameraMove`. A prompt that is all camera stays as it is.
+ * A written prompt with the camera left out. Only the words about the camera go, so the picture and who is in it stay:
+ * "The camera tilts down to her face, ..." reads "Her face, ...", and "A low-angle dolly out as she speeds toward us"
+ * reads "She speeds toward us". A clause that is about the camera alone goes whole ("The frog floats up, camera crane_up
+ * to reveal the sky." reads "The frog floats up."). The move is the shot's `cameraMove`. A prompt that is all camera
+ * stays as it is.
  */
 export function withoutCamera(prompt: string): string {
   if (!CAMERA_WORDS.test(prompt)) return prompt;
   const kept = splitLines(prompt).map((text) => {
     // Clauses and the marks before them: [clause, mark, clause, mark, clause...].
     const parts = text.split(/(\s*[,;:]\s+|\s+[—–-]+\s+|\s*[—–]+\s*)/);
-    const clauses = parts.flatMap((part, i) => (i % 2 ? [] : [{ part, mark: i ? parts[i - 1]! : "" }]));
-    const left = clauses.filter((c) => !CAMERA_WORDS.test(c.part));
-    if (left.length === clauses.length) return text;
+    const clauses = parts.flatMap((part, i) => (i % 2 ? [] : [{ part: CAMERA_WORDS.test(part) ? cameraFree(part) : part, mark: i ? parts[i - 1]! : "" }]));
+    if (clauses.every((c, i) => c.part === parts[i * 2])) return text;
+    const left = clauses.filter((c) => c.part);
     return left.length ? sentence(sentenceCase(left.map((c, i) => (i ? c.mark : "") + c.part).join(""))) : "";
   });
   return kept.filter(Boolean).join(" ") || prompt;
 }
+
+/** Joins inside a clause: "The camera tilts up as she speeds toward us" is the camera, then her. */
+const JOINS = /(\s+(?:as|while|and|then|before|until|when)\s+)/i;
+/** A camera move at the head of a clause, up to where the picture starts: "The camera tilts down to", "A slow dolly in on". */
+const CAMERA_HEAD = new RegExp(
+  [
+    String.raw`^(?:the\s+)?cameras?\s+(?:(?:slowly|quickly|gently|smoothly|rapidly|suddenly|then)\s+)?(?:[a-z]+_[a-z]+|crash\s+zooms?|[a-z]+s)(?:\s+(?:up|down|in|out|left|right|back|away|around|across|over|closer|upward|downward))?\s+(?:in\s+on|out\s+from|to|toward|towards|onto|on|over|across|around|into|past|along|through)\s+`,
+    String.raw`^(?:an?\s+|the\s+)?(?:(?:slow|fast|quick|sweeping|smooth|gentle|dramatic|sudden|low[- ]angle|high[- ]angle|wide)\s+)*(?:doll(?:y|ies)(?:\s+(?:in|out))?|cran(?:e|es)(?:\s+(?:up|down|over))?|crash\s+zooms?|zooms?(?:\s+(?:in|out))?|pans?(?:\s+(?:left|right|across))?|tilts?(?:\s+(?:up|down))?|push(?:es)?[- ]in|pull(?:s)?[- ](?:back|out)|tracking\s+shot|orbits?|[a-z]+_[a-z]+)(?:\s+(?:in\s+on|to|toward|towards|onto|on|over|across|around|into|past|along|through|of|from))?(?:\s+|$)`,
+  ].join("|"),
+  "i",
+);
+/** How a picture's words begin: an article, a pronoun, a possessive or a name. Not a verb ("show the street"). */
+const PICTURE_START = /^(?:(?:the|a|an|her|his|their|its|our|she|he|they|it|this|that|these|those|one|two|three|four)\b|[A-Z]|\S+['’]s\b)/;
+
+/** A clause without its words about the camera, or "" when it is about nothing else. */
+function cameraFree(clause: string): string {
+  const parts = clause.split(JOINS);
+  const pieces: { text: string; join: string }[] = [];
+  for (let i = 0; i < parts.length; i += 2) {
+    let text = parts[i]!;
+    if (CAMERA_WORDS.test(text)) {
+      // The clause's head may name the camera and then the picture; any later piece about the camera goes whole.
+      const rest = i === 0 ? text.replace(CAMERA_HEAD, "") : "";
+      text = rest && rest !== text && !CAMERA_WORDS.test(rest) && PICTURE_START.test(rest) ? rest : "";
+    }
+    if (text) pieces.push({ text, join: i ? parts[i - 1]! : "" });
+  }
+  return pieces.map((p, i) => (i ? p.join : "") + p.text).join("");
+}
+
+/**
+ * A music video's subject in every prompt that shows it. The writer gives the subject once ("a young woman with a short
+ * silver bob and a teal satin bomber jacket") and is asked to name it in each prompt, but wrote "She skates past..."
+ * after shot 1, so every still drew someone else. A prompt that speaks of her or him without the subject's words gets
+ * them: in place of a leading "She" or "He", else as a sentence of its own. Changes the plans in place.
+ */
+export function nameSubject(plans: ShotPlan[], subject: string | undefined): void {
+  const who = subject ? clauseOf(subject).replace(/^(?:she|he)\s+is\s+/i, "") : "";
+  if (!who) return;
+  const marks = contentWords(who);
+  for (const plan of plans) {
+    const pronoun = /\b(she|her|hers|herself|he|him|his|himself)\b/i.exec(plan.prompt)?.[1]?.toLowerCase();
+    if (!pronoun) continue;
+    const words = new Set(contentWords(plan.prompt));
+    const named = marks.filter((w) => words.has(w)).length;
+    if (named >= Math.min(3, Math.ceil(marks.length / 2))) continue;
+    const lead = /^(she|he)\s+/i.exec(plan.prompt);
+    if (lead) plan.prompt = sentenceCase(who) + " " + plan.prompt.slice(lead[0].length);
+    else plan.prompt = `${sentence(plan.prompt)} ${/^(?:she|her|hers|herself)$/.test(pronoun) ? "She" : "He"} is ${who}.`;
+  }
+}
+
+const STOP = new Set(["with", "and", "the", "her", "his", "their", "from", "into", "onto", "that", "this", "wearing", "who", "has"]);
+const contentWords = (text: string) => (text.toLowerCase().match(/[a-z]+/g) ?? []).filter((w) => w.length > 2 && !STOP.has(w));
 
 /**
  * A micro drama's characters by name: the template's shots say "the first character" and "the second character" (and
@@ -308,7 +367,7 @@ export function parseCast(raw: string): CastMember[] {
 }
 
 /** A line the writer gave the whole film (a micro drama's "setting", a music video's "look"), or undefined. */
-export function parseLine(raw: string, key: "setting" | "look" | "product"): string | undefined {
+export function parseLine(raw: string, key: "setting" | "look" | "product" | "subject"): string | undefined {
   const json = parseJsonAnswer(raw);
   const value = typeof json === "object" && json !== null ? (json as Record<string, unknown>)[key] : undefined;
   return typeof value === "string" && value.trim() ? value.replace(/\s+/g, " ").trim().slice(0, 300) : undefined;

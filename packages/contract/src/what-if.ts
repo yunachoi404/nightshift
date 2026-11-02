@@ -22,17 +22,33 @@ export function whatIfLook(brief: Record<string, unknown>): string {
   return (whatIfLooks.find((look) => look.id === brief.look) ?? whatIfLooks[0]!).phrase;
 }
 
+function questionOf(brief: Record<string, unknown>): string {
+  return typeof brief.question === "string" && brief.question.trim() ? brief.question.trim().replace(/\s+/g, " ") : whatIfExamples[0]!;
+}
+
+/** The tested starter story for a question, if one fits it. */
+function presetFor(question: string) {
+  // Whole words only: a street is not a tree, and a voice is not ice.
+  return /\b(jupiter|outer space|planets?)\b/i.test(question) ? WHAT_IF_PRESETS.space
+    : /\b(forests?|trees?|plants?|nature|grows?|grew|grown|growing)\b/i.test(question) ? WHAT_IF_PRESETS.forest
+      : /\b(seas?|oceans?|harbou?rs?|ice|icy)\b|\bwater\b.*\bfr(ee|o)z/i.test(question) ? WHAT_IF_PRESETS.sea
+        : /\b(gravity|float\w*|levitat\w*)\b/i.test(question) ? WHAT_IF_PRESETS.gravity : undefined;
+}
+
+/**
+ * Whether the starter story for this brief is a tested story of its own (gravity, the sea, a forest, space). Otherwise
+ * it is a generic outline around the question, with filler narration: fine to edit, not a film to make as it is.
+ */
+export function hasWhatIfPreset(brief: Record<string, unknown>): boolean {
+  return presetFor(questionOf(brief)) !== undefined;
+}
+
 /** One film, with four visual states. The narration is fiction, not a factual explanation. */
 export function fallbackWhatIf(brief: Record<string, unknown>): {
   prompt: string; cameraMove: string; durationSec: number; line: string; keyframes: Keyframe[];
 } {
-  const question = typeof brief.question === "string" && brief.question.trim()
-    ? brief.question.trim().replace(/\s+/g, " ") : whatIfExamples[0]!;
-  // Whole words only: a street is not a tree, and a voice is not ice.
-  const preset = /\b(jupiter|outer space|planets?)\b/i.test(question) ? WHAT_IF_PRESETS.space
-    : /\b(forests?|trees?|plants?|nature|grows?|grew|grown|growing)\b/i.test(question) ? WHAT_IF_PRESETS.forest
-      : /\b(seas?|oceans?|harbou?rs?|ice|icy)\b|\bwater\b.*\bfr(ee|o)z/i.test(question) ? WHAT_IF_PRESETS.sea
-        : /\b(gravity|float\w*|levitat\w*)\b/i.test(question) ? WHAT_IF_PRESETS.gravity : undefined;
+  const question = questionOf(brief);
+  const preset = presetFor(question);
   const shortQuestion = question.split(/\s+/).length <= 16 ? question : "Imagine it happening, just for a moment.";
   const lines = preset ? [shortQuestion, ...preset.lines.slice(1)] : [shortQuestion, "Everything looks familiar at first.",
     "Then the ordinary world starts to change in a way nobody expected.",
