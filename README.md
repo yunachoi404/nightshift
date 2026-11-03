@@ -15,13 +15,13 @@ Apache-2.0.
 ComfyUI node and continues that exact take into the final. On four real projects every final matched its draft frame
 by frame (SSIM 0.91 to 0.96 after downscaling) and its decoded audio was bit-identical.
 
-**[Watch the 2-minute film](https://youtu.be/u7R_uGr-3UM)**
+**[Watch the 2-minute film](https://youtu.be/k83kTpPn6O4)**
 
 ## Try it
 
 Four ways in, shortest first. Most of them need no GPU and download no models.
 
-1. **Watch the 2-minute film** (2 minutes). [The Nightshift film](https://youtu.be/u7R_uGr-3UM) shows real projects made on a DGX
+1. **Watch the 2-minute film** (2 minutes). [The Nightshift film](https://youtu.be/k83kTpPn6O4) shows real projects made on a DGX
    Spark, from the first question to the export.
 2. **Try it in your browser** (about 2 minutes, nothing to install). Open
    **[yunachoi404.github.io/nightshift](https://yunachoi404.github.io/nightshift/)** in a desktop browser. Choose
