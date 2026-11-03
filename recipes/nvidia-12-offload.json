@@ -59,7 +59,7 @@
         "name": "LTX-2.x Community License, restricted",
         "url": "https://github.com/Lightricks/LTX-2/blob/main/LICENSE"
       },
-      "sha256": "****************************************************************"
+      "sha256": "c4279eeff115cbeaca494bd2183e7d768c38fe85a184dc6afbb7159157c44334"
     },
     {
       "id": "text_encoders-gemma4-12b-with-proj-ltx-2.5-comfy-int8-convrot",
@@ -72,7 +72,7 @@
         "name": "LTX-2.x Community License, restricted",
         "url": "https://github.com/Lightricks/LTX-2/blob/main/LICENSE"
       },
-      "sha256": "****************************************************************"
+      "sha256": "6ce688a0aa98a5fa36a9f1e6c3f42152a498cc2b53ee8c15674c64244f91487f"
     },
     {
       "id": "vae-ltx-2.5-video-vae-bf16",
@@ -85,7 +85,7 @@
         "name": "LTX-2.x Community License, restricted",
         "url": "https://github.com/Lightricks/LTX-2/blob/main/LICENSE"
       },
-      "sha256": "****************************************************************"
+      "sha256": "847e14ca7f3355debca0cea4eaa24ac0fbcdf0061da054ac89ca638a869ddba3"
     },
     {
       "id": "vae-ltx-2.5-audio-vae-bf16",
@@ -98,7 +98,7 @@
         "name": "LTX-2.x Community License, restricted",
         "url": "https://github.com/Lightricks/LTX-2/blob/main/LICENSE"
       },
-      "sha256": "****************************************************************"
+      "sha256": "c52733d37f6a7fb7949c3dc0fb468c6cb2169e4d836983a73babb9f0d54837a5"
     },
     {
       "id": "latent_upscale_models-ltx-2.5-latent-spatial-upscaler-x2-bf16-1.0",
@@ -111,7 +111,7 @@
         "name": "LTX-2.x Community License, restricted",
         "url": "https://github.com/Lightricks/LTX-2/blob/main/LICENSE"
       },
-      "sha256": "****************************************************************"
+      "sha256": "eb5a71fe4068ee87ccdb1c3aa635e547ca76bd2d30ae20ae889f2c325c0677e8"
     },
     {
       "id": "breezetts2-drbaph_Breeze-TTS-2-comfyui-Breeze-TTS-2-int8-hybrid",
