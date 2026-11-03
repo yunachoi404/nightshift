@@ -21,6 +21,17 @@ export function sampleUrl(path: string): string {
   return publicUrl(`demo/${path.slice(SCHEME.length)}`);
 }
 
+/**
+ * The poster of a sample file, or undefined for any other URL. The static host of the browser demo cannot make a
+ * poster from `?w=` the way the engine does, so each sample video has one beside it, made by
+ * `scripts/build_demo_samples.py` (`final-1.mp4` -> `final-1.poster.jpg`). A sample picture is small enough to be its
+ * own.
+ */
+export function samplePoster(url: string): string | undefined {
+  if (!url.startsWith(publicUrl("demo/"))) return undefined;
+  return url.endsWith(".mp4") ? `${url.slice(0, -".mp4".length)}.poster.jpg` : url;
+}
+
 /** The lighthouse the First shot sample made on an RTX 2080 Super. */
 export const firstShot = fixture.firstShot;
 

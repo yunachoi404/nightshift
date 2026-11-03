@@ -3,10 +3,13 @@
  * with the Nocturne ad, keeps its own state apart from the dev mock, and draws placeholders for anything new.
  */
 import { projectBoards, type Project } from "@nightshift/contract";
+import { existsSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { placeOnTimeline, soundOff, takeOffTimeline } from "@/features/media/items";
 import { MockEngine } from "./engine";
-import { firstShot } from "./samples";
+import { firstShot, samplePoster } from "./samples";
 
 beforeEach(() => vi.useFakeTimers());
 afterEach(() => vi.useRealTimers());
@@ -25,6 +28,8 @@ function ready(engine: MockEngine, tier = "unified-128-cuda") {
   engine.state.settings = { ...engine.state.settings, tier };
 }
 
+/** apps/web/public, where the demo's files are served from. */
+const PUBLIC = join(dirname(fileURLToPath(import.meta.url)), "../../../public");
 const url = (engine: MockEngine, p: Project, assetId: string | undefined) => engine.assetUrl(p.id, assetId ?? "");
 
 /** Exports the project and waits for the film. */
@@ -52,6 +57,18 @@ describe("the browser demo", () => {
     expect(ad?.timeline?.audio.map((a) => a.role)).toEqual(["music"]);
     expect(ad?.timeline?.overlays?.map((o) => o.kind)).toEqual(["title", "end_card"]);
     expect(engine.onboarding().done).toBe(false);
+  });
+
+  it("has a poster beside each of its videos, since its static host cannot make one", () => {
+    const engine = new MockEngine("demo");
+    const [ad] = engine.listProjects();
+    const files = [...ad!.assets.filter((a) => a.kind === "video").map((a) => url(engine, ad!, a.id)), "/demo/first-shot/draft.mp4"];
+    expect(files.length).toBeGreaterThan(10);
+    for (const file of files) {
+      const poster = samplePoster(file!)!;
+      expect(poster).toMatch(/\.poster\.jpg$/);
+      expect(existsSync(join(PUBLIC, poster)), poster).toBe(true);
+    }
   });
 
   it("makes the First shot from the real lighthouse still and draft", () => {

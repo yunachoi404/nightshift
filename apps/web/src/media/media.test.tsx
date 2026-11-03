@@ -13,6 +13,12 @@ describe("posters", () => {
     expect(posterOf(mock, 320)).toBe(mock);
   });
 
+  it("of the browser demo's sample files are files beside them, since its static host cannot make one", () => {
+    const base = import.meta.env.BASE_URL;
+    expect(posterOf(`${base}demo/nocturne/final-1.mp4`, 640)).toBe(`${base}demo/nocturne/final-1.poster.jpg`);
+    expect(posterOf(`${base}demo/nocturne/still-1.jpg`, 160)).toBe(`${base}demo/nocturne/still-1.jpg`);
+  });
+
   it("stand in for a picture shown small", () => {
     const { container } = render(<Media src={CLIP} kind="image" thumb={160} />);
     expect(container.querySelector("img")?.getAttribute("src")).toBe(`${CLIP}?w=160`);

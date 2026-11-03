@@ -1,6 +1,7 @@
 import type { PosterWidth } from "@nightshift/contract";
 import { useEffect, useRef, useState } from "react";
 import { drawFrame, parseMockUrl, stillDataUrl } from "./placeholder";
+import { samplePoster } from "@/api/mock/samples";
 import { cx } from "@/ui/primitives";
 
 interface MediaProps {
@@ -42,9 +43,14 @@ export function Media({ src, kind, playing = false, loop = true, muted = true, d
   return <RealVideo src={src} playing={playing} loop={loop} muted={muted} time={time} className={className} fit={fit} onEnded={onEnded} onTime={onTime} poster={poster} />;
 }
 
-/** The engine's poster of an asset at `width`: the asset's URL with `?w=` (see POSTER_WIDTHS in the contract). */
+/**
+ * The engine's poster of an asset at `width`: the asset's URL with `?w=` (see POSTER_WIDTHS in the contract). A sample
+ * file of the browser demo has its poster beside it instead.
+ */
 export function posterOf(assetUrl: string, width: PosterWidth): string {
   if (parseMockUrl(assetUrl)) return assetUrl;
+  const sample = samplePoster(assetUrl);
+  if (sample) return sample;
   return `${assetUrl}${assetUrl.includes("?") ? "&" : "?"}w=${width}`;
 }
 

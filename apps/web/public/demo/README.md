@@ -8,6 +8,10 @@ through the app. Nothing is stock footage or a stock photo. The whole folder is 
 | `first-shot/` | The First shot sample: the lighthouse still (960x640, shown at 768) and its 2-second motion draft (384x256, no sound) | An RTX 2080 Super, `nvidia-8` recipe, during the local install test |
 | `nocturne/` | The Nocturne ad, a 15-second product ad for headphones: five storyboard stills, ten drafts (two a shot), five same-take finals, the music, the two references (the product photo and Rae) and the export | A DGX Spark on the network of a Mac, `unified-128-cuda` recipe |
 
+Each video has a poster beside it (`final-1.mp4` -> `final-1.poster.jpg`), its first frame at 640 wide, for the small
+pictures: GitHub Pages cannot make one from `?w=` the way the engine does. `--posters` remakes them from these files
+alone.
+
 The drafts and finals are smaller copies without their own sound (the app plays a take's sound only in an export).
 The drafts are 512x308 and the finals 768x460. The export is scaled to 854x480 and keeps its sound: the music and each
 shot's own sound. The project's prompts, picks, timeline and title cards are in `src/api/mock/samples.json`, as the

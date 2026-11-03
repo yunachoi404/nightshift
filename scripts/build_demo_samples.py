@@ -17,6 +17,10 @@ outside an export), so the whole set stays near 2.5 MB.
 
 Both folders are engine project folders (project.json and assets/). They live in the gitignored outputs/ folder of
 the checkout that made them. They are only read. Needs ffmpeg.
+
+Each video also gets its poster beside it (`final-1.mp4` -> `final-1.poster.jpg`): its first frame, as the engine
+makes posters, for the demo's small pictures. GitHub Pages cannot make one from `?w=` the way the engine does. The
+posters are made from the files in public/demo alone, so `--posters` remakes them without the two projects.
 """
 import argparse
 import json
@@ -43,6 +47,22 @@ def still(src: Path, dst: Path, width: int) -> None:
 
 def silent_video(src: Path, dst: Path, width: int, crf: int) -> None:
     ffmpeg("-i", str(src), "-an", "-vf", f"scale={width}:-2:flags=lanczos", *VIDEO, "-crf", str(crf), str(dst))
+
+
+# The widest poster the app asks for (POSTER_WIDTHS in packages/contract). One poster serves every width.
+POSTER_WIDTH = 640
+
+
+def poster_of(video: Path) -> Path:
+    return video.with_name(f"{video.stem}.poster.jpg")
+
+
+def posters() -> None:
+    """Every video's poster in public/demo: its first frame at POSTER_WIDTH, a JPEG like the engine's."""
+    for old in PUBLIC.rglob("*.poster.jpg"):
+        old.unlink()
+    for video in sorted(PUBLIC.rglob("*.mp4")):
+        ffmpeg("-i", str(video), "-frames:v", "1", "-vf", f"scale=w='min(iw,{POSTER_WIDTH})':h=-2:flags=lanczos", "-q:v", "4", "-update", "1", str(poster_of(video)))
 
 
 def audio(src: Path, dst: Path, kbps: int, mono: bool) -> None:
@@ -139,11 +159,16 @@ def first_shot(folder: Path) -> dict:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("--ad", type=Path, required=True)
-    parser.add_argument("--first-shot", type=Path, required=True)
+    parser.add_argument("--ad", type=Path)
+    parser.add_argument("--first-shot", type=Path)
+    parser.add_argument("--posters", action="store_true", help="only remake the posters of the videos already in public/demo")
     args = parser.parse_args()
-    fixture = {"firstShot": first_shot(args.first_shot), "ad": ad(args.ad)}
-    FIXTURE.write_text(json.dumps(fixture, indent=2) + "\n")
+    if not args.posters:
+        if not args.ad or not args.first_shot:
+            parser.error("--ad and --first-shot are needed, unless --posters")
+        fixture = {"firstShot": first_shot(args.first_shot), "ad": ad(args.ad)}
+        FIXTURE.write_text(json.dumps(fixture, indent=2) + "\n")
+    posters()
     total = sum(f.stat().st_size for f in PUBLIC.rglob("*") if f.is_file())
     print(f"{FIXTURE.relative_to(ROOT)} and {PUBLIC.relative_to(ROOT)}: {total / 1e6:.2f} MB")
 
